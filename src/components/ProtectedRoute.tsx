@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 interface ProtectedRouteProps {
@@ -21,69 +19,8 @@ const ProtectedRoute = ({ children, allowedRoles, portalType }: ProtectedRoutePr
   const { user, loading, userRole, roleLoading } = useAuth();
   const location = useLocation();
 
-  const [portalAccessLoading, setPortalAccessLoading] = useState(false);
-  const [portalAccessGranted, setPortalAccessGranted] = useState<boolean | null>(null);
-
-  // If the role is missing (common during early onboarding), fall back to checking if the
-  // user has a corresponding portal record (clients/talents). This avoids redirect loops.
-  useEffect(() => {
-    const shouldCheckPortalRecord =
-      !!user &&
-      !!allowedRoles?.length &&
-      !roleLoading &&
-      !loading &&
-      !userRole &&
-      (portalType === "client" || portalType === "talent");
-
-    if (!shouldCheckPortalRecord) {
-      setPortalAccessGranted(null);
-      setPortalAccessLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    setPortalAccessLoading(true);
-
-    (async () => {
-      try {
-        if (portalType === "client") {
-          const { data, error } = await supabase
-            .from("clients")
-            .select("id")
-            .eq("user_id", user.id)
-            .maybeSingle();
-
-          if (cancelled) return;
-          if (error) throw error;
-          setPortalAccessGranted(!!data);
-          return;
-        }
-
-        if (portalType === "talent") {
-          const { data, error } = await supabase
-            .from("talents")
-            .select("id")
-            .eq("user_id", user.id)
-            .maybeSingle();
-
-          if (cancelled) return;
-          if (error) throw error;
-          setPortalAccessGranted(!!data);
-        }
-      } catch {
-        if (!cancelled) setPortalAccessGranted(false);
-      } finally {
-        if (!cancelled) setPortalAccessLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [allowedRoles, loading, portalType, roleLoading, user, userRole]);
-
-  // Show loading while auth/role/portal access is being fetched
-  if (loading || (user && (roleLoading || portalAccessLoading))) {
+  // Show loading while auth/role is being fetched
+  if (loading || (user && roleLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -113,26 +50,14 @@ const ProtectedRoute = ({ children, allowedRoles, portalType }: ProtectedRoutePr
         return <Navigate to={`/auth/login?portal=${portalType}`} replace />;
       }
     } else {
-      // 2) No role yet: allow client/talent portals if the user has that portal record.
+      // 2) No role yet: for client/talent portals, allow access (onboarding is optional).
+      //    They can complete onboarding later from their dashboard.
       if (!isAdminGate && (portalType === "client" || portalType === "talent")) {
-        if (portalType === "client") {
-          return portalAccessGranted ? (
-            <>{children}</>
-          ) : (
-            <Navigate to="/client/onboarding" replace />
-          );
-        }
-
-        if (portalType === "talent") {
-          return portalAccessGranted ? (
-            <>{children}</>
-          ) : (
-            <Navigate to="/talent/onboarding" replace />
-          );
-        }
+        // Allow access - onboarding is not mandatory
+        return <>{children}</>;
       }
 
-      // 3) Admin portal (or unknown): no role means no access.
+      // 3) Admin portal: no role means no access.
       return <Navigate to={`/auth/login?portal=${portalType}`} replace />;
     }
   }
