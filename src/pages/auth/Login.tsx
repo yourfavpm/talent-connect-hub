@@ -55,12 +55,9 @@ const Login = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Welcome back!",
-        description: "You have been signed in successfully.",
-      });
-
-      // Check user role and redirect accordingly
+      // Determine redirect path before showing toast
+      let redirectPath = "";
+      
       if (portal === "admin") {
         const { data: roleData } = await supabase
           .from("user_roles")
@@ -69,7 +66,7 @@ const Login = () => {
           .maybeSingle();
 
         if (roleData?.role && ["super_admin", "operations_admin", "vetting_admin", "finance_admin", "support_admin"].includes(roleData.role)) {
-          navigate("/admin/dashboard");
+          redirectPath = "/admin/dashboard";
         } else {
           toast({
             title: "Access Denied",
@@ -77,24 +74,22 @@ const Login = () => {
             variant: "destructive",
           });
           await supabase.auth.signOut();
+          setLoading(false);
+          return;
         }
       } else if (portal === "talent") {
-        // Check if talent has completed onboarding
         const { data: talentData } = await supabase
           .from("talents")
           .select("onboarding_completed")
           .eq("user_id", data.user.id)
           .maybeSingle();
 
-        if (!talentData) {
-          navigate("/talent/onboarding");
-        } else if (!talentData.onboarding_completed) {
-          navigate("/talent/onboarding");
+        if (!talentData || !talentData.onboarding_completed) {
+          redirectPath = "/talent/onboarding";
         } else {
-          navigate("/talent/dashboard");
+          redirectPath = "/talent/dashboard";
         }
       } else {
-        // Client portal
         const { data: clientData } = await supabase
           .from("clients")
           .select("id")
@@ -102,18 +97,25 @@ const Login = () => {
           .maybeSingle();
 
         if (!clientData) {
-          navigate("/client/onboarding");
+          redirectPath = "/client/onboarding";
         } else {
-          navigate("/client/dashboard");
+          redirectPath = "/client/dashboard";
         }
       }
+
+      toast({
+        title: "Welcome back!",
+        description: "You have been signed in successfully.",
+      });
+
+      // Use window.location for guaranteed navigation
+      window.location.href = redirectPath;
     } catch (error: any) {
       toast({
         title: "Sign in failed",
         description: error.message,
         variant: "destructive",
       });
-    } finally {
       setLoading(false);
     }
   };
