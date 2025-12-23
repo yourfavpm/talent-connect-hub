@@ -17,6 +17,7 @@ import Team from "./pages/client/Team";
 import TalentLayout from "./components/talent/TalentLayout";
 import TalentOnboarding from "./pages/talent/Onboarding";
 import TalentDashboard from "./pages/talent/Dashboard";
+import TalentProfile from "./pages/talent/Profile";
 import TalentJobs from "./pages/talent/Jobs";
 import TalentTeam from "./pages/talent/Team";
 import AdminLayout from "./components/admin/AdminLayout";
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/talent" element={<TalentLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<TalentDashboard />} />
+              <Route path="profile" element={<TalentProfile />} />
               <Route path="jobs" element={<TalentJobs />} />
               <Route path="team" element={<TalentTeam />} />
             </Route>
