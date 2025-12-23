@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import StatCard from "@/components/ui/stat-card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import OnboardingBanner from "@/components/OnboardingBanner";
 import {
   Users,
   Briefcase,
@@ -15,18 +16,27 @@ import {
 const ClientDashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [clientId, setClientId] = useState<string>("");
+  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        setUser(data.user);
-        // Generate client ID from user id
-        const id = `CLT-${data.user.id.slice(0, 8).toUpperCase()}`;
+    const fetchData = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData.user) {
+        setUser(authData.user);
+        const id = `CLT-${authData.user.id.slice(0, 8).toUpperCase()}`;
         setClientId(id);
+
+        // Check if client record exists (onboarding complete)
+        const { data: clientData } = await supabase
+          .from("clients")
+          .select("id")
+          .eq("user_id", authData.user.id)
+          .maybeSingle();
+
+        setOnboardingComplete(!!clientData);
       }
     };
-    getUser();
+    fetchData();
   }, []);
 
   const stats = [
@@ -58,6 +68,9 @@ const ClientDashboard = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
+      {/* Onboarding Banner */}
+      {onboardingComplete === false && <OnboardingBanner portalType="client" />}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
