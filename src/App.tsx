@@ -8,6 +8,7 @@ import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ResetPassword from "./pages/auth/ResetPassword";
 import ClientLayout from "./components/client/ClientLayout";
+import ClientOnboarding from "./pages/client/Onboarding";
 import ClientDashboard from "./pages/client/Dashboard";
 import BrowseTalents from "./pages/client/BrowseTalents";
 import Jobs from "./pages/client/Jobs";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/auth/reset-password" element={<ResetPassword />} />
 
             {/* Client Portal */}
+            <Route path="/client/onboarding" element={<ClientOnboarding />} />
             <Route path="/client" element={<ClientLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<ClientDashboard />} />
