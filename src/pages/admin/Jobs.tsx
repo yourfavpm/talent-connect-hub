@@ -8,8 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Briefcase, CheckCircle, XCircle, Users, Eye, Clock, DollarSign, MapPin, Globe, Tag } from "lucide-react";
+import { 
+  Search, Briefcase, CheckCircle, XCircle, Users, Eye, Clock, DollarSign, 
+  MapPin, Globe, Tag, UserPlus, Send, GraduationCap, Award, FileText 
+} from "lucide-react";
 
 const SERVICE_MODEL_LABELS: Record<string, string> = {
   direct_hire: "Direct Hire",
@@ -18,10 +22,21 @@ const SERVICE_MODEL_LABELS: Record<string, string> = {
   offshore_hiring: "Offshore Hiring",
 };
 
+const ROLE_LABELS: Record<string, string> = {
+  virtual_assistant: "Virtual Assistant",
+  customer_support: "Customer Support",
+  social_media_manager: "Social Media Manager",
+  product_manager: "Product Manager",
+  operations_manager: "Operations Manager",
+  project_manager: "Project Manager",
+  executive_assistant: "Executive Assistant",
+};
+
 const AdminJobs = () => {
   const { toast } = useToast();
   const [jobs, setJobs] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
+  const [allTalents, setAllTalents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -30,20 +45,27 @@ const AdminJobs = () => {
   const [jobToReject, setJobToReject] = useState<any>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [rejecting, setRejecting] = useState(false);
+  const [jobDetailOpen, setJobDetailOpen] = useState(false);
+  const [selectedTalent, setSelectedTalent] = useState<any>(null);
+  const [talentProfileOpen, setTalentProfileOpen] = useState(false);
+  const [talentDetails, setTalentDetails] = useState<any>(null);
+  const [loadingTalent, setLoadingTalent] = useState(false);
+  const [talentSearchQuery, setTalentSearchQuery] = useState("");
 
   useEffect(() => {
     fetchJobs();
+    fetchAllTalents();
   }, [statusFilter]);
 
   const fetchJobs = async () => {
     try {
       let query = supabase
         .from("jobs")
-        .select(`*, clients(company_name, primary_contact_email)`)
+        .select(`*, clients(company_name, primary_contact_email, user_id)`)
         .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter as "draft" | "submitted" | "under_review" | "approved" | "published" | "filled" | "closed");
+        query = query.eq("status", statusFilter as any);
       }
 
       const { data } = await query;
@@ -55,12 +77,54 @@ const AdminJobs = () => {
     }
   };
 
+  const fetchAllTalents = async () => {
+    const { data } = await supabase
+      .from("talents")
+      .select("*")
+      .eq("vetting_status", "fully_vetted")
+      .order("created_at", { ascending: false });
+    setAllTalents(data || []);
+  };
+
   const fetchApplications = async (jobId: string) => {
     const { data } = await supabase
       .from("job_applications")
-      .select(`*, talents(first_name, last_name, talent_id, vetting_status, primary_role)`)
+      .select(`
+        *,
+        talents(id, first_name, last_name, talent_id, vetting_status, primary_role, country, years_of_experience, email, phone)
+      `)
       .eq("job_id", jobId);
     setApplications(data || []);
+  };
+
+  const fetchTalentDetails = async (talent: any) => {
+    setLoadingTalent(true);
+    try {
+      const [workHistory, education, certifications, vettingRecords] = await Promise.all([
+        supabase.from("talent_work_history").select("*").eq("talent_id", talent.id),
+        supabase.from("talent_education").select("*").eq("talent_id", talent.id),
+        supabase.from("talent_certifications").select("*").eq("talent_id", talent.id),
+        supabase.from("talent_vetting").select("*").eq("talent_id", talent.id).order("level", { ascending: true }),
+      ]);
+
+      setTalentDetails({
+        ...talent,
+        work_history: workHistory.data || [],
+        education: education.data || [],
+        certifications: certifications.data || [],
+        vetting: vettingRecords.data || [],
+      });
+    } catch (error) {
+      console.error("Error fetching talent details:", error);
+    } finally {
+      setLoadingTalent(false);
+    }
+  };
+
+  const handleViewTalentProfile = (talent: any) => {
+    setSelectedTalent(talent);
+    fetchTalentDetails(talent);
+    setTalentProfileOpen(true);
   };
 
   const handleApproveJob = async (job: any) => {
@@ -70,9 +134,8 @@ const AdminJobs = () => {
         .update({ status: "published", published_at: new Date().toISOString() })
         .eq("id", job.id);
 
-      // Create notification for client
       await supabase.from("notifications").insert({
-        user_id: job.clients?.user_id || job.client_id,
+        user_id: job.clients?.user_id,
         title: "Job Approved",
         message: `Your job posting "${job.title}" has been approved and is now live.`,
         type: "job_approved",
@@ -105,9 +168,8 @@ const AdminJobs = () => {
         .update({ status: "closed", rejection_reason: rejectionReason })
         .eq("id", jobToReject.id);
 
-      // Create notification for client
       await supabase.from("notifications").insert({
-        user_id: jobToReject.clients?.user_id || jobToReject.client_id,
+        user_id: jobToReject.clients?.user_id,
         title: "Job Rejected",
         message: `Your job posting "${jobToReject.title}" was not approved. Reason: ${rejectionReason}`,
         type: "job_rejected",
@@ -127,11 +189,49 @@ const AdminJobs = () => {
 
   const handleShortlistApplication = async (appId: string) => {
     try {
-      await supabase
-        .from("job_applications")
-        .update({ status: "shortlisted" })
-        .eq("id", appId);
+      await supabase.from("job_applications").update({ status: "shortlisted" }).eq("id", appId);
       toast({ title: "Shortlisted", description: "Talent has been shortlisted" });
+      if (selectedJob) fetchApplications(selectedJob.id);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleInviteTalentToJob = async (talentId: string, talentName: string) => {
+    if (!selectedJob) return;
+    
+    try {
+      // Check if already applied
+      const { data: existing } = await supabase
+        .from("job_applications")
+        .select("id")
+        .eq("job_id", selectedJob.id)
+        .eq("talent_id", talentId)
+        .maybeSingle();
+
+      if (existing) {
+        toast({ title: "Already Applied", description: "This talent has already applied to this job", variant: "destructive" });
+        return;
+      }
+
+      await supabase.from("job_applications").insert({
+        job_id: selectedJob.id,
+        talent_id: talentId,
+        status: "invited",
+        admin_notes: "Invited by admin",
+      });
+
+      toast({ title: "Talent Invited", description: `${talentName} has been invited to apply for this job` });
+      fetchApplications(selectedJob.id);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleRequestInterview = async (appId: string, talentName: string) => {
+    try {
+      await supabase.from("job_applications").update({ status: "interview_scheduled" }).eq("id", appId);
+      toast({ title: "Interview Requested", description: `Interview scheduled for ${talentName}` });
       if (selectedJob) fetchApplications(selectedJob.id);
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -152,9 +252,7 @@ const AdminJobs = () => {
   };
 
   const getCurrencySymbol = (currency: string) => {
-    const symbols: Record<string, string> = {
-      USD: "$", EUR: "€", GBP: "£", NGN: "₦", KES: "KSh", ZAR: "R"
-    };
+    const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", NGN: "₦", KES: "KSh", ZAR: "R" };
     return symbols[currency] || "$";
   };
 
@@ -162,6 +260,13 @@ const AdminJobs = () => {
     (job) =>
       job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.clients?.company_name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredTalentsForJob = allTalents.filter(
+    (t) =>
+      `${t.first_name} ${t.last_name}`.toLowerCase().includes(talentSearchQuery.toLowerCase()) ||
+      t.talent_id?.toLowerCase().includes(talentSearchQuery.toLowerCase()) ||
+      t.primary_role?.toLowerCase().includes(talentSearchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -213,7 +318,15 @@ const AdminJobs = () => {
           </Card>
         ) : (
           filteredJobs.map((job) => (
-            <Card key={job.id} className="hover:shadow-md transition-shadow">
+            <Card 
+              key={job.id} 
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => {
+                setSelectedJob(job);
+                fetchApplications(job.id);
+                setJobDetailOpen(true);
+              }}
+            >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -228,23 +341,17 @@ const AdminJobs = () => {
                     </div>
                     <p className="text-muted-foreground mb-3">{job.clients?.company_name}</p>
                     
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-3">
+                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                       {job.role_needed && (
                         <span className="flex items-center gap-1">
                           <Briefcase className="h-4 w-4" />
-                          {job.role_needed.replace("_", " ")}
+                          {ROLE_LABELS[job.role_needed] || job.role_needed}
                         </span>
                       )}
                       {job.work_mode && (
                         <span className="flex items-center gap-1">
                           <Globe className="h-4 w-4" />
                           {job.work_mode}
-                        </span>
-                      )}
-                      {job.weekly_hours && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {job.weekly_hours} hrs/week
                         </span>
                       )}
                       {job.budget_min && job.budget_max && (
@@ -255,163 +362,25 @@ const AdminJobs = () => {
                           {job.budget_max}/{job.salary_type || "hr"}
                         </span>
                       )}
-                      {job.experience_required && (
-                        <span className="flex items-center gap-1">
-                          <Tag className="h-4 w-4" />
-                          {job.experience_required}+ years exp
-                        </span>
-                      )}
-                      {job.location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          {job.location}
-                        </span>
-                      )}
                     </div>
-
-                    {job.required_skills && job.required_skills.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {job.required_skills.map((skill: string) => (
-                          <Badge key={skill} variant="secondary" className="text-xs">
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-
-                    {job.responsibilities && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {job.responsibilities}
-                      </p>
-                    )}
                   </div>
                   
-                  <div className="flex flex-col items-end gap-2 ml-4">
+                  <div className="flex flex-col items-end gap-2 ml-4" onClick={(e) => e.stopPropagation()}>
                     <span className="text-xs text-muted-foreground">
                       {new Date(job.created_at).toLocaleDateString()}
                     </span>
-                    <div className="flex gap-2">
-                      {job.status === "submitted" && (
-                        <>
-                          <Button size="sm" className="bg-success hover:bg-success/90" onClick={() => handleApproveJob(job)}>
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button size="sm" variant="destructive" onClick={() => openRejectDialog(job)}>
-                            <XCircle className="h-4 w-4 mr-1" />
-                            Reject
-                          </Button>
-                        </>
-                      )}
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedJob(job);
-                              fetchApplications(job.id);
-                            }}
-                          >
-                            <Users className="h-4 w-4 mr-1" />
-                            Apps
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
-                          <DialogHeader>
-                            <DialogTitle>Applications for {selectedJob?.title}</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4 mt-4 max-h-[60vh] overflow-y-auto">
-                            {applications.length === 0 ? (
-                              <p className="text-muted-foreground text-center py-4">No applications yet</p>
-                            ) : (
-                              applications.map((app) => (
-                                <div key={app.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                                  <div>
-                                    <p className="font-medium">
-                                      {app.talents?.first_name} {app.talents?.last_name}
-                                    </p>
-                                    <p className="text-sm text-muted-foreground">
-                                      {app.talents?.talent_id} • {app.talents?.primary_role?.replace("_", " ")}
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Badge className={
-                                      app.status === "shortlisted" ? "bg-success/10 text-success" :
-                                      app.status === "rejected" ? "bg-destructive/10 text-destructive" :
-                                      "bg-primary/10 text-primary"
-                                    }>
-                                      {app.status}
-                                    </Badge>
-                                    {app.status === "applied" && (
-                                      <Button size="sm" onClick={() => handleShortlistApplication(app.id)}>
-                                        Shortlist
-                                      </Button>
-                                    )}
-                                  </div>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>{job.title}</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4 mt-4">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <p className="text-muted-foreground">Company</p>
-                                <p className="font-medium">{job.clients?.company_name}</p>
-                              </div>
-                              <div>
-                                <p className="text-muted-foreground">Service Model</p>
-                                <p className="font-medium">{SERVICE_MODEL_LABELS[job.service_model] || "N/A"}</p>
-                              </div>
-                              <div>
-                                <p className="text-muted-foreground">Work Mode</p>
-                                <p className="font-medium">{job.work_mode || "N/A"}</p>
-                              </div>
-                              <div>
-                                <p className="text-muted-foreground">Location</p>
-                                <p className="font-medium">{job.location || "N/A"}</p>
-                              </div>
-                              <div>
-                                <p className="text-muted-foreground">Budget</p>
-                                <p className="font-medium">
-                                  {job.budget_min && job.budget_max
-                                    ? `${getCurrencySymbol(job.preferred_currency || "USD")}${job.budget_min} - ${getCurrencySymbol(job.preferred_currency || "USD")}${job.budget_max} (${job.salary_type || "hourly"})`
-                                    : "N/A"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-muted-foreground">Experience Required</p>
-                                <p className="font-medium">{job.experience_required ? `${job.experience_required}+ years` : "N/A"}</p>
-                              </div>
-                            </div>
-                            {job.responsibilities && (
-                              <div>
-                                <p className="text-muted-foreground text-sm mb-1">Responsibilities</p>
-                                <p className="text-sm">{job.responsibilities}</p>
-                              </div>
-                            )}
-                            {job.special_notes && (
-                              <div>
-                                <p className="text-muted-foreground text-sm mb-1">Special Notes</p>
-                                <p className="text-sm">{job.special_notes}</p>
-                              </div>
-                            )}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
+                    {job.status === "submitted" && (
+                      <div className="flex gap-2">
+                        <Button size="sm" className="bg-success hover:bg-success/90" onClick={() => handleApproveJob(job)}>
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Approve
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => openRejectDialog(job)}>
+                          <XCircle className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -439,19 +408,367 @@ const AdminJobs = () => {
                 placeholder="Please provide a clear reason for rejection..."
                 rows={4}
               />
-              <p className="text-xs text-muted-foreground">
-                This reason will be sent to the client in a notification.
-              </p>
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
-                Cancel
-              </Button>
+              <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
               <Button variant="destructive" onClick={handleRejectJob} disabled={rejecting || !rejectionReason.trim()}>
                 {rejecting ? "Rejecting..." : "Reject Job"}
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Job Detail Dialog */}
+      <Dialog open={jobDetailOpen} onOpenChange={setJobDetailOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              {selectedJob?.title}
+              {selectedJob && getStatusBadge(selectedJob.status)}
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedJob && (
+            <Tabs defaultValue="details" className="mt-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="details">Job Details</TabsTrigger>
+                <TabsTrigger value="applications" className="gap-1">
+                  <Users className="h-4 w-4" />
+                  Applications ({applications.length})
+                </TabsTrigger>
+                <TabsTrigger value="browse" className="gap-1">
+                  <UserPlus className="h-4 w-4" />
+                  Browse Talents
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="details" className="space-y-4 mt-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Company</p>
+                    <p className="font-medium">{selectedJob.clients?.company_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Service Model</p>
+                    <p className="font-medium">{SERVICE_MODEL_LABELS[selectedJob.service_model] || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Work Mode</p>
+                    <p className="font-medium">{selectedJob.work_mode || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Location</p>
+                    <p className="font-medium">{selectedJob.location || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Budget</p>
+                    <p className="font-medium">
+                      {selectedJob.budget_min && selectedJob.budget_max
+                        ? `${getCurrencySymbol(selectedJob.preferred_currency || "USD")}${selectedJob.budget_min} - ${getCurrencySymbol(selectedJob.preferred_currency || "USD")}${selectedJob.budget_max} (${selectedJob.salary_type || "hourly"})`
+                        : "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Experience Required</p>
+                    <p className="font-medium">{selectedJob.experience_required ? `${selectedJob.experience_required}+ years` : "N/A"}</p>
+                  </div>
+                </div>
+                {selectedJob.responsibilities && (
+                  <div>
+                    <p className="text-muted-foreground text-sm mb-1">Responsibilities</p>
+                    <p className="text-sm">{selectedJob.responsibilities}</p>
+                  </div>
+                )}
+                {selectedJob.required_skills && selectedJob.required_skills.length > 0 && (
+                  <div>
+                    <p className="text-muted-foreground text-sm mb-2">Required Skills</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedJob.required_skills.map((skill: string) => (
+                        <Badge key={skill} variant="secondary">{skill}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="applications" className="space-y-4 mt-4">
+                {applications.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="h-12 w-12 mx-auto mb-3 opacity-40" />
+                    <p>No applications yet</p>
+                  </div>
+                ) : (
+                  applications.map((app) => (
+                    <Card key={app.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div 
+                            className="flex items-center gap-3 cursor-pointer hover:opacity-80"
+                            onClick={() => app.talents && handleViewTalentProfile(app.talents)}
+                          >
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-sm font-semibold text-primary">
+                                {app.talents?.first_name?.charAt(0)}{app.talents?.last_name?.charAt(0)}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="font-medium">{app.talents?.first_name} {app.talents?.last_name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {app.talents?.talent_id} • {ROLE_LABELS[app.talents?.primary_role] || app.talents?.primary_role}
+                              </p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                {app.talents?.country && <span>{app.talents.country}</span>}
+                                {app.talents?.years_of_experience && <span>• {app.talents.years_of_experience} yrs exp</span>}
+                                <Badge variant={app.talents?.vetting_status === "fully_vetted" ? "default" : "outline"} className="text-xs">
+                                  {app.talents?.vetting_status}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className={
+                              app.status === "shortlisted" ? "bg-success/10 text-success" :
+                              app.status === "rejected" ? "bg-destructive/10 text-destructive" :
+                              app.status === "interview_scheduled" ? "bg-primary/10 text-primary" :
+                              "bg-warning/10 text-warning"
+                            }>
+                              {app.status}
+                            </Badge>
+                            {app.status === "applied" && (
+                              <Button size="sm" onClick={() => handleShortlistApplication(app.id)}>
+                                Shortlist
+                              </Button>
+                            )}
+                            {app.status === "shortlisted" && (
+                              <Button size="sm" variant="outline" onClick={() => handleRequestInterview(app.id, `${app.talents?.first_name}`)}>
+                                <Send className="h-4 w-4 mr-1" />
+                                Interview
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                        {app.cover_letter && (
+                          <div className="mt-3 p-3 bg-muted/50 rounded-lg">
+                            <p className="text-xs text-muted-foreground mb-1">Cover Letter:</p>
+                            <p className="text-sm">{app.cover_letter}</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </TabsContent>
+
+              <TabsContent value="browse" className="space-y-4 mt-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search talents by name, ID, or role..."
+                    value={talentSearchQuery}
+                    onChange={(e) => setTalentSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                  {filteredTalentsForJob.map((talent) => (
+                    <Card key={talent.id} className="hover:shadow-sm transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div 
+                            className="flex items-center gap-3 cursor-pointer hover:opacity-80"
+                            onClick={() => handleViewTalentProfile(talent)}
+                          >
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-sm font-semibold text-primary">
+                                {talent.first_name?.charAt(0)}{talent.last_name?.charAt(0)}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="font-medium">{talent.first_name} {talent.last_name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {talent.talent_id} • {ROLE_LABELS[talent.primary_role] || talent.primary_role}
+                              </p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                {talent.country && <span>{talent.country}</span>}
+                                {talent.years_of_experience && <span>• {talent.years_of_experience} yrs</span>}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleViewTalentProfile(talent)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Profile
+                            </Button>
+                            <Button 
+                              size="sm"
+                              onClick={() => handleInviteTalentToJob(talent.id, `${talent.first_name} ${talent.last_name}`)}
+                            >
+                              <UserPlus className="h-4 w-4 mr-1" />
+                              Invite
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Talent Profile Dialog */}
+      <Dialog open={talentProfileOpen} onOpenChange={setTalentProfileOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-lg font-semibold text-primary">
+                  {selectedTalent?.first_name?.charAt(0)}{selectedTalent?.last_name?.charAt(0)}
+                </span>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">{selectedTalent?.first_name} {selectedTalent?.last_name}</h2>
+                <p className="text-sm text-muted-foreground font-normal">{selectedTalent?.talent_id}</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          {loadingTalent ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : talentDetails && (
+            <Tabs defaultValue="overview" className="mt-4">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="experience">Experience</TabsTrigger>
+                <TabsTrigger value="education">Education</TabsTrigger>
+                <TabsTrigger value="certs">Certifications</TabsTrigger>
+                <TabsTrigger value="vetting">Vetting Notes</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview" className="space-y-4 mt-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    <span><strong>Role:</strong> {ROLE_LABELS[talentDetails.primary_role] || talentDetails.primary_role}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span><strong>Experience:</strong> {talentDetails.years_of_experience || 0} years</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span><strong>Location:</strong> {talentDetails.country || "N/A"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <span><strong>Timezone:</strong> {talentDetails.timezone || "N/A"}</span>
+                  </div>
+                </div>
+                {talentDetails.secondary_skills?.length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-2">Skills</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {talentDetails.secondary_skills.map((skill: string) => (
+                        <Badge key={skill} variant="secondary">{skill}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="experience" className="space-y-4 mt-4">
+                {talentDetails.work_history?.length > 0 ? (
+                  talentDetails.work_history.map((work: any) => (
+                    <Card key={work.id}>
+                      <CardContent className="pt-4">
+                        <h4 className="font-medium">{work.role_title}</h4>
+                        <p className="text-sm text-primary">{work.company_name}</p>
+                        <Badge variant="outline" className="text-xs mt-1">
+                          {work.is_current ? "Current" : `${work.start_date?.slice(0, 7)} - ${work.end_date?.slice(0, 7) || "Present"}`}
+                        </Badge>
+                        {work.role_description && <p className="text-sm text-muted-foreground mt-2">{work.role_description}</p>}
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : <p className="text-muted-foreground text-center py-8">No work history</p>}
+              </TabsContent>
+
+              <TabsContent value="education" className="space-y-4 mt-4">
+                {talentDetails.education?.length > 0 ? (
+                  talentDetails.education.map((edu: any) => (
+                    <Card key={edu.id}>
+                      <CardContent className="pt-4 flex items-start gap-3">
+                        <GraduationCap className="h-5 w-5 text-primary mt-1" />
+                        <div>
+                          <h4 className="font-medium">{edu.institution_name}</h4>
+                          <p className="text-sm text-muted-foreground">{edu.education_level} {edu.field_of_study ? `in ${edu.field_of_study}` : ""}</p>
+                          <p className="text-xs text-muted-foreground">{edu.start_year} - {edu.is_current ? "Present" : edu.end_year}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : <p className="text-muted-foreground text-center py-8">No education records</p>}
+              </TabsContent>
+
+              <TabsContent value="certs" className="space-y-4 mt-4">
+                {talentDetails.certifications?.length > 0 ? (
+                  talentDetails.certifications.map((cert: any) => (
+                    <Card key={cert.id}>
+                      <CardContent className="pt-4 flex items-start gap-3">
+                        <Award className="h-5 w-5 text-primary mt-1" />
+                        <div>
+                          <h4 className="font-medium">{cert.certification_name}</h4>
+                          <p className="text-sm text-muted-foreground">{cert.issuing_organization}</p>
+                          {cert.year_obtained && <p className="text-xs text-muted-foreground">Obtained: {cert.year_obtained}</p>}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : <p className="text-muted-foreground text-center py-8">No certifications</p>}
+              </TabsContent>
+
+              <TabsContent value="vetting" className="space-y-4 mt-4">
+                {talentDetails.vetting?.length > 0 ? (
+                  talentDetails.vetting.map((v: any) => (
+                    <Card key={v.id}>
+                      <CardContent className="pt-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium">Level {v.level}: {v.level_name}</h4>
+                          <Badge className={
+                            v.status === "approved" ? "bg-success/10 text-success" :
+                            v.status === "rejected" ? "bg-destructive/10 text-destructive" :
+                            "bg-warning/10 text-warning"
+                          }>
+                            {v.status}
+                          </Badge>
+                        </div>
+                        {v.admin_notes && (
+                          <div className="p-3 bg-muted/50 rounded-lg">
+                            <p className="text-xs text-muted-foreground mb-1">Admin Notes:</p>
+                            <p className="text-sm">{v.admin_notes}</p>
+                          </div>
+                        )}
+                        {v.reviewed_at && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Reviewed: {new Date(v.reviewed_at).toLocaleDateString()}
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : <p className="text-muted-foreground text-center py-8">No vetting records</p>}
+              </TabsContent>
+            </Tabs>
+          )}
         </DialogContent>
       </Dialog>
     </div>
