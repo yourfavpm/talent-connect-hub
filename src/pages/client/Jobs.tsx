@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,11 +30,14 @@ import {
   MapPin,
   DollarSign,
   Eye,
-  MoreVertical,
   Globe,
   Tag,
   X,
   AlertCircle,
+  Users,
+  Send,
+  FileText,
+  CheckCircle2,
 } from "lucide-react";
 
 const SERVICE_MODELS = [
@@ -73,12 +77,15 @@ const Jobs = () => {
   const [submitting, setSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [skillInput, setSkillInput] = useState("");
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [jobDetailsOpen, setJobDetailsOpen] = useState(false);
+  const [shortlistedTalents, setShortlistedTalents] = useState<any[]>([]);
+  const [loadingShortlist, setLoadingShortlist] = useState(false);
   
   const [formData, setFormData] = useState({
     title: "",
     role_needed: "",
     service_model: "",
-    engagement_type: "",
     work_mode: "",
     location: "",
     preferred_currency: "USD",
@@ -101,7 +108,6 @@ const Jobs = () => {
 
   const fetchClientAndJobs = async () => {
     try {
-      // Get client record
       const { data: clientData } = await supabase
         .from("clients")
         .select("id")
@@ -111,7 +117,6 @@ const Jobs = () => {
       if (clientData) {
         setClientId(clientData.id);
 
-        // Fetch jobs for this client
         const { data: jobsData } = await supabase
           .from("jobs")
           .select("*")
@@ -125,6 +130,65 @@ const Jobs = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchShortlistedTalents = async (jobId: string) => {
+    setLoadingShortlist(true);
+    try {
+      const { data } = await supabase
+        .from("job_applications")
+        .select(`
+          *,
+          talents(id, first_name, last_name, talent_id, primary_role, country, years_of_experience, vetting_status)
+        `)
+        .eq("job_id", jobId)
+        .eq("status", "shortlisted");
+
+      setShortlistedTalents(data || []);
+    } catch (error) {
+      console.error("Error fetching shortlisted talents:", error);
+    } finally {
+      setLoadingShortlist(false);
+    }
+  };
+
+  const handleViewJobDetails = (job: any) => {
+    setSelectedJob(job);
+    if (job.status === "published") {
+      fetchShortlistedTalents(job.id);
+    }
+    setJobDetailsOpen(true);
+  };
+
+  const handleRequestInterview = async (applicationId: string, talentName: string) => {
+    try {
+      await supabase
+        .from("job_applications")
+        .update({ status: "interview_requested" })
+        .eq("id", applicationId);
+
+      toast({
+        title: "Interview Requested",
+        description: `Interview request sent for ${talentName}. The admin will coordinate.`,
+      });
+
+      if (selectedJob) {
+        fetchShortlistedTalents(selectedJob.id);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleGenerateOffer = async (application: any) => {
+    toast({
+      title: "Offer Generation",
+      description: `Offer request for ${application.talents?.first_name} ${application.talents?.last_name} has been sent to admin for processing.`,
+    });
   };
 
   const handleAddSkill = () => {
@@ -162,7 +226,6 @@ const Jobs = () => {
         title: formData.title,
         role_needed: formData.role_needed,
         service_model: formData.service_model,
-        engagement_type: formData.engagement_type as "full_time" | "part_time" | null,
         work_mode: formData.work_mode,
         location: formData.location,
         preferred_currency: formData.preferred_currency,
@@ -185,7 +248,6 @@ const Jobs = () => {
         title: "",
         role_needed: "",
         service_model: "",
-        engagement_type: "",
         work_mode: "",
         location: "",
         preferred_currency: "USD",
@@ -307,40 +369,23 @@ const Jobs = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="service_model">Service Model *</Label>
-                    <Select
-                      value={formData.service_model}
-                      onValueChange={(value) => setFormData({ ...formData, service_model: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select service model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SERVICE_MODELS.map((model) => (
-                          <SelectItem key={model.value} value={model.value}>
-                            {model.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="engagement_type">Engagement Type *</Label>
-                    <Select
-                      value={formData.engagement_type}
-                      onValueChange={(value) => setFormData({ ...formData, engagement_type: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="full_time">Full-time</SelectItem>
-                        <SelectItem value="part_time">Part-time</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="service_model">Service Model *</Label>
+                  <Select
+                    value={formData.service_model}
+                    onValueChange={(value) => setFormData({ ...formData, service_model: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select service model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SERVICE_MODELS.map((model) => (
+                        <SelectItem key={model.value} value={model.value}>
+                          {model.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -607,8 +652,9 @@ const Jobs = () => {
               {openJobs.map((job, index) => (
                 <div
                   key={job.id}
-                  className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow animate-slide-up"
+                  className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow animate-slide-up cursor-pointer"
                   style={{ animationDelay: `${index * 0.05}s` }}
+                  onClick={() => handleViewJobDetails(job)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -617,6 +663,12 @@ const Jobs = () => {
                           {job.title}
                         </h3>
                         {getStatusBadge(job.status)}
+                        {job.status === "published" && (
+                          <Badge variant="outline" className="gap-1">
+                            <Users className="h-3 w-3" />
+                            View Candidates
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-3">
                         {job.role_needed && (
@@ -666,13 +718,6 @@ const Jobs = () => {
                           )}
                         </div>
                       )}
-                      {job.status === "closed" && job.rejection_reason && (
-                        <div className="mt-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                          <p className="text-sm text-destructive">
-                            <strong>Rejection Reason:</strong> {job.rejection_reason}
-                          </p>
-                        </div>
-                      )}
                     </div>
                     <div className="text-right">
                       <span className="text-xs text-muted-foreground">
@@ -702,7 +747,8 @@ const Jobs = () => {
               {closedJobs.map((job) => (
                 <div
                   key={job.id}
-                  className="bg-card rounded-xl border border-border p-6 opacity-70"
+                  className="bg-card rounded-xl border border-border p-6 opacity-70 cursor-pointer hover:opacity-100 transition-opacity"
+                  onClick={() => handleViewJobDetails(job)}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="font-semibold text-foreground">{job.title}</h3>
@@ -724,6 +770,158 @@ const Jobs = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Job Details Dialog */}
+      <Dialog open={jobDetailsOpen} onOpenChange={setJobDetailsOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              {selectedJob?.title}
+              {selectedJob && getStatusBadge(selectedJob.status)}
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedJob && (
+            <Tabs defaultValue="details" className="mt-4">
+              <TabsList>
+                <TabsTrigger value="details">Job Details</TabsTrigger>
+                {selectedJob.status === "published" && (
+                  <TabsTrigger value="candidates" className="gap-1">
+                    <Users className="h-4 w-4" />
+                    Shortlisted Candidates
+                  </TabsTrigger>
+                )}
+              </TabsList>
+
+              <TabsContent value="details" className="space-y-4 mt-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Role Category</p>
+                    <p className="font-medium">{selectedJob.role_needed?.replace("_", " ")}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Service Model</p>
+                    <p className="font-medium">
+                      {SERVICE_MODELS.find(m => m.value === selectedJob.service_model)?.label || "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Work Mode</p>
+                    <p className="font-medium">{selectedJob.work_mode || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Location</p>
+                    <p className="font-medium">{selectedJob.location || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Budget</p>
+                    <p className="font-medium">
+                      {selectedJob.budget_min && selectedJob.budget_max
+                        ? `${getCurrencySymbol(selectedJob.preferred_currency || "USD")}${selectedJob.budget_min} - ${getCurrencySymbol(selectedJob.preferred_currency || "USD")}${selectedJob.budget_max} (${selectedJob.salary_type || "hourly"})`
+                        : "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Experience Required</p>
+                    <p className="font-medium">{selectedJob.experience_required ? `${selectedJob.experience_required}+ years` : "N/A"}</p>
+                  </div>
+                </div>
+                {selectedJob.responsibilities && (
+                  <div>
+                    <p className="text-muted-foreground text-sm mb-1">Responsibilities</p>
+                    <p className="text-sm">{selectedJob.responsibilities}</p>
+                  </div>
+                )}
+                {selectedJob.required_skills && selectedJob.required_skills.length > 0 && (
+                  <div>
+                    <p className="text-muted-foreground text-sm mb-2">Required Skills</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedJob.required_skills.map((skill: string) => (
+                        <Badge key={skill} variant="secondary">{skill}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+
+              {selectedJob.status === "published" && (
+                <TabsContent value="candidates" className="space-y-4 mt-4">
+                  {loadingShortlist ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="w-6 h-6 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  ) : shortlistedTalents.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Users className="h-12 w-12 mx-auto mb-3 opacity-40" />
+                      <p>No shortlisted candidates yet</p>
+                      <p className="text-sm">Admin will shortlist talents who apply to this job.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {shortlistedTalents.map((app) => (
+                        <Card key={app.id}>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <span className="text-sm font-semibold text-primary">
+                                    {app.talents?.first_name?.charAt(0)}{app.talents?.last_name?.charAt(0)}
+                                  </span>
+                                </div>
+                                <div>
+                                  <p className="font-medium">
+                                    {app.talents?.first_name} {app.talents?.last_name}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {app.talents?.talent_id} • {app.talents?.primary_role?.replace("_", " ")}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                                    {app.talents?.country && <span>{app.talents.country}</span>}
+                                    {app.talents?.years_of_experience && (
+                                      <span>• {app.talents.years_of_experience} years exp</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge className="bg-success/10 text-success">
+                                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                                  Shortlisted
+                                </Badge>
+                                {app.status === "interview_requested" ? (
+                                  <Badge variant="outline">Interview Requested</Badge>
+                                ) : (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleRequestInterview(app.id, `${app.talents?.first_name} ${app.talents?.last_name}`)}
+                                    >
+                                      <Send className="h-4 w-4 mr-1" />
+                                      Interview
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleGenerateOffer(app)}
+                                    >
+                                      <FileText className="h-4 w-4 mr-1" />
+                                      Generate Offer
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+              )}
+            </Tabs>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
