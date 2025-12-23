@@ -21,6 +21,11 @@ import TalentJobs from "./pages/talent/Jobs";
 import TalentTeam from "./pages/talent/Team";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
+import AdminTalents from "./pages/admin/Talents";
+import AdminClients from "./pages/admin/Clients";
+import AdminJobs from "./pages/admin/Jobs";
+import AdminOffers from "./pages/admin/Offers";
+import AdminContracts from "./pages/admin/Contracts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,7 +38,6 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Redirect root to client login */}
             <Route path="/" element={<Navigate to="/auth/login?portal=client" replace />} />
             
             {/* Auth Routes */}
@@ -65,6 +69,11 @@ const App = () => (
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="talents" element={<AdminTalents />} />
+              <Route path="clients" element={<AdminClients />} />
+              <Route path="jobs" element={<AdminJobs />} />
+              <Route path="offers" element={<AdminOffers />} />
+              <Route path="contracts" element={<AdminContracts />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
