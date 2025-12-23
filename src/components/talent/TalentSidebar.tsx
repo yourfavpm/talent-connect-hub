@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/hooks/useAuth";
+import NotificationBell from "@/components/NotificationBell";
 
 const TalentSidebar = () => {
   const location = useLocation();
@@ -35,8 +36,9 @@ const TalentSidebar = () => {
 
   return (
     <aside className="w-64 min-h-screen bg-sidebar text-sidebar-foreground flex flex-col">
-      <div className="p-6">
+      <div className="p-6 flex items-center justify-between">
         <Logo variant="light" />
+        <NotificationBell variant="light" />
       </div>
 
       <nav className="flex-1 px-4 space-y-1">
