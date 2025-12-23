@@ -6,7 +6,7 @@ import StatCard from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import OnboardingBanner from "@/components/OnboardingBanner";
 import { Briefcase, Clock, FileText, Receipt, CheckCircle, AlertCircle, Timer, ArrowRight } from "lucide-react";
 
 const TalentDashboard = () => {
@@ -79,25 +79,7 @@ const TalentDashboard = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Onboarding Incomplete Banner */}
-      {talent && !talent.onboarding_completed && (
-        <Alert className="border-warning/50 bg-warning/5">
-          <AlertCircle className="h-5 w-5 text-warning" />
-          <AlertTitle className="text-warning">Complete Your Profile</AlertTitle>
-          <AlertDescription className="flex items-center justify-between">
-            <span>
-              Complete your onboarding to get vetted and matched to jobs. Your profile is currently incomplete.
-            </span>
-            <Button 
-              size="sm" 
-              onClick={() => navigate("/talent/onboarding")}
-              className="ml-4"
-            >
-              Complete Onboarding
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
+      {talent && !talent.onboarding_completed && <OnboardingBanner portalType="talent" />}
 
       <div className="flex items-start justify-between">
         <div>
