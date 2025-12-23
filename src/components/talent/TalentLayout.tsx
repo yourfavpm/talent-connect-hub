@@ -4,7 +4,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 
 const TalentLayout = () => {
   return (
-    <ProtectedRoute portalType="talent">
+    <ProtectedRoute portalType="talent" allowedRoles={["talent"]}>
       <div className="flex min-h-screen bg-background">
         <TalentSidebar />
         <main className="flex-1 p-8 overflow-auto">
