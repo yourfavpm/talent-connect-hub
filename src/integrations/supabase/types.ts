@@ -344,11 +344,17 @@ export type Database = {
           engagement_type:
             | Database["public"]["Enums"]["availability_type"]
             | null
+          experience_required: number | null
           id: string
+          location: string | null
+          preferred_currency: string | null
           published_at: string | null
+          rejection_reason: string | null
           required_skills: string[] | null
           responsibilities: string | null
           role_needed: string
+          salary_type: string | null
+          service_model: string | null
           special_notes: string | null
           start_date: string | null
           status: Database["public"]["Enums"]["job_status"] | null
@@ -356,6 +362,7 @@ export type Database = {
           updated_at: string | null
           vetting_level_required: number | null
           weekly_hours: number | null
+          work_mode: string | null
         }
         Insert: {
           admin_notes?: string | null
@@ -367,11 +374,17 @@ export type Database = {
           engagement_type?:
             | Database["public"]["Enums"]["availability_type"]
             | null
+          experience_required?: number | null
           id?: string
+          location?: string | null
+          preferred_currency?: string | null
           published_at?: string | null
+          rejection_reason?: string | null
           required_skills?: string[] | null
           responsibilities?: string | null
           role_needed: string
+          salary_type?: string | null
+          service_model?: string | null
           special_notes?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["job_status"] | null
@@ -379,6 +392,7 @@ export type Database = {
           updated_at?: string | null
           vetting_level_required?: number | null
           weekly_hours?: number | null
+          work_mode?: string | null
         }
         Update: {
           admin_notes?: string | null
@@ -390,11 +404,17 @@ export type Database = {
           engagement_type?:
             | Database["public"]["Enums"]["availability_type"]
             | null
+          experience_required?: number | null
           id?: string
+          location?: string | null
+          preferred_currency?: string | null
           published_at?: string | null
+          rejection_reason?: string | null
           required_skills?: string[] | null
           responsibilities?: string | null
           role_needed?: string
+          salary_type?: string | null
+          service_model?: string | null
           special_notes?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["job_status"] | null
@@ -402,6 +422,7 @@ export type Database = {
           updated_at?: string | null
           vetting_level_required?: number | null
           weekly_hours?: number | null
+          work_mode?: string | null
         }
         Relationships: [
           {

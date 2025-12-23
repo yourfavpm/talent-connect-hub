@@ -76,11 +76,26 @@ const TalentDashboard = () => {
     );
   }
 
+  // Calculate onboarding progress
+  const calculateProgress = () => {
+    if (!talent) return 0;
+    const totalSteps = 8;
+    const currentStep = talent.onboarding_step || 1;
+    if (talent.onboarding_completed) return 100;
+    return Math.round(((currentStep - 1) / totalSteps) * 100);
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Onboarding Incomplete Banner */}
-      {talent && !talent.onboarding_completed && <OnboardingBanner portalType="talent" />}
-
+      {talent && !talent.onboarding_completed && (
+        <OnboardingBanner 
+          portalType="talent" 
+          progress={calculateProgress()}
+          completedSteps={(talent?.onboarding_step || 1) - 1}
+          totalSteps={8}
+        />
+      )}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
