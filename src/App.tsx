@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
+import AdminSignup from "./pages/auth/AdminSignup";
 import ResetPassword from "./pages/auth/ResetPassword";
 import ClientLayout from "./components/client/ClientLayout";
 import ClientOnboarding from "./pages/client/Onboarding";
@@ -46,6 +47,7 @@ const App = () => (
             {/* Auth Routes */}
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/signup" element={<Signup />} />
+            <Route path="/auth/admin-signup" element={<AdminSignup />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
 
             {/* Client Portal */}
