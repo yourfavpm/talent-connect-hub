@@ -4,6 +4,7 @@ import StatCard from "@/components/ui/stat-card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import OnboardingBanner from "@/components/OnboardingBanner";
+import NotificationWidget from "@/components/NotificationWidget";
 import {
   Users,
   Briefcase,
@@ -108,7 +109,10 @@ const ClientDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Notifications */}
+        <NotificationWidget />
+
         {/* Recent Jobs */}
         <div className="bg-card rounded-xl border border-border p-6">
           <div className="flex items-center justify-between mb-4">

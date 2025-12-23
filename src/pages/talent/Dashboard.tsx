@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import OnboardingBanner from "@/components/OnboardingBanner";
+import NotificationWidget from "@/components/NotificationWidget";
 import { Briefcase, Clock, FileText, Receipt, CheckCircle, AlertCircle, Timer, ArrowRight } from "lucide-react";
 
 const TalentDashboard = () => {
@@ -135,54 +136,56 @@ const TalentDashboard = () => {
         ))}
       </div>
 
-      {/* Vetting Status Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-primary" />
-            Talent Clearance Framework (TCF) Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {vettingLevels.map((level) => (
-              <div
-                key={level.id}
-                className="flex items-center justify-between p-4 bg-muted/50 rounded-lg"
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      level.status === "approved"
-                        ? "bg-success/20 text-success"
-                        : level.status === "rejected"
-                        ? "bg-destructive/20 text-destructive"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {level.status === "approved" ? (
-                      <CheckCircle className="h-5 w-5" />
-                    ) : level.status === "rejected" ? (
-                      <AlertCircle className="h-5 w-5" />
-                    ) : (
-                      <Timer className="h-5 w-5" />
-                    )}
+      {/* Notifications Widget */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <NotificationWidget />
+        
+        {/* Vetting Status Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-primary" />
+              Talent Clearance Framework (TCF) Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 max-h-[280px] overflow-y-auto">
+              {vettingLevels.map((level) => (
+                <div
+                  key={level.id}
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        level.status === "approved"
+                          ? "bg-success/20 text-success"
+                          : level.status === "rejected"
+                          ? "bg-destructive/20 text-destructive"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {level.status === "approved" ? (
+                        <CheckCircle className="h-4 w-4" />
+                      ) : level.status === "rejected" ? (
+                        <AlertCircle className="h-4 w-4" />
+                      ) : (
+                        <Timer className="h-4 w-4" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">
+                        Level {level.level}: {level.level_name}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">
-                      Level {level.level}: {level.level_name}
-                    </p>
-                    {level.admin_notes && (
-                      <p className="text-sm text-muted-foreground">{level.admin_notes}</p>
-                    )}
-                  </div>
+                  {getVettingStatusBadge(level.status)}
                 </div>
-                {getVettingStatusBadge(level.status)}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Quick Actions */}
       <Card>

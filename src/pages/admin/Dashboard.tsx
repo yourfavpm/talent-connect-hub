@@ -4,6 +4,7 @@ import StatCard from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import NotificationWidget from "@/components/NotificationWidget";
 import { Users, Briefcase, FileText, UserCheck, Clock, DollarSign, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -120,7 +121,10 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Notifications & Actions Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <NotificationWidget />
+        
         {/* Pending Job Approvals */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
