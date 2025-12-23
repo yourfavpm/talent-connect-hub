@@ -126,45 +126,86 @@ const TalentOnboarding = () => {
     setLoading(true);
 
     try {
-      // Generate talent ID
-      const { data: talentIdData } = await supabase.rpc("generate_talent_id");
-      const talentId = talentIdData || `TAS-VA-${Date.now()}`;
-
-      // Insert talent record
-      const { data: talentData, error: talentError } = await supabase
+      // Check if talent record already exists
+      const { data: existingTalent } = await supabase
         .from("talents")
-        .insert({
-          user_id: user.id,
-          talent_id: talentId,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          country: formData.country,
-          timezone: formData.timezone,
-          preferred_working_hours: formData.preferredWorkingHours,
-          primary_role: formData.primaryRole,
-          secondary_skills: formData.secondarySkills,
-          years_of_experience: parseInt(formData.yearsOfExperience) || 0,
-          tools_familiar_with: formData.toolsFamiliarWith,
-          languages_spoken: formData.languagesSpoken,
-          availability: formData.availability as "full_time" | "part_time" | null,
-          nda_agreed: formData.ndaAgreed,
-          terms_agreed: formData.termsAgreed,
-          onboarding_completed: true,
-          onboarding_step: 8,
-        })
-        .select()
-        .single();
+        .select("id, talent_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-      if (talentError) throw talentError;
+      let talentId = existingTalent?.talent_id;
+      let talentRecordId = existingTalent?.id;
+
+      if (existingTalent) {
+        // Update existing talent record
+        const { data: updatedTalent, error: updateError } = await supabase
+          .from("talents")
+          .update({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            country: formData.country,
+            timezone: formData.timezone,
+            preferred_working_hours: formData.preferredWorkingHours,
+            primary_role: formData.primaryRole,
+            secondary_skills: formData.secondarySkills,
+            years_of_experience: parseInt(formData.yearsOfExperience) || 0,
+            tools_familiar_with: formData.toolsFamiliarWith,
+            languages_spoken: formData.languagesSpoken,
+            availability: formData.availability as "full_time" | "part_time" | null,
+            nda_agreed: formData.ndaAgreed,
+            terms_agreed: formData.termsAgreed,
+            onboarding_completed: true,
+            onboarding_step: 8,
+          })
+          .eq("id", existingTalent.id)
+          .select()
+          .single();
+
+        if (updateError) throw updateError;
+        talentRecordId = updatedTalent.id;
+      } else {
+        // Generate new talent ID and insert
+        const { data: talentIdData } = await supabase.rpc("generate_talent_id");
+        talentId = talentIdData || `TAS-VA-${Date.now()}`;
+
+        const { data: newTalent, error: insertError } = await supabase
+          .from("talents")
+          .insert({
+            user_id: user.id,
+            talent_id: talentId,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            country: formData.country,
+            timezone: formData.timezone,
+            preferred_working_hours: formData.preferredWorkingHours,
+            primary_role: formData.primaryRole,
+            secondary_skills: formData.secondarySkills,
+            years_of_experience: parseInt(formData.yearsOfExperience) || 0,
+            tools_familiar_with: formData.toolsFamiliarWith,
+            languages_spoken: formData.languagesSpoken,
+            availability: formData.availability as "full_time" | "part_time" | null,
+            nda_agreed: formData.ndaAgreed,
+            terms_agreed: formData.termsAgreed,
+            onboarding_completed: true,
+            onboarding_step: 8,
+          })
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        talentRecordId = newTalent.id;
+      }
 
       // Insert work history
       if (workHistory.some((w) => w.companyName)) {
         const validWorkHistory = workHistory
           .filter((w) => w.companyName)
           .map((w) => ({
-            talent_id: talentData.id,
+            talent_id: talentRecordId,
             company_name: w.companyName,
             role_title: w.roleTitle,
             role_description: w.roleDescription,
@@ -180,7 +221,7 @@ const TalentOnboarding = () => {
         const validEducation = education
           .filter((e) => e.institutionName)
           .map((e) => ({
-            talent_id: talentData.id,
+            talent_id: talentRecordId,
             education_level: e.educationLevel as any,
             institution_name: e.institutionName,
             field_of_study: e.fieldOfStudy,
@@ -196,7 +237,7 @@ const TalentOnboarding = () => {
         const validCerts = certifications
           .filter((c) => c.certificationName)
           .map((c) => ({
-            talent_id: talentData.id,
+            talent_id: talentRecordId,
             certification_name: c.certificationName,
             issuing_organization: c.issuingOrganization,
             year_obtained: parseInt(c.yearObtained) || null,
@@ -211,7 +252,7 @@ const TalentOnboarding = () => {
         const validRefs = references
           .filter((r) => r.referenceName)
           .map((r) => ({
-            talent_id: talentData.id,
+            talent_id: talentRecordId,
             reference_name: r.referenceName,
             email: r.email,
             phone: r.phone,
