@@ -1,47 +1,40 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
-import { Search, UserCheck, AlertCircle, Clock, CheckCircle, XCircle, Eye } from "lucide-react";
+import { Search, UserCheck, Eye, CheckCircle, Clock, AlertCircle } from "lucide-react";
 
 const AdminTalents = () => {
-  const { toast } = useToast();
+  const navigate = useNavigate();
   const [talents, setTalents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedTalent, setSelectedTalent] = useState<any>(null);
-  const [vettingLevels, setVettingLevels] = useState<any[]>([]);
-  const [vettingNotes, setVettingNotes] = useState("");
+  const [onboardingFilter, setOnboardingFilter] = useState("all");
 
   useEffect(() => {
     fetchTalents();
-  }, [statusFilter]);
+  }, [statusFilter, onboardingFilter]);
 
   const fetchTalents = async () => {
     try {
       let query = supabase
         .from("talents")
-        .select(`
-          *,
-          talent_work_history(*),
-          talent_education(*),
-          talent_certifications(*),
-          talent_references(*)
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
         query = query.eq("vetting_status", statusFilter as "unvetted" | "partially_vetted" | "fully_vetted");
+      }
+
+      if (onboardingFilter === "complete") {
+        query = query.eq("onboarding_completed", true);
+      } else if (onboardingFilter === "incomplete") {
+        query = query.eq("onboarding_completed", false);
       }
 
       const { data, error } = await query;
@@ -51,48 +44,6 @@ const AdminTalents = () => {
       console.error("Error fetching talents:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchVettingLevels = async (talentId: string) => {
-    const { data } = await supabase
-      .from("talent_vetting")
-      .select("*")
-      .eq("talent_id", talentId)
-      .order("level", { ascending: true });
-    setVettingLevels(data || []);
-  };
-
-  const handleViewTalent = async (talent: any) => {
-    setSelectedTalent(talent);
-    await fetchVettingLevels(talent.id);
-  };
-
-  const handleUpdateVettingLevel = async (levelId: string, status: "pending" | "approved" | "rejected" | "needs_clarification") => {
-    try {
-      await supabase
-        .from("talent_vetting")
-        .update({
-          status,
-          admin_notes: vettingNotes,
-          reviewed_at: new Date().toISOString(),
-        })
-        .eq("id", levelId);
-
-      toast({
-        title: "Vetting Updated",
-        description: `Level status updated to ${status}`,
-      });
-
-      await fetchVettingLevels(selectedTalent.id);
-      setVettingNotes("");
-      fetchTalents();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
     }
   };
 
@@ -107,6 +58,20 @@ const AdminTalents = () => {
     }
   };
 
+  const getOnboardingBadge = (completed: boolean) => {
+    return completed ? (
+      <Badge variant="outline" className="border-success text-success">
+        <CheckCircle className="h-3 w-3 mr-1" />
+        Onboarding Complete
+      </Badge>
+    ) : (
+      <Badge variant="outline" className="border-warning text-warning">
+        <Clock className="h-3 w-3 mr-1" />
+        Onboarding Incomplete
+      </Badge>
+    );
+  };
+
   const filteredTalents = talents.filter(
     (talent) =>
       talent.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -114,6 +79,15 @@ const AdminTalents = () => {
       talent.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       talent.talent_id?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Group talents by status for quick stats
+  const stats = {
+    total: talents.length,
+    unvetted: talents.filter((t) => t.vetting_status === "unvetted").length,
+    partial: talents.filter((t) => t.vetting_status === "partially_vetted").length,
+    vetted: talents.filter((t) => t.vetting_status === "fully_vetted").length,
+    pendingOnboarding: talents.filter((t) => !t.onboarding_completed).length,
+  };
 
   if (loading) {
     return (
@@ -127,9 +101,44 @@ const AdminTalents = () => {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Talent Management</h1>
-        <p className="text-muted-foreground mt-1">Review and vet talent profiles using the TCF framework</p>
+        <p className="text-muted-foreground mt-1">Review, vet, and manage talent profiles</p>
       </div>
 
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setStatusFilter("all")}>
+          <CardContent className="p-4 text-center">
+            <p className="text-2xl font-bold">{stats.total}</p>
+            <p className="text-sm text-muted-foreground">Total Talents</p>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setStatusFilter("unvetted")}>
+          <CardContent className="p-4 text-center">
+            <p className="text-2xl font-bold text-muted-foreground">{stats.unvetted}</p>
+            <p className="text-sm text-muted-foreground">Unvetted</p>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setStatusFilter("partially_vetted")}>
+          <CardContent className="p-4 text-center">
+            <p className="text-2xl font-bold text-warning">{stats.partial}</p>
+            <p className="text-sm text-muted-foreground">Partially Vetted</p>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setStatusFilter("fully_vetted")}>
+          <CardContent className="p-4 text-center">
+            <p className="text-2xl font-bold text-success">{stats.vetted}</p>
+            <p className="text-sm text-muted-foreground">Fully Vetted</p>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:bg-warning/10 transition-colors" onClick={() => { setOnboardingFilter("incomplete"); setStatusFilter("all"); }}>
+          <CardContent className="p-4 text-center">
+            <p className="text-2xl font-bold text-warning">{stats.pendingOnboarding}</p>
+            <p className="text-sm text-muted-foreground">Pending Onboarding</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -141,8 +150,8 @@ const AdminTalents = () => {
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by status" />
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Vetting Status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
@@ -151,8 +160,19 @@ const AdminTalents = () => {
             <SelectItem value="fully_vetted">Fully Vetted</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={onboardingFilter} onValueChange={setOnboardingFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Onboarding Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Onboarding</SelectItem>
+            <SelectItem value="complete">Complete</SelectItem>
+            <SelectItem value="incomplete">Incomplete</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
+      {/* Talents List */}
       <div className="grid gap-4">
         {filteredTalents.length === 0 ? (
           <Card>
@@ -163,7 +183,11 @@ const AdminTalents = () => {
           </Card>
         ) : (
           filteredTalents.map((talent) => (
-            <Card key={talent.id} className="hover:shadow-md transition-shadow">
+            <Card
+              key={talent.id}
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => navigate(`/admin/talents/${talent.id}`)}
+            >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -172,11 +196,7 @@ const AdminTalents = () => {
                         {talent.first_name} {talent.last_name}
                       </h3>
                       {getStatusBadge(talent.vetting_status)}
-                      {talent.onboarding_completed ? (
-                        <Badge className="bg-success/10 text-success">Onboarding Complete</Badge>
-                      ) : (
-                        <Badge className="bg-warning/10 text-warning">Onboarding Incomplete</Badge>
-                      )}
+                      {getOnboardingBadge(talent.onboarding_completed)}
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
                       <div>
@@ -186,221 +206,16 @@ const AdminTalents = () => {
                         <span className="font-medium">Email:</span> {talent.email}
                       </div>
                       <div>
-                        <span className="font-medium">Role:</span> {talent.primary_role || "N/A"}
+                        <span className="font-medium">Role:</span> {talent.primary_role?.replace("_", " ") || "N/A"}
                       </div>
                       <div>
                         <span className="font-medium">Experience:</span> {talent.years_of_experience || 0} years
                       </div>
                     </div>
                   </div>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button onClick={() => handleViewTalent(talent)}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        Review
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>
-                          Talent Review: {selectedTalent?.first_name} {selectedTalent?.last_name}
-                        </DialogTitle>
-                      </DialogHeader>
-                      
-                      <Tabs defaultValue="profile" className="mt-4">
-                        <TabsList className="grid w-full grid-cols-4">
-                          <TabsTrigger value="profile">Profile</TabsTrigger>
-                          <TabsTrigger value="experience">Experience</TabsTrigger>
-                          <TabsTrigger value="education">Education</TabsTrigger>
-                          <TabsTrigger value="vetting">TCF Vetting</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="profile" className="space-y-4 mt-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label className="text-muted-foreground">Talent ID</Label>
-                              <p className="font-medium">{selectedTalent?.talent_id}</p>
-                            </div>
-                            <div>
-                              <Label className="text-muted-foreground">Email</Label>
-                              <p className="font-medium">{selectedTalent?.email}</p>
-                            </div>
-                            <div>
-                              <Label className="text-muted-foreground">Phone</Label>
-                              <p className="font-medium">{selectedTalent?.phone || "N/A"}</p>
-                            </div>
-                            <div>
-                              <Label className="text-muted-foreground">Country</Label>
-                              <p className="font-medium">{selectedTalent?.country || "N/A"}</p>
-                            </div>
-                            <div>
-                              <Label className="text-muted-foreground">Primary Role</Label>
-                              <p className="font-medium">{selectedTalent?.primary_role || "N/A"}</p>
-                            </div>
-                            <div>
-                              <Label className="text-muted-foreground">Availability</Label>
-                              <p className="font-medium">{selectedTalent?.availability || "N/A"}</p>
-                            </div>
-                          </div>
-                          <div>
-                            <Label className="text-muted-foreground">Skills</Label>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {selectedTalent?.secondary_skills?.map((skill: string) => (
-                                <Badge key={skill} variant="secondary">{skill}</Badge>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <Label className="text-muted-foreground">Tools</Label>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {selectedTalent?.tools_familiar_with?.map((tool: string) => (
-                                <Badge key={tool} variant="outline">{tool}</Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </TabsContent>
-
-                        <TabsContent value="experience" className="space-y-4 mt-4">
-                          {selectedTalent?.talent_work_history?.length === 0 ? (
-                            <p className="text-muted-foreground">No work history provided</p>
-                          ) : (
-                            selectedTalent?.talent_work_history?.map((work: any) => (
-                              <Card key={work.id}>
-                                <CardContent className="p-4">
-                                  <h4 className="font-medium">{work.role_title}</h4>
-                                  <p className="text-sm text-muted-foreground">{work.company_name}</p>
-                                  <p className="text-sm mt-2">{work.role_description}</p>
-                                </CardContent>
-                              </Card>
-                            ))
-                          )}
-                        </TabsContent>
-
-                        <TabsContent value="education" className="space-y-4 mt-4">
-                          <div className="space-y-4">
-                            <h4 className="font-medium">Education</h4>
-                            {selectedTalent?.talent_education?.length === 0 ? (
-                              <p className="text-muted-foreground">No education provided</p>
-                            ) : (
-                              selectedTalent?.talent_education?.map((edu: any) => (
-                                <Card key={edu.id}>
-                                  <CardContent className="p-4">
-                                    <p className="font-medium">{edu.institution_name}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                      {edu.field_of_study} - {edu.education_level}
-                                    </p>
-                                  </CardContent>
-                                </Card>
-                              ))
-                            )}
-                          </div>
-                          <div className="space-y-4">
-                            <h4 className="font-medium">Certifications</h4>
-                            {selectedTalent?.talent_certifications?.length === 0 ? (
-                              <p className="text-muted-foreground">No certifications provided</p>
-                            ) : (
-                              selectedTalent?.talent_certifications?.map((cert: any) => (
-                                <Card key={cert.id}>
-                                  <CardContent className="p-4">
-                                    <p className="font-medium">{cert.certification_name}</p>
-                                    <p className="text-sm text-muted-foreground">{cert.issuing_organization}</p>
-                                  </CardContent>
-                                </Card>
-                              ))
-                            )}
-                          </div>
-                        </TabsContent>
-
-                        <TabsContent value="vetting" className="space-y-4 mt-4">
-                          {/* Onboarding status check for vetting */}
-                          {!selectedTalent?.onboarding_completed && (
-                            <Alert className="border-warning/50 bg-warning/5">
-                              <AlertCircle className="h-5 w-5 text-warning" />
-                              <AlertTitle className="text-warning">Cannot Vet - Onboarding Incomplete</AlertTitle>
-                              <AlertDescription>
-                                This talent has not completed their onboarding. Vetting can only begin once they complete their profile with all required information.
-                              </AlertDescription>
-                            </Alert>
-                          )}
-
-                          <div className="space-y-4">
-                            {vettingLevels.map((level) => (
-                              <Card key={level.id} className={
-                                level.status === "approved" ? "border-success/50" :
-                                level.status === "rejected" ? "border-destructive/50" : ""
-                              }>
-                                <CardContent className="p-4">
-                                  <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                        level.status === "approved" ? "bg-success/20 text-success" :
-                                        level.status === "rejected" ? "bg-destructive/20 text-destructive" :
-                                        "bg-muted text-muted-foreground"
-                                      }`}>
-                                        {level.status === "approved" ? <CheckCircle className="h-5 w-5" /> :
-                                         level.status === "rejected" ? <XCircle className="h-5 w-5" /> :
-                                         <Clock className="h-5 w-5" />}
-                                      </div>
-                                      <div>
-                                        <p className="font-medium">Level {level.level}: {level.level_name}</p>
-                                        {level.admin_notes && (
-                                          <p className="text-sm text-muted-foreground">{level.admin_notes}</p>
-                                        )}
-                                      </div>
-                                    </div>
-                                    <Badge className={
-                                      level.status === "approved" ? "bg-success/10 text-success" :
-                                      level.status === "rejected" ? "bg-destructive/10 text-destructive" :
-                                      "bg-muted text-muted-foreground"
-                                    }>
-                                      {level.status}
-                                    </Badge>
-                                  </div>
-
-                                  {level.status === "pending" && selectedTalent?.onboarding_completed && (
-                                    <div className="space-y-3 pt-3 border-t">
-                                      <div className="space-y-2">
-                                        <Label>Admin Notes</Label>
-                                        <Textarea
-                                          value={vettingNotes}
-                                          onChange={(e) => setVettingNotes(e.target.value)}
-                                          placeholder="Add notes for this vetting level..."
-                                        />
-                                      </div>
-                                      <div className="flex gap-2">
-                                        <Button
-                                          variant="default"
-                                          className="bg-success hover:bg-success/90"
-                                          onClick={() => handleUpdateVettingLevel(level.id, "approved")}
-                                        >
-                                          <CheckCircle className="h-4 w-4 mr-2" />
-                                          Approve
-                                        </Button>
-                                        <Button
-                                          variant="destructive"
-                                          onClick={() => handleUpdateVettingLevel(level.id, "rejected")}
-                                        >
-                                          <XCircle className="h-4 w-4 mr-2" />
-                                          Reject
-                                        </Button>
-                                        <Button
-                                          variant="outline"
-                                          onClick={() => handleUpdateVettingLevel(level.id, "needs_clarification")}
-                                        >
-                                          <AlertCircle className="h-4 w-4 mr-2" />
-                                          Need Info
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        </TabsContent>
-                      </Tabs>
-                    </DialogContent>
-                  </Dialog>
+                  <Button variant="ghost" size="icon">
+                    <Eye className="h-5 w-5" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>

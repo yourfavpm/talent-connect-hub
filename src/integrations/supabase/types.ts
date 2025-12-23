@@ -915,6 +915,7 @@ export type Database = {
       }
       talents: {
         Row: {
+          assigned_manager: string | null
           availability: Database["public"]["Enums"]["availability_type"] | null
           bank_details: Json | null
           country: string | null
@@ -944,6 +945,7 @@ export type Database = {
           years_of_experience: number | null
         }
         Insert: {
+          assigned_manager?: string | null
           availability?: Database["public"]["Enums"]["availability_type"] | null
           bank_details?: Json | null
           country?: string | null
@@ -973,6 +975,7 @@ export type Database = {
           years_of_experience?: number | null
         }
         Update: {
+          assigned_manager?: string | null
           availability?: Database["public"]["Enums"]["availability_type"] | null
           bank_details?: Json | null
           country?: string | null

@@ -23,6 +23,7 @@ import TalentTeam from "./pages/talent/Team";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminTalents from "./pages/admin/Talents";
+import AdminTalentDetail from "./pages/admin/TalentDetail";
 import AdminClients from "./pages/admin/Clients";
 import AdminJobs from "./pages/admin/Jobs";
 import AdminOffers from "./pages/admin/Offers";
@@ -72,6 +73,7 @@ const App = () => (
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="talents" element={<AdminTalents />} />
+              <Route path="talents/:id" element={<AdminTalentDetail />} />
               <Route path="clients" element={<AdminClients />} />
               <Route path="jobs" element={<AdminJobs />} />
               <Route path="offers" element={<AdminOffers />} />
