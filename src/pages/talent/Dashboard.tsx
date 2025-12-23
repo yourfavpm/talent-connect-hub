@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import StatCard from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Briefcase, Clock, FileText, Receipt, CheckCircle, AlertCircle, Timer } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Briefcase, Clock, FileText, Receipt, CheckCircle, AlertCircle, Timer, ArrowRight } from "lucide-react";
 
 const TalentDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [talent, setTalent] = useState<any>(null);
   const [vettingLevels, setVettingLevels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,6 +78,27 @@ const TalentDashboard = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
+      {/* Onboarding Incomplete Banner */}
+      {talent && !talent.onboarding_completed && (
+        <Alert className="border-warning/50 bg-warning/5">
+          <AlertCircle className="h-5 w-5 text-warning" />
+          <AlertTitle className="text-warning">Complete Your Profile</AlertTitle>
+          <AlertDescription className="flex items-center justify-between">
+            <span>
+              Complete your onboarding to get vetted and matched to jobs. Your profile is currently incomplete.
+            </span>
+            <Button 
+              size="sm" 
+              onClick={() => navigate("/talent/onboarding")}
+              className="ml-4"
+            >
+              Complete Onboarding
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
@@ -83,21 +108,28 @@ const TalentDashboard = () => {
             Talent ID: <span className="font-mono font-medium">{talent?.talent_id}</span>
           </p>
         </div>
-        <Badge
-          className={
-            talent?.vetting_status === "fully_vetted"
-              ? "bg-success/10 text-success"
+        <div className="flex items-center gap-2">
+          {talent && !talent.onboarding_completed && (
+            <Badge className="bg-warning/10 text-warning">
+              Onboarding Incomplete
+            </Badge>
+          )}
+          <Badge
+            className={
+              talent?.vetting_status === "fully_vetted"
+                ? "bg-success/10 text-success"
+                : talent?.vetting_status === "partially_vetted"
+                ? "bg-warning/10 text-warning"
+                : "bg-muted text-muted-foreground"
+            }
+          >
+            {talent?.vetting_status === "fully_vetted"
+              ? "Fully Vetted"
               : talent?.vetting_status === "partially_vetted"
-              ? "bg-warning/10 text-warning"
-              : "bg-muted text-muted-foreground"
-          }
-        >
-          {talent?.vetting_status === "fully_vetted"
-            ? "Fully Vetted"
-            : talent?.vetting_status === "partially_vetted"
-            ? "Partially Vetted"
-            : "Pending Vetting"}
-        </Badge>
+              ? "Partially Vetted"
+              : "Pending Vetting"}
+          </Badge>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

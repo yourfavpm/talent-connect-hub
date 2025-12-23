@@ -81,6 +81,46 @@ const TalentOnboarding = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleSkipOnboarding = async () => {
+    if (!user) return;
+    setLoading(true);
+
+    try {
+      // Generate talent ID
+      const { data: talentIdData } = await supabase.rpc("generate_talent_id");
+      const talentId = talentIdData || `TAS-VA-${Date.now()}`;
+
+      // Create minimal talent record with incomplete onboarding
+      await supabase
+        .from("talents")
+        .insert({
+          user_id: user.id,
+          talent_id: talentId,
+          first_name: formData.firstName || user.user_metadata?.first_name || "User",
+          last_name: formData.lastName || user.user_metadata?.last_name || "",
+          email: formData.email || user.email || "",
+          onboarding_completed: false,
+          onboarding_step: currentStep,
+        });
+
+      toast({
+        title: "Onboarding Skipped",
+        description: "You can complete your profile anytime from your dashboard.",
+      });
+
+      navigate("/talent/dashboard");
+    } catch (error: any) {
+      console.error("Skip onboarding error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to skip onboarding",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!user) return;
     setLoading(true);
@@ -793,14 +833,24 @@ const TalentOnboarding = () => {
         </Card>
 
         <div className="flex justify-between mt-6">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
-            disabled={currentStep === 1}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Previous
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
+              disabled={currentStep === 1}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Previous
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleSkipOnboarding}
+              disabled={loading}
+              className="text-muted-foreground"
+            >
+              Skip for now
+            </Button>
+          </div>
 
           {currentStep < steps.length ? (
             <Button onClick={() => setCurrentStep((prev) => prev + 1)}>

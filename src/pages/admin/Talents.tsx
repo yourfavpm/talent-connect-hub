@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Search, UserCheck, AlertCircle, Clock, CheckCircle, XCircle, Eye } from "lucide-react";
 
@@ -171,6 +172,11 @@ const AdminTalents = () => {
                         {talent.first_name} {talent.last_name}
                       </h3>
                       {getStatusBadge(talent.vetting_status)}
+                      {talent.onboarding_completed ? (
+                        <Badge className="bg-success/10 text-success">Onboarding Complete</Badge>
+                      ) : (
+                        <Badge className="bg-warning/10 text-warning">Onboarding Incomplete</Badge>
+                      )}
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
                       <div>
@@ -306,6 +312,17 @@ const AdminTalents = () => {
                         </TabsContent>
 
                         <TabsContent value="vetting" className="space-y-4 mt-4">
+                          {/* Onboarding status check for vetting */}
+                          {!selectedTalent?.onboarding_completed && (
+                            <Alert className="border-warning/50 bg-warning/5">
+                              <AlertCircle className="h-5 w-5 text-warning" />
+                              <AlertTitle className="text-warning">Cannot Vet - Onboarding Incomplete</AlertTitle>
+                              <AlertDescription>
+                                This talent has not completed their onboarding. Vetting can only begin once they complete their profile with all required information.
+                              </AlertDescription>
+                            </Alert>
+                          )}
+
                           <div className="space-y-4">
                             {vettingLevels.map((level) => (
                               <Card key={level.id} className={
@@ -340,7 +357,7 @@ const AdminTalents = () => {
                                     </Badge>
                                   </div>
 
-                                  {level.status === "pending" && (
+                                  {level.status === "pending" && selectedTalent?.onboarding_completed && (
                                     <div className="space-y-3 pt-3 border-t">
                                       <div className="space-y-2">
                                         <Label>Admin Notes</Label>
