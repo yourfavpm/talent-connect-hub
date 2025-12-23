@@ -8,10 +8,11 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, allowedRoles, portalType }: ProtectedRouteProps) => {
-  const { user, loading, userRole } = useAuth();
+  const { user, loading, userRole, roleLoading } = useAuth();
   const location = useLocation();
 
-  if (loading) {
+  // Show loading while auth or role is being fetched
+  if (loading || (user && roleLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
