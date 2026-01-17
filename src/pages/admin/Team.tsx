@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Shield, Search, UserPlus } from "lucide-react";
+import { Plus, Trash2, Shield, Search, UserPlus, Pencil } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 interface AdminUser {
@@ -105,6 +105,48 @@ const AdminTeam = () => {
         }
     };
 
+    // Role Editing State
+    const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
+    const [newRole, setNewRole] = useState("");
+    const [newFirstName, setNewFirstName] = useState("");
+    const [newLastName, setNewLastName] = useState("");
+
+    const handleUpdateRole = async () => {
+        if (!editingUser || !newRole) return;
+        setLoading(true);
+        try {
+            // 1. Update Role
+            const { error: roleError } = await supabase
+                .from("user_roles")
+                .update({ role: newRole as any })
+                .eq("user_id", editingUser.user_id);
+
+            if (roleError) throw roleError;
+
+            // 2. Update Profile (Name)
+            if (newFirstName !== editingUser.profile?.first_name || newLastName !== editingUser.profile?.last_name) {
+                const { error: profileError } = await supabase
+                    .from("profiles")
+                    .update({
+                        first_name: newFirstName,
+                        last_name: newLastName
+                    })
+                    .eq("user_id", editingUser.user_id);
+
+                if (profileError) throw profileError;
+            }
+
+            toast({ title: "Success", description: "Admin updated successfully." });
+            setEditingUser(null);
+            fetchAdmins();
+        } catch (error: any) {
+            console.error("Error updating admin:", error);
+            toast({ title: "Error", description: error.message, variant: "destructive" });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Kept for backward compatibility if needed, but UI now uses Create User. 
     // ... handlesearchUser etc could be removed if we are fully switching.
     // For now I replaced the Dialog UI so these are unused but harmless unless I remove them.
@@ -149,7 +191,7 @@ const AdminTeam = () => {
                                     Add Admin
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-[425px]" open={inviteOpen} onOpenChange={setInviteOpen}>
+                            <DialogContent className="sm:max-w-[425px]">
                                 <DialogHeader>
                                     <DialogTitle>Add New Admin</DialogTitle>
                                     <DialogDescription>
@@ -224,6 +266,62 @@ const AdminTeam = () => {
                 )}
             </div>
 
+            {/* EDIT ROLE DIALOG */}
+            <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Edit Admin Role</DialogTitle>
+                        <DialogDescription>
+                            Change the access level for {editingUser?.profile?.first_name} {editingUser?.profile?.last_name}.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>First Name</Label>
+                                <Input
+                                    value={newFirstName}
+                                    onChange={(e) => setNewFirstName(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Last Name</Label>
+                                <Input
+                                    value={newLastName}
+                                    onChange={(e) => setNewLastName(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Select Role</Label>
+                            <Select
+                                value={newRole}
+                                onValueChange={setNewRole}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="operations_admin">Operations Admin</SelectItem>
+                                    <SelectItem value="vetting_admin">Vetting Admin</SelectItem>
+                                    <SelectItem value="finance_admin">Finance Admin</SelectItem>
+                                    <SelectItem value="support_admin">Support Admin</SelectItem>
+                                    <SelectItem value="talent_manager">Talent Manager</SelectItem>
+                                    <SelectItem value="account_manager">Account Manager</SelectItem>
+                                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
+                        <Button onClick={handleUpdateRole} disabled={loading}>
+                            {loading ? "Updating..." : "Save Changes"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -235,7 +333,7 @@ const AdminTeam = () => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {loading ? (
+                        {loading && !admins.length ? (
                             <TableRow><TableCell colSpan={4} className="text-center h-24">Loading...</TableCell></TableRow>
                         ) : admins.map((admin) => (
                             <TableRow key={admin.user_id}>
@@ -249,11 +347,25 @@ const AdminTeam = () => {
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    {/* Only Super Admin can remove, and cannot remove self */}
+                                    {/* Only Super Admin can edit/remove, and cannot edit self */}
                                     {userRole === "super_admin" && admin.user_id !== user?.id && (
-                                        <Button variant="ghost" size="icon" className="text-destructive">
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => {
+                                                    setEditingUser(admin);
+                                                    setNewRole(admin.role);
+                                                    setNewFirstName(admin.profile?.first_name || "");
+                                                    setNewLastName(admin.profile?.last_name || "");
+                                                }}
+                                            >
+                                                <Pencil className="h-4 w-4 text-slate-500" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="text-destructive">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
                                     )}
                                 </TableCell>
                             </TableRow>
@@ -261,8 +373,6 @@ const AdminTeam = () => {
                     </TableBody>
                 </Table>
             </div>
-
-
         </div>
     );
 };
