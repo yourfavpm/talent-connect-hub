@@ -34,7 +34,7 @@ const TalentDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const [talent, setTalent] = useState<any>(null);
   const [workHistory, setWorkHistory] = useState<any[]>([]);
   const [education, setEducation] = useState<any[]>([]);
@@ -96,7 +96,7 @@ const TalentDetail = () => {
       const { data: adminRoles } = await supabase
         .from("user_roles")
         .select("user_id, role")
-        .in("role", ["super_admin", "operations_admin", "vetting_admin"]);
+        .in("role", ["super_admin", "operations_admin", "vetting_admin", "talent_manager"] as any);
 
       if (adminRoles && adminRoles.length > 0) {
         const userIds = adminRoles.map((r) => r.user_id);
@@ -170,7 +170,7 @@ const TalentDetail = () => {
   const handlePublishToPool = async () => {
     // Check if all vetting levels are approved
     const allApproved = vettingLevels.every((level) => level.status === "approved");
-    
+
     if (!allApproved) {
       toast({
         title: "Cannot Publish",
@@ -279,15 +279,15 @@ const TalentDetail = () => {
               talent.vetting_status === "fully_vetted"
                 ? "bg-success/10 text-success"
                 : talent.vetting_status === "partially_vetted"
-                ? "bg-warning/10 text-warning"
-                : "bg-muted text-muted-foreground"
+                  ? "bg-warning/10 text-warning"
+                  : "bg-muted text-muted-foreground"
             }
           >
             {talent.vetting_status === "fully_vetted"
               ? "Fully Vetted"
               : talent.vetting_status === "partially_vetted"
-              ? "Partially Vetted"
-              : "Unvetted"}
+                ? "Partially Vetted"
+                : "Unvetted"}
           </Badge>
         </div>
       </div>
@@ -378,7 +378,7 @@ const TalentDetail = () => {
                   <p className="font-medium">{talent.availability?.replace("_", " ") || "Not specified"}</p>
                 </div>
               </div>
-              
+
               {talent.secondary_skills?.length > 0 && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Skills</p>
@@ -595,8 +595,8 @@ const TalentDetail = () => {
                     level.status === "approved"
                       ? "border-success/50 bg-success/5"
                       : level.status === "rejected"
-                      ? "border-destructive/50 bg-destructive/5"
-                      : ""
+                        ? "border-destructive/50 bg-destructive/5"
+                        : ""
                   }
                 >
                   <CardContent className="p-4 space-y-3">

@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -41,10 +44,21 @@ import {
 } from "lucide-react";
 
 const SERVICE_MODELS = [
-  { value: "direct_hire", label: "Direct Hire" },
-  { value: "trial_to_hire", label: "Trial to Hire" },
-  { value: "one_time_project", label: "One Time Project" },
-  { value: "offshore_hiring", label: "Offshore Hiring" },
+  {
+    value: "full_time",
+    label: "Full-Time Hire",
+    description: "One-Time Buyout, 15% of talent monthly salary, no time tracking."
+  },
+  {
+    value: "trial_to_hire",
+    label: "Trial-to-Hire",
+    description: "Taskive-managed, optional time tracking, buyout possible."
+  },
+  {
+    value: "one_time_project",
+    label: "One-Time Project",
+    description: "Taskive-managed, milestone/fixed payment, optional time tracking."
+  },
 ];
 
 const CURRENCIES = [
@@ -60,12 +74,14 @@ const WORK_MODES = [
   { value: "remote", label: "Remote" },
   { value: "onsite", label: "Onsite" },
   { value: "hybrid", label: "Hybrid" },
+  { value: "asynchronous", label: "Asynchronous (Any Timezone)" },
 ];
 
 const SALARY_TYPES = [
   { value: "hourly", label: "Hourly" },
   { value: "weekly", label: "Weekly" },
   { value: "monthly", label: "Monthly" },
+  { value: "fixed", label: "Fixed Price" },
 ];
 
 const Jobs = () => {
@@ -81,7 +97,12 @@ const Jobs = () => {
   const [jobDetailsOpen, setJobDetailsOpen] = useState(false);
   const [shortlistedTalents, setShortlistedTalents] = useState<any[]>([]);
   const [loadingShortlist, setLoadingShortlist] = useState(false);
-  
+
+  const navigate = useNavigate();
+
+  // Job Creation State
+  const [timeTrackingRequired, setTimeTrackingRequired] = useState(false);
+  const [formErrors, setFormErrors] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     role_needed: "",
@@ -152,13 +173,7 @@ const Jobs = () => {
     }
   };
 
-  const handleViewJobDetails = (job: any) => {
-    setSelectedJob(job);
-    if (job.status === "published") {
-      fetchShortlistedTalents(job.id);
-    }
-    setJobDetailsOpen(true);
-  };
+
 
   const handleRequestInterview = async (applicationId: string, talentName: string) => {
     try {
@@ -210,6 +225,7 @@ const Jobs = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormErrors([]); // Clear errors
     if (!clientId) {
       toast({
         title: "Complete Onboarding",
@@ -219,8 +235,32 @@ const Jobs = () => {
       return;
     }
 
+    // Human-readable validation
+    const missingFields = [];
+    if (!formData.title) missingFields.push("Job Title");
+    if (!formData.role_needed) missingFields.push("Role Category");
+    if (!formData.service_model) missingFields.push("Service Model");
+    if (!formData.work_mode) missingFields.push("Work Mode");
+    if (!formData.responsibilities) missingFields.push("Job Responsibilities");
+
+    if (missingFields.length > 0) {
+      setFormErrors(missingFields);
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all mandatory fields highlighted in the form.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
+      // Append Time Tracking preference to special notes
+      let finalSpecialNotes = formData.special_notes;
+      if (timeTrackingRequired && formData.service_model !== "full_time") {
+        finalSpecialNotes = `[TIME TRACKING REQUESTED] ${finalSpecialNotes || ""}`;
+      }
+
       const { error } = await supabase.from("jobs").insert({
         client_id: clientId,
         title: formData.title,
@@ -237,7 +277,7 @@ const Jobs = () => {
         experience_required: parseInt(formData.experience_required) || null,
         required_skills: formData.required_skills,
         responsibilities: formData.responsibilities,
-        special_notes: formData.special_notes,
+        special_notes: finalSpecialNotes,
         status: "submitted",
       });
 
@@ -261,7 +301,7 @@ const Jobs = () => {
         responsibilities: "",
         special_notes: "",
       });
-      
+
       toast({
         title: "Job Posted Successfully",
         description: "Your job has been submitted for admin review.",
@@ -333,6 +373,19 @@ const Jobs = () => {
               <DialogTitle>Create Job Posting</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-5 mt-4">
+              {formErrors.length > 0 && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Missing Information</AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc pl-5 mt-2 text-sm">
+                      {formErrors.map((err, i) => (
+                        <li key={i}>{err}</li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
               {/* Basic Info */}
               <div className="space-y-4">
                 <h3 className="font-medium text-foreground">Basic Information</h3>
@@ -369,23 +422,45 @@ const Jobs = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="service_model">Service Model *</Label>
-                  <Select
-                    value={formData.service_model}
-                    onValueChange={(value) => setFormData({ ...formData, service_model: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select service model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SERVICE_MODELS.map((model) => (
-                        <SelectItem key={model.value} value={model.value}>
-                          {model.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+                  <div className="space-y-2">
+                    <Label htmlFor="service_model">Hiring Model *</Label>
+                    <Select
+                      value={formData.service_model}
+                      onValueChange={(value) => setFormData({ ...formData, service_model: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select hiring model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SERVICE_MODELS.map((model) => (
+                          <SelectItem key={model.value} value={model.value}>
+                            {model.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {formData.service_model && (
+                      <p className="text-sm text-muted-foreground mt-1 px-1">
+                        {SERVICE_MODELS.find(m => m.value === formData.service_model)?.description}
+                      </p>
+                    )}
+                  </div>
+
+                  {(formData.service_model === 'trial_to_hire' || formData.service_model === 'one_time_project') && (
+                    <div className="flex items-center justify-between border-t pt-4 border-border">
+                      <div className="space-y-0.5">
+                        <Label>Require Time Tracking?</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Toggle if you want to see detailed timesheets.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={timeTrackingRequired}
+                        onCheckedChange={setTimeTrackingRequired}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -724,6 +799,9 @@ const Jobs = () => {
                         Posted {new Date(job.created_at).toLocaleDateString()}
                       </span>
                     </div>
+                  </div>
+                  <div className="flex justify-end mt-4">
+                    <Button variant="outline" size="sm" onClick={() => handleViewJobDetails(job)}>View Details</Button>
                   </div>
                 </div>
               ))}

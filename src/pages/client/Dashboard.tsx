@@ -15,155 +15,175 @@ import {
 } from "lucide-react";
 
 const ClientDashboard = () => {
+  const [client, setClient] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
-  const [clientId, setClientId] = useState<string>("");
-  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       const { data: authData } = await supabase.auth.getUser();
       if (authData.user) {
         setUser(authData.user);
-        const id = `CLT-${authData.user.id.slice(0, 8).toUpperCase()}`;
-        setClientId(id);
 
-        // Check if client record exists (onboarding complete)
         const { data: clientData } = await supabase
           .from("clients")
-          .select("id")
+          .select("*")
           .eq("user_id", authData.user.id)
           .maybeSingle();
 
-        setOnboardingComplete(!!clientData);
+        if (clientData) {
+          setClient(clientData);
+        }
       }
+      setLoading(false);
     };
     fetchData();
   }, []);
 
   const stats = [
+    // Real stats would be fetched here. For MVP layout we keep placeholders but prepared for data.
     {
-      title: "Active Talents",
-      value: 0,
-      icon: Users,
-      subtitle: "Team members",
-    },
-    {
-      title: "Open Jobs",
+      title: "Active Jobs",
       value: 0,
       icon: Briefcase,
-      subtitle: "Active postings",
+      subtitle: "Accepting proposals",
+      color: "text-blue-600 bg-blue-100",
     },
     {
-      title: "Active Contracts",
+      title: "Interviews",
       value: 0,
-      icon: FileText,
-      subtitle: "Ongoing",
+      icon: Users,
+      subtitle: "Pending schedule",
+      color: "text-purple-600 bg-purple-100",
     },
     {
-      title: "Pending Offers",
+      title: "Active Hires",
       value: 0,
       icon: UserCheck,
-      subtitle: "Awaiting response",
+      subtitle: "On active contracts",
+      color: "text-emerald-600 bg-emerald-100",
+    },
+    {
+      title: "Invoices Due",
+      value: 0,
+      icon: FileText,
+      subtitle: "Upcoming payments",
+      color: "text-amber-600 bg-amber-100",
     },
   ];
 
-  return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Onboarding Banner */}
-      {onboardingComplete === false && <OnboardingBanner portalType="client" />}
+  if (loading) {
+    return <div className="p-8">Loading dashboard...</div>;
+  }
 
+  return (
+    <div className="space-y-8 animate-fade-in max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
-            Welcome back{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ""}!
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Here's what's happening with your talent pipeline
-          </p>
-          <p className="text-sm text-primary font-medium mt-2">
-            Client ID: {clientId}
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Link to="/client/talents">
-            <Button variant="outline">
-              <Users className="h-4 w-4 mr-2" />
-              Browse Talents
-            </Button>
-          </Link>
-          <Link to="/client/jobs">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Post a Job
-            </Button>
-          </Link>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 p-8 text-white shadow-xl">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-3 py-1 rounded-full bg-white/10 text-xs font-medium backdrop-blur-sm border border-white/20">
+                {client?.status === 'active' ? 'Active Account' : 'Account Pending Verification'}
+              </span>
+              {client?.client_id && (
+                <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-200 text-xs font-mono font-medium border border-indigo-500/30">
+                  {client.client_id}
+                </span>
+              )}
+            </div>
+            <h1 className="text-3xl font-bold">
+              Welcome, {client?.company_name || "Partner"}
+            </h1>
+            <p className="text-indigo-200 mt-2 max-w-xl">
+              Manage your talent pipeline, interviews, and contracts from your command center.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Link to="/client/talents">
+              <Button className="bg-white text-indigo-900 hover:bg-indigo-50 border-0">
+                <Users className="h-4 w-4 mr-2" />
+                Browse Talent
+              </Button>
+            </Link>
+            <Link to="/client/jobs">
+              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white border-0">
+                <Plus className="h-4 w-4 mr-2" />
+                Post New Job
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (
-          <StatCard key={stat.title} {...stat} />
+          <StatCard key={stat.title} {...stat} className="border-t-4 border-t-indigo-500" />
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Notifications */}
-        <NotificationWidget />
-
-        {/* Recent Jobs */}
-        <div className="bg-card rounded-xl border border-border p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground">Recent Job Postings</h2>
-            <Link to="/client/jobs" className="text-sm text-primary hover:underline flex items-center gap-1">
-              View all <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="text-center py-8 text-muted-foreground">
-            <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-40" />
-            <p>No job postings yet</p>
-            <Link to="/client/jobs">
-              <Button variant="link" className="mt-2">
-                Create your first job posting
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column - Operational */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Active Job Requests */}
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="p-6 border-b border-border flex justify-between items-center">
+              <h3 className="font-semibold text-lg flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-indigo-500" />
+                Active Job Requests
+              </h3>
+              <Link to="/client/jobs" className="text-sm text-primary hover:underline">View All</Link>
+            </div>
+            <div className="p-8 text-center text-muted-foreground bg-slate-50/50">
+              <p>No active job requests found.</p>
+              <Button variant="link" className="mt-2 text-indigo-600" asChild>
+                <Link to="/client/jobs">Create a new job posting</Link>
               </Button>
-            </Link>
+            </div>
+          </div>
+
+          {/* Interview Requests */}
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="p-6 border-b border-border flex justify-between items-center">
+              <h3 className="font-semibold text-lg flex items-center gap-2">
+                <Users className="h-5 w-5 text-purple-500" />
+                Pending Interviews
+              </h3>
+            </div>
+            <div className="p-8 text-center text-muted-foreground bg-slate-50/50">
+              <p>No interviews scheduled yet.</p>
+            </div>
           </div>
         </div>
 
-        {/* Recent Contracts */}
-        <div className="bg-card rounded-xl border border-border p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground">Active Contracts</h2>
-            <Link to="/client/contracts" className="text-sm text-primary hover:underline flex items-center gap-1">
-              View all <ArrowRight className="h-3 w-3" />
-            </Link>
+        {/* Right Column - Financial & Support */}
+        <div className="space-y-6">
+          {/* Invoices */}
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="p-6 border-b border-border flex justify-between items-center">
+              <h3 className="font-semibold text-lg flex items-center gap-2">
+                <FileText className="h-5 w-5 text-amber-500" />
+                Recent Invoices
+              </h3>
+              <Link to="/client/invoices" className="text-sm text-primary hover:underline">View All</Link>
+            </div>
+            <div className="p-8 text-center text-muted-foreground bg-slate-50/50">
+              <p>No invoices due.</p>
+            </div>
           </div>
-          <div className="text-center py-8 text-muted-foreground">
-            <FileText className="h-12 w-12 mx-auto mb-3 opacity-40" />
-            <p>No active contracts</p>
-            <Link to="/client/talents">
-              <Button variant="link" className="mt-2">
-                Browse talents to get started
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
 
-      {/* My Team Preview */}
-      <div className="bg-card rounded-xl border border-border p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-foreground">My Team</h2>
-          <Link to="/client/team" className="text-sm text-primary hover:underline flex items-center gap-1">
-            View all <ArrowRight className="h-3 w-3" />
-          </Link>
-        </div>
-        <div className="text-center py-8 text-muted-foreground">
-          <UserCheck className="h-12 w-12 mx-auto mb-3 opacity-40" />
-          <p>No team members yet</p>
-          <p className="text-sm mt-1">Your hired talents will appear here</p>
+          {/* Support */}
+          <div className="bg-gradient-to-br from-slate-900 to-indigo-900 rounded-xl p-6 text-white">
+            <h3 className="font-semibold mb-2">Need Help?</h3>
+            <p className="text-indigo-200 text-sm mb-4">
+              Contact our support team for assistance with hiring or contracts.
+            </p>
+            <Button variant="secondary" className="w-full" size="sm" asChild>
+              <Link to="/client/support">Contact Support</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>

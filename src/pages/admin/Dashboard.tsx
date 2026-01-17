@@ -5,10 +5,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NotificationWidget from "@/components/NotificationWidget";
-import { Users, Briefcase, FileText, UserCheck, Clock, DollarSign, AlertCircle } from "lucide-react";
+import {
+  Users,
+  Briefcase,
+  FileText,
+  UserCheck,
+  Clock,
+  DollarSign,
+  AlertCircle,
+  Receipt,
+  MessageSquare
+} from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const AdminDashboard = () => {
+  const { userRole } = useAuth();
   const [stats, setStats] = useState({
     totalClients: 0,
     activeTalents: 0,
@@ -16,6 +28,8 @@ const AdminDashboard = () => {
     pendingOffers: 0,
     pendingVetting: 0,
     activeContracts: 0,
+    pendingInvoices: 0,
+    openTickets: 0,
   });
   const [recentOffers, setRecentOffers] = useState<any[]>([]);
   const [pendingJobs, setPendingJobs] = useState<any[]>([]);
@@ -28,13 +42,24 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       // Fetch counts
-      const [clientsRes, talentsRes, jobsRes, offersRes, contractsRes, pendingVettingRes] = await Promise.all([
+      const [
+        clientsRes,
+        talentsRes,
+        jobsRes,
+        offersRes,
+        contractsRes,
+        pendingVettingRes,
+        invoicesRes,
+        ticketsRes
+      ] = await Promise.all([
         supabase.from("clients").select("id", { count: "exact", head: true }),
         supabase.from("talents").select("id", { count: "exact", head: true }).eq("vetting_status", "fully_vetted"),
         supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "published"),
         supabase.from("offers").select("id", { count: "exact", head: true }).eq("status", "sent_to_admin"),
         supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
         supabase.from("talents").select("id", { count: "exact", head: true }).eq("vetting_status", "unvetted"),
+        supabase.from("invoices").select("id", { count: "exact", head: true }).in("status", ["pending", "overdue"]),
+        supabase.from("support_tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
       ]);
 
       setStats({
@@ -44,6 +69,8 @@ const AdminDashboard = () => {
         pendingOffers: offersRes.count || 0,
         activeContracts: contractsRes.count || 0,
         pendingVetting: pendingVettingRes.count || 0,
+        pendingInvoices: invoicesRes.count || 0,
+        openTickets: ticketsRes.count || 0,
       });
 
       // Fetch recent offers
@@ -91,14 +118,20 @@ const AdminDashboard = () => {
     }
   };
 
-  const statCards = [
-    { title: "Total Clients", value: stats.totalClients, icon: Users, subtitle: "Active accounts" },
-    { title: "Vetted Talents", value: stats.activeTalents, icon: UserCheck, subtitle: "In talent pool" },
-    { title: "Open Jobs", value: stats.openJobs, icon: Briefcase, subtitle: "Active postings" },
-    { title: "Pending Offers", value: stats.pendingOffers, icon: FileText, subtitle: "Awaiting action" },
-    { title: "Active Contracts", value: stats.activeContracts, icon: DollarSign, subtitle: "In progress" },
-    { title: "Pending Vetting", value: stats.pendingVetting, icon: AlertCircle, subtitle: "Need review" },
+  const hasAccess = (roles: string[]) => !userRole || roles.includes(userRole);
+
+  const allStatCards = [
+    { title: "Total Clients", value: stats.totalClients, icon: Users, subtitle: "Active accounts", roles: ['super_admin', 'operations_admin'] },
+    { title: "Vetted Talents", value: stats.activeTalents, icon: UserCheck, subtitle: "In talent pool", roles: ['super_admin', 'operations_admin', 'vetting_admin'] },
+    { title: "Open Jobs", value: stats.openJobs, icon: Briefcase, subtitle: "Active postings", roles: ['super_admin', 'operations_admin'] },
+    { title: "Pending Offers", value: stats.pendingOffers, icon: FileText, subtitle: "Awaiting action", roles: ['super_admin', 'operations_admin', 'finance_admin'] },
+    { title: "Active Contracts", value: stats.activeContracts, icon: DollarSign, subtitle: "In progress", roles: ['super_admin', 'operations_admin', 'finance_admin'] },
+    { title: "Pending Vetting", value: stats.pendingVetting, icon: AlertCircle, subtitle: "Need review", roles: ['super_admin', 'operations_admin', 'vetting_admin'] },
+    { title: "Pending Invoices", value: stats.pendingInvoices, icon: Receipt, subtitle: "Unpaid", roles: ['super_admin', 'finance_admin', 'operations_admin'] },
+    { title: "Open Tickets", value: stats.openTickets, icon: MessageSquare, subtitle: "Need response", roles: ['super_admin', 'support_admin', 'operations_admin'] },
   ];
+
+  const visibleStats = allStatCards.filter(stat => hasAccess(stat.roles));
 
   if (loading) {
     return (
@@ -112,122 +145,143 @@ const AdminDashboard = () => {
     <div className="space-y-8 animate-fade-in">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Manage clients, talents, and contracts</p>
+        <p className="text-muted-foreground mt-1">
+          Welcome back, {userRole ? userRole.replace('_', ' ').toUpperCase() : 'Admin'}
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {statCards.map((stat) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {visibleStats.map((stat) => (
           <StatCard key={stat.title} {...stat} />
         ))}
       </div>
 
       {/* Notifications & Actions Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <NotificationWidget />
-        
-        {/* Pending Job Approvals */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5" />
-              Pending Job Approvals
-            </CardTitle>
-            <Link to="/admin/jobs">
-              <Button variant="outline" size="sm">View All</Button>
-            </Link>
-          </CardHeader>
-          <CardContent>
-            {pendingJobs.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No pending jobs</p>
-            ) : (
-              <div className="space-y-3">
-                {pendingJobs.map((job) => (
-                  <div key={job.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                    <div>
-                      <p className="font-medium">{job.title}</p>
-                      <p className="text-sm text-muted-foreground">{job.clients?.company_name}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" onClick={() => handleApproveJob(job.id)}>
-                        Approve
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {hasAccess(['super_admin', 'operations_admin', 'support_admin']) && <NotificationWidget />}
 
+        {/* Pending Job Approvals */}
+        {hasAccess(['super_admin', 'operations_admin']) && (
+          <Card className="lg:col-span-2">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5" />
+                Pending Job Approvals
+              </CardTitle>
+              <Link to="/admin/jobs">
+                <Button variant="outline" size="sm">View All</Button>
+              </Link>
+            </CardHeader>
+            <CardContent>
+              {pendingJobs.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No pending jobs</p>
+              ) : (
+                <div className="space-y-3">
+                  {pendingJobs.map((job) => (
+                    <div key={job.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div>
+                        <p className="font-medium">{job.title}</p>
+                        <p className="text-sm text-muted-foreground">{job.clients?.company_name} • {job.service_model}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" onClick={() => handleApproveJob(job.id)}>
+                          Approve
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Recent Offers & Quick Action */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Offers */}
+        {hasAccess(['super_admin', 'operations_admin', 'finance_admin']) && (
+          <Card className="lg:col-span-2">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Recent Offers
+              </CardTitle>
+              <Link to="/admin/offers">
+                <Button variant="outline" size="sm">View All</Button>
+              </Link>
+            </CardHeader>
+            <CardContent>
+              {recentOffers.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No pending offers</p>
+              ) : (
+                <div className="space-y-3">
+                  {recentOffers.map((offer) => (
+                    <div key={offer.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div>
+                        <p className="font-medium">
+                          {offer.talents?.first_name} {offer.talents?.last_name} → {offer.clients?.company_name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{offer.role_title}</p>
+                      </div>
+                      <Badge className={
+                        offer.status === "sent_to_admin"
+                          ? "bg-warning/10 text-warning"
+                          : "bg-primary/10 text-primary"
+                      }>
+                        {offer.status === "sent_to_admin" ? "Generate Contract" : "Pending"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Quick Actions */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Recent Offers
-            </CardTitle>
-            <Link to="/admin/offers">
-              <Button variant="outline" size="sm">View All</Button>
-            </Link>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent>
-            {recentOffers.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No pending offers</p>
-            ) : (
-              <div className="space-y-3">
-                {recentOffers.map((offer) => (
-                  <div key={offer.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                    <div>
-                      <p className="font-medium">
-                        {offer.talents?.first_name} {offer.talents?.last_name} → {offer.clients?.company_name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">{offer.role_title}</p>
-                    </div>
-                    <Badge className={
-                      offer.status === "sent_to_admin" 
-                        ? "bg-warning/10 text-warning" 
-                        : "bg-primary/10 text-primary"
-                    }>
-                      {offer.status === "sent_to_admin" ? "Generate Contract" : "Pending"}
-                    </Badge>
+            <div className="space-y-2">
+              {hasAccess(['super_admin', 'operations_admin', 'vetting_admin']) && (
+                <Link to="/admin/talents" className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors">
+                  <UserCheck className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Vet Talents</p>
                   </div>
-                ))}
-              </div>
-            )}
+                </Link>
+              )}
+              {hasAccess(['super_admin', 'operations_admin']) && (
+                <Link to="/admin/jobs" className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors">
+                  <Briefcase className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Manage Jobs</p>
+                  </div>
+                </Link>
+              )}
+              {hasAccess(['super_admin', 'finance_admin']) && (
+                <Link to="/admin/contracts" className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Contracts</p>
+                  </div>
+                </Link>
+              )}
+              {hasAccess(['super_admin', 'support_admin']) && (
+                <Link to="/admin/support" className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors">
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Support Tickets</p>
+                  </div>
+                </Link>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Quick Links */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Link to="/admin/talents" className="p-4 rounded-lg border border-border hover:bg-muted transition-colors text-left">
-              <UserCheck className="h-6 w-6 text-primary mb-2" />
-              <p className="font-medium">Vet Talents</p>
-              <p className="text-sm text-muted-foreground">Review pending profiles</p>
-            </Link>
-            <Link to="/admin/clients" className="p-4 rounded-lg border border-border hover:bg-muted transition-colors text-left">
-              <Users className="h-6 w-6 text-primary mb-2" />
-              <p className="font-medium">Manage Clients</p>
-              <p className="text-sm text-muted-foreground">View all clients</p>
-            </Link>
-            <Link to="/admin/jobs" className="p-4 rounded-lg border border-border hover:bg-muted transition-colors text-left">
-              <Briefcase className="h-6 w-6 text-primary mb-2" />
-              <p className="font-medium">Manage Jobs</p>
-              <p className="text-sm text-muted-foreground">Approve & assign</p>
-            </Link>
-            <Link to="/admin/contracts" className="p-4 rounded-lg border border-border hover:bg-muted transition-colors text-left">
-              <FileText className="h-6 w-6 text-primary mb-2" />
-              <p className="font-medium">Contracts</p>
-              <p className="text-sm text-muted-foreground">Generate & manage</p>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

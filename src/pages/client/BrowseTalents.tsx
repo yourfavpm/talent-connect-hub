@@ -14,17 +14,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Search, 
-  Filter, 
-  Star, 
-  MapPin, 
-  Briefcase, 
-  Calendar, 
-  User, 
-  Mail, 
-  Phone, 
-  Globe, 
+import {
+  Search,
+  Filter,
+  Star,
+  MapPin,
+  Briefcase,
+  Calendar,
+  User,
+  Mail,
+  Phone,
+  Globe,
   Clock,
   GraduationCap,
   Award,
@@ -42,7 +42,10 @@ const ROLE_LABELS: Record<string, string> = {
   executive_assistant: "Executive Assistant",
 };
 
+import { useAuth } from "@/hooks/useAuth";
+
 const BrowseTalents = () => {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [talents, setTalents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,11 +119,55 @@ const BrowseTalents = () => {
     setProfileOpen(true);
   };
 
-  const handleRequestInterview = (talent: any) => {
-    toast({
-      title: "Interview Request Sent",
-      description: `Your interview request for ${talent.first_name} ${talent.last_name} has been sent to the admin.`,
-    });
+  // Helper to create ticket
+  const createTicket = async (subject: string, description: string) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase.from("support_tickets").insert({
+        user_id: user.id,
+        subject,
+        description,
+        category: "job",
+        status: "open",
+        priority: "normal"
+      });
+      if (error) throw error;
+      return true;
+    } catch (error: any) {
+      console.error("Error creating ticket:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send request. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const handleRequestInterview = async (talent: any) => {
+    const subject = `Interview Request: ${talent.first_name} ${talent.last_name}`;
+    const description = `Client requested an interview with talent ${talent.first_name} ${talent.last_name} (${talent.talent_id}). Please coordinate availability.`; // TODO: Prompt for job context?
+
+    const success = await createTicket(subject, description);
+    if (success) {
+      toast({
+        title: "Interview Request Sent",
+        description: `Your request for ${talent.first_name} ${talent.last_name} has been sent to our team. We'll be in touch shortly.`,
+      });
+    }
+  };
+
+  const handleGenerateOffer = async (talent: any) => {
+    const subject = `Offer Request: ${talent.first_name} ${talent.last_name}`;
+    const description = `Client wants to generate an offer for talent ${talent.talent_id}. Please initiate the offer process.`;
+
+    const success = await createTicket(subject, description);
+    if (success) {
+      toast({
+        title: "Offer Request Sent",
+        description: "Admin notified to prepare the offer details.",
+      });
+    }
   };
 
   const getInitials = (firstName: string, lastName: string) => {
@@ -128,12 +175,12 @@ const BrowseTalents = () => {
   };
 
   const filteredTalents = talents.filter((talent) => {
-    const fullName = `${talent.first_name} ${talent.last_name}`.toLowerCase();
+    const fullName = `${talent.first_name || ""} ${talent.last_name || ""}`.toLowerCase();
     const matchesSearch =
       fullName.includes(searchQuery.toLowerCase()) ||
       talent.primary_role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       talent.secondary_skills?.some((skill: string) =>
-        skill.toLowerCase().includes(searchQuery.toLowerCase())
+        skill?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     const matchesRole = !roleFilter || talent.primary_role === roleFilter;
     return matchesSearch && matchesRole;
@@ -219,9 +266,9 @@ const BrowseTalents = () => {
                   </Badge>
                 </div>
                 <p className="text-primary font-medium">
-                  {ROLE_LABELS[talent.primary_role] || talent.primary_role}
+                  {ROLE_LABELS[talent.primary_role] || talent.primary_role || "Role not specified"}
                 </p>
-                <p className="text-xs text-muted-foreground">{talent.talent_id}</p>
+                <p className="text-xs text-muted-foreground">{talent.talent_id || "ID: N/A"}</p>
 
                 <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-muted-foreground">
                   {talent.country && (
@@ -262,8 +309,8 @@ const BrowseTalents = () => {
 
                 {/* Actions */}
                 <div className="flex items-center justify-end mt-5 pt-4 border-t border-border gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -272,7 +319,7 @@ const BrowseTalents = () => {
                   >
                     View Profile
                   </Button>
-                  <Button 
+                  <Button
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Receipt,
   Download,
@@ -10,6 +12,14 @@ import {
   AlertTriangle,
   Check,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface Invoice {
   id: string;
@@ -21,48 +31,64 @@ interface Invoice {
   status: "paid" | "pending" | "overdue" | "upcoming";
 }
 
-// Mock invoices
-const mockInvoices: Invoice[] = [
-  {
-    id: "1",
-    invoiceNumber: "INV-2024-001",
-    talentName: "Sarah Chen",
-    amount: 8500,
-    period: "January 2024",
-    dueDate: "2024-02-15",
-    status: "pending",
-  },
-  {
-    id: "2",
-    invoiceNumber: "INV-2024-002",
-    talentName: "Michael Okonkwo",
-    amount: 6500,
-    period: "January 2024",
-    dueDate: "2024-02-10",
-    status: "overdue",
-  },
-  {
-    id: "3",
-    invoiceNumber: "INV-2023-045",
-    talentName: "Sarah Chen",
-    amount: 8500,
-    period: "December 2023",
-    dueDate: "2024-01-15",
-    status: "paid",
-  },
-  {
-    id: "4",
-    invoiceNumber: "INV-2024-003",
-    talentName: "Emma Larsson",
-    amount: 9500,
-    period: "February 2024",
-    dueDate: "2024-03-15",
-    status: "upcoming",
-  },
-];
-
 const Invoices = () => {
-  const [invoices] = useState<Invoice[]>(mockInvoices);
+  const { user } = useAuth();
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+
+  useEffect(() => {
+    if (user) fetchInvoices();
+  }, [user]);
+
+  const fetchInvoices = async () => {
+    try {
+      // 1. Get Client ID
+      const { data: clientData } = await supabase
+        .from("clients")
+        .select("id")
+        .eq("user_id", user?.id)
+        .single();
+
+      if (!clientData) return;
+
+      // 2. Get Invoices
+      const { data, error } = await supabase
+        .from("invoices")
+        .select(`
+          *,
+          contracts (
+            talents (
+              first_name,
+              last_name
+            )
+          )
+        `)
+        .eq("client_id", clientData.id)
+        .order("due_date", { ascending: false });
+
+      if (error) throw error;
+
+      // 3. Map to Interface
+      const mappedInvoices: Invoice[] = (data || []).map((inv: any) => ({
+        id: inv.id,
+        invoiceNumber: inv.invoice_number,
+        talentName: inv.contracts?.talents
+          ? `${inv.contracts.talents.first_name} ${inv.contracts.talents.last_name}`
+          : "Unknown",
+        amount: inv.total_amount,
+        period: `${new Date(inv.billing_period_start).toLocaleDateString()} - ${new Date(inv.billing_period_end).toLocaleDateString()}`,
+        dueDate: inv.due_date,
+        status: (inv.status as "paid" | "pending" | "overdue" | "upcoming") || "pending",
+      }));
+
+      setInvoices(mappedInvoices);
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -105,6 +131,8 @@ const Invoices = () => {
     0
   );
 
+  if (loading) return <div className="p-8">Loading invoices...</div>;
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -123,7 +151,7 @@ const Invoices = () => {
                 ${totalDue.toLocaleString()}
               </p>
             </div>
-            <Button>
+            <Button onClick={() => setPaymentDialogOpen(true)}>
               <CreditCard className="h-4 w-4 mr-2" />
               Pay All
             </Button>
@@ -190,13 +218,16 @@ const Invoices = () => {
           <InvoiceList
             invoices={invoices}
             getStatusConfig={getStatusConfig}
+            onPay={() => setPaymentDialogOpen(true)}
           />
         </TabsContent>
+        {/* ... (Other tabs similar mapping) ... */}
         <TabsContent value="overdue" className="mt-6">
           <InvoiceList
             invoices={overdueInvoices}
             getStatusConfig={getStatusConfig}
             emptyMessage="No overdue invoices"
+            onPay={() => setPaymentDialogOpen(true)}
           />
         </TabsContent>
         <TabsContent value="pending" className="mt-6">
@@ -204,6 +235,7 @@ const Invoices = () => {
             invoices={pendingInvoices}
             getStatusConfig={getStatusConfig}
             emptyMessage="No pending invoices"
+            onPay={() => setPaymentDialogOpen(true)}
           />
         </TabsContent>
         <TabsContent value="upcoming" className="mt-6">
@@ -211,6 +243,7 @@ const Invoices = () => {
             invoices={upcomingInvoices}
             getStatusConfig={getStatusConfig}
             emptyMessage="No upcoming invoices"
+            onPay={() => setPaymentDialogOpen(true)}
           />
         </TabsContent>
         <TabsContent value="paid" className="mt-6">
@@ -218,9 +251,32 @@ const Invoices = () => {
             invoices={paidInvoices}
             getStatusConfig={getStatusConfig}
             emptyMessage="No paid invoices"
+            onPay={() => setPaymentDialogOpen(true)}
           />
         </TabsContent>
       </Tabs>
+
+      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Payment Information</DialogTitle>
+            <DialogDescription>
+              To process your payment, please contact our accounts team or follow the instructions on your invoice.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-muted p-4 rounded-lg text-sm">
+            <p className="font-medium">Direct Bank Transfer</p>
+            <p className="mt-1">Bank: Chase Bank</p>
+            <p>Account: 123456789</p>
+            <p>Routing: 987654321</p>
+            <p className="mt-2 text-xs text-muted-foreground">Please include Invoice # in memo.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>Close</Button>
+            <Button onClick={() => window.open('mailto:accounts@taskive.com')}>Contact Accounts</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -229,10 +285,12 @@ const InvoiceList = ({
   invoices,
   getStatusConfig,
   emptyMessage = "No invoices",
+  onPay,
 }: {
   invoices: Invoice[];
   getStatusConfig: (status: string) => any;
   emptyMessage?: string;
+  onPay: () => void;
 }) => {
   if (invoices.length === 0) {
     return (
@@ -252,7 +310,7 @@ const InvoiceList = ({
         return (
           <div
             key={invoice.id}
-            className="bg-card rounded-xl border border-border p-5 hover:shadow-taskive-sm transition-shadow animate-slide-up"
+            className="bg-card rounded-xl border border-border p-5 hover:shadow-sm transition-shadow animate-slide-up"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             <div className="flex items-center justify-between">
@@ -289,8 +347,8 @@ const InvoiceList = ({
                   </Button>
                   {(invoice.status === "pending" ||
                     invoice.status === "overdue") && (
-                    <Button size="sm">Pay Now</Button>
-                  )}
+                      <Button size="sm" onClick={onPay}>Pay Now</Button>
+                    )}
                 </div>
               </div>
             </div>

@@ -9,12 +9,23 @@ export default {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "1400px",
+        "2xl": "1280px", /* Design Bible max width */
       },
     },
     extend: {
       fontFamily: {
-        sans: ["DM Sans", "system-ui", "sans-serif"],
+        sans: ["Inter", "IBM Plex Sans", "system-ui", "-apple-system", "sans-serif"],
+        serif: ["Source Serif 4", "serif"],
+      },
+      fontSize: {
+        /* Design Bible Typography */
+        "display": ["3.5rem", { lineHeight: "1.1", fontWeight: "700", letterSpacing: "-0.02em" }],
+        "h1": ["3rem", { lineHeight: "1.15", fontWeight: "700", letterSpacing: "-0.02em" }],
+        "h2": ["2.25rem", { lineHeight: "1.2", fontWeight: "600", letterSpacing: "-0.01em" }],
+        "h3": ["1.75rem", { lineHeight: "1.3", fontWeight: "600" }],
+        "body": ["1rem", { lineHeight: "1.65" }],
+        "body-lg": ["1.125rem", { lineHeight: "1.7" }],
+        "caption": ["0.8125rem", { lineHeight: "1.5" }],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -68,26 +79,30 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        /* Design Bible Named Colors */
         taskive: {
           navy: "hsl(var(--taskive-navy))",
-          "navy-light": "hsl(var(--taskive-navy-light))",
-          sky: "hsl(var(--taskive-sky))",
           slate: "hsl(var(--taskive-slate))",
-          gray: "hsl(var(--taskive-gray))",
-          light: "hsl(var(--taskive-light))",
+          teal: "hsl(var(--taskive-teal))",
+          amber: "hsl(var(--taskive-amber))",
         },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "0.75rem", /* 12px max for cards */
+      },
+      spacing: {
+        /* Design Bible section padding */
+        "section": "5rem",      /* 80px */
+        "section-lg": "7.5rem", /* 120px */
       },
       boxShadow: {
         "taskive-sm": "var(--shadow-sm)",
         "taskive-md": "var(--shadow-md)",
         "taskive-lg": "var(--shadow-lg)",
         "taskive-xl": "var(--shadow-xl)",
-        "taskive-glow": "var(--shadow-glow)",
       },
       keyframes: {
         "accordion-down": {
@@ -103,15 +118,15 @@ export default {
           to: { opacity: "1" },
         },
         "slide-up": {
-          from: { opacity: "0", transform: "translateY(20px)" },
+          from: { opacity: "0", transform: "translateY(12px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.3s ease-out forwards",
-        "slide-up": "slide-up 0.4s ease-out forwards",
+        "fade-in": "fade-in 0.2s ease-out forwards",
+        "slide-up": "slide-up 0.25s ease-out forwards",
       },
     },
   },

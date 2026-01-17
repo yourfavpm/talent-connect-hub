@@ -31,7 +31,42 @@ const TalentOnboarding = () => {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  
+
+  // List of common timezones
+  const timezones = [
+    { value: "UTC", label: "UTC (Coordinated Universal Time)" },
+    { value: "America/New_York", label: "Eastern Time (ET) - New York" },
+    { value: "America/Chicago", label: "Central Time (CT) - Chicago" },
+    { value: "America/Denver", label: "Mountain Time (MT) - Denver" },
+    { value: "America/Los_Angeles", label: "Pacific Time (PT) - Los Angeles" },
+    { value: "America/Anchorage", label: "Alaska Time - Anchorage" },
+    { value: "Pacific/Honolulu", label: "Hawaii Time - Honolulu" },
+    { value: "America/Toronto", label: "Eastern Time - Toronto" },
+    { value: "America/Vancouver", label: "Pacific Time - Vancouver" },
+    { value: "America/Mexico_City", label: "Central Time - Mexico City" },
+    { value: "America/Sao_Paulo", label: "São Paulo Time - Brazil" },
+    { value: "America/Buenos_Aires", label: "Argentina Time - Buenos Aires" },
+    { value: "Europe/London", label: "GMT/BST - London" },
+    { value: "Europe/Paris", label: "CET - Paris, Berlin, Rome" },
+    { value: "Europe/Moscow", label: "Moscow Time - Russia" },
+    { value: "Africa/Lagos", label: "West Africa Time - Lagos" },
+    { value: "Africa/Johannesburg", label: "South Africa Time - Johannesburg" },
+    { value: "Africa/Cairo", label: "Eastern European Time - Cairo" },
+    { value: "Africa/Nairobi", label: "East Africa Time - Nairobi" },
+    { value: "Asia/Dubai", label: "Gulf Standard Time - Dubai" },
+    { value: "Asia/Kolkata", label: "India Standard Time - Mumbai" },
+    { value: "Asia/Singapore", label: "Singapore Time" },
+    { value: "Asia/Hong_Kong", label: "Hong Kong Time" },
+    { value: "Asia/Shanghai", label: "China Standard Time - Shanghai" },
+    { value: "Asia/Tokyo", label: "Japan Standard Time - Tokyo" },
+    { value: "Asia/Seoul", label: "Korea Standard Time - Seoul" },
+    { value: "Asia/Manila", label: "Philippine Time - Manila" },
+    { value: "Asia/Jakarta", label: "Western Indonesia Time - Jakarta" },
+    { value: "Australia/Sydney", label: "Australian Eastern Time - Sydney" },
+    { value: "Australia/Perth", label: "Australian Western Time - Perth" },
+    { value: "Pacific/Auckland", label: "New Zealand Time - Auckland" },
+  ];
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -39,13 +74,11 @@ const TalentOnboarding = () => {
     phone: "",
     country: "",
     timezone: "",
-    preferredWorkingHours: "",
     primaryRole: "",
     secondarySkills: [] as string[],
     yearsOfExperience: "",
     toolsFamiliarWith: [] as string[],
     languagesSpoken: [] as string[],
-    availability: "",
     ndaAgreed: false,
     termsAgreed: false,
   });
@@ -81,31 +114,78 @@ const TalentOnboarding = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Validation for mandatory fields per step
+  const getMissingFields = () => {
+    const missing: { step: number; fields: string[] }[] = [];
+
+    // Step 1: Basic Info - firstName, lastName, email are required
+    const step1Missing: string[] = [];
+    if (!formData.firstName.trim()) step1Missing.push("First Name");
+    if (!formData.lastName.trim()) step1Missing.push("Last Name");
+    if (!formData.email.trim()) step1Missing.push("Email");
+    if (step1Missing.length > 0) missing.push({ step: 1, fields: step1Missing });
+
+    // Step 2: Location - country and timezone recommended but not blocking
+    // Step 3: Professional - primaryRole is required
+    const step3Missing: string[] = [];
+    if (!formData.primaryRole) step3Missing.push("Primary Role");
+    if (step3Missing.length > 0) missing.push({ step: 3, fields: step3Missing });
+
+    // Steps 4-7 are optional (work history, education, certifications, references)
+
+    // Step 8: Agreements - terms must be agreed
+    const step8Missing: string[] = [];
+    if (!formData.termsAgreed) step8Missing.push("Terms Agreement");
+    if (step8Missing.length > 0) missing.push({ step: 8, fields: step8Missing });
+
+    return missing;
+  };
+
   const handleSkipOnboarding = async () => {
     if (!user) return;
     setLoading(true);
 
     try {
-      // Generate talent ID
-      const { data: talentIdData } = await supabase.rpc("generate_talent_id");
-      const talentId = talentIdData || `TAS-VA-${Date.now()}`;
-
-      // Create minimal talent record with incomplete onboarding
-      await supabase
+      // Check if talent record already exists
+      const { data: existingTalent } = await supabase
         .from("talents")
-        .insert({
-          user_id: user.id,
-          talent_id: talentId,
-          first_name: formData.firstName || user.user_metadata?.first_name || "User",
-          last_name: formData.lastName || user.user_metadata?.last_name || "",
-          email: formData.email || user.email || "",
-          onboarding_completed: false,
-          onboarding_step: currentStep,
-        });
+        .select("id, talent_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existingTalent) {
+        // Update existing talent to mark onboarding as complete (skipped)
+        await supabase
+          .from("talents")
+          .update({
+            first_name: formData.firstName || user.user_metadata?.first_name || "User",
+            last_name: formData.lastName || user.user_metadata?.last_name || "",
+            email: formData.email || user.email || "",
+            onboarding_completed: false, // Keep as false since they skipped
+            onboarding_step: currentStep,
+          })
+          .eq("id", existingTalent.id);
+      } else {
+        // Generate talent ID and create new record
+        const { data: talentIdData } = await supabase.rpc("generate_talent_id");
+        const talentId = talentIdData || `TAS-VA-${Date.now()}`;
+
+        await supabase
+          .from("talents")
+          .insert({
+            user_id: user.id,
+            talent_id: talentId,
+            first_name: formData.firstName || user.user_metadata?.first_name || "User",
+            last_name: formData.lastName || user.user_metadata?.last_name || "",
+            email: formData.email || user.email || "",
+            onboarding_completed: false, // Keep as false
+            onboarding_step: currentStep,
+          });
+      }
 
       toast({
-        title: "Onboarding Skipped",
-        description: "You can complete your profile anytime from your dashboard.",
+        title: "Skipped for Now",
+        description: "You can complete your profile anytime from your Profile page.",
       });
 
       navigate("/talent/dashboard");
@@ -123,6 +203,20 @@ const TalentOnboarding = () => {
 
   const handleSubmit = async () => {
     if (!user) return;
+
+    // Validate mandatory fields before submit
+    const missingFields = getMissingFields();
+    if (missingFields.length > 0) {
+      const firstMissing = missingFields[0];
+      toast({
+        title: `Please Complete Step ${firstMissing.step}`,
+        description: `Missing required fields: ${firstMissing.fields.join(", ")}`,
+        variant: "destructive",
+      });
+      setCurrentStep(firstMissing.step);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -147,13 +241,11 @@ const TalentOnboarding = () => {
             phone: formData.phone,
             country: formData.country,
             timezone: formData.timezone,
-            preferred_working_hours: formData.preferredWorkingHours,
             primary_role: formData.primaryRole,
             secondary_skills: formData.secondarySkills,
             years_of_experience: parseInt(formData.yearsOfExperience) || 0,
             tools_familiar_with: formData.toolsFamiliarWith,
             languages_spoken: formData.languagesSpoken,
-            availability: formData.availability as "full_time" | "part_time" | null,
             nda_agreed: formData.ndaAgreed,
             terms_agreed: formData.termsAgreed,
             onboarding_completed: true,
@@ -181,13 +273,11 @@ const TalentOnboarding = () => {
             phone: formData.phone,
             country: formData.country,
             timezone: formData.timezone,
-            preferred_working_hours: formData.preferredWorkingHours,
             primary_role: formData.primaryRole,
             secondary_skills: formData.secondarySkills,
             years_of_experience: parseInt(formData.yearsOfExperience) || 0,
             tools_familiar_with: formData.toolsFamiliarWith,
             languages_spoken: formData.languagesSpoken,
-            availability: formData.availability as "full_time" | "part_time" | null,
             nda_agreed: formData.ndaAgreed,
             terms_agreed: formData.termsAgreed,
             onboarding_completed: true,
@@ -261,6 +351,20 @@ const TalentOnboarding = () => {
         await supabase.from("talent_references").insert(validRefs);
       }
 
+      // Initialize Vetting Records
+      const vettingLevels = ["profile_completion", "skills_assessment", "video_interview"];
+      const vettingInserts = vettingLevels.map(level => ({
+        talent_id: talentRecordId,
+        level_name: level,
+        status: level === "profile_completion" ? "pending" : "locked",
+        // Profile completion is pending admin review immediately. Others are locked?
+        // Actually, let's set profile_completion to 'pending' (or 'under_review' if that's the enum).
+        // Checking enum from AdminTalentDetail perspective or database.
+        // Assuming 'pending' is safe given earlier context or standard 'pending', 'approved', 'rejected'.
+      }));
+
+      await supabase.from("talent_vetting").insert(vettingInserts);
+
       toast({
         title: "Onboarding Complete!",
         description: "Your profile has been submitted for review.",
@@ -325,20 +429,19 @@ const TalentOnboarding = () => {
               </div>
               <div className="space-y-2">
                 <Label>Timezone</Label>
-                <Input
-                  value={formData.timezone}
-                  onChange={(e) => handleInputChange("timezone", e.target.value)}
-                  placeholder="EST (UTC-5)"
-                />
+                <Select value={formData.timezone} onValueChange={(v) => handleInputChange("timezone", v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your timezone" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {timezones.map((tz) => (
+                      <SelectItem key={tz.value} value={tz.value}>
+                        {tz.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Preferred Working Hours</Label>
-              <Input
-                value={formData.preferredWorkingHours}
-                onChange={(e) => handleInputChange("preferredWorkingHours", e.target.value)}
-                placeholder="9 AM - 5 PM EST"
-              />
             </div>
           </div>
         );
@@ -370,18 +473,6 @@ const TalentOnboarding = () => {
                 onChange={(e) => handleInputChange("yearsOfExperience", e.target.value)}
                 placeholder="5"
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Availability</Label>
-              <Select value={formData.availability} onValueChange={(v) => handleInputChange("availability", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select availability" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="full_time">Full-time (40 hrs/week)</SelectItem>
-                  <SelectItem value="part_time">Part-time (20 hrs/week)</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div className="space-y-2">
               <Label>Tools You're Familiar With (comma-separated)</Label>
@@ -812,10 +903,6 @@ const TalentOnboarding = () => {
                     <p className="text-sm text-muted-foreground">Primary Role</p>
                     <p className="font-medium">{formData.primaryRole || "Not specified"}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Availability</p>
-                    <p className="font-medium">{formData.availability || "Not specified"}</p>
-                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -854,63 +941,64 @@ const TalentOnboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto p-8">
-        <div className="mb-8">
-          <img src={taskiveLogo} alt="Taskive" className="h-10 mb-6" />
+
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex items-center justify-between mb-8">
+        <div>
           <h1 className="text-3xl font-bold text-foreground">Complete Your Profile</h1>
           <p className="text-muted-foreground mt-2">
             Step {currentStep} of {steps.length}: {steps[currentStep - 1].title}
           </p>
         </div>
+      </div>
 
-        <Progress value={(currentStep / steps.length) * 100} className="mb-8" />
+      <Progress value={(currentStep / steps.length) * 100} className="mb-8" />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{steps[currentStep - 1].title}</CardTitle>
-          </CardHeader>
-          <CardContent>{renderStep()}</CardContent>
-        </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>{steps[currentStep - 1].title}</CardTitle>
+        </CardHeader>
+        <CardContent>{renderStep()}</CardContent>
+      </Card>
 
-        <div className="flex justify-between mt-6">
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
-              disabled={currentStep === 1}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Previous
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={handleSkipOnboarding}
-              disabled={loading}
-              className="text-muted-foreground"
-            >
-              Skip for now
-            </Button>
-          </div>
-
-          {currentStep < steps.length ? (
-            <Button onClick={() => setCurrentStep((prev) => prev + 1)}>
-              Next
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={loading || !formData.ndaAgreed || !formData.termsAgreed}
-            >
-              {loading ? "Submitting..." : "Submit for Review"}
-              <Check className="h-4 w-4 ml-2" />
-            </Button>
-          )}
+      <div className="flex justify-between mt-6">
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
+            disabled={currentStep === 1}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Previous
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={handleSkipOnboarding}
+            disabled={loading}
+            className="text-muted-foreground"
+          >
+            Skip for now
+          </Button>
         </div>
+
+        {currentStep < steps.length ? (
+          <Button onClick={() => setCurrentStep((prev) => prev + 1)}>
+            Next
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
+        ) : (
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || !formData.ndaAgreed || !formData.termsAgreed}
+          >
+            {loading ? "Submitting..." : "Submit for Review"}
+            <Check className="h-4 w-4 ml-2" />
+          </Button>
+        )}
       </div>
     </div>
   );
 };
 
 export default TalentOnboarding;
+

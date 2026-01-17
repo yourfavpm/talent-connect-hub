@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { Bell, Check, CheckCheck, ExternalLink } from "lucide-react";
+import { Bell, CheckCheck, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -12,97 +10,17 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: string | null;
-  action_url: string | null;
-  read_at: string | null;
-  created_at: string;
-}
+import { useNotifications } from "@/hooks/useNotifications";
+import { Notification } from "@/types";
 
 interface NotificationBellProps {
   variant?: "light" | "dark";
 }
 
 const NotificationBell = ({ variant = "dark" }: NotificationBellProps) => {
-  const { user } = useAuth();
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-      
-      // Subscribe to realtime notifications
-      const channel = supabase
-        .channel('notifications-channel')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${user.id}`
-          },
-          (payload) => {
-            const newNotification = payload.new as Notification;
-            setNotifications(prev => [newNotification, ...prev]);
-            setUnreadCount(prev => prev + 1);
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [user]);
-
-  const fetchNotifications = async () => {
-    const { data, error } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", user?.id)
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    if (!error && data) {
-      setNotifications(data);
-      setUnreadCount(data.filter(n => !n.read_at).length);
-    }
-  };
-
-  const markAsRead = async (id: string) => {
-    await supabase
-      .from("notifications")
-      .update({ read_at: new Date().toISOString() })
-      .eq("id", id);
-
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
-  };
-
-  const markAllAsRead = async () => {
-    const unreadIds = notifications.filter(n => !n.read_at).map(n => n.id);
-    if (unreadIds.length === 0) return;
-
-    await supabase
-      .from("notifications")
-      .update({ read_at: new Date().toISOString() })
-      .in("id", unreadIds);
-
-    setNotifications(prev =>
-      prev.map(n => ({ ...n, read_at: n.read_at || new Date().toISOString() }))
-    );
-    setUnreadCount(0);
-  };
 
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.read_at) {
@@ -114,21 +32,6 @@ const NotificationBell = ({ variant = "dark" }: NotificationBellProps) => {
     }
   };
 
-  const getNotificationIcon = (type: string | null) => {
-    const iconColors: Record<string, string> = {
-      job_approved: "bg-success/20 text-success",
-      job_rejected: "bg-destructive/20 text-destructive",
-      shortlisted: "bg-primary/20 text-primary",
-      interview_scheduled: "bg-warning/20 text-warning",
-      hired: "bg-success/20 text-success",
-      offer_received: "bg-primary/20 text-primary",
-      contract_ready: "bg-accent/20 text-accent-foreground",
-      new_application: "bg-secondary/20 text-secondary-foreground",
-      job_submitted: "bg-muted/20 text-muted-foreground",
-    };
-    return iconColors[type || ""] || "bg-muted/20 text-muted-foreground";
-  };
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -137,8 +40,8 @@ const NotificationBell = ({ variant = "dark" }: NotificationBellProps) => {
           size="icon"
           className={cn(
             "relative",
-            variant === "light" 
-              ? "text-sidebar-foreground/80 hover:bg-sidebar-accent/50" 
+            variant === "light"
+              ? "text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
               : "text-foreground hover:bg-muted"
           )}
         >
@@ -157,7 +60,7 @@ const NotificationBell = ({ variant = "dark" }: NotificationBellProps) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={markAllAsRead}
+              onClick={() => markAllAsRead()}
               className="text-xs h-8"
             >
               <CheckCheck className="h-3 w-3 mr-1" />

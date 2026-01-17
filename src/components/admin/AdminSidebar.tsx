@@ -10,21 +10,75 @@ import {
   LogOut,
   ChevronLeft,
   Menu,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import NotificationBell from "@/components/NotificationBell";
+import { useAuth } from "@/hooks/useAuth";
 
 const navigation = [
-  { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { name: "Clients", href: "/admin/clients", icon: Users },
-  { name: "Talents", href: "/admin/talents", icon: UserPlus },
-  { name: "Jobs", href: "/admin/jobs", icon: Briefcase },
-  { name: "Offers", href: "/admin/offers", icon: FileText },
-  { name: "Contracts", href: "/admin/contracts", icon: FileText },
-  { name: "Invoices", href: "/admin/invoices", icon: Receipt },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
+  {
+    name: "Dashboard",
+    href: "/admin/dashboard",
+    icon: LayoutDashboard,
+    roles: ["super_admin", "operations_admin", "vetting_admin", "finance_admin", "support_admin"]
+  },
+  {
+    name: "Clients",
+    href: "/admin/clients",
+    icon: Users,
+    roles: ["super_admin", "operations_admin"]
+  },
+  {
+    name: "Talents",
+    href: "/admin/talents",
+    icon: UserPlus,
+    roles: ["super_admin", "operations_admin", "vetting_admin"]
+  },
+  {
+    name: "Jobs",
+    href: "/admin/jobs",
+    icon: Briefcase,
+    roles: ["super_admin", "operations_admin"]
+  },
+  {
+    name: "Offers",
+    href: "/admin/offers",
+    icon: FileText,
+    roles: ["super_admin", "operations_admin", "finance_admin"]
+  },
+  {
+    name: "Contracts",
+    href: "/admin/contracts",
+    icon: FileText,
+    roles: ["super_admin", "operations_admin", "finance_admin"]
+  },
+  {
+    name: "Invoices",
+    href: "/admin/invoices",
+    icon: Receipt,
+    roles: ["super_admin", "finance_admin", "operations_admin"]
+  },
+  {
+    name: "Support",
+    href: "/admin/support",
+    icon: MessageSquare,
+    roles: ["super_admin", "support_admin", "operations_admin"]
+  },
+  {
+    name: "Team",
+    href: "/admin/team",
+    icon: Users,
+    roles: ["super_admin"]
+  },
+  {
+    name: "Settings",
+    href: "/admin/settings",
+    icon: Settings,
+    roles: ["super_admin", "operations_admin"]
+  },
 ];
 
 interface AdminSidebarProps {
@@ -34,6 +88,14 @@ interface AdminSidebarProps {
 const AdminSidebar = ({ onLogout }: AdminSidebarProps) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const { userRole } = useAuth();
+
+  // If no role logic is active or role is undefined, default to super_admin or limited?
+  // We'll filter only if userRole is present. If missing, maybe show all (dev mode) or nothing.
+  // Assuming ProtectedRoute handles access control, here we just hide UI elements.
+  const filteredNavigation = navigation.filter(item =>
+    !userRole || (userRole && item.roles.includes(userRole))
+  );
 
   return (
     <div
@@ -70,8 +132,8 @@ const AdminSidebar = ({ onLogout }: AdminSidebarProps) => {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
-        {navigation.map((item) => {
-          const isActive = location.pathname === item.href;
+        {filteredNavigation.map((item) => {
+          const isActive = location.pathname.startsWith(item.href);
           return (
             <NavLink
               key={item.name}

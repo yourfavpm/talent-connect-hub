@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Star } from "lucide-react";
 import taskiveLogo from "@/assets/taskive-logo.png";
+import { getFriendlyErrorMessage } from "@/utils/errorHandling";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -57,7 +58,7 @@ const Login = () => {
 
       // Determine redirect path before showing toast
       let redirectPath = "";
-      
+
       if (portal === "admin") {
         const { data: roleData } = await supabase
           .from("user_roles")
@@ -84,11 +85,8 @@ const Login = () => {
           .eq("user_id", data.user.id)
           .maybeSingle();
 
-        if (!talentData || !talentData.onboarding_completed) {
-          redirectPath = "/talent/onboarding";
-        } else {
-          redirectPath = "/talent/dashboard";
-        }
+        // Always redirect to dashboard, onboarding is optional/banner-driven
+        redirectPath = "/talent/dashboard";
       } else {
         const { data: clientData } = await supabase
           .from("clients")
@@ -96,11 +94,11 @@ const Login = () => {
           .eq("user_id", data.user.id)
           .maybeSingle();
 
-        if (!clientData) {
-          redirectPath = "/client/onboarding";
-        } else {
-          redirectPath = "/client/dashboard";
-        }
+        // Direct access to dashboard as requested, skipping onboarding check
+        redirectPath = "/client/dashboard";
+
+        // If they really have no client record, the dashboard might handle it or they can navigate to settings/onboarding from there.
+        // But per request, we force dashboard.
       }
 
       toast({
@@ -113,7 +111,7 @@ const Login = () => {
     } catch (error: any) {
       toast({
         title: "Sign in failed",
-        description: error.message,
+        description: getFriendlyErrorMessage(error),
         variant: "destructive",
       });
       setLoading(false);
@@ -121,19 +119,61 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Left side - Form */}
-      <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 xl:px-24">
+    <div className="min-h-screen flex bg-slate-50">
+      {/* Brand Side (Left/Top) */}
+      <div className={`hidden lg:flex flex-1 relative bg-blue-950 items-center justify-center p-12 overflow-hidden`}>
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/90 to-slate-900/90"></div>
+
+        <div className="relative z-10 max-w-md text-white">
+          {/* Logo */}
+          <div className="flex items-center gap-3 mb-12">
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-950 font-bold text-xl">T</div>
+            <span className="text-2xl font-bold tracking-tight">Taskive</span>
+          </div>
+
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight font-display">
+            Welcome<br />Back
+          </h2>
+          <p className="text-blue-100 text-lg leading-relaxed mb-8">
+            {portal === "talent"
+              ? "Continue building your career. Update your availability and browse new exciting roles."
+              : "Your next great hire is waiting. Log in to view candidates and manage your team."}
+          </p>
+
+          {/* Stat/Trust Indicator */}
+          <div className="flex gap-6 mt-12 border-t border-white/10 pt-8">
+            <div>
+              <div className="text-3xl font-bold text-white mb-1">98%</div>
+              <div className="text-blue-200 text-sm">Placement Success</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-white mb-1">48h</div>
+              <div className="text-blue-200 text-sm">Avg. Time to Hire</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Form Side (Right) */}
+      <div className="flex-1 flex flex-col justify-center px-8 lg:px-20 xl:px-32 py-12 bg-white relative">
         <div className="max-w-md w-full mx-auto">
-          <div className="mb-8">
-            <img src={taskiveLogo} alt="Taskive" className="h-10 mb-6" />
-            <h1 className="text-3xl font-bold text-foreground">{portalInfo.title}</h1>
-            <p className="text-muted-foreground mt-2">{portalInfo.subtitle}</p>
+          {/* Mobile Logo */}
+          <div className="lg:hidden mb-8">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-950 rounded-lg flex items-center justify-center text-white font-bold">T</div>
+              <span className="text-xl font-bold text-blue-950">Taskive</span>
+            </div>
+          </div>
+
+          <div className="mb-10">
+            <h1 className="text-3xl font-bold text-slate-900 mb-3 font-display">{portalInfo.title}</h1>
+            <p className="text-slate-500 text-lg">{portalInfo.subtitle}</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-slate-700 font-medium">Email Address</Label>
               <Input
                 id="email"
                 type="email"
@@ -141,16 +181,16 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12"
+                className="h-12 border-slate-300 focus:border-blue-600 focus:ring-blue-600/20 bg-white text-slate-900 placeholder:text-slate-400"
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-slate-700 font-medium">Password</Label>
                 <Link
                   to={`/auth/reset-password?portal=${portal}`}
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
                 >
                   Forgot password?
                 </Link>
@@ -163,77 +203,50 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-12 pr-10"
+                  className="h-12 pr-10 border-slate-300 focus:border-blue-600 focus:ring-blue-600/20 bg-white text-slate-900 placeholder:text-slate-400"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
 
-            <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
+            <Button type="submit" className="w-full h-14 text-lg bg-blue-950 hover:bg-blue-900 text-white shadow-xl shadow-blue-900/10 rounded-xl font-bold transition-all" size="lg" disabled={loading}>
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
 
-          {portal !== "admin" && (
-            <p className="text-center mt-6 text-muted-foreground">
-              Don't have an account?{" "}
-              <Link
-                to={`/auth/signup?portal=${portal}`}
-                className="text-primary font-medium hover:underline"
-              >
-                Create account
-              </Link>
-            </p>
-          )}
+          <p className="text-center mt-8 text-slate-500">
+            Don't have an account?{" "}
+            <Link to={`/auth/signup?portal=${portal}`} className="text-blue-600 font-bold hover:text-blue-800 hover:underline">
+              Create account
+            </Link>
+          </p>
 
-          <div className="mt-8 pt-6 border-t border-border">
-            <p className="text-sm text-muted-foreground text-center mb-4">
-              Switch to another portal:
-            </p>
+          <div className="mt-12 text-center pt-6 border-t border-slate-100">
+            <p className="text-sm text-slate-400 mb-4">Switch Portal</p>
             <div className="flex gap-2 justify-center">
               {portal !== "client" && (
                 <Link to="/auth/login?portal=client">
-                  <Button variant="outline" size="sm">Client Portal</Button>
+                  <Button variant="ghost" size="sm" className="text-slate-600 hover:text-blue-950">Client Login</Button>
                 </Link>
               )}
               {portal !== "talent" && (
                 <Link to="/auth/login?portal=talent">
-                  <Button variant="outline" size="sm">Talent Portal</Button>
+                  <Button variant="ghost" size="sm" className="text-slate-600 hover:text-blue-950">Talent Login</Button>
                 </Link>
               )}
               {portal !== "admin" && (
                 <Link to="/auth/login?portal=admin">
-                  <Button variant="outline" size="sm">Admin Portal</Button>
+                  <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-600 text-xs">Admin</Button>
                 </Link>
               )}
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Right side - Decorative */}
-      <div className={`hidden lg:flex flex-1 bg-gradient-to-br ${portalInfo.gradient} items-center justify-center p-12`}>
-        <div className="max-w-md text-center text-primary-foreground">
-          <h2 className="text-4xl font-bold mb-4">
-            {portal === "admin"
-              ? "Manage Your Platform"
-              : portal === "talent"
-              ? "Build Your Career"
-              : "Find Top Talent"}
-          </h2>
-          <p className="text-lg opacity-90">
-            {portal === "admin"
-              ? "Access the admin dashboard to manage talents, clients, and platform operations."
-              : portal === "talent"
-              ? "Connect with global businesses looking for Product and Operations professionals."
-              : "Access vetted Product and Operations professionals for your business."}
-          </p>
         </div>
       </div>
     </div>

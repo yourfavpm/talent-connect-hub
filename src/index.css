@@ -1,123 +1,141 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Taskive Brand Colors */
-    --background: 210 33% 98%;
-    --foreground: 220 25% 15%;
+    /* Taskive HR Solutions - Design Bible Colors */
+
+    /* Primary Brand Colors */
+    --taskive-navy: 222 47% 11%;
+    /* #0F172A - Deep Navy (Primary) */
+    --taskive-slate: 215 25% 27%;
+    /* #334155 - Slate 700 (Text) */
+
+    /* Accent Colors */
+    --taskive-blue: 221 83% 53%;
+    /* #2563EB - Muted Blue (Links/CTAs) */
+
+    /* Neutrals */
+    --off-white: 210 40% 98%;
+    /* #F8FAFC - Warm White (Background) */
+    --cool-gray: 214 32% 91%;
+    /* #E2E8F0 - Slate 200 (Borders) */
+    /* Semantic Mappings - LIGHT THEME (Reverted) */
+    --background: var(--off-white);
+    --foreground: var(--taskive-navy);
 
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 15%;
+    --card-foreground: var(--taskive-navy);
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 15%;
+    --popover-foreground: var(--taskive-navy);
 
-    /* Primary - Taskive Deep Blue */
-    --primary: 216 64% 32%;
-    --primary-foreground: 0 0% 100%;
+    --primary: var(--taskive-navy);
+    --primary-foreground: 0 0% 98%;
 
-    /* Secondary - Light Blue Gray */
-    --secondary: 210 25% 95%;
-    --secondary-foreground: 216 64% 32%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    /* Muted */
-    --muted: 210 20% 96%;
-    --muted-foreground: 220 10% 50%;
-
-    /* Accent - Warm accent for CTAs */
-    --accent: 199 89% 48%;
+    --accent: var(--taskive-blue);
     --accent-foreground: 0 0% 100%;
 
-    /* Success */
-    --success: 160 84% 39%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: var(--taskive-navy);
+
+    /* Primary - Taskive Navy */
+    --primary: var(--taskive-navy);
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Light slate */
+    --secondary: 216 20% 96%;
+    --secondary-foreground: var(--taskive-navy);
+
+    /* Muted */
+    --muted: 216 20% 96%;
+    --muted-foreground: var(--taskive-slate);
+
+    /* Accent - Trust Teal */
+    --accent: var(--taskive-teal);
+    --accent-foreground: 0 0% 100%;
+
+    /* Success - Trust Teal */
+    --success: var(--taskive-teal);
     --success-foreground: 0 0% 100%;
 
-    /* Warning */
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    /* Warning - Soft Amber */
+    --warning: var(--taskive-amber);
+    --warning-foreground: var(--taskive-navy);
 
     /* Destructive */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 216 64% 32%;
+    --border: var(--cool-gray);
+    --input: var(--cool-gray);
+    --ring: var(--taskive-teal);
 
-    --radius: 0.75rem;
+    --radius: 0.625rem;
+    /* 10px - Design Bible specification */
 
     /* Sidebar */
-    --sidebar-background: 216 64% 32%;
-    --sidebar-foreground: 210 40% 98%;
+    --sidebar-background: var(--taskive-navy);
+    --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 216 64% 32%;
-    --sidebar-accent: 216 64% 40%;
+    --sidebar-primary-foreground: var(--taskive-navy);
+    --sidebar-accent: var(--taskive-teal);
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 216 50% 40%;
-    --sidebar-ring: 199 89% 48%;
+    --sidebar-border: var(--taskive-slate);
+    --sidebar-ring: var(--taskive-teal);
 
-    /* Custom Taskive tokens */
-    --taskive-navy: 216 64% 32%;
-    --taskive-navy-light: 216 50% 40%;
-    --taskive-sky: 199 89% 48%;
-    --taskive-slate: 220 25% 15%;
-    --taskive-gray: 220 10% 50%;
-    --taskive-light: 210 33% 98%;
-
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(216 64% 32%) 0%, hsl(216 50% 45%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(199 89% 48%) 0%, hsl(216 64% 32%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(210 33% 98%) 0%, hsl(210 25% 95%) 100%);
-
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(220 25% 15% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(220 25% 15% / 0.08), 0 2px 4px -2px hsl(220 25% 15% / 0.05);
-    --shadow-lg: 0 10px 15px -3px hsl(220 25% 15% / 0.1), 0 4px 6px -4px hsl(220 25% 15% / 0.05);
-    --shadow-xl: 0 20px 25px -5px hsl(220 25% 15% / 0.1), 0 8px 10px -6px hsl(220 25% 15% / 0.05);
-    --shadow-glow: 0 0 30px hsl(199 89% 48% / 0.2);
+    /* Shadows - Soft, no heavy borders */
+    --shadow-sm: 0 1px 2px 0 hsl(var(--taskive-navy) / 0.04);
+    --shadow-md: 0 4px 8px -2px hsl(var(--taskive-navy) / 0.06), 0 2px 4px -2px hsl(var(--taskive-navy) / 0.04);
+    --shadow-lg: 0 12px 24px -4px hsl(var(--taskive-navy) / 0.08), 0 4px 8px -4px hsl(var(--taskive-navy) / 0.04);
+    --shadow-xl: 0 24px 48px -8px hsl(var(--taskive-navy) / 0.1), 0 8px 16px -8px hsl(var(--taskive-navy) / 0.05);
   }
 
   .dark {
-    --background: 220 25% 10%;
+    --background: 220 25% 8%;
     --foreground: 210 40% 98%;
 
-    --card: 220 25% 12%;
+    --card: 220 25% 10%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 220 25% 12%;
+    --popover: 220 25% 10%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 199 89% 48%;
+    --primary: var(--taskive-teal);
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 20% 20%;
+    --secondary: 220 20% 18%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 220 20% 18%;
-    --muted-foreground: 215 15% 60%;
+    --muted: 220 20% 16%;
+    --muted-foreground: 215 15% 55%;
 
-    --accent: 199 89% 48%;
+    --accent: var(--taskive-teal);
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 20%;
-    --input: 220 20% 20%;
-    --ring: 199 89% 48%;
+    --border: 220 20% 18%;
+    --input: 220 20% 18%;
+    --ring: var(--taskive-teal);
 
-    --sidebar-background: 220 25% 8%;
+    --sidebar-background: 220 25% 6%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary: var(--taskive-teal);
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 25% 15%;
+    --sidebar-accent: 220 25% 14%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 220 20% 18%;
-    --sidebar-ring: 199 89% 48%;
+    --sidebar-border: 220 20% 16%;
+    --sidebar-ring: var(--taskive-teal);
   }
 }
 
@@ -126,50 +144,73 @@
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'DM Sans', system-ui, sans-serif;
+  html {
+    font-size: 14px;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    /* Inter stylistic alternates */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Typography Hierarchy - Design Bible */
+  h1 {
+    @apply text-3xl font-bold tracking-tight;
+    /* Reduced for app density */
+  }
+
+  h2 {
+    @apply text-2xl font-semibold tracking-tight;
+    /* Reduced for app density */
+  }
+
+  h3 {
+    @apply text-xl font-semibold tracking-tight;
+    /* Reduced for app density */
+  }
+
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
+  }
+
+  p {
+    @apply leading-relaxed;
+    /* Line height 1.6-1.75 */
   }
 }
 
 @layer components {
+
+  /* Card styling - Soft shadow, no heavy borders */
   .taskive-card {
-    @apply bg-card rounded-xl border border-border shadow-sm hover:shadow-md transition-shadow duration-200;
+    @apply bg-card rounded-xl border border-border/50 shadow-sm transition-shadow duration-200;
   }
 
-  .taskive-gradient-bg {
-    background: var(--gradient-primary);
-  }
-
-  .taskive-gradient-text {
-    background: var(--gradient-accent);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .taskive-card:hover {
+    box-shadow: var(--shadow-md);
   }
 }
 
 @layer utilities {
   .animate-fade-in {
-    animation: fadeIn 0.3s ease-out forwards;
+    animation: fadeIn 0.2s ease-out forwards;
   }
 
   .animate-slide-up {
-    animation: slideUp 0.4s ease-out forwards;
-  }
-
-  .animate-slide-in-right {
-    animation: slideInRight 0.3s ease-out forwards;
+    animation: slideUp 0.25s ease-out forwards;
   }
 
   @keyframes fadeIn {
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
@@ -178,22 +219,12 @@
   @keyframes slideUp {
     from {
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(12px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
-    }
-  }
-
-  @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
     }
   }
 }
