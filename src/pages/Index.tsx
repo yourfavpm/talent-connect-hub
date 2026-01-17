@@ -99,69 +99,107 @@ const Index = () => {
       </section>
 
       {/* 4. WHAT WE OFFER — SERVICE MODEL PREVIEW */}
-      <section className="py-24 px-6 bg-slate-50">
-        <div className="container max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-display text-primary">Tailored Engagement Models</h2>
-            <p className="text-slate-600 font-serif max-w-2xl mx-auto">Flexible structures designed for speed, compliance, and mutual success.</p>
+      {/* 4. WHAT WE OFFER — SERVICE MODEL PREVIEW (Redesigned: Dark, Creative, Modern) */}
+      <section className="py-32 px-6 bg-blue-950 relative overflow-hidden">
+        {/* Background Accents */}
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-blue-900/20 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2"></div>
+
+        <div className="container max-w-7xl mx-auto relative z-10">
+          <div className="mb-20 max-w-2xl">
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 font-display text-white leading-tight">
+              Tailored Models.<br />
+              <span className="text-blue-400">Total Flexibility.</span>
+            </h2>
+            <p className="text-blue-200 text-lg md:text-xl font-light leading-relaxed">
+              We don't do cookie-cutter. Choose the engagement structure that fits your speed, budget, and long-term goals.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
             {/* 1. Trial-to-Hire */}
-            <div className="bg-white border border-slate-200 p-8 rounded-3xl flex flex-col hover:border-blue-950 hover:shadow-xl transition-all group h-full">
-              <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-950 transition-colors">
-                <Clock className="h-7 w-7 text-slate-600 group-hover:text-white" />
+            <div className="group relative p-8 rounded-[2rem] bg-blue-900/20 border border-white/5 hover:bg-blue-900/40 hover:border-white/20 transition-all duration-500 overflow-hidden flex flex-col min-h-[400px]">
+              <div className="absolute top-4 right-6 text-9xl font-bold text-white/[0.03] group-hover:text-white/[0.08] transition-colors font-display select-none">01</div>
+
+              <div className="mb-auto relative z-10">
+                <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center mb-8 bg-blue-950/50 group-hover:scale-110 transition-transform duration-500">
+                  <Clock className="w-5 h-5 text-blue-300" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-4">Trial-to-Hire</h3>
+                <p className="text-blue-200/80 leading-relaxed text-sm">
+                  The "try before you buy" approach. Evaluate candidates on the job for 90 days before making a full-time offer.
+                </p>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-primary">Trial-to-Hire</h3>
-              <p className="text-slate-600 text-sm mb-6 leading-relaxed flex-grow">
-                Evaluate candidates with a 3-month contract before converting to full-time. Reduce risk, ensure fit.
-              </p>
-              <Button variant="outline" className="w-full border-slate-200 text-slate-700 hover:bg-blue-950 hover:text-white" asChild>
-                <Link to="/service-models">Start Trial</Link>
-              </Button>
+
+              <div className="mt-8 pt-8 border-t border-white/5 relative z-10">
+                <Link to="/service-models" className="flex items-center gap-2 text-white font-medium group-hover:translate-x-2 transition-transform">
+                  Start a Trial <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
 
-            {/* 2. Full-Time Hire */}
-            <div className="bg-white border border-slate-200 p-8 rounded-3xl flex flex-col hover:border-blue-950 hover:shadow-xl transition-all group h-full">
-              <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-950 transition-colors">
-                <Users className="h-7 w-7 text-slate-600 group-hover:text-white" />
+            {/* 2. Direct Placement */}
+            <div className="group relative p-8 rounded-[2rem] bg-blue-900/20 border border-white/5 hover:bg-blue-900/40 hover:border-white/20 transition-all duration-500 overflow-hidden flex flex-col min-h-[400px]">
+              <div className="absolute top-4 right-6 text-9xl font-bold text-white/[0.03] group-hover:text-white/[0.08] transition-colors font-display select-none">02</div>
+
+              <div className="mb-auto relative z-10">
+                <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center mb-8 bg-blue-950/50 group-hover:scale-110 transition-transform duration-500">
+                  <Users className="w-5 h-5 text-emerald-300" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-4">Direct Placement</h3>
+                <p className="text-blue-200/80 leading-relaxed text-sm">
+                  Traditional executive search, modernized. We find your permanent leaders with speed and precision. 1-year guarantee.
+                </p>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-primary">Direct Placement</h3>
-              <p className="text-slate-600 text-sm mb-6 leading-relaxed flex-grow">
-                Traditional executive search for core leadership roles. Includes 1-year guarantee and replacement.
-              </p>
-              <Button variant="outline" className="w-full border-slate-200 text-slate-700 hover:bg-blue-950 hover:text-white" asChild>
-                <Link to="/service-models">Find Leaders</Link>
-              </Button>
+
+              <div className="mt-8 pt-8 border-t border-white/5 relative z-10">
+                <Link to="/service-models" className="flex items-center gap-2 text-white font-medium group-hover:translate-x-2 transition-transform">
+                  Find Leaders <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
 
             {/* 3. Managed Teams */}
-            <div className="bg-white border border-slate-200 p-8 rounded-3xl flex flex-col hover:border-blue-950 hover:shadow-xl transition-all group h-full">
-              <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-950 transition-colors">
-                <Shield className="h-7 w-7 text-slate-600 group-hover:text-white" />
+            <div className="group relative p-8 rounded-[2rem] bg-blue-900/20 border border-white/5 hover:bg-blue-900/40 hover:border-white/20 transition-all duration-500 overflow-hidden flex flex-col min-h-[400px]">
+              <div className="absolute top-4 right-6 text-9xl font-bold text-white/[0.03] group-hover:text-white/[0.08] transition-colors font-display select-none">03</div>
+
+              <div className="mb-auto relative z-10">
+                <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center mb-8 bg-blue-950/50 group-hover:scale-110 transition-transform duration-500">
+                  <Shield className="w-5 h-5 text-purple-300" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-4">Managed Teams</h3>
+                <p className="text-blue-200/80 leading-relaxed text-sm">
+                  We act as the Employer of Record (EOR). Build a global team without the headache of international payroll or compliance.
+                </p>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-primary">Managed Teams</h3>
-              <p className="text-slate-600 text-sm mb-6 leading-relaxed flex-grow">
-                We act as the Employer of Record (EOR). Payroll, compliance, and benefits handled globally.
-              </p>
-              <Button variant="outline" className="w-full border-slate-200 text-slate-700 hover:bg-blue-950 hover:text-white" asChild>
-                <Link to="/service-models">Learn More</Link>
-              </Button>
+
+              <div className="mt-8 pt-8 border-t border-white/5 relative z-10">
+                <Link to="/service-models" className="flex items-center gap-2 text-white font-medium group-hover:translate-x-2 transition-transform">
+                  Explore EOR <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
 
-            {/* 4. One-Time Gigs */}
-            <div className="bg-white border border-slate-200 p-8 rounded-3xl flex flex-col hover:border-blue-950 hover:shadow-xl transition-all group h-full">
-              <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-950 transition-colors">
-                <Zap className="h-7 w-7 text-slate-600 group-hover:text-white" />
+            {/* 4. Project Gigs */}
+            <div className="group relative p-8 rounded-[2rem] bg-blue-900/20 border border-white/5 hover:bg-blue-900/40 hover:border-white/20 transition-all duration-500 overflow-hidden flex flex-col min-h-[400px]">
+              <div className="absolute top-4 right-6 text-9xl font-bold text-white/[0.03] group-hover:text-white/[0.08] transition-colors font-display select-none">04</div>
+
+              <div className="mb-auto relative z-10">
+                <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center mb-8 bg-blue-950/50 group-hover:scale-110 transition-transform duration-500">
+                  <Zap className="w-5 h-5 text-amber-300" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-4">Project Gigs</h3>
+                <p className="text-blue-200/80 leading-relaxed text-sm">
+                  Surgical strikes. Hire experts for specific audits, migrations, or product launches. Deploy in 48 hours.
+                </p>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-primary">Project Gigs</h3>
-              <p className="text-slate-600 text-sm mb-6 leading-relaxed flex-grow">
-                Surgical strikes. Audits, migrations, or launches that need deep expertise delivered now.
-              </p>
-              <Button variant="outline" className="w-full border-slate-200 text-slate-700 hover:bg-blue-950 hover:text-white" asChild>
-                <Link to="/service-models">Find Experts</Link>
-              </Button>
+
+              <div className="mt-8 pt-8 border-t border-white/5 relative z-10">
+                <Link to="/service-models" className="flex items-center gap-2 text-white font-medium group-hover:translate-x-2 transition-transform">
+                  Find Experts <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
 
           </div>
