@@ -9,12 +9,12 @@ const Index = () => {
     <div className="bg-background min-h-screen text-foreground overflow-x-hidden selection:bg-primary selection:text-white font-sans">
 
       {/* 2. HERO SECTION */}
-      <section className="relative py-20 lg:py-32 px-6 overflow-hidden bg-white border-b border-blue-100">
+      <section className="relative py-32 lg:py-32 px-6 overflow-hidden bg-white border-b border-blue-100">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white to-white pointer-events-none"></div>
         <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
           {/* Left-aligned headline and subtext */}
           <div className="text-left animate-slide-up">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1] font-display text-blue-950">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1] font-display text-blue-950">
               Power Your Growth with <span className="text-blue-950">Expert Product & Operations</span> Talent
             </h1>
 
