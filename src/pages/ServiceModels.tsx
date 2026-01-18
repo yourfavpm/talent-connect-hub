@@ -75,11 +75,22 @@ const ServiceModels = () => {
             <section className="py-12 px-6 border-b border-slate-100 bg-slate-50/50">
                 <div className="container max-w-6xl mx-auto">
                     <p className="text-center text-sm font-bold text-slate-400 uppercase tracking-widest mb-8">Trusted by Companies Across Industries</p>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                        {/* Placeholders for logos - replacing generic icons with text for 'Corporate' feel if no assets available, but using block divs for structure */}
-                        {["TechGrow", "FinEase", "HealthPlus", "EduScale", "LogiChain"].map((name, i) => (
-                            <div key={i} className="h-12 flex items-center justify-center font-display font-bold text-xl text-slate-400">{name}</div>
-                        ))}
+                    <div className="relative w-full overflow-hidden">
+                        <div className="flex animate-marquee gap-16 items-center opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                            {/* Actual Companies - Duplicated for infinite scroll */}
+                            {[
+                                "Kemuko", "Xanotech", "Spectrum Microfinance", "Squared Space",
+                                "Kemuko", "Xanotech", "Spectrum Microfinance", "Squared Space",
+                                "Kemuko", "Xanotech", "Spectrum Microfinance", "Squared Space"
+                            ].map((name, i) => (
+                                <div key={i} className="flex-shrink-0 flex items-center justify-center">
+                                    <span className="text-xl md:text-2xl font-bold font-display text-slate-400 whitespace-nowrap">{name}</span>
+                                </div>
+                            ))}
+                        </div>
+                        {/* Gradient masks */}
+                        <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-slate-50 to-transparent z-10"></div>
+                        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-slate-50 to-transparent z-10"></div>
                     </div>
                 </div>
             </section>

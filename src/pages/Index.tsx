@@ -87,13 +87,22 @@ const Index = () => {
           <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-2">Trusted by Global Teams and Growing Enterprises</p>
           <p className="text-slate-500 mb-8 max-w-lg mx-auto">Streamlining hiring and operations across industries</p>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-            {/* Logos Placeholders */}
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-12 flex items-center justify-center">
-                <div className="h-8 w-32 bg-slate-200 rounded animate-pulse"></div>
-              </div>
-            ))}
+          <div className="relative w-full overflow-hidden">
+            <div className="flex animate-marquee gap-16 items-center opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+              {/* Actual Companies - Duplicated for infinite scroll */}
+              {[
+                "Kemuko", "Xanotech", "Spectrum Microfinance", "Squared Space",
+                "Kemuko", "Xanotech", "Spectrum Microfinance", "Squared Space",
+                "Kemuko", "Xanotech", "Spectrum Microfinance", "Squared Space"
+              ].map((name, i) => (
+                <div key={i} className="flex-shrink-0 flex items-center justify-center">
+                  <span className="text-xl md:text-2xl font-bold font-display text-slate-400 whitespace-nowrap">{name}</span>
+                </div>
+              ))}
+            </div>
+            {/* Gradient masks for smooth fade edges */}
+            <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white to-transparent z-10"></div>
+            <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white to-transparent z-10"></div>
           </div>
         </div>
       </section>

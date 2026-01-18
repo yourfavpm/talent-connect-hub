@@ -12,7 +12,7 @@ const ForCompanies = () => {
                 <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
                     <div className="relative z-10 animate-slide-up">
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-display tracking-tight text-primary leading-[1.1]">
-                            Hire Product & Operations Talent — <span className="text-blue-950">Without the Headache.</span>
+                            Hire Product & Operations Talent  <span className="text-blue-950">Without the Headache.</span>
                         </h1>
                         <p className="text-xl text-slate-600 mb-10 max-w-lg font-serif leading-relaxed">
                             Connect with vetted professionals matched to your needs and focus on growing your business while we handle talent engagement, compliance, and workflow.
