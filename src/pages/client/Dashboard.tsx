@@ -100,7 +100,7 @@ const ClientDashboard = () => {
             </p>
           </div>
           <div className="flex gap-3">
-            <Link to="/client/talents">
+            <Link to="/client/browse-talents">
               <Button className="bg-white text-indigo-900 hover:bg-indigo-50 border-0">
                 <Users className="h-4 w-4 mr-2" />
                 Browse Talent

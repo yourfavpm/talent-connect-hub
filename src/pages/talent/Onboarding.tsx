@@ -11,7 +11,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, Check, Upload } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  AlertCircle,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import taskiveLogo from "@/assets/taskive-logo.png";
 
 const steps = [
@@ -79,6 +88,9 @@ const TalentOnboarding = () => {
     yearsOfExperience: "",
     toolsFamiliarWith: [] as string[],
     languagesSpoken: [] as string[],
+    governmentIdUrl: "",
+    cvUrl: "",
+    proofOfAddressUrl: "",
     ndaAgreed: false,
     termsAgreed: false,
   });
@@ -592,35 +604,83 @@ const TalentOnboarding = () => {
         );
       case 4:
         return (
-          <div className="space-y-4">
-            <Card className="p-6">
-              <div className="text-center space-y-4">
-                <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
-                <div>
-                  <p className="font-medium">Government ID</p>
-                  <p className="text-sm text-muted-foreground">Upload a valid government-issued ID</p>
+          <div className="space-y-6">
+            {/* Instructions */}
+            <Card className="p-4 bg-blue-50 border-blue-200">
+              <div className="flex gap-3">
+                <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <p className="font-medium text-blue-900">Document Upload Instructions</p>
+                  <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+                    <li>Upload your documents to Google Drive</li>
+                    <li>Set sharing permissions to "Anyone with the link can view"</li>
+                    <li>Copy and paste the shareable link below</li>
+                    <li>Ensure the link is accessible before submitting</li>
+                  </ul>
                 </div>
-                <Button variant="outline">Choose File</Button>
               </div>
             </Card>
+
+            {/* Government ID */}
             <Card className="p-6">
-              <div className="text-center space-y-4">
-                <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
-                <div>
-                  <p className="font-medium">CV / Resume (PDF)</p>
-                  <p className="text-sm text-muted-foreground">Upload your latest CV</p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Government ID</p>
+                    <p className="text-sm text-muted-foreground">Valid government-issued ID (Driver's License, Passport, etc.)</p>
+                  </div>
                 </div>
-                <Button variant="outline">Choose File</Button>
+                <div className="space-y-2">
+                  <Label>Google Drive Link *</Label>
+                  <Input
+                    placeholder="https://drive.google.com/file/d/..."
+                    value={formData.governmentIdUrl || ''}
+                    onChange={(e) => handleInputChange('governmentIdUrl', e.target.value)}
+                  />
+                </div>
               </div>
             </Card>
+
+            {/* CV/Resume */}
             <Card className="p-6">
-              <div className="text-center space-y-4">
-                <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
-                <div>
-                  <p className="font-medium">Proof of Address (Optional)</p>
-                  <p className="text-sm text-muted-foreground">Utility bill or bank statement</p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">CV / Resume (PDF)</p>
+                    <p className="text-sm text-muted-foreground">Your latest CV or resume</p>
+                  </div>
                 </div>
-                <Button variant="outline">Choose File</Button>
+                <div className="space-y-2">
+                  <Label>Google Drive Link *</Label>
+                  <Input
+                    placeholder="https://drive.google.com/file/d/..."
+                    value={formData.cvUrl || ''}
+                    onChange={(e) => handleInputChange('cvUrl', e.target.value)}
+                  />
+                </div>
+              </div>
+            </Card>
+
+            {/* Proof of Address */}
+            <Card className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">Proof of Address (Optional)</p>
+                    <p className="text-sm text-muted-foreground">Utility bill or bank statement</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Google Drive Link</Label>
+                  <Input
+                    placeholder="https://drive.google.com/file/d/..."
+                    value={formData.proofOfAddressUrl || ''}
+                    onChange={(e) => handleInputChange('proofOfAddressUrl', e.target.value)}
+                  />
+                </div>
               </div>
             </Card>
           </div>
@@ -968,7 +1028,7 @@ const TalentOnboarding = () => {
             onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
             disabled={currentStep === 1}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ChevronLeft className="h-4 w-4 mr-2" />
             Previous
           </Button>
           <Button
@@ -984,7 +1044,7 @@ const TalentOnboarding = () => {
         {currentStep < steps.length ? (
           <Button onClick={() => setCurrentStep((prev) => prev + 1)}>
             Next
-            <ArrowRight className="h-4 w-4 ml-2" />
+            <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
         ) : (
           <Button

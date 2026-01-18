@@ -7,16 +7,57 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Link } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, Star } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const BookConsultation = () => {
+    const { toast } = useToast();
     const [submitted, setSubmitted] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        company: "",
+        objective: "",
+        details: "",
+        preferredDate: "",
+        preferredTime: "",
+    });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleChange = (field: string, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulate submission
-        setTimeout(() => {
+        setLoading(true);
+
+        try {
+            const { error } = await supabase.from("consultations" as any).insert({
+                first_name: formData.firstName,
+                last_name: formData.lastName,
+                email: formData.email,
+                company: formData.company,
+                objective: formData.objective,
+                details: formData.details,
+                preferred_date: formData.preferredDate || null,
+                preferred_time: formData.preferredTime || null,
+            });
+
+            if (error) throw error;
+
             setSubmitted(true);
-        }, 1000);
+        } catch (error: any) {
+            console.error("Error submitting consultation:", error);
+            toast({
+                title: "Error",
+                description: "Failed to submit request. Please try again.",
+                variant: "destructive"
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (submitted) {
@@ -90,27 +131,27 @@ const BookConsultation = () => {
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div className="space-y-3">
                                     <Label htmlFor="firstName" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">First Name</Label>
-                                    <Input id="firstName" placeholder="Jane" className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl" required />
+                                    <Input id="firstName" value={formData.firstName} onChange={(e) => handleChange("firstName", e.target.value)} placeholder="Jane" className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl" required />
                                 </div>
                                 <div className="space-y-3">
                                     <Label htmlFor="lastName" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Last Name</Label>
-                                    <Input id="lastName" placeholder="Doe" className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl" required />
+                                    <Input id="lastName" value={formData.lastName} onChange={(e) => handleChange("lastName", e.target.value)} placeholder="Doe" className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl" required />
                                 </div>
                             </div>
 
                             <div className="space-y-3">
                                 <Label htmlFor="email" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Work Email</Label>
-                                <Input id="email" type="email" placeholder="jane@company.com" className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl" required />
+                                <Input id="email" type="email" value={formData.email} onChange={(e) => handleChange("email", e.target.value)} placeholder="jane@company.com" className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl" required />
                             </div>
 
                             <div className="space-y-3">
                                 <Label htmlFor="company" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Company</Label>
-                                <Input id="company" placeholder="Acme Inc." className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl" required />
+                                <Input id="company" value={formData.company} onChange={(e) => handleChange("company", e.target.value)} placeholder="Acme Inc." className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl" required />
                             </div>
 
                             <div className="space-y-3">
                                 <Label htmlFor="goal" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Primary Objective</Label>
-                                <Select>
+                                <Select value={formData.objective} onValueChange={(val) => handleChange("objective", val)}>
                                     <SelectTrigger className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl">
                                         <SelectValue placeholder="What are you looking to solve?" />
                                     </SelectTrigger>
@@ -123,17 +164,45 @@ const BookConsultation = () => {
                                 </Select>
                             </div>
 
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                    <Label htmlFor="preferredDate" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Preferred Date</Label>
+                                    <Input
+                                        id="preferredDate"
+                                        type="date"
+                                        value={formData.preferredDate}
+                                        onChange={(e) => handleChange("preferredDate", e.target.value)}
+                                        className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl"
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <Label htmlFor="preferredTime" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Preferred Time</Label>
+                                    <Select value={formData.preferredTime} onValueChange={(val) => handleChange("preferredTime", val)}>
+                                        <SelectTrigger className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl">
+                                            <SelectValue placeholder="Select time" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="morning">Morning (9AM - 12PM)</SelectItem>
+                                            <SelectItem value="afternoon">Afternoon (12PM - 4PM)</SelectItem>
+                                            <SelectItem value="evening">Evening (4PM - 6PM)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
                             <div className="space-y-3">
                                 <Label htmlFor="message" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Details (Optional)</Label>
                                 <Textarea
                                     id="message"
+                                    value={formData.details}
+                                    onChange={(e) => handleChange("details", e.target.value)}
                                     placeholder="Tell us a bit about the role or the challenge..."
                                     className="min-h-[140px] bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl resize-none p-4 leading-relaxed"
                                 />
                             </div>
 
-                            <Button type="submit" size="lg" className="w-full h-16 text-lg font-bold rounded-xl bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/10">
-                                Request Consultation
+                            <Button type="submit" size="lg" disabled={loading} className="w-full h-16 text-lg font-bold rounded-xl bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/10">
+                                {loading ? "Submitting..." : "Request Consultation"}
                             </Button>
                         </form>
                     </div>

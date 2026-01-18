@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Briefcase, MapPin, DollarSign, Clock, CheckCircle } from "lucide-react";
+import { ArrowLeft, Briefcase, MapPin, DollarSign, Clock, CheckCircle, Calendar, Globe, UserCheck } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -18,6 +18,22 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react";
+
+const SERVICE_MODELS = [
+    { value: "full_time", label: "Full-Time Hire" },
+    { value: "trial_to_hire", label: "Trial-to-Hire" },
+    { value: "one_time_project", label: "One-Time Project" },
+];
+
+const CURRENCIES = [
+    { value: "USD", label: "USD ($)", symbol: "$" },
+    { value: "EUR", label: "EUR (€)", symbol: "€" },
+    { value: "GBP", label: "GBP (£)", symbol: "£" },
+    { value: "NGN", label: "NGN (₦)", symbol: "₦" },
+    { value: "KES", label: "KES (KSh)", symbol: "KSh" },
+    { value: "ZAR", label: "ZAR (R)", symbol: "R" },
+];
+
 
 const TalentJobDetail = () => {
     const { id } = useParams();
@@ -84,11 +100,15 @@ const TalentJobDetail = () => {
         }
     });
 
+    const getCurrencySymbol = (code: string) => {
+        return CURRENCIES.find(c => c.value === code)?.symbol || "$";
+    };
+
     if (jobLoading || appCheckLoading) return <div className="p-8 text-center">Loading job details...</div>;
     if (!job) return <div className="p-8 text-center">Job not found</div>;
 
     return (
-        <div className="space-y-6 max-w-4xl mx-auto p-6 animate-fade-in">
+        <div className="space-y-6 max-w-5xl mx-auto p-6 animate-fade-in">
             <Button variant="ghost" size="sm" asChild className="mb-4">
                 <Link to="/talent/jobs"><ArrowLeft className="h-4 w-4 mr-2" /> Back to Jobs</Link>
             </Button>
@@ -136,65 +156,88 @@ const TalentJobDetail = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                <div className="md:col-span-2 space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Job Description</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="prose prose-slate max-w-none whitespace-pre-line text-slate-600">
-                                {job.responsibilities}
-                            </div>
-                            {job.special_notes && (
-                                <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-100">
-                                    <h4 className="text-sm font-semibold text-slate-900 mb-2">Additional Notes</h4>
-                                    <p className="text-sm text-slate-600 whitespace-pre-line">{job.special_notes}</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Job Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                    {/* Key Stats Grid - Matching Client Portal */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-4 bg-muted/20 rounded-lg">
+                        <div>
+                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
+                                <Briefcase className="h-3 w-3" /> Service Model
+                            </span>
+                            <span className="font-medium block">
+                                {SERVICE_MODELS.find(m => m.value === job.service_model)?.label || job.service_model}
+                            </span>
+                        </div>
+                        <div>
+                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
+                                <Globe className="h-3 w-3" /> Work Mode
+                            </span>
+                            <span className="font-medium block capitalize">{job.work_mode}</span>
+                        </div>
+                        <div>
+                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
+                                <DollarSign className="h-3 w-3" /> Budget
+                            </span>
+                            <span className="font-medium block">
+                                {getCurrencySymbol(job.preferred_currency)}{job.budget_min} - {getCurrencySymbol(job.preferred_currency)}{job.budget_max}
+                                <span className="text-muted-foreground text-xs ml-1">/{job.salary_type}</span>
+                            </span>
+                        </div>
+                        <div>
+                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
+                                <Calendar className="h-3 w-3" /> Duration
+                            </span>
+                            <span className="font-medium block">{job.duration || "Ongoing"}</span>
+                        </div>
+                        <div>
+                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
+                                <Clock className="h-3 w-3" /> Weekly Hours
+                            </span>
+                            <span className="font-medium block">{job.weekly_hours || 40}h</span>
+                        </div>
+                        <div>
+                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
+                                <MapPin className="h-3 w-3" /> Location
+                            </span>
+                            <span className="font-medium block">{job.location || "Remote"}</span>
+                        </div>
+                        <div>
+                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
+                                <UserCheck className="h-3 w-3" /> Experience
+                            </span>
+                            <span className="font-medium block">{job.experience_required}+ Years</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Job Description</h3>
+                        <div className="prose prose-slate max-w-none whitespace-pre-line text-slate-600">
+                            {job.responsibilities}
+                        </div>
+                    </div>
 
                     {job.required_skills && job.required_skills.length > 0 && (
-                        <Card>
-                            <CardHeader><CardTitle>Required Skills</CardTitle></CardHeader>
-                            <CardContent>
-                                <div className="flex flex-wrap gap-2">
-                                    {job.required_skills.map((skill: string) => (
-                                        <Badge key={skill} variant="secondary">{skill}</Badge>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <div>
+                            <h3 className="text-lg font-semibold mb-2">Required Skills</h3>
+                            <div className="flex flex-wrap gap-2">
+                                {job.required_skills.map((skill: string) => (
+                                    <Badge key={skill} variant="secondary">{skill}</Badge>
+                                ))}
+                            </div>
+                        </div>
                     )}
-                </div>
 
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader><CardTitle>Job Details</CardTitle></CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex justify-between py-2 border-b border-slate-100">
-                                <span className="text-slate-500">Salary Range</span>
-                                <span className="font-medium">
-                                    {job.budget_min && job.budget_max ? `$${job.budget_min} - $${job.budget_max}` : 'Negotiable'}
-                                </span>
-                            </div>
-                            <div className="flex justify-between py-2 border-b border-slate-100">
-                                <span className="text-slate-500">Duration</span>
-                                <span className="font-medium">{job.duration || 'Ongoing'}</span>
-                            </div>
-                            <div className="flex justify-between py-2 border-b border-slate-100">
-                                <span className="text-slate-500">Experience</span>
-                                <span className="font-medium">{job.experience_required ? `${job.experience_required} years` : 'Not specified'}</span>
-                            </div>
-                            <div className="flex justify-between py-2 border-b border-slate-100">
-                                <span className="text-slate-500">Posted</span>
-                                <span className="font-medium">{new Date(job.created_at).toLocaleDateString()}</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
+                    {job.special_notes && (
+                        <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-100">
+                            <h4 className="text-sm font-semibold text-slate-900 mb-2">Additional Notes</h4>
+                            <p className="text-sm text-slate-600 whitespace-pre-line">{job.special_notes}</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 };

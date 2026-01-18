@@ -5,6 +5,7 @@ import {
   User,
   Briefcase,
   FileCheck,
+  FileText,
   FolderKanban,
   Clock,
   MessageSquare,
@@ -75,6 +76,7 @@ const TalentSidebar = () => {
     { icon: LayoutDashboard, label: "Dashboard", href: "/talent/dashboard", color: "from-violet-500 to-purple-600" },
     { icon: User, label: "My Profile", href: "/talent/profile", color: "from-blue-500 to-cyan-500" },
     { icon: Briefcase, label: "Browse Jobs", href: "/talent/jobs", color: "from-emerald-500 to-teal-500" },
+    { icon: FileText, label: "Contracts", href: "/talent/contracts", color: "from-purple-500 to-indigo-500" }, // Added Contracts link
     { icon: FileCheck, label: "Applications", href: "/talent/applications", color: "from-amber-500 to-orange-500" },
     { icon: FolderKanban, label: "Assignments", href: "/talent/assignments", color: "from-pink-500 to-rose-500" },
     { icon: Clock, label: "Timesheets", href: "/talent/timesheets", color: "from-indigo-500 to-blue-500" },
@@ -102,7 +104,7 @@ const TalentSidebar = () => {
       {/* Header */}
       <div className={cn("p-6 border-b border-white/10", collapsed && "px-4")}>
         <div className="flex items-center justify-between">
-          {!collapsed && <Logo variant="light" />}
+          {!collapsed && <img src="/wordmark.png" alt="Taskive" className="h-7 brightness-0 invert" />}
           <NotificationBell variant="light" />
         </div>
 

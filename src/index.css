@@ -21,6 +21,13 @@
     /* #F8FAFC - Warm White (Background) */
     --cool-gray: 214 32% 91%;
     /* #E2E8F0 - Slate 200 (Borders) */
+
+    /* Missing Brand Colors */
+    --taskive-teal: 173 58% 39%;
+    /* #2A9D8F */
+    --taskive-amber: 43 96% 64%;
+    /* #E9C46A */
+
     /* Semantic Mappings - LIGHT THEME (Reverted) */
     --background: var(--off-white);
     --foreground: var(--taskive-navy);
@@ -182,6 +189,14 @@
   p {
     @apply leading-relaxed;
     /* Line height 1.6-1.75 */
+  }
+
+  /* Reduce opacity of placeholders globally */
+  input::placeholder,
+  textarea::placeholder {
+    opacity: 0.5;
+    /* Reduced opacity */
+    color: var(--muted-foreground);
   }
 }
 

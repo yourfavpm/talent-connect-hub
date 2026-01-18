@@ -29,6 +29,7 @@ interface Invoice {
   period: string;
   dueDate: string;
   status: "paid" | "pending" | "overdue" | "upcoming";
+  metadata?: any;
 }
 
 const Invoices = () => {
@@ -80,6 +81,7 @@ const Invoices = () => {
         period: `${new Date(inv.billing_period_start).toLocaleDateString()} - ${new Date(inv.billing_period_end).toLocaleDateString()}`,
         dueDate: inv.due_date,
         status: (inv.status as "paid" | "pending" | "overdue" | "upcoming") || "pending",
+        metadata: inv.metadata
       }));
 
       setInvoices(mappedInvoices);
@@ -330,6 +332,14 @@ const InvoiceList = ({
                   <p className="text-sm text-muted-foreground">
                     {invoice.talentName} • {invoice.period}
                   </p>
+                  {(invoice as any).metadata && (
+                    <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
+                      <span>Reg: {(invoice as any).metadata.regular_hours}hrs</span>
+                      {(invoice as any).metadata.overtime_hours > 0 && (
+                        <span className="text-amber-600 font-medium">OT: {(invoice as any).metadata.overtime_hours}hrs</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-6">

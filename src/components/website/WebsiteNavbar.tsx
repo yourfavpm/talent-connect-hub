@@ -21,8 +21,8 @@ const WebsiteNavbar = () => {
         <nav className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md supports-[backdrop-filter]:bg-white/60">
             <div className="container flex h-20 items-center justify-between">
                 {/* Logo */}
-                <Link to="/" className="flex items-center space-x-2">
-                    <span className="text-2xl font-bold tracking-tight text-primary font-display">Taskive</span>
+                <Link to="/" className="flex items-center">
+                    <img src="/wordmark.png" alt="Taskive" className="h-8" />
                 </Link>
 
                 {/* Desktop Nav */}

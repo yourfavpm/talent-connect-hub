@@ -321,7 +321,7 @@ const Index = () => {
           <div className="relative h-[500px] bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 group">
             <div className="absolute inset-0 bg-blue-950/20 z-0"></div>
             <img
-              src="/images/talent-pipeline.png"
+              src="/images/vetted.png"
               alt="Taskive Talent Pipeline"
               className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-700"
             />
@@ -373,7 +373,7 @@ const Index = () => {
               </div>
               <div className="mt-auto w-full px-12 pb-12">
                 <div className="rounded-t-xl overflow-hidden shadow-2xl border border-slate-200 translate-y-6 group-hover:translate-y-2 transition-transform duration-500">
-                  <img src="/images/talent-dashboard.png" alt="Talent Dashboard" className="w-full h-auto object-cover" />
+                  <img src="/images/talent.png" alt="Talent Dashboard" className="w-full h-auto object-cover" />
                 </div>
               </div>
             </div>
@@ -391,7 +391,7 @@ const Index = () => {
               </div>
               <div className="mt-auto w-full px-12 pb-12 relative z-10">
                 <div className="rounded-t-xl overflow-hidden shadow-2xl border border-blue-800/50 translate-y-6 group-hover:translate-y-2 transition-transform duration-500">
-                  <img src="/images/client-dashboard.png" alt="Client Dashboard" className="w-full h-auto object-cover" />
+                  <img src="/images/client.png" alt="Client Dashboard" className="w-full h-auto object-cover" />
                 </div>
               </div>
             </div>

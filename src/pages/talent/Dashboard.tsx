@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,6 +15,9 @@ import {
   HelpCircle,
   ArrowRight,
   Sparkles,
+  Bell,
+  CheckCircle,
+  AlertCircle
 } from "lucide-react";
 
 interface TalentData {
@@ -94,13 +98,14 @@ const TalentDashboard = () => {
         }
       }
 
-      // 3. Fetch Stats
-      const [applicationsRes, contractsRes, timesheetsRes, messagesRes, ticketsRes] = await Promise.all([
+      // 3. Fetch Stats & Notifications
+      const [applicationsRes, contractsRes, timesheetsRes, messagesRes, ticketsRes, notificationsRes] = await Promise.all([
         supabase.from("job_applications").select("*", { count: "exact", head: true }).eq("talent_id", talentData.id),
         supabase.from("contracts").select("*", { count: "exact", head: true }).eq("talent_id", talentData.id).eq("status", "active"),
         supabase.from("timesheets").select("*", { count: "exact", head: true }).eq("talent_id", talentData.id).eq("status", "draft"),
         supabase.from("messages").select("*", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
         supabase.from("support_tickets").select("*", { count: "exact", head: true }).eq("user_id", user.id).in("status", ["open", "in_progress"]),
+        supabase.from("notifications").select("*").eq("user_id", user.id).order('created_at', { ascending: false }).limit(5)
       ]);
 
       return {
@@ -111,16 +116,18 @@ const TalentDashboard = () => {
           pendingTimesheets: timesheetsRes.count || 0,
           unreadMessages: messagesRes.count || 0,
           openTickets: ticketsRes.count || 0,
-        } as DashboardStats
+        } as DashboardStats,
+        notifications: notificationsRes.data || []
       };
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 1, // 1 minute cache for dashboard
   });
 
-  const { talent, stats } = data || {
+  const { talent, stats, notifications } = data || {
     talent: null,
-    stats: { applications: 0, activeAssignments: 0, pendingTimesheets: 0, unreadMessages: 0, openTickets: 0 }
+    stats: { applications: 0, activeAssignments: 0, pendingTimesheets: 0, unreadMessages: 0, openTickets: 0 },
+    notifications: []
   };
 
   if (isLoading) {
@@ -141,7 +148,7 @@ const TalentDashboard = () => {
   ];
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-8 max-w-7xl mx-auto p-4 md:p-6 animate-fade-in">
       {/* Hero Section */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 md:p-12">
         <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
@@ -181,7 +188,7 @@ const TalentDashboard = () => {
 
       {/* Complete Profile Banner */}
       {talent && !talent.onboarding_completed && (
-        <Card className="border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+        <Card className="border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 animate-slide-up">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
@@ -225,24 +232,55 @@ const TalentDashboard = () => {
         </div>
       </div>
 
-      {/* Recent Activity - Empty State */}
+      {/* Recent Activity */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          <Bell className="h-5 w-5 text-primary" /> Recent Activity
+        </h2>
         <Card>
-          <CardContent className="p-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-              <Clock className="h-8 w-8 text-slate-400" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">No Recent Activity</h3>
-            <p className="text-muted-foreground mb-6">
-              Your recent applications, assignments, and updates will appear here.
-            </p>
-            <Link to="/talent/jobs">
-              <Button>
-                <Briefcase className="h-4 w-4 mr-2" />
-                Browse Available Jobs
-              </Button>
-            </Link>
+          <CardContent className="p-0">
+            {notifications && notifications.length > 0 ? (
+              <div className="divide-y">
+                {notifications.map((notif: any) => (
+                  <div key={notif.id} className="p-4 hover:bg-slate-50 transition-colors flex items-start gap-4">
+                    <div className={`mt-1 h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${notif.type === 'offer' ? 'bg-purple-100 text-purple-600' :
+                        notif.type === 'interview' ? 'bg-blue-100 text-blue-600' :
+                          'bg-slate-100 text-slate-600'
+                      }`}>
+                      {notif.type === 'offer' ? <Sparkles className="h-4 w-4" /> :
+                        notif.type === 'interview' ? <Clock className="h-4 w-4" /> :
+                          <AlertCircle className="h-4 w-4" />}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-slate-900">{notif.title}</h4>
+                      <p className="text-sm text-slate-500 mt-1">{notif.message}</p>
+                      <p className="text-xs text-slate-400 mt-2">{new Date(notif.created_at).toLocaleDateString()} at {new Date(notif.created_at).toLocaleTimeString()}</p>
+                    </div>
+                    {notif.action_url && (
+                      <Link to={notif.action_url}>
+                        <Button variant="outline" size="sm" className="shrink-0">View</Button>
+                      </Link>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-12 text-center">
+                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                  <Clock className="h-8 w-8 text-slate-400" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">No Recent Activity</h3>
+                <p className="text-muted-foreground mb-6">
+                  Updates about your applications and interviews will appear here.
+                </p>
+                <Link to="/talent/jobs">
+                  <Button>
+                    <Briefcase className="h-4 w-4 mr-2" />
+                    Browse Available Jobs
+                  </Button>
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

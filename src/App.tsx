@@ -25,6 +25,8 @@ import Jobs from "./pages/client/Jobs";
 import ClientJobDetail from "./pages/client/JobDetail";
 import Contracts from "./pages/client/Contracts";
 import Invoices from "./pages/client/Invoices";
+import ClientPayments from "./pages/client/Payments";
+import ClientTimesheets from "./pages/client/Timesheets";
 import Team from "./pages/client/Team";
 import ClientSupport from "./pages/client/Support";
 
@@ -33,6 +35,8 @@ import TalentOnboarding from "./pages/talent/Onboarding";
 import TalentDashboard from "./pages/talent/Dashboard";
 import TalentProfile from "./pages/talent/Profile";
 import TalentJobs from "./pages/talent/Jobs";
+import TalentContracts from "./pages/talent/Contracts";
+import TalentOffers from "./pages/talent/Offers";
 import TalentJobDetail from "./pages/talent/JobDetail";
 import TalentApplications from "./pages/talent/Applications";
 import TalentAssignments from "./pages/talent/Assignments";
@@ -59,6 +63,12 @@ import AdminInvoices from "./pages/admin/Invoices";
 import AdminSupport from "./pages/admin/Support";
 import AdminTeam from "./pages/admin/Team";
 import AdminSettings from "./pages/admin/Settings";
+import AdminConsultations from "./pages/admin/Consultations";
+import AdminOfferConfig from "./pages/admin/OfferConfiguration";
+import AgreementTemplates from "./pages/admin/AgreementTemplates";
+import AdminTimesheets from "./pages/admin/Timesheets";
+import AdminPayments from "./pages/admin/Payments";
+import PublicJobs from "./pages/PublicJobs";
 import NotFound from "./pages/NotFound";
 
 
@@ -84,6 +94,9 @@ const App = () => (
               <Route path="/insights" element={<Insights />} />
             </Route>
 
+            {/* Public Jobs Page (no auth required) */}
+            <Route path="/jobs" element={<PublicJobs />} />
+
             {/* Auth Routes */}
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/signup" element={<Signup />} />
@@ -99,7 +112,9 @@ const App = () => (
               <Route path="jobs" element={<Jobs />} />
               <Route path="jobs/:id" element={<ClientJobDetail />} />
               <Route path="contracts" element={<Contracts />} />
+              <Route path="timesheets" element={<ClientTimesheets />} />
               <Route path="invoices" element={<Invoices />} />
+              <Route path="payments" element={<ClientPayments />} />
               <Route path="team" element={<Team />} />
               <Route path="support" element={<ClientSupport />} />
             </Route>
@@ -112,8 +127,10 @@ const App = () => (
               <Route path="profile" element={<TalentProfile />} />
               <Route path="jobs" element={<TalentJobs />} />
               <Route path="jobs/:id" element={<TalentJobDetail />} />
+              <Route path="offers" element={<TalentOffers />} />
               <Route path="applications" element={<TalentApplications />} />
               <Route path="assignments" element={<TalentAssignments />} />
+              <Route path="contracts" element={<TalentContracts />} />
               <Route path="timesheets" element={<TalentTimesheets />} />
               <Route path="timesheets/new" element={<TimesheetForm />} />
               <Route path="timesheets/:id" element={<TimesheetForm />} />
@@ -137,8 +154,13 @@ const App = () => (
               <Route path="jobs" element={<AdminJobs />} />
               <Route path="jobs/:id" element={<AdminJobDetail />} />
               <Route path="offers" element={<AdminOffers />} />
+              <Route path="offers/:offerId/configure" element={<AdminOfferConfig />} />
+              <Route path="legal/agreements" element={<AgreementTemplates />} />
               <Route path="contracts" element={<AdminContracts />} />
               <Route path="invoices" element={<AdminInvoices />} />
+              <Route path="payments" element={<AdminPayments />} />
+              <Route path="timesheets" element={<AdminTimesheets />} />
+              <Route path="consultations" element={<AdminConsultations />} />
               <Route path="support" element={<AdminSupport />} />
               <Route path="team" element={<AdminTeam />} />
               <Route path="settings" element={<AdminSettings />} />

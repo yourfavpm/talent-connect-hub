@@ -8,15 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Search, FileText, Send, DollarSign, Clock } from "lucide-react";
+import { generateTalentContractTerms } from "@/utils/contractGeneration";
+import { FileText, Send, DollarSign, Clock, Search, Briefcase } from "lucide-react";
 
 const AdminContracts = () => {
-  const { toast } = useToast();
   const [contracts, setContracts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedContract, setSelectedContract] = useState<any>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchContracts();
@@ -24,25 +25,62 @@ const AdminContracts = () => {
 
   const fetchContracts = async () => {
     try {
+      setLoading(true);
       let query = supabase
         .from("contracts")
         .select(`
           *,
-          clients(company_name, primary_contact_name, primary_contact_email),
-          talents(first_name, last_name, talent_id, email)
+          clients (company_name, user_id),
+          talents (first_name, last_name, user_id)
         `)
+        .not("client_signed_at", "is", null) // Client must have signed
+        .not("talent_signed_at", "is", null) // Talent must have signed
         .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter as "pending" | "active" | "paused" | "completed" | "terminated");
+        query = query.eq("status", statusFilter as any);
       }
 
-      const { data } = await query;
+      const { data, error } = await query;
+
+      if (error) throw error;
       setContracts(data || []);
-    } catch (error) {
-      console.error("Error fetching contracts:", error);
+    } catch (error: any) {
+      toast({
+        title: "Error fetching contracts",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateTalentContract = async (contract: any) => {
+    try {
+      // Calculate talent rate if missing, though it should be there.
+      const talentRate = contract.talent_rate || (contract.hourly_rate * (1 - (contract.taskive_margin || 20) / 100)).toFixed(2);
+
+      const terms = generateTalentContractTerms(contract, talentRate);
+
+      const { error } = await supabase
+        .from("contracts")
+        .update({ talent_contract_terms: terms } as any)
+        .eq("id", contract.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Talent Contract Generated",
+        description: "The subcontractor agreement has been generated.",
+      });
+      fetchContracts();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -112,9 +150,9 @@ const AdminContracts = () => {
 
   const filteredContracts = contracts.filter(
     (contract) =>
-      contract.contract_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contract.clients?.company_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contract.talents?.first_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      (contract.contract_number || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (contract.clients?.company_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (contract.talents?.first_name || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -192,27 +230,123 @@ const AdminContracts = () => {
                   </div>
                   <div className="flex gap-2">
                     {contract.status === "pending" && !contract.admin_sent_at && (
-                      <Button onClick={() => handleSendToClient(contract.id)}>
-                        <Send className="h-4 w-4 mr-2" />
-                        Send to Client
-                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button onClick={() => setSelectedContract(contract)}>
+                            <Send className="h-4 w-4 mr-2" />
+                            Preview & Send
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Review Contract Before Sending</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="bg-muted p-4 rounded-md text-xs whitespace-pre-wrap font-mono max-h-60 overflow-y-auto">
+                              {contract.contract_terms || "No terms generated yet."}
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <Button onClick={() => handleSendToClient(contract.id)}>
+                                <Send className="h-4 w-4 mr-2" />
+                                Confirm & Send to Client
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     )}
-                    {contract.status === "pending" && contract.client_signed_at && (
+
+                    {/* Client Signed -> Generate Talent Contract (With Preview/Edit) */}
+                    {contract.client_signed_at && !contract.talent_contract_terms && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="secondary" onClick={() => {
+                            // Pre-generate terms for preview
+                            const talentRate = contract.talent_rate || (contract.hourly_rate * (1 - (contract.taskive_margin || 20) / 100)).toFixed(2);
+                            const terms = generateTalentContractTerms(contract, talentRate);
+                            // Store temporarily in a local state if possible, or just hack it into the object for the dialog to read?
+                            // Better to use a state for 'previewTerms'
+                            setSelectedContract({ ...contract, preview_talent_terms: terms, temp_talent_rate: talentRate });
+                          }}>
+                            <FileText className="h-4 w-4 mr-2" />
+                            Generate Talent Contract
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Prepare Talent Agreement</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 bg-muted/20 p-4 rounded-lg">
+                              <div>
+                                <Label>Talent Rate ($/hr)</Label>
+                                <div className="font-mono text-lg font-semibold">${selectedContract?.temp_talent_rate || selectedContract?.talent_rate}</div>
+                              </div>
+                              <div>
+                                <Label>Role</Label>
+                                <div className="text-sm">{contract.role_title}</div>
+                              </div>
+                            </div>
+                            <div>
+                              <Label>Contract Terms (Editable)</Label>
+                              <textarea
+                                className="w-full h-64 p-3 text-xs font-mono border rounded-md"
+                                value={selectedContract?.preview_talent_terms}
+                                onChange={(e) => setSelectedContract({ ...selectedContract, preview_talent_terms: e.target.value })}
+                              />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <Button onClick={async () => {
+                                try {
+                                  const { error } = await supabase
+                                    .from("contracts")
+                                    .update({ talent_contract_terms: selectedContract.preview_talent_terms } as any)
+                                    .eq("id", contract.id);
+                                  if (error) throw error;
+
+                                  // Also set status to 'waiting_for_talent' if appropriate, or keep keeping track via null signatures
+                                  // Ideally we notify talent here
+                                  toast({
+                                    title: "Talent Contract Generated",
+                                    description: "Terms saved and ready for talent signature.",
+                                  });
+                                  fetchContracts();
+                                } catch (e: any) {
+                                  toast({ title: "Error", description: e.message, variant: "destructive" });
+                                }
+                              }}>
+                                <Send className="h-4 w-4 mr-2" />
+                                Save & Enable for Talent
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+
+                    {/* Talent Contract Generated -> Send to Talent (Assuming logic exists or manual handling for now) */}
+                    {/* For now, just show status or manual activation if talent signed could be handled outside or via 'Activate' if both signed */}
+
+                    {/* Both Signed -> Activate */}
+                    {contract.client_signed_at && contract.talent_signed_at && contract.status !== "active" && (
                       <Button className="bg-success hover:bg-success/90" onClick={() => handleActivateContract(contract.id)}>
                         Activate
                       </Button>
                     )}
+
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="outline" onClick={() => setSelectedContract(contract)}>
                           View Details
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>Contract: {selectedContract?.contract_number}</DialogTitle>
                         </DialogHeader>
+                        {/* ... details ... */}
                         <div className="space-y-6 mt-4">
+                          {/* ... existing fields ... */}
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <Label className="text-muted-foreground">Status</Label>
@@ -263,12 +397,28 @@ const AdminContracts = () => {
                               </p>
                             </div>
                           </div>
-                          {selectedContract?.contract_terms && (
-                            <div>
-                              <Label className="text-muted-foreground">Contract Terms</Label>
-                              <p className="text-sm mt-1">{selectedContract.contract_terms}</p>
-                            </div>
-                          )}
+
+                          <div className="space-y-4">
+                            {selectedContract?.contract_terms && (
+                              <div className="border p-4 rounded-md">
+                                <Label className="text-muted-foreground mb-2 block">Client Contract Terms</Label>
+                                <div className="max-h-40 overflow-y-auto text-xs whitespace-pre-wrap bg-muted/30 p-2 rounded">
+                                  {selectedContract.contract_terms}
+                                </div>
+                              </div>
+                            )}
+
+                            {selectedContract?.talent_contract_terms && (
+                              <div className="border p-4 rounded-md bg-blue-50/50">
+                                <Label className="text-blue-600 mb-2 block flex items-center gap-2">
+                                  <FileText className="h-3 w-3" /> Talent/Subcontractor Agreement
+                                </Label>
+                                <div className="max-h-40 overflow-y-auto text-xs whitespace-pre-wrap bg-white p-2 rounded border">
+                                  {selectedContract.talent_contract_terms}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </DialogContent>
                     </Dialog>

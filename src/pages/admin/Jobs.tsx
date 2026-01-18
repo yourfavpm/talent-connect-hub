@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { JobForm } from "@/components/jobs/JobForm"; // Import
+import { Plus } from "lucide-react"; // Import Plus
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -10,9 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Search, Briefcase, CheckCircle, XCircle, Users, Eye, Clock, DollarSign, 
-  MapPin, Globe, Tag, UserPlus, Send, GraduationCap, Award, FileText 
+import {
+  Search, Briefcase, CheckCircle, XCircle, Users, Eye, Clock, DollarSign,
+  MapPin, Globe, Tag, UserPlus, Send, GraduationCap, Award, FileText
 } from "lucide-react";
 
 const SERVICE_MODEL_LABELS: Record<string, string> = {
@@ -34,6 +37,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 const AdminJobs = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
   const [allTalents, setAllTalents] = useState<any[]>([]);
@@ -121,6 +125,79 @@ const AdminJobs = () => {
     }
   };
 
+  // Admin Job Creation
+  const [creatingJob, setCreatingJob] = useState(false);
+
+  const notifyMatchingTalents = async (job: any) => {
+    try {
+      // Find fully vetted talents with matching role
+      const { data: talents } = await supabase
+        .from("talents")
+        .select("user_id")
+        .eq("vetting_status", "fully_vetted")
+        .eq("primary_role", job.role_needed);
+
+      if (!talents || talents.length === 0) return;
+
+      // Create notifications
+      const notifications = talents.map(t => ({
+        user_id: t.user_id,
+        title: "New Job Match!",
+        message: `A new job matching your profile "${job.title}" has been published.`,
+        type: "job_alert",
+        action_url: `/talent/jobs/${job.id}`,
+        read: false
+      }));
+
+      await supabase.from("notifications").insert(notifications);
+    } catch (error) {
+      console.error("Error notifying talents:", error);
+    }
+  };
+
+  const handleAdminCreateJob = async (formData: any, timeTrackingRequired: boolean) => {
+    setCreatingJob(true);
+    try {
+      let finalSpecialNotes = formData.special_notes;
+      if (timeTrackingRequired && formData.service_model !== "full_time") {
+        finalSpecialNotes = `[TIME TRACKING REQUESTED] ${finalSpecialNotes || ""} `;
+      }
+
+      // 1. Create Job (published immediately)
+      const { data: job, error } = await supabase.from("jobs").insert({
+        title: formData.title,
+        role_needed: formData.role_needed,
+        service_model: formData.service_model,
+        work_mode: formData.work_mode,
+        location: formData.location,
+        preferred_currency: formData.preferred_currency,
+        salary_type: formData.salary_type,
+        budget_min: parseFloat(formData.budget_min) || null,
+        budget_max: parseFloat(formData.budget_max) || null,
+        weekly_hours: parseInt(formData.weekly_hours) || null,
+        duration: formData.duration,
+        experience_required: parseInt(formData.experience_required) || null,
+        required_skills: formData.required_skills,
+        responsibilities: formData.responsibilities,
+        special_notes: finalSpecialNotes,
+        status: "published",
+        published_at: new Date().toISOString()
+      }).select().single();
+
+      if (error) throw error;
+
+      // 2. Notify Matching Talents
+      await notifyMatchingTalents(job);
+
+      toast({ title: "Job Created & Published", description: "Job is live and matching talents have been notified." });
+      fetchJobs();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setCreatingJob(false);
+    }
+  };
+
   const handleViewTalentProfile = (talent: any) => {
     setSelectedTalent(talent);
     fetchTalentDetails(talent);
@@ -134,6 +211,8 @@ const AdminJobs = () => {
         .update({ status: "published", published_at: new Date().toISOString() })
         .eq("id", job.id);
 
+
+      // Notify Client
       await supabase.from("notifications").insert({
         user_id: job.clients?.user_id,
         title: "Job Approved",
@@ -142,7 +221,10 @@ const AdminJobs = () => {
         action_url: "/client/jobs",
       });
 
-      toast({ title: "Job Approved", description: "Job has been published and client notified" });
+      // Notify Matching Talents
+      await notifyMatchingTalents(job);
+
+      toast({ title: "Job Approved", description: "Job has been published and notifications sent." });
       fetchJobs();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -199,7 +281,7 @@ const AdminJobs = () => {
 
   const handleInviteTalentToJob = async (talentId: string, talentName: string) => {
     if (!selectedJob) return;
-    
+
     try {
       // Check if already applied
       const { data: existing } = await supabase
@@ -294,18 +376,38 @@ const AdminJobs = () => {
             className="pl-10"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="submitted">Pending Approval</SelectItem>
-            <SelectItem value="published">Published</SelectItem>
-            <SelectItem value="filled">Filled</SelectItem>
-            <SelectItem value="closed">Closed</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="submitted">Pending Approval</SelectItem>
+              <SelectItem value="published">Published</SelectItem>
+              <SelectItem value="filled">Filled</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Job
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Create & Publish Job</DialogTitle>
+              </DialogHeader>
+              <JobForm
+                onSubmit={handleAdminCreateJob}
+                submitting={creatingJob}
+                isClient={false}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -318,14 +420,10 @@ const AdminJobs = () => {
           </Card>
         ) : (
           filteredJobs.map((job) => (
-            <Card 
-              key={job.id} 
+            <Card
+              key={job.id}
               className="hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => {
-                setSelectedJob(job);
-                fetchApplications(job.id);
-                setJobDetailOpen(true);
-              }}
+              onClick={() => navigate(`/admin/jobs/${job.id}`)}
             >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
@@ -340,7 +438,7 @@ const AdminJobs = () => {
                       )}
                     </div>
                     <p className="text-muted-foreground mb-3">{job.clients?.company_name}</p>
-                    
+
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                       {job.role_needed && (
                         <span className="flex items-center gap-1">
@@ -364,7 +462,7 @@ const AdminJobs = () => {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-col items-end gap-2 ml-4" onClick={(e) => e.stopPropagation()}>
                     <span className="text-xs text-muted-foreground">
                       {new Date(job.created_at).toLocaleDateString()}
@@ -503,7 +601,7 @@ const AdminJobs = () => {
                     <Card key={app.id}>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                          <div 
+                          <div
                             className="flex items-center gap-3 cursor-pointer hover:opacity-80"
                             onClick={() => app.talents && handleViewTalentProfile(app.talents)}
                           >
@@ -529,9 +627,9 @@ const AdminJobs = () => {
                           <div className="flex items-center gap-2">
                             <Badge className={
                               app.status === "shortlisted" ? "bg-success/10 text-success" :
-                              app.status === "rejected" ? "bg-destructive/10 text-destructive" :
-                              app.status === "interview_scheduled" ? "bg-primary/10 text-primary" :
-                              "bg-warning/10 text-warning"
+                                app.status === "rejected" ? "bg-destructive/10 text-destructive" :
+                                  app.status === "interview_scheduled" ? "bg-primary/10 text-primary" :
+                                    "bg-warning/10 text-warning"
                             }>
                               {app.status}
                             </Badge>
@@ -575,7 +673,7 @@ const AdminJobs = () => {
                     <Card key={talent.id} className="hover:shadow-sm transition-shadow">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                          <div 
+                          <div
                             className="flex items-center gap-3 cursor-pointer hover:opacity-80"
                             onClick={() => handleViewTalentProfile(talent)}
                           >
@@ -596,15 +694,15 @@ const AdminJobs = () => {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="outline"
                               onClick={() => handleViewTalentProfile(talent)}
                             >
                               <Eye className="h-4 w-4 mr-1" />
                               Profile
                             </Button>
-                            <Button 
+                            <Button
                               size="sm"
                               onClick={() => handleInviteTalentToJob(talent.id, `${talent.first_name} ${talent.last_name}`)}
                             >
@@ -745,8 +843,8 @@ const AdminJobs = () => {
                           <h4 className="font-medium">Level {v.level}: {v.level_name}</h4>
                           <Badge className={
                             v.status === "approved" ? "bg-success/10 text-success" :
-                            v.status === "rejected" ? "bg-destructive/10 text-destructive" :
-                            "bg-warning/10 text-warning"
+                              v.status === "rejected" ? "bg-destructive/10 text-destructive" :
+                                "bg-warning/10 text-warning"
                           }>
                             {v.status}
                           </Badge>

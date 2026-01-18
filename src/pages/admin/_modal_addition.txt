@@ -1,0 +1,14 @@
+// Temporary file to verify modal addition
+// This content will be merged into Offers.tsx
+
+{/* Internal Job Modal - Add before closing </div> */}
+{selectedOfferForJob && (
+  <InternalJobModal
+    open={internalJobModalOpen}
+    onOpenChange={setInternalJobModalOpen}
+    offerId={selectedOfferForJob.id}
+    clientId={selectedOfferForJob.client_id}
+    talentId={selectedOfferForJob.talent_id}
+    onJobCreated={handleJobCreated}
+  />
+)}

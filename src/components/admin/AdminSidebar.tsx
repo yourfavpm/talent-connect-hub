@@ -11,12 +11,17 @@ import {
   ChevronLeft,
   Menu,
   MessageSquare,
+  Clock,
+  DollarSign,
+  Scale,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
+import { useUnreadCounts } from "@/hooks/useUnreadCounts";
 
 const navigation = [
   {
@@ -56,9 +61,27 @@ const navigation = [
     roles: ["super_admin", "operations_admin", "finance_admin"]
   },
   {
+    name: "Agreement Templates",
+    href: "/admin/legal/agreements",
+    icon: Scale,
+    roles: ["super_admin", "operations_admin"]
+  },
+  {
+    name: "Timesheets",
+    href: "/admin/timesheets",
+    icon: Clock,
+    roles: ["super_admin", "operations_admin", "finance_admin"]
+  },
+  {
     name: "Invoices",
     href: "/admin/invoices",
     icon: Receipt,
+    roles: ["super_admin", "finance_admin", "operations_admin"]
+  },
+  {
+    name: "Payments",
+    href: "/admin/payments",
+    icon: DollarSign,
     roles: ["super_admin", "finance_admin", "operations_admin"]
   },
   {
@@ -66,6 +89,12 @@ const navigation = [
     href: "/admin/support",
     icon: MessageSquare,
     roles: ["super_admin", "support_admin", "operations_admin"]
+  },
+  {
+    name: "Consultations",
+    href: "/admin/consultations",
+    icon: Calendar,
+    roles: ["super_admin", "operations_admin"]
   },
   {
     name: "Team",
@@ -89,6 +118,7 @@ const AdminSidebar = ({ onLogout }: AdminSidebarProps) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const { userRole } = useAuth();
+  const counts = useUnreadCounts();
 
   // If no role logic is active or role is undefined, default to super_admin or limited?
   // We'll filter only if userRole is present. If missing, maybe show all (dev mode) or nothing.
@@ -107,14 +137,9 @@ const AdminSidebar = ({ onLogout }: AdminSidebarProps) => {
       {/* Logo and collapse */}
       <div className="flex items-center justify-between p-4 border-b border-muted/20">
         {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-              <span className="text-accent-foreground font-bold text-lg">T</span>
-            </div>
-            <div>
-              <span className="font-bold text-lg">Taskive</span>
-              <span className="block text-xs text-muted-foreground">Admin Portal</span>
-            </div>
+          <div className="flex flex-col">
+            <img src="/wordmark.png" alt="Taskive" className="h-7 brightness-0 invert" />
+            <span className="text-xs text-muted-foreground mt-1">Admin Portal</span>
           </div>
         )}
         <div className="flex items-center gap-1">
@@ -134,19 +159,34 @@ const AdminSidebar = ({ onLogout }: AdminSidebarProps) => {
       <nav className="flex-1 p-4 space-y-2">
         {filteredNavigation.map((item) => {
           const isActive = location.pathname.startsWith(item.href);
+
+          // Badge Logic
+          let badgeCount = 0;
+          if (item.name === "Offers") badgeCount = counts.adminOffers;
+          // if (item.name === "Contracts") badgeCount = counts.adminContracts; // If we implemented it
+
           return (
             <NavLink
               key={item.name}
               to={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200",
+                "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 relative",
                 isActive
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:bg-muted/10 hover:text-background"
               )}
             >
               <item.icon className="h-5 w-5 flex-shrink-0" />
-              {!collapsed && <span className="font-medium">{item.name}</span>}
+              {!collapsed && (
+                <div className="flex-1 flex items-center justify-between">
+                  <span className="font-medium">{item.name}</span>
+                  {badgeCount > 0 && (
+                    <span className="bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
+                      {badgeCount}
+                    </span>
+                  )}
+                </div>
+              )}
             </NavLink>
           );
         })}

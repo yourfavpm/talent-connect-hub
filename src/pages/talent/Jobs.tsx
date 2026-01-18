@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,7 @@ const SERVICE_MODEL_LABELS: Record<string, string> = {
 const TalentJobs = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
   const [talent, setTalent] = useState<any>(null);
@@ -177,7 +179,11 @@ const TalentJobs = () => {
           </Card>
         ) : (
           filteredJobs.map((job) => (
-            <Card key={job.id} className="hover:shadow-md transition-shadow">
+            <Card
+              key={job.id}
+              className="hover:shadow-md transition-shadow cursor-pointer group"
+              onClick={() => navigate(`/talent/jobs/${job.id}`)}
+            >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -194,15 +200,15 @@ const TalentJobs = () => {
                             getApplicationStatus(job.id) === "shortlisted"
                               ? "bg-success/10 text-success"
                               : getApplicationStatus(job.id) === "rejected"
-                              ? "bg-destructive/10 text-destructive"
-                              : "bg-primary/10 text-primary"
+                                ? "bg-destructive/10 text-destructive"
+                                : "bg-primary/10 text-primary"
                           }
                         >
                           {getApplicationStatus(job.id) === "shortlisted"
                             ? "Shortlisted"
                             : getApplicationStatus(job.id) === "rejected"
-                            ? "Not Selected"
-                            : "Applied"}
+                              ? "Not Selected"
+                              : "Applied"}
                         </Badge>
                       )}
                     </div>
@@ -281,7 +287,7 @@ const TalentJobs = () => {
                       {new Date(job.published_at || job.created_at).toLocaleDateString()}
                     </span>
                     {hasApplied(job.id) ? (
-                      <Button variant="outline" disabled size="sm">
+                      <Button variant="outline" disabled size="sm" onClick={(e) => e.stopPropagation()}>
                         Applied
                       </Button>
                     ) : (
@@ -292,7 +298,8 @@ const TalentJobs = () => {
                         <DialogTrigger asChild>
                           <Button
                             size="sm"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setSelectedJob(job);
                               setApplyDialogOpen(true);
                             }}

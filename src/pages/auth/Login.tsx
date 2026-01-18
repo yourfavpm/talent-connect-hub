@@ -127,9 +127,8 @@ const Login = () => {
 
         <div className="relative z-10 max-w-md text-white">
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-12">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-950 font-bold text-xl">T</div>
-            <span className="text-2xl font-bold tracking-tight">Taskive</span>
+          <div className="mb-12">
+            <img src="/wordmark.png" alt="Taskive" className="h-10 brightness-0 invert" />
           </div>
 
           <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight font-display">
@@ -160,10 +159,7 @@ const Login = () => {
         <div className="max-w-md w-full mx-auto">
           {/* Mobile Logo */}
           <div className="lg:hidden mb-8">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-950 rounded-lg flex items-center justify-center text-white font-bold">T</div>
-              <span className="text-xl font-bold text-blue-950">Taskive</span>
-            </div>
+            <img src="/wordmark.png" alt="Taskive" className="h-8" />
           </div>
 
           <div className="mb-10">

@@ -93,10 +93,6 @@ const Jobs = () => {
   const [submitting, setSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [skillInput, setSkillInput] = useState("");
-  const [selectedJob, setSelectedJob] = useState<any>(null);
-  const [jobDetailsOpen, setJobDetailsOpen] = useState(false);
-  const [shortlistedTalents, setShortlistedTalents] = useState<any[]>([]);
-  const [loadingShortlist, setLoadingShortlist] = useState(false);
 
   const navigate = useNavigate();
 
@@ -153,58 +149,7 @@ const Jobs = () => {
     }
   };
 
-  const fetchShortlistedTalents = async (jobId: string) => {
-    setLoadingShortlist(true);
-    try {
-      const { data } = await supabase
-        .from("job_applications")
-        .select(`
-          *,
-          talents(id, first_name, last_name, talent_id, primary_role, country, years_of_experience, vetting_status)
-        `)
-        .eq("job_id", jobId)
-        .eq("status", "shortlisted");
 
-      setShortlistedTalents(data || []);
-    } catch (error) {
-      console.error("Error fetching shortlisted talents:", error);
-    } finally {
-      setLoadingShortlist(false);
-    }
-  };
-
-
-
-  const handleRequestInterview = async (applicationId: string, talentName: string) => {
-    try {
-      await supabase
-        .from("job_applications")
-        .update({ status: "interview_requested" })
-        .eq("id", applicationId);
-
-      toast({
-        title: "Interview Requested",
-        description: `Interview request sent for ${talentName}. The admin will coordinate.`,
-      });
-
-      if (selectedJob) {
-        fetchShortlistedTalents(selectedJob.id);
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleGenerateOffer = async (application: any) => {
-    toast({
-      title: "Offer Generation",
-      description: `Offer request for ${application.talents?.first_name} ${application.talents?.last_name} has been sent to admin for processing.`,
-    });
-  };
 
   const handleAddSkill = () => {
     if (skillInput.trim() && !formData.required_skills.includes(skillInput.trim())) {
@@ -258,7 +203,7 @@ const Jobs = () => {
       // Append Time Tracking preference to special notes
       let finalSpecialNotes = formData.special_notes;
       if (timeTrackingRequired && formData.service_model !== "full_time") {
-        finalSpecialNotes = `[TIME TRACKING REQUESTED] ${finalSpecialNotes || ""}`;
+        finalSpecialNotes = `[TIME TRACKING REQUESTED] ${finalSpecialNotes || ""} `;
       }
 
       const { error } = await supabase.from("jobs").insert({
@@ -728,8 +673,8 @@ const Jobs = () => {
                 <div
                   key={job.id}
                   className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow animate-slide-up cursor-pointer"
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                  onClick={() => handleViewJobDetails(job)}
+                  style={{ animationDelay: `${index * 0.05} s` }}
+                  onClick={() => navigate(`/client/jobs/${job.id}`)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -801,7 +746,7 @@ const Jobs = () => {
                     </div>
                   </div>
                   <div className="flex justify-end mt-4">
-                    <Button variant="outline" size="sm" onClick={() => handleViewJobDetails(job)}>View Details</Button>
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/client/jobs/${job.id}`)}>View Details</Button>
                   </div>
                 </div>
               ))}
@@ -826,7 +771,7 @@ const Jobs = () => {
                 <div
                   key={job.id}
                   className="bg-card rounded-xl border border-border p-6 opacity-70 cursor-pointer hover:opacity-100 transition-opacity"
-                  onClick={() => handleViewJobDetails(job)}
+                  onClick={() => navigate(`/client/jobs/${job.id}`)}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="font-semibold text-foreground">{job.title}</h3>
@@ -850,156 +795,7 @@ const Jobs = () => {
       </Tabs>
 
       {/* Job Details Dialog */}
-      <Dialog open={jobDetailsOpen} onOpenChange={setJobDetailsOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              {selectedJob?.title}
-              {selectedJob && getStatusBadge(selectedJob.status)}
-            </DialogTitle>
-          </DialogHeader>
 
-          {selectedJob && (
-            <Tabs defaultValue="details" className="mt-4">
-              <TabsList>
-                <TabsTrigger value="details">Job Details</TabsTrigger>
-                {selectedJob.status === "published" && (
-                  <TabsTrigger value="candidates" className="gap-1">
-                    <Users className="h-4 w-4" />
-                    Shortlisted Candidates
-                  </TabsTrigger>
-                )}
-              </TabsList>
-
-              <TabsContent value="details" className="space-y-4 mt-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Role Category</p>
-                    <p className="font-medium">{selectedJob.role_needed?.replace("_", " ")}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Service Model</p>
-                    <p className="font-medium">
-                      {SERVICE_MODELS.find(m => m.value === selectedJob.service_model)?.label || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Work Mode</p>
-                    <p className="font-medium">{selectedJob.work_mode || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Location</p>
-                    <p className="font-medium">{selectedJob.location || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Budget</p>
-                    <p className="font-medium">
-                      {selectedJob.budget_min && selectedJob.budget_max
-                        ? `${getCurrencySymbol(selectedJob.preferred_currency || "USD")}${selectedJob.budget_min} - ${getCurrencySymbol(selectedJob.preferred_currency || "USD")}${selectedJob.budget_max} (${selectedJob.salary_type || "hourly"})`
-                        : "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Experience Required</p>
-                    <p className="font-medium">{selectedJob.experience_required ? `${selectedJob.experience_required}+ years` : "N/A"}</p>
-                  </div>
-                </div>
-                {selectedJob.responsibilities && (
-                  <div>
-                    <p className="text-muted-foreground text-sm mb-1">Responsibilities</p>
-                    <p className="text-sm">{selectedJob.responsibilities}</p>
-                  </div>
-                )}
-                {selectedJob.required_skills && selectedJob.required_skills.length > 0 && (
-                  <div>
-                    <p className="text-muted-foreground text-sm mb-2">Required Skills</p>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedJob.required_skills.map((skill: string) => (
-                        <Badge key={skill} variant="secondary">{skill}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </TabsContent>
-
-              {selectedJob.status === "published" && (
-                <TabsContent value="candidates" className="space-y-4 mt-4">
-                  {loadingShortlist ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="w-6 h-6 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  ) : shortlistedTalents.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Users className="h-12 w-12 mx-auto mb-3 opacity-40" />
-                      <p>No shortlisted candidates yet</p>
-                      <p className="text-sm">Admin will shortlist talents who apply to this job.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {shortlistedTalents.map((app) => (
-                        <Card key={app.id}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                  <span className="text-sm font-semibold text-primary">
-                                    {app.talents?.first_name?.charAt(0)}{app.talents?.last_name?.charAt(0)}
-                                  </span>
-                                </div>
-                                <div>
-                                  <p className="font-medium">
-                                    {app.talents?.first_name} {app.talents?.last_name}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {app.talents?.talent_id} • {app.talents?.primary_role?.replace("_", " ")}
-                                  </p>
-                                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                                    {app.talents?.country && <span>{app.talents.country}</span>}
-                                    {app.talents?.years_of_experience && (
-                                      <span>• {app.talents.years_of_experience} years exp</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Badge className="bg-success/10 text-success">
-                                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                                  Shortlisted
-                                </Badge>
-                                {app.status === "interview_requested" ? (
-                                  <Badge variant="outline">Interview Requested</Badge>
-                                ) : (
-                                  <>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleRequestInterview(app.id, `${app.talents?.first_name} ${app.talents?.last_name}`)}
-                                    >
-                                      <Send className="h-4 w-4 mr-1" />
-                                      Interview
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => handleGenerateOffer(app)}
-                                    >
-                                      <FileText className="h-4 w-4 mr-1" />
-                                      Generate Offer
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
-              )}
-            </Tabs>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

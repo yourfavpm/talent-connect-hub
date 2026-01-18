@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -82,9 +83,59 @@ const mockTeam: TeamMember[] = [
 ];
 
 const Team = () => {
-  const [team] = useState<TeamMember[]>(mockTeam);
+  const [team, setTeam] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+
+  useEffect(() => {
+    fetchTeam();
+  }, []);
+
+  const fetchTeam = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: client } = await supabase.from('clients').select('id').eq('user_id', user.id).maybeSingle();
+      if (!client) return;
+
+      // Fetch Active Contracts
+      const { data, error } = await supabase
+        .from('contracts')
+        .select(`
+            id, role_title, start_date, hourly_rate, client_gross_rate,
+            talents (first_name, last_name, email, phone, location, id)
+            id, role_title, start_date, hourly_rate, client_gross_rate, status,
+            talents (first_name, last_name, email, phone, location, id, avatar_url)
+         `)
+        .eq('client_id', client.id)
+        .eq('status', 'active');
+
+      if (error) throw error;
+
+      const formattedTeam = (data || []).map((contract: any) => ({
+        id: contract.id,
+        name: `${contract.talents?.first_name || ''} ${contract.talents?.last_name || ''}`.trim(),
+        role: contract.role_title || 'N/A',
+        email: contract.talents?.email || 'N/A',
+        phone: contract.talents?.phone || 'N/A',
+        location: contract.talents?.location || 'Remote',
+        avatar: contract.talents?.avatar_url || `${contract.talents?.first_name?.[0] || ''}${contract.talents?.last_name?.[0] || ''}`,
+        startDate: contract.start_date || new Date().toISOString(),
+        hoursThisMonth: 0, // TODO: Calculate from timesheets
+        rate: contract.hourly_rate || 0,
+        status: (contract.status === 'active' ? 'active' : 'on_leave') as 'active' | 'on_leave',
+        timesheets: [], // TODO: Fetch timesheets
+      }));
+
+      setTeam(formattedTeam);
+    } catch (e) {
+      console.error("Error fetching team", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getTimesheetStatusConfig = (status: string) => {
     switch (status) {
@@ -110,7 +161,9 @@ const Team = () => {
       </div>
 
       {/* Team Grid */}
-      {team.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+      ) : team.length === 0 ? (
         <div className="text-center py-16 bg-card rounded-xl border border-border">
           <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-40" />
           <h3 className="text-lg font-semibold text-foreground mb-1">
@@ -142,14 +195,8 @@ const Team = () => {
                     <h3 className="font-semibold text-foreground text-lg">
                       {member.name}
                     </h3>
-                    <Badge
-                      className={
-                        member.status === "active"
-                          ? "bg-success/10 text-success border-success/20"
-                          : "bg-warning/10 text-warning border-warning/20"
-                      }
-                    >
-                      {member.status === "active" ? "Active" : "On Leave"}
+                    <Badge className="bg-success/10 text-success border-success/20">
+                      Active
                     </Badge>
                   </div>
                   <p className="text-primary font-medium">{member.role}</p>
@@ -171,35 +218,17 @@ const Team = () => {
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm text-muted-foreground">
-                          Hours this month
+                          Rate
                         </span>
                       </div>
                       <span className="font-semibold text-foreground">
-                        {member.hoursThisMonth}h
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-sm text-muted-foreground">
-                        Rate: ${member.rate}/hr
-                      </span>
-                      <span className="font-semibold text-primary">
-                        ${(member.hoursThisMonth * member.rate).toLocaleString()}
+                        ${member.rate}/hr
                       </span>
                     </div>
                   </div>
 
                   {/* Actions */}
                   <div className="flex gap-2 mt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedMember(member);
-                        setDetailsOpen(true);
-                      }}
-                    >
-                      View Details
-                    </Button>
                     <Button variant="outline" size="sm">
                       <FileSpreadsheet className="h-4 w-4 mr-2" />
                       Timesheets
@@ -248,44 +277,6 @@ const Team = () => {
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{selectedMember.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    Started{" "}
-                    {new Date(selectedMember.startDate).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-
-              {/* Timesheets */}
-              <div>
-                <h4 className="font-semibold text-foreground mb-3">
-                  Recent Timesheets
-                </h4>
-                <div className="space-y-2">
-                  {selectedMember.timesheets.map((ts) => (
-                    <div
-                      key={ts.id}
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{ts.week}</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm font-medium">
-                          {ts.hours} hours
-                        </span>
-                        <Badge className={getTimesheetStatusConfig(ts.status)}>
-                          {ts.status}
-                        </Badge>
-                        <Button variant="ghost" size="sm">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>

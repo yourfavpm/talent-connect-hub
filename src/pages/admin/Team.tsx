@@ -134,6 +134,22 @@ const AdminTeam = () => {
                     .eq("user_id", editingUser.user_id);
 
                 if (profileError) throw profileError;
+
+                // 3. Update auth.users metadata to sync the names
+                const { error: userMetadataError } = await supabase.auth.admin.updateUserById(
+                    editingUser.user_id,
+                    {
+                        user_metadata: {
+                            first_name: newFirstName,
+                            last_name: newLastName
+                        }
+                    }
+                );
+
+                if (userMetadataError) {
+                    console.error("Error updating user metadata:", userMetadataError);
+                    // Don't throw - profile update succeeded, metadata is secondary
+                }
             }
 
             toast({ title: "Success", description: "Admin updated successfully." });
