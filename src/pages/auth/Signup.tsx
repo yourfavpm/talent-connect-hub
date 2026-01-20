@@ -9,6 +9,7 @@ import { Eye, EyeOff, Star } from "lucide-react";
 import taskiveLogo from "@/assets/taskive-logo.png";
 import { z } from "zod";
 import { getFriendlyErrorMessage } from "@/utils/errorHandling";
+import { sendClientWelcomeEmail, sendTalentWelcomeEmail } from "@/lib/email/triggers";
 
 const clientSignupSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters").max(100),
@@ -91,10 +92,26 @@ const Signup = () => {
 
       if (error) throw error;
 
-      // Add user role
+      // Send welcome email after successful signup
       if (data.user) {
-        // Profile and Role creation is now handled by the 'handle_new_user' database trigger 
-        // based on the user_metadata provided in the signUp call.
+        try {
+          if (isTalent) {
+            await sendTalentWelcomeEmail({
+              email: formData.email,
+              firstName: formData.firstName,
+              talentId: 'new', // Will be assigned by trigger
+            });
+          } else {
+            await sendClientWelcomeEmail({
+              email: formData.email,
+              contactName: formData.fullName,
+              companyName: formData.companyName,
+            });
+          }
+        } catch (emailError) {
+          console.error('Failed to send welcome email:', emailError);
+          // Don't block signup if email fails
+        }
       }
 
       toast({

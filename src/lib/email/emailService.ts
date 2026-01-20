@@ -20,6 +20,15 @@ interface QueueEmailOptions extends EmailOptions {
     sendAt?: Date;
 }
 
+interface EmailTemplate {
+    id: string;
+    template_key: string;
+    subject: string;
+    body_html: string;
+    body_text: string;
+    status: string;
+}
+
 /**
  * Render email template with variables
  */
@@ -38,105 +47,62 @@ const renderTemplate = (template: string, variables: Record<string, any>): strin
 /**
  * Get email template from database
  */
-const getTemplate = async (templateKey: string) => {
-    const { data, error } = await supabase
-        .from('email_templates')
-        .select('*')
-        .eq('template_key', templateKey)
-        .eq('status', 'active')
-        .single();
+const getTemplate = async (templateKey: string): Promise<EmailTemplate | null> => {
+    try {
+        // @ts-ignore - email_templates table may not be in generated types
+        const { data, error } = await supabase
+            .from('email_templates')
+            .select('*')
+            .eq('template_key', templateKey)
+            .eq('status', 'active')
+            .single();
 
-    if (error || !data) {
-        console.warn(`Email template not found: ${templateKey}`);
+        if (error || !data) {
+            console.warn(`Email template not found: ${templateKey}`);
+            return null;
+        }
+
+        return data as EmailTemplate;
+    } catch (error) {
+        console.warn(`Error fetching template ${templateKey}:`, error);
         return null;
     }
-
-    return data;
 };
 
 /**
- * Check user notification preferences
+ * Log email to database (fire and forget)
  */
-const checkUserPreferences = async (userEmail: string): Promise<boolean> => {
-    // For now, always allow emails. Preferences can be checked later.
-    return true;
+const logEmail = async (data: {
+    recipient_email: string;
+    template_key: string;
+    subject: string;
+    status: 'sent' | 'failed';
+    provider_message_id?: string;
+    error_message?: string;
+}) => {
+    try {
+        // @ts-ignore - email_logs table may not be in generated types
+        await supabase.from('email_logs').insert(data);
+    } catch (error) {
+        console.error('Error logging email:', error);
+    }
 };
 
 /**
- * Queue an email for sending
+ * Send email immediately via Resend
  */
 export const queueEmail = async (options: QueueEmailOptions): Promise<string> => {
     try {
-        // Check user preferences
-        const canSend = await checkUserPreferences(options.to);
-        if (!canSend) {
-            console.log(`Email skipped due to user preferences: ${options.to}`);
+        if (!resend) {
+            console.warn('Resend API key not configured, email not sent');
             return '';
         }
 
-        // Get template
+        // Get template from database
         const template = await getTemplate(options.templateKey);
         if (!template) {
             console.warn(`Template not found, skipping email: ${options.templateKey}`);
             return '';
-        }
-
-        // Render subject and body
-        const subject = renderTemplate(template.subject, options.variables);
-        const bodyHtml = renderTemplate(template.body_html, options.variables);
-        const bodyText = renderTemplate(template.body_text, options.variables);
-
-        // Add to queue
-        const { data, error } = await supabase
-            .from('email_queue')
-            .insert({
-                recipient_email: options.to,
-                recipient_name: options.toName,
-                template_key: options.templateKey,
-                subject,
-                body_html: bodyHtml,
-                body_text: bodyText,
-                variables: options.variables,
-                status: 'queued',
-            })
-            .select()
-            .single();
-
-        if (error) {
-            console.error('Error queueing email:', error);
-            return '';
-        }
-
-        console.log(`Email queued: ${options.templateKey} to ${options.to}`);
-        return data?.id || '';
-    } catch (error) {
-        console.error('Error queueing email:', error);
-        return '';
-    }
-};
-
-/**
- * Send email immediately (bypass queue)
- */
-export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
-    try {
-        if (!resend) {
-            console.warn('Resend API key not configured, email not sent');
-            return false;
-        }
-
-        // Check user preferences
-        const canSend = await checkUserPreferences(options.to);
-        if (!canSend) {
-            console.log(`Email skipped due to user preferences: ${options.to}`);
-            return false;
-        }
-
-        // Get template
-        const template = await getTemplate(options.templateKey);
-        if (!template) {
-            console.warn(`Template not found: ${options.templateKey}`);
-            return false;
         }
 
         // Render subject and body
@@ -155,21 +121,18 @@ export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
 
         if (error) {
             console.error('Resend error:', error);
-
-            // Log failure
-            await supabase.from('email_logs').insert({
+            await logEmail({
                 recipient_email: options.to,
                 template_key: options.templateKey,
                 subject,
                 status: 'failed',
                 error_message: error.message,
             });
-
-            return false;
+            return '';
         }
 
-        // Log email
-        await supabase.from('email_logs').insert({
+        // Log success
+        await logEmail({
             recipient_email: options.to,
             template_key: options.templateKey,
             subject,
@@ -178,164 +141,41 @@ export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
         });
 
         console.log(`Email sent: ${options.templateKey} to ${options.to}`);
-        return true;
+        return data?.id || '';
     } catch (error: any) {
         console.error('Error sending email:', error);
-
-        // Log failure
-        await supabase.from('email_logs').insert({
-            recipient_email: options.to,
-            template_key: options.templateKey,
-            subject: options.templateKey,
-            status: 'failed',
-            error_message: error.message,
-        });
-
-        return false;
+        return '';
     }
 };
 
 /**
- * Process email queue (call this from a cron job or background worker)
+ * Send email immediately (alias for queueEmail for backward compatibility)
  */
-export const processEmailQueue = async (batchSize: number = 10): Promise<number> => {
-    try {
-        if (!resend) {
-            console.warn('Resend API key not configured, skipping queue processing');
-            return 0;
-        }
-
-        // Get queued emails
-        const { data: emails, error } = await supabase
-            .from('email_queue')
-            .select('*')
-            .eq('status', 'queued')
-            .order('created_at', { ascending: true })
-            .limit(batchSize);
-
-        if (error || !emails || emails.length === 0) {
-            return 0;
-        }
-
-        let processed = 0;
-
-        for (const email of emails) {
-            try {
-                // Update status to sending
-                await supabase
-                    .from('email_queue')
-                    .update({ status: 'sending' })
-                    .eq('id', email.id);
-
-                // Send via Resend
-                const { data, error: sendError } = await resend.emails.send({
-                    from: `${FROM_NAME} <${FROM_EMAIL}>`,
-                    to: [email.recipient_email],
-                    subject: email.subject,
-                    html: email.body_html,
-                    text: email.body_text,
-                });
-
-                if (sendError) {
-                    throw new Error(sendError.message);
-                }
-
-                // Update queue status
-                await supabase
-                    .from('email_queue')
-                    .update({
-                        status: 'sent',
-                        sent_at: new Date().toISOString(),
-                    })
-                    .eq('id', email.id);
-
-                // Log email
-                await supabase.from('email_logs').insert({
-                    queue_id: email.id,
-                    recipient_email: email.recipient_email,
-                    template_key: email.template_key,
-                    subject: email.subject,
-                    status: 'sent',
-                    provider_message_id: data?.id,
-                });
-
-                processed++;
-            } catch (error: any) {
-                console.error(`Error sending queued email ${email.id}:`, error);
-
-                // Calculate next retry time with exponential backoff
-                const retryCount = email.retry_count + 1;
-                const delays = [5 * 60, 30 * 60, 2 * 60 * 60]; // 5 min, 30 min, 2 hours (in seconds)
-                const delaySeconds = delays[Math.min(retryCount - 1, delays.length - 1)];
-                const nextRetryAt = new Date(Date.now() + delaySeconds * 1000);
-
-                // Update queue with failure
-                await supabase
-                    .from('email_queue')
-                    .update({
-                        status: retryCount >= email.max_retries ? 'failed' : 'queued',
-                        retry_count: retryCount,
-                        next_retry_at: retryCount >= email.max_retries ? null : nextRetryAt.toISOString(),
-                        error_message: error.message,
-                    })
-                    .eq('id', email.id);
-
-                // Log failure
-                await supabase.from('email_logs').insert({
-                    queue_id: email.id,
-                    recipient_email: email.recipient_email,
-                    template_key: email.template_key,
-                    subject: email.subject,
-                    status: 'failed',
-                    error_message: error.message,
-                });
-            }
-        }
-
-        return processed;
-    } catch (error) {
-        console.error('Error processing email queue:', error);
-        return 0;
-    }
+export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
+    const result = await queueEmail(options);
+    return result !== '';
 };
 
 /**
- * Retry failed emails that are ready for retry
+ * Process email queue - no longer needed as we send immediately
+ * Kept for backward compatibility
+ */
+export const processEmailQueue = async (_batchSize: number = 10): Promise<number> => {
+    console.log('processEmailQueue: Emails are now sent immediately, queue processing not needed');
+    return 0;
+};
+
+/**
+ * Retry failed emails - no longer needed as we send immediately
+ * Kept for backward compatibility
  */
 export const retryFailedEmails = async (): Promise<number> => {
-    try {
-        const now = new Date().toISOString();
-
-        // Get failed emails ready for retry
-        const { data: emails, error } = await supabase
-            .from('email_queue')
-            .select('*')
-            .eq('status', 'queued')
-            .not('next_retry_at', 'is', null)
-            .lte('next_retry_at', now)
-            .limit(10);
-
-        if (error || !emails || emails.length === 0) {
-            return 0;
-        }
-
-        // Reset to queued for processing
-        const emailIds = emails.map(e => e.id);
-        await supabase
-            .from('email_queue')
-            .update({ next_retry_at: null })
-            .in('id', emailIds);
-
-        // Process them
-        return await processEmailQueue(emails.length);
-    } catch (error) {
-        console.error('Error retrying failed emails:', error);
-        return 0;
-    }
+    console.log('retryFailedEmails: Emails are now sent immediately, retry processing not needed');
+    return 0;
 };
 
 /**
- * Update email status from webhook (for Resend webhooks)
+ * Update email status from webhook
  */
 export const updateEmailStatus = async (
     messageId: string,
@@ -343,7 +183,7 @@ export const updateEmailStatus = async (
     timestamp?: Date
 ): Promise<void> => {
     try {
-        const updates: any = { status };
+        const updates: Record<string, string> = { status };
 
         if (timestamp) {
             if (status === 'delivered') updates.delivered_at = timestamp.toISOString();
@@ -351,6 +191,7 @@ export const updateEmailStatus = async (
             if (status === 'clicked') updates.clicked_at = timestamp.toISOString();
         }
 
+        // @ts-ignore - email_logs table may not be in generated types
         await supabase
             .from('email_logs')
             .update(updates)
