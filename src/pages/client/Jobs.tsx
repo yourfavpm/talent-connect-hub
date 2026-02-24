@@ -1,129 +1,35 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import {
-  Plus,
-  Briefcase,
-  Clock,
-  MapPin,
-  DollarSign,
-  Eye,
-  Globe,
-  Tag,
-  X,
-  AlertCircle,
-  Users,
-  Send,
-  FileText,
-  CheckCircle2,
-} from "lucide-react";
-
-const SERVICE_MODELS = [
-  {
-    value: "full_time",
-    label: "Full-Time Hire",
-    description: "One-Time Buyout, 15% of talent monthly salary, no time tracking."
-  },
-  {
-    value: "trial_to_hire",
-    label: "Trial-to-Hire",
-    description: "Taskive-managed, optional time tracking, buyout possible."
-  },
-  {
-    value: "one_time_project",
-    label: "One-Time Project",
-    description: "Taskive-managed, milestone/fixed payment, optional time tracking."
-  },
-];
-
-const CURRENCIES = [
-  { value: "USD", label: "USD ($)" },
-  { value: "EUR", label: "EUR (€)" },
-  { value: "GBP", label: "GBP (£)" },
-  { value: "NGN", label: "NGN (₦)" },
-  { value: "KES", label: "KES (KSh)" },
-  { value: "ZAR", label: "ZAR (R)" },
-];
-
-const WORK_MODES = [
-  { value: "remote", label: "Remote" },
-  { value: "onsite", label: "Onsite" },
-  { value: "hybrid", label: "Hybrid" },
-  { value: "asynchronous", label: "Asynchronous (Any Timezone)" },
-];
-
-const SALARY_TYPES = [
-  { value: "hourly", label: "Hourly" },
-  { value: "weekly", label: "Weekly" },
-  { value: "monthly", label: "Monthly" },
-  { value: "fixed", label: "Fixed Price" },
-];
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { Search, Plus, MoreHorizontal, FileText, AlertCircle, Briefcase, Eye, Calendar, Clock, DollarSign } from "lucide-react";
+import { format } from "date-fns";
 
 const Jobs = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [clientId, setClientId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [skillInput, setSkillInput] = useState("");
-
   const navigate = useNavigate();
-
-  // Job Creation State
-  const [timeTrackingRequired, setTimeTrackingRequired] = useState(false);
-  const [formErrors, setFormErrors] = useState<string[]>([]);
-  const [formData, setFormData] = useState({
-    title: "",
-    role_needed: "",
-    service_model: "",
-    work_mode: "",
-    location: "",
-    preferred_currency: "USD",
-    salary_type: "hourly",
-    budget_min: "",
-    budget_max: "",
-    weekly_hours: "",
-    duration: "",
-    experience_required: "",
-    required_skills: [] as string[],
-    responsibilities: "",
-    special_notes: "",
-  });
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
 
   useEffect(() => {
     if (user) {
-      fetchClientAndJobs();
+      fetchJobs();
     }
   }, [user]);
 
-  const fetchClientAndJobs = async () => {
+  const fetchJobs = async () => {
     try {
       const { data: clientData } = await supabase
         .from("clients")
@@ -132,670 +38,311 @@ const Jobs = () => {
         .maybeSingle();
 
       if (clientData) {
-        setClientId(clientData.id);
-
         const { data: jobsData } = await supabase
           .from("jobs")
-          .select("*")
+          .select("*, job_applications(count), job_shortlist:job_applications(count)") // Simplified count attempts
           .eq("client_id", clientData.id)
           .order("created_at", { ascending: false });
 
         setJobs(jobsData || []);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching jobs:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  const getStatusBadge = (job: any) => {
+    const status = job.status;
+    const hasRejection = !!job.rejection_reason;
 
+    if (hasRejection && (status === 'draft' || status === 'rejected')) {
+      return <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-none">Needs Changes</Badge>;
+    }
 
-  const handleAddSkill = () => {
-    if (skillInput.trim() && !formData.required_skills.includes(skillInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        required_skills: [...prev.required_skills, skillInput.trim()]
-      }));
-      setSkillInput("");
+    switch (status) {
+      case "draft":
+        return <Badge variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-100 border-none">Draft</Badge>;
+      case "submitted":
+      case "under_review":
+        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-none">Awaiting Approval</Badge>;
+      case "approved":
+      case "published":
+        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">Active</Badge>;
+      case "filled":
+      case "closed":
+        return <Badge variant="outline" className="text-gray-500 border-gray-200">Closed</Badge>;
+      default:
+        return <Badge variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-100 border-none">{status}</Badge>;
     }
   };
 
-  const handleRemoveSkill = (skill: string) => {
-    setFormData(prev => ({
-      ...prev,
-      required_skills: prev.required_skills.filter(s => s !== skill)
-    }));
+  const getJobGroup = (job: any) => {
+    const status = job.status;
+    const hasRejection = !!job.rejection_reason;
+
+    if (hasRejection && (status === 'draft' || status === 'rejected')) return "needs_changes";
+    if (status === "submitted" || status === "under_review") return "awaiting_approval";
+    if (status === "approved" || status === "published") return "active";
+    if (status === "filled" || status === "closed") return "closed";
+    return "draft";
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormErrors([]); // Clear errors
-    if (!clientId) {
-      toast({
-        title: "Complete Onboarding",
-        description: "Please complete your company onboarding first to post jobs.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const filteredJobs = useMemo(() => {
+    return jobs.filter((job) => {
+      const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const group = getJobGroup(job);
 
-    // Human-readable validation
-    const missingFields = [];
-    if (!formData.title) missingFields.push("Job Title");
-    if (!formData.role_needed) missingFields.push("Role Category");
-    if (!formData.service_model) missingFields.push("Service Model");
-    if (!formData.work_mode) missingFields.push("Work Mode");
-    if (!formData.responsibilities) missingFields.push("Job Responsibilities");
+      if (!matchesSearch) return false;
+      if (activeTab === "all") return true;
+      if (activeTab === "active" && group === "active") return true;
+      if (activeTab === "awaiting" && group === "awaiting_approval") return true;
+      if (activeTab === "changes" && group === "needs_changes") return true;
+      if (activeTab === "closed" && group === "closed") return true;
 
-    if (missingFields.length > 0) {
-      setFormErrors(missingFields);
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all mandatory fields highlighted in the form.",
-        variant: "destructive",
-      });
-      return;
-    }
+      return false;
+    });
+  }, [jobs, searchQuery, activeTab]);
 
-    setSubmitting(true);
-    try {
-      // Append Time Tracking preference to special notes
-      let finalSpecialNotes = formData.special_notes;
-      if (timeTrackingRequired && formData.service_model !== "full_time") {
-        finalSpecialNotes = `[TIME TRACKING REQUESTED] ${finalSpecialNotes || ""} `;
-      }
+  const hasAwaitingApproval = jobs.some(j => getJobGroup(j) === "awaiting_approval");
 
-      const { error } = await supabase.from("jobs").insert({
-        client_id: clientId,
-        title: formData.title,
-        role_needed: formData.role_needed,
-        service_model: formData.service_model,
-        work_mode: formData.work_mode,
-        location: formData.location,
-        preferred_currency: formData.preferred_currency,
-        salary_type: formData.salary_type,
-        budget_min: parseFloat(formData.budget_min) || null,
-        budget_max: parseFloat(formData.budget_max) || null,
-        weekly_hours: parseInt(formData.weekly_hours) || null,
-        duration: formData.duration,
-        experience_required: parseInt(formData.experience_required) || null,
-        required_skills: formData.required_skills,
-        responsibilities: formData.responsibilities,
-        special_notes: finalSpecialNotes,
-        status: "submitted",
-      });
+  const renderDesktopTable = () => (
+    <div className="hidden md:block bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <table className="w-full text-sm text-left">
+        <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
+          <tr>
+            <th className="px-6 py-4 font-medium">Job Title</th>
+            <th className="px-6 py-4 font-medium">Service Type</th>
+            <th className="px-6 py-4 font-medium">Status</th>
+            <th className="px-6 py-4 font-medium text-center">Applicants</th>
+            <th className="px-6 py-4 font-medium text-center">Shortlist</th>
+            <th className="px-6 py-4 font-medium">Last Updated</th>
+            <th className="px-6 py-4 font-medium text-right"></th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {filteredJobs.map((job) => (
+            <tr 
+              key={job.id} 
+              className="hover:bg-gray-50/50 transition-colors group cursor-pointer"
+              onClick={() => navigate(`/client/jobs/${job.id}`)}
+            >
+              <td className="px-6 py-4">
+                <div className="font-medium text-gray-900">{job.title}</div>
+                {getJobGroup(job) === "needs_changes" && (
+                  <div className="text-xs text-orange-600 mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" /> Admin requested changes
+                  </div>
+                )}
+              </td>
+              <td className="px-6 py-4 text-gray-500 capitalize">
+                {job.service_model?.replace(/_/g, " ") || "Not specified"}
+              </td>
+              <td className="px-6 py-4">
+                {getStatusBadge(job)}
+              </td>
+              <td className="px-6 py-4 text-center text-gray-600 font-medium">
+                —
+              </td>
+              <td className="px-6 py-4 text-center text-gray-600 font-medium">
+                —
+              </td>
+              <td className="px-6 py-4 text-gray-500 text-xs">
+                {format(new Date(job.updated_at || job.created_at), "MMM d, yyyy")}
+              </td>
+              <td className="px-6 py-4 text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="sr-only">Open menu</span>
+                      <MoreHorizontal className="h-4 w-4 text-gray-500" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[160px]">
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/client/jobs/${job.id}`); }}>
+                      <Eye className="mr-2 h-4 w-4" /> View Details
+                    </DropdownMenuItem>
+                    {getJobGroup(job) === "needs_changes" && (
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/client/jobs/${job.id}`); }}>
+                        <FileText className="mr-2 h-4 w-4" /> Edit & Resubmit
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 
-      if (error) throw error;
-
-      setDialogOpen(false);
-      setFormData({
-        title: "",
-        role_needed: "",
-        service_model: "",
-        work_mode: "",
-        location: "",
-        preferred_currency: "USD",
-        salary_type: "hourly",
-        budget_min: "",
-        budget_max: "",
-        weekly_hours: "",
-        duration: "",
-        experience_required: "",
-        required_skills: [],
-        responsibilities: "",
-        special_notes: "",
-      });
-
-      toast({
-        title: "Job Posted Successfully",
-        description: "Your job has been submitted for admin review.",
-      });
-
-      fetchClientAndJobs();
-    } catch (error: any) {
-      console.error("Error posting job:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to post job",
-        variant: "destructive",
-      });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      draft: "bg-muted text-muted-foreground",
-      submitted: "bg-warning/10 text-warning border-warning/20",
-      under_review: "bg-primary/10 text-primary",
-      approved: "bg-success/10 text-success",
-      published: "bg-success/10 text-success",
-      filled: "bg-primary/10 text-primary",
-      closed: "bg-destructive/10 text-destructive",
-    };
-    return <Badge className={styles[status] || "bg-muted"}>{status.replace("_", " ")}</Badge>;
-  };
-
-  const getCurrencySymbol = (currency: string) => {
-    const symbols: Record<string, string> = {
-      USD: "$", EUR: "€", GBP: "£", NGN: "₦", KES: "KSh", ZAR: "R"
-    };
-    return symbols[currency] || "$";
-  };
-
-  const openJobs = jobs.filter((j) => ["submitted", "under_review", "approved", "published"].includes(j.status));
-  const closedJobs = jobs.filter((j) => ["filled", "closed"].includes(j.status));
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  const renderMobileList = () => (
+    <div className="md:hidden space-y-3">
+      {filteredJobs.map((job) => (
+        <div 
+          key={job.id}
+          className="bg-white border border-gray-200 rounded-xl p-4 active:scale-[0.98] transition-all"
+          onClick={() => navigate(`/client/jobs/${job.id}`)}
+        >
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="font-medium text-gray-900 leading-tight">{job.title}</h3>
+            <div className="ml-3 shrink-0">{getStatusBadge(job)}</div>
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-500 mb-3">
+            <span className="flex items-center"><Briefcase className="w-3 h-3 mr-1" /> {job.service_model?.replace(/_/g, " ") || "Any"}</span>
+            <span className="flex items-center"><Calendar className="w-3 h-3 mr-1" /> {format(new Date(job.created_at), "MMM d, yyyy")}</span>
+          </div>
+          {getJobGroup(job) === "needs_changes" && (
+            <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded-md flex items-start mb-3">
+              <AlertCircle className="w-3.5 h-3.5 mr-1.5 shrink-0 mt-0.5" /> 
+              <span>Admin requested changes to this job post.</span>
+            </div>
+          )}
+          <div className="flex bg-gray-50 rounded-lg p-2 divide-x divide-gray-200">
+            <div className="flex-1 text-center">
+              <div className="text-sm font-semibold text-gray-900">—</div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider">Applied</div>
+            </div>
+            <div className="flex-1 text-center">
+              <div className="text-sm font-semibold text-gray-900">—</div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider">Shortlist</div>
+            </div>
+            <div className="flex-1 text-center">
+              <div className="text-sm font-semibold text-gray-900">—</div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider">Interviews</div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans animate-fade-in">
+      
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Job Postings</h1>
-          <p className="text-muted-foreground mt-1">
-            Create and manage your job openings
-          </p>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Jobs</h1>
+          <p className="text-sm text-gray-500 mt-1">Manage your job postings and applicants.</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button disabled={!clientId}>
-              <Plus className="h-4 w-4 mr-2" />
-              Post New Job
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create Job Posting</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-5 mt-4">
-              {formErrors.length > 0 && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Missing Information</AlertTitle>
-                  <AlertDescription>
-                    <ul className="list-disc pl-5 mt-2 text-sm">
-                      {formErrors.map((err, i) => (
-                        <li key={i}>{err}</li>
-                      ))}
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              )}
-              {/* Basic Info */}
-              <div className="space-y-4">
-                <h3 className="font-medium text-foreground">Basic Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Job Title *</Label>
-                    <Input
-                      id="title"
-                      placeholder="e.g., Senior Virtual Assistant"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="role_needed">Role Category *</Label>
-                    <Select
-                      value={formData.role_needed}
-                      onValueChange={(value) => setFormData({ ...formData, role_needed: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="virtual_assistant">Virtual Assistant</SelectItem>
-                        <SelectItem value="customer_support">Customer Support</SelectItem>
-                        <SelectItem value="social_media_manager">Social Media Manager</SelectItem>
-                        <SelectItem value="product_manager">Product Manager</SelectItem>
-                        <SelectItem value="operations_manager">Operations Manager</SelectItem>
-                        <SelectItem value="project_manager">Project Manager</SelectItem>
-                        <SelectItem value="executive_assistant">Executive Assistant</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
-                  <div className="space-y-2">
-                    <Label htmlFor="service_model">Hiring Model *</Label>
-                    <Select
-                      value={formData.service_model}
-                      onValueChange={(value) => setFormData({ ...formData, service_model: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select hiring model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SERVICE_MODELS.map((model) => (
-                          <SelectItem key={model.value} value={model.value}>
-                            {model.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {formData.service_model && (
-                      <p className="text-sm text-muted-foreground mt-1 px-1">
-                        {SERVICE_MODELS.find(m => m.value === formData.service_model)?.description}
-                      </p>
-                    )}
-                  </div>
-
-                  {(formData.service_model === 'trial_to_hire' || formData.service_model === 'one_time_project') && (
-                    <div className="flex items-center justify-between border-t pt-4 border-border">
-                      <div className="space-y-0.5">
-                        <Label>Require Time Tracking?</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Toggle if you want to see detailed timesheets.
-                        </p>
-                      </div>
-                      <Switch
-                        checked={timeTrackingRequired}
-                        onCheckedChange={setTimeTrackingRequired}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Work Mode & Location */}
-              <div className="space-y-4">
-                <h3 className="font-medium text-foreground">Work Mode & Location</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="work_mode">Work Mode *</Label>
-                    <Select
-                      value={formData.work_mode}
-                      onValueChange={(value) => setFormData({ ...formData, work_mode: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select work mode" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {WORK_MODES.map((mode) => (
-                          <SelectItem key={mode.value} value={mode.value}>
-                            {mode.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
-                    <Input
-                      id="location"
-                      placeholder="e.g., Lagos, Nigeria or Remote"
-                      value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Compensation */}
-              <div className="space-y-4">
-                <h3 className="font-medium text-foreground">Compensation</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="preferred_currency">Currency</Label>
-                    <Select
-                      value={formData.preferred_currency}
-                      onValueChange={(value) => setFormData({ ...formData, preferred_currency: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select currency" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CURRENCIES.map((curr) => (
-                          <SelectItem key={curr.value} value={curr.value}>
-                            {curr.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="salary_type">Salary Type</Label>
-                    <Select
-                      value={formData.salary_type}
-                      onValueChange={(value) => setFormData({ ...formData, salary_type: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SALARY_TYPES.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="weekly_hours">Weekly Hours</Label>
-                    <Input
-                      id="weekly_hours"
-                      type="number"
-                      placeholder="40"
-                      value={formData.weekly_hours}
-                      onChange={(e) => setFormData({ ...formData, weekly_hours: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="budget_min">Budget Min ({getCurrencySymbol(formData.preferred_currency)})</Label>
-                    <Input
-                      id="budget_min"
-                      type="number"
-                      placeholder="15"
-                      value={formData.budget_min}
-                      onChange={(e) => setFormData({ ...formData, budget_min: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="budget_max">Budget Max ({getCurrencySymbol(formData.preferred_currency)})</Label>
-                    <Input
-                      id="budget_max"
-                      type="number"
-                      placeholder="25"
-                      value={formData.budget_max}
-                      onChange={(e) => setFormData({ ...formData, budget_max: e.target.value })}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Requirements */}
-              <div className="space-y-4">
-                <h3 className="font-medium text-foreground">Requirements</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="experience_required">Years of Experience</Label>
-                    <Input
-                      id="experience_required"
-                      type="number"
-                      placeholder="3"
-                      value={formData.experience_required}
-                      onChange={(e) => setFormData({ ...formData, experience_required: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="duration">Duration</Label>
-                    <Select
-                      value={formData.duration}
-                      onValueChange={(value) => setFormData({ ...formData, duration: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select duration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1-3 months">1-3 months</SelectItem>
-                        <SelectItem value="3-6 months">3-6 months</SelectItem>
-                        <SelectItem value="6-12 months">6-12 months</SelectItem>
-                        <SelectItem value="12+ months">12+ months</SelectItem>
-                        <SelectItem value="Ongoing">Ongoing</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Skills */}
-                <div className="space-y-2">
-                  <Label>Required Skills</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Add a skill (e.g., Excel, Notion)"
-                      value={skillInput}
-                      onChange={(e) => setSkillInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleAddSkill();
-                        }
-                      }}
-                    />
-                    <Button type="button" variant="outline" onClick={handleAddSkill}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  {formData.required_skills.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {formData.required_skills.map((skill) => (
-                        <Badge key={skill} variant="secondary" className="gap-1">
-                          {skill}
-                          <X
-                            className="h-3 w-3 cursor-pointer"
-                            onClick={() => handleRemoveSkill(skill)}
-                          />
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-4">
-                <h3 className="font-medium text-foreground">Description</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="responsibilities">Job Responsibilities *</Label>
-                  <Textarea
-                    id="responsibilities"
-                    placeholder="Describe the main responsibilities and day-to-day tasks..."
-                    rows={4}
-                    value={formData.responsibilities}
-                    onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="special_notes">Special Notes (Optional)</Label>
-                  <Textarea
-                    id="special_notes"
-                    placeholder="Any additional requirements or preferences..."
-                    rows={3}
-                    value={formData.special_notes}
-                    onChange={(e) => setFormData({ ...formData, special_notes: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={submitting}>
-                  {submitting ? "Submitting..." : "Submit for Review"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => navigate("/client/jobs/new")}>
+          <Plus className="h-4 w-4 mr-2" />
+          Post Job
+        </Button>
       </div>
 
-      {!clientId && (
-        <div className="flex items-center gap-2 p-4 rounded-lg bg-warning/10 border border-warning/20">
-          <AlertCircle className="h-5 w-5 text-warning" />
-          <p className="text-sm text-warning">Complete your company onboarding to post jobs.</p>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-500">Active Roles</h3>
+            <div className="bg-green-100 p-2 rounded-lg">
+              <Briefcase className="w-4 h-4 text-green-700" />
+            </div>
+          </div>
+          <p className="text-2xl font-semibold text-gray-900">
+            {jobs.filter(j => getJobGroup(j) === "active").length}
+          </p>
+        </div>
+        
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-500">Awaiting Approval</h3>
+            <div className="bg-yellow-100 p-2 rounded-lg">
+              <Clock className="w-4 h-4 text-yellow-700" />
+            </div>
+          </div>
+          <p className="text-2xl font-semibold text-gray-900">
+            {jobs.filter(j => getJobGroup(j) === "awaiting_approval").length}
+          </p>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-500">Needs Changes</h3>
+            <div className="bg-orange-100 p-2 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-orange-700" />
+            </div>
+          </div>
+          <p className="text-2xl font-semibold text-gray-900">
+            {jobs.filter(j => getJobGroup(j) === "needs_changes").length}
+          </p>
+        </div>
+      </div>
+
+      {/* Optional Awaiting Approval Banner */}
+      {hasAwaitingApproval && activeTab === "all" && (
+        <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-sm font-medium text-yellow-800">Jobs pending approval</h4>
+            <p className="text-sm text-yellow-700 mt-1">
+              You have job postings waiting for Taskive admin approval. They will be published to the talent network once approved.
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Tabs */}
-      <Tabs defaultValue="open" className="w-full">
-        <TabsList>
-          <TabsTrigger value="open" className="gap-2">
-            Active
-            <Badge variant="secondary" className="ml-1">
-              {openJobs.length}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="closed" className="gap-2">
-            Closed
-            <Badge variant="secondary" className="ml-1">
-              {closedJobs.length}
-            </Badge>
-          </TabsTrigger>
-        </TabsList>
+      {/* Tabs & Search */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto overflow-x-auto scrollbar-hide">
+          <TabsList className="bg-gray-100 p-1 border border-gray-200">
+            <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:text-gray-900 text-gray-500">All</TabsTrigger>
+            <TabsTrigger value="active" className="data-[state=active]:bg-white data-[state=active]:text-gray-900 text-gray-500">Active</TabsTrigger>
+            <TabsTrigger value="awaiting" className="data-[state=active]:bg-white data-[state=active]:text-gray-900 text-gray-500">Awaiting Approval</TabsTrigger>
+            <TabsTrigger value="changes" className="data-[state=active]:bg-white data-[state=active]:text-gray-900 text-gray-500">Needs Changes</TabsTrigger>
+            <TabsTrigger value="closed" className="data-[state=active]:bg-white data-[state=active]:text-gray-900 text-gray-500">Closed / Past</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
-        <TabsContent value="open" className="mt-6">
-          {openJobs.length === 0 ? (
-            <div className="text-center py-16 bg-card rounded-xl border border-border">
-              <Briefcase className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-40" />
-              <h3 className="text-lg font-semibold text-foreground mb-1">
-                No active jobs
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Post your first job to start receiving talent matches
-              </p>
-              <Button onClick={() => setDialogOpen(true)} disabled={!clientId}>
-                <Plus className="h-4 w-4 mr-2" />
-                Post New Job
-              </Button>
-            </div>
+        <div className="relative w-full md:w-64 shrink-0">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search jobs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-10 bg-white border-gray-200 focus-visible:ring-gray-200 text-sm"
+          />
+        </div>
+      </div>
+
+      {/* Loading State */}
+      {loading ? (
+        <div className="flex items-center justify-center h-64 text-sm text-gray-500">
+          Loading jobs...
+        </div>
+      ) : filteredJobs.length === 0 ? (
+        /* Empty State */
+        <div className="text-center py-20 bg-white border border-dashed border-gray-200 rounded-xl">
+          <Briefcase className="h-10 w-10 mx-auto text-gray-300 mb-4" />
+          <h3 className="text-base font-medium text-gray-900 mb-1">
+            {searchQuery || activeTab !== "all" ? "No jobs match your filters" : "You haven't posted any jobs yet"}
+          </h3>
+          <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
+            {searchQuery || activeTab !== "all" 
+              ? "Try adjusting your search query or changing tabs to find what you're looking for."
+              : "Create your first job posting to start finding the perfect talent for your operational needs."}
+          </p>
+          {(searchQuery || activeTab !== "all") ? (
+            <Button variant="outline" onClick={() => { setSearchQuery(""); setActiveTab("all"); }}>
+              Reset Filters
+            </Button>
           ) : (
-            <div className="space-y-4">
-              {openJobs.map((job, index) => (
-                <div
-                  key={job.id}
-                  className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-shadow animate-slide-up cursor-pointer"
-                  style={{ animationDelay: `${index * 0.05} s` }}
-                  onClick={() => navigate(`/client/jobs/${job.id}`)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-foreground">
-                          {job.title}
-                        </h3>
-                        {getStatusBadge(job.status)}
-                        {job.status === "published" && (
-                          <Badge variant="outline" className="gap-1">
-                            <Users className="h-3 w-3" />
-                            View Candidates
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-3">
-                        {job.role_needed && (
-                          <span className="flex items-center gap-1">
-                            <Briefcase className="h-3.5 w-3.5" />
-                            {job.role_needed.replace("_", " ")}
-                          </span>
-                        )}
-                        {job.work_mode && (
-                          <span className="flex items-center gap-1">
-                            <Globe className="h-3.5 w-3.5" />
-                            {job.work_mode}
-                          </span>
-                        )}
-                        {job.weekly_hours && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5" />
-                            {job.weekly_hours} hrs/week
-                          </span>
-                        )}
-                        {job.budget_min && job.budget_max && (
-                          <span className="flex items-center gap-1">
-                            <DollarSign className="h-3.5 w-3.5" />
-                            {getCurrencySymbol(job.preferred_currency || "USD")}
-                            {job.budget_min} - {getCurrencySymbol(job.preferred_currency || "USD")}
-                            {job.budget_max}/{job.salary_type || "hr"}
-                          </span>
-                        )}
-                        {job.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3.5 w-3.5" />
-                            {job.location}
-                          </span>
-                        )}
-                      </div>
-                      {job.required_skills && job.required_skills.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {job.required_skills.slice(0, 5).map((skill: string) => (
-                            <Badge key={skill} variant="secondary" className="text-xs">
-                              {skill}
-                            </Badge>
-                          ))}
-                          {job.required_skills.length > 5 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{job.required_skills.length - 5} more
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs text-muted-foreground">
-                        Posted {new Date(job.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex justify-end mt-4">
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/client/jobs/${job.id}`)}>View Details</Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Button onClick={() => navigate("/client/jobs/new")}>
+              <Plus className="h-4 w-4 mr-2" />
+              Post your first job
+            </Button>
           )}
-        </TabsContent>
-
-        <TabsContent value="closed" className="mt-6">
-          {closedJobs.length === 0 ? (
-            <div className="text-center py-16 bg-card rounded-xl border border-border">
-              <Eye className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-40" />
-              <h3 className="text-lg font-semibold text-foreground mb-1">
-                No closed jobs
-              </h3>
-              <p className="text-muted-foreground">
-                Closed job postings will appear here
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {closedJobs.map((job) => (
-                <div
-                  key={job.id}
-                  className="bg-card rounded-xl border border-border p-6 opacity-70 cursor-pointer hover:opacity-100 transition-opacity"
-                  onClick={() => navigate(`/client/jobs/${job.id}`)}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-semibold text-foreground">{job.title}</h3>
-                    {getStatusBadge(job.status)}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {job.role_needed?.replace("_", " ")} • {job.work_mode || "Remote"}
-                  </p>
-                  {job.rejection_reason && (
-                    <div className="mt-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                      <p className="text-sm text-destructive">
-                        <strong>Rejection Reason:</strong> {job.rejection_reason}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      {/* Job Details Dialog */}
-
+        </div>
+      ) : (
+        <>
+          {renderDesktopTable()}
+          {renderMobileList()}
+        </>
+      )}
     </div>
   );
 };

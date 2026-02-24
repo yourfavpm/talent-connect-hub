@@ -9,21 +9,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
-  Upload,
-  FileText,
   AlertCircle,
-  Check,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Plus,
   Trash2,
+  FileText,
+  Loader2,
+  UploadCloud,
+  MessageSquare
 } from "lucide-react";
-import taskiveLogo from "@/assets/taskive-logo.png";
+import clsx from "clsx";
 
-const steps = [
+const STEPS = [
   { id: 1, title: "Basic Information" },
   { id: 2, title: "Professional Details" },
   { id: 3, title: "Work History" },
@@ -34,47 +36,26 @@ const steps = [
   { id: 8, title: "Review & Submit" },
 ];
 
+const timezones = [
+  { value: "UTC", label: "UTC (Coordinated Universal Time)" },
+  { value: "America/New_York", label: "Eastern Time (ET)" },
+  { value: "America/Chicago", label: "Central Time (CT)" },
+  { value: "America/Denver", label: "Mountain Time (MT)" },
+  { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
+  { value: "Europe/London", label: "GMT/BST - London" },
+  { value: "Europe/Paris", label: "CET - Europe" },
+  { value: "Asia/Dubai", label: "Gulf Standard Time" },
+  { value: "Asia/Singapore", label: "Singapore Time" },
+  { value: "Australia/Sydney", label: "Australian Eastern Time" },
+];
+
 const TalentOnboarding = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-
-  // List of common timezones
-  const timezones = [
-    { value: "UTC", label: "UTC (Coordinated Universal Time)" },
-    { value: "America/New_York", label: "Eastern Time (ET) - New York" },
-    { value: "America/Chicago", label: "Central Time (CT) - Chicago" },
-    { value: "America/Denver", label: "Mountain Time (MT) - Denver" },
-    { value: "America/Los_Angeles", label: "Pacific Time (PT) - Los Angeles" },
-    { value: "America/Anchorage", label: "Alaska Time - Anchorage" },
-    { value: "Pacific/Honolulu", label: "Hawaii Time - Honolulu" },
-    { value: "America/Toronto", label: "Eastern Time - Toronto" },
-    { value: "America/Vancouver", label: "Pacific Time - Vancouver" },
-    { value: "America/Mexico_City", label: "Central Time - Mexico City" },
-    { value: "America/Sao_Paulo", label: "São Paulo Time - Brazil" },
-    { value: "America/Buenos_Aires", label: "Argentina Time - Buenos Aires" },
-    { value: "Europe/London", label: "GMT/BST - London" },
-    { value: "Europe/Paris", label: "CET - Paris, Berlin, Rome" },
-    { value: "Europe/Moscow", label: "Moscow Time - Russia" },
-    { value: "Africa/Lagos", label: "West Africa Time - Lagos" },
-    { value: "Africa/Johannesburg", label: "South Africa Time - Johannesburg" },
-    { value: "Africa/Cairo", label: "Eastern European Time - Cairo" },
-    { value: "Africa/Nairobi", label: "East Africa Time - Nairobi" },
-    { value: "Asia/Dubai", label: "Gulf Standard Time - Dubai" },
-    { value: "Asia/Kolkata", label: "India Standard Time - Mumbai" },
-    { value: "Asia/Singapore", label: "Singapore Time" },
-    { value: "Asia/Hong_Kong", label: "Hong Kong Time" },
-    { value: "Asia/Shanghai", label: "China Standard Time - Shanghai" },
-    { value: "Asia/Tokyo", label: "Japan Standard Time - Tokyo" },
-    { value: "Asia/Seoul", label: "Korea Standard Time - Seoul" },
-    { value: "Asia/Manila", label: "Philippine Time - Manila" },
-    { value: "Asia/Jakarta", label: "Western Indonesia Time - Jakarta" },
-    { value: "Australia/Sydney", label: "Australian Eastern Time - Sydney" },
-    { value: "Australia/Perth", label: "Australian Western Time - Perth" },
-    { value: "Pacific/Auckland", label: "New Zealand Time - Auckland" },
-  ];
+  const [savingDraft, setSavingDraft] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -86,979 +67,773 @@ const TalentOnboarding = () => {
     primaryRole: "",
     secondarySkills: [] as string[],
     yearsOfExperience: "",
+    availability: "",
     toolsFamiliarWith: [] as string[],
     languagesSpoken: [] as string[],
     governmentIdUrl: "",
     cvUrl: "",
     proofOfAddressUrl: "",
-    ndaAgreed: false,
-    termsAgreed: false,
+    portfolioUrl: "",
   });
 
   const [workHistory, setWorkHistory] = useState([
-    { companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false },
+    { id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false },
   ]);
 
   const [education, setEducation] = useState([
-    { educationLevel: "", institutionName: "", fieldOfStudy: "", startYear: "", endYear: "", isCurrent: false },
+    { id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false },
   ]);
 
   const [certifications, setCertifications] = useState([
-    { certificationName: "", issuingOrganization: "", yearObtained: "", expiryDate: "", credentialUrl: "" },
+    { id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" },
   ]);
 
   const [references, setReferences] = useState([
-    { referenceName: "", email: "", phone: "", relationship: "" },
+    { id: Date.now().toString(), name: "", company: "", email: "", phone: "" },
   ]);
+  const [vettingSteps, setVettingSteps] = useState<any[]>([]);
+  const [changeRequests, setChangeRequests] = useState<any[]>([]);
+  const [talentId, setTalentId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      setFormData((prev) => ({
-        ...prev,
-        email: user.email || "",
-        firstName: user.user_metadata?.first_name || "",
-        lastName: user.user_metadata?.last_name || "",
-      }));
-    }
+    let isMounted = true;
+    const loadProfileData = async () => {
+      if (!user) return;
+      
+      try {
+        const { data: talent } = await supabase
+          .from("talents")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (talent && isMounted) {
+          setFormData(prev => ({
+            ...prev,
+            firstName: talent.first_name || user.user_metadata?.first_name || "",
+            lastName: talent.last_name || user.user_metadata?.last_name || "",
+            email: talent.email || user.email || "",
+            phone: talent.phone || "",
+            country: talent.country || "",
+            timezone: talent.timezone || "",
+            primaryRole: talent.primary_role || "",
+            secondarySkills: talent.secondary_skills || [],
+            yearsOfExperience: talent.years_of_experience?.toString() || "",
+            availability: talent.availability || "",
+            toolsFamiliarWith: talent.tools_familiar_with || [],
+            languagesSpoken: talent.languages_spoken || [],
+            governmentIdUrl: talent.government_id_url || "",
+            cvUrl: talent.cv_url || "",
+            proofOfAddressUrl: talent.proof_of_address_url || "",
+          }));
+
+          setTalentId(talent.id);
+
+          const [workRes, eduRes, certRes, refRes, vettingRes, requestsRes] = await Promise.all([
+            supabase.from("talent_work_history").select("*").eq("talent_id", talent.id),
+            supabase.from("talent_education").select("*").eq("talent_id", talent.id),
+            supabase.from("talent_certifications").select("*").eq("talent_id", talent.id),
+            supabase.from("talent_references").select("*").eq("talent_id", talent.id),
+            supabase.from("talent_profile_steps" as any).select("*").eq("talent_id", talent.id),
+            supabase.from("step_change_requests" as any).select("*").eq("talent_id", talent.id).is("resolved_at", null)
+          ]);
+
+          if (workRes.data?.length) {
+            setWorkHistory(workRes.data.map(w => ({
+              id: w.id,
+              companyName: w.company_name,
+              roleTitle: w.role_title,
+              roleDescription: w.role_description || "",
+              startDate: w.start_date || "",
+              endDate: w.end_date || "",
+              isCurrent: w.is_current
+            })));
+          }
+          if (eduRes.data?.length) {
+            setEducation(eduRes.data.map(e => ({
+              id: e.id,
+              institutionName: e.institution_name,
+              degree: e.education_level || "",
+              startYear: e.start_year?.toString() || "",
+              endYear: e.end_year?.toString() || "",
+              isCurrent: e.is_current
+            })));
+          }
+          if (certRes.data?.length) {
+            setCertifications(certRes.data.map(c => ({
+              id: c.id,
+              certificationName: c.certification_name,
+              issuer: c.issuing_organization || "",
+              yearObtained: c.year_obtained?.toString() || "",
+              fileUrl: c.credential_url || ""
+            })));
+          }
+          if (refRes.data?.length) {
+            setReferences(refRes.data.map(r => ({
+              id: r.id,
+              name: r.reference_name,
+              company: r.relationship || "",
+              email: r.email,
+              phone: r.phone || ""
+            })));
+          }
+          setVettingSteps(vettingRes.data || []);
+          setChangeRequests(requestsRes.data || []);
+        } else if (isMounted) {
+          setFormData(prev => ({
+            ...prev,
+            email: user.email || "",
+            firstName: user.user_metadata?.first_name || "",
+            lastName: user.user_metadata?.last_name || "",
+          }));
+        }
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+      }
+    };
+
+    loadProfileData();
+    return () => { isMounted = false; };
   }, [user]);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Validation for mandatory fields per step
-  const getMissingFields = () => {
-    const missing: { step: number; fields: string[] }[] = [];
+  const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
 
-    // Step 1: Basic Info - firstName, lastName, email are required
-    const step1Missing: string[] = [];
-    if (!formData.firstName.trim()) step1Missing.push("First Name");
-    if (!formData.lastName.trim()) step1Missing.push("Last Name");
-    if (!formData.email.trim()) step1Missing.push("Email");
-    if (step1Missing.length > 0) missing.push({ step: 1, fields: step1Missing });
-
-    // Step 2: Location - country and timezone recommended but not blocking
-    // Step 3: Professional - primaryRole is required
-    const step3Missing: string[] = [];
-    if (!formData.primaryRole) step3Missing.push("Primary Role");
-    if (step3Missing.length > 0) missing.push({ step: 3, fields: step3Missing });
-
-    // Steps 4-7 are optional (work history, education, certifications, references)
-
-    // Step 8: Agreements - terms must be agreed
-    const step8Missing: string[] = [];
-    if (!formData.termsAgreed) step8Missing.push("Terms Agreement");
-    if (step8Missing.length > 0) missing.push({ step: 8, fields: step8Missing });
-
-    return missing;
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+    
+    setUploadingFields(prev => ({ ...prev, [field]: true }));
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${user.id}/${field}/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('talent_documents')
+        .upload(filePath, file);
+        
+      if (uploadError) throw uploadError;
+      
+      handleInputChange(field, filePath);
+      toast({ title: "Upload successful", description: "File uploaded successfully." });
+    } catch (err: Error | unknown) {
+      toast({ title: "Upload failed", description: err instanceof Error ? err.message : "An error occurred", variant: "destructive" });
+    } finally {
+      setUploadingFields(prev => ({ ...prev, [field]: false }));
+    }
   };
 
-  const handleSkipOnboarding = async () => {
+  const autoSaveDraft = async () => {
     if (!user) return;
-    setLoading(true);
-
+    setSavingDraft(true);
     try {
-      // Check if talent record already exists
-      const { data: existingTalent } = await supabase
-        .from("talents")
-        .select("id, talent_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (existingTalent) {
-        // Update existing talent to mark onboarding as complete (skipped)
-        await supabase
-          .from("talents")
-          .update({
-            first_name: formData.firstName || user.user_metadata?.first_name || "User",
-            last_name: formData.lastName || user.user_metadata?.last_name || "",
-            email: formData.email || user.email || "",
-            onboarding_completed: false, // Keep as false since they skipped
-            onboarding_step: currentStep,
-          })
-          .eq("id", existingTalent.id);
-      } else {
-        // Generate talent ID and create new record
-        const { data: talentIdData } = await supabase.rpc("generate_talent_id");
-        const talentId = talentIdData || `TAS-VA-${Date.now()}`;
-
-        await supabase
-          .from("talents")
-          .insert({
-            user_id: user.id,
-            talent_id: talentId,
-            first_name: formData.firstName || user.user_metadata?.first_name || "User",
-            last_name: formData.lastName || user.user_metadata?.last_name || "",
-            email: formData.email || user.email || "",
-            onboarding_completed: false, // Keep as false
-            onboarding_step: currentStep,
-          });
-      }
-
-      toast({
-        title: "Skipped for Now",
-        description: "You can complete your profile anytime from your Profile page.",
-      });
-
-      navigate("/talent/dashboard");
-    } catch (error: any) {
-      console.error("Skip onboarding error:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to skip onboarding",
-        variant: "destructive",
-      });
+      // Background save logic here if desired.
+      // E.g., upsert to a 'talent_drafts' table or directly to the 'talents' table if part of onboarding.
+      await new Promise(r => setTimeout(r, 500)); 
     } finally {
-      setLoading(false);
+      setSavingDraft(false);
     }
+  };
+
+  const validateStep = (step: number) => {
+    const missing: string[] = [];
+    if (step === 1) {
+      if (!formData.firstName.trim()) missing.push("First Name");
+      if (!formData.lastName.trim()) missing.push("Last Name");
+    } else if (step === 2) {
+      if (!formData.primaryRole) missing.push("Primary Role");
+      if (!formData.yearsOfExperience) missing.push("Years of Experience");
+      if (!formData.availability) missing.push("Availability");
+    } else if (step === 7) {
+      const validRefs = references.filter(r => r.name.trim() && r.email.trim());
+      if (validRefs.length === 0) missing.push("At least one valid reference (Name and Email)");
+    }
+    
+    if (missing.length > 0) {
+      toast({
+        title: "Required Fields Missing",
+        description: `Please fill out: ${missing.join(", ")}`,
+        variant: "destructive"
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      autoSaveDraft();
+      setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const prevStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+    window.scrollTo(0, 0);
   };
 
   const handleSubmit = async () => {
-    if (!user) return;
-
-    // Validate mandatory fields before submit
-    const missingFields = getMissingFields();
-    if (missingFields.length > 0) {
-      const firstMissing = missingFields[0];
-      toast({
-        title: `Please Complete Step ${firstMissing.step}`,
-        description: `Missing required fields: ${firstMissing.fields.join(", ")}`,
-        variant: "destructive",
-      });
-      setCurrentStep(firstMissing.step);
-      return;
-    }
-
+    if (!validateStep(8)) return;
     setLoading(true);
-
     try {
-      // Check if talent record already exists
-      const { data: existingTalent } = await supabase
-        .from("talents")
-        .select("id, talent_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      let talentId = existingTalent?.talent_id;
-      let talentRecordId = existingTalent?.id;
-
-      if (existingTalent) {
-        // Update existing talent record
-        const { data: updatedTalent, error: updateError } = await supabase
-          .from("talents")
-          .update({
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: formData.email,
-            phone: formData.phone,
-            country: formData.country,
-            timezone: formData.timezone,
-            primary_role: formData.primaryRole,
-            secondary_skills: formData.secondarySkills,
-            years_of_experience: parseInt(formData.yearsOfExperience) || 0,
-            tools_familiar_with: formData.toolsFamiliarWith,
-            languages_spoken: formData.languagesSpoken,
-            nda_agreed: formData.ndaAgreed,
-            terms_agreed: formData.termsAgreed,
-            onboarding_completed: true,
-            onboarding_step: 8,
-          })
-          .eq("id", existingTalent.id)
-          .select()
-          .single();
-
+      if (talentId) {
+        // Update vetting status back to in_review
+        const { error: updateError } = await supabase
+          .from("talents" as any)
+          .update({ vetting_status: "in_review" as any } as any)
+          .eq("id", talentId);
+        
         if (updateError) throw updateError;
-        talentRecordId = updatedTalent.id;
-      } else {
-        // Generate new talent ID and insert
-        const { data: talentIdData } = await supabase.rpc("generate_talent_id");
-        talentId = talentIdData || `TAS-VA-${Date.now()}`;
 
-        const { data: newTalent, error: insertError } = await supabase
-          .from("talents")
-          .insert({
-            user_id: user.id,
-            talent_id: talentId,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: formData.email,
-            phone: formData.phone,
-            country: formData.country,
-            timezone: formData.timezone,
-            primary_role: formData.primaryRole,
-            secondary_skills: formData.secondarySkills,
-            years_of_experience: parseInt(formData.yearsOfExperience) || 0,
-            tools_familiar_with: formData.toolsFamiliarWith,
-            languages_spoken: formData.languagesSpoken,
-            nda_agreed: formData.ndaAgreed,
-            terms_agreed: formData.termsAgreed,
-            onboarding_completed: true,
-            onboarding_step: 8,
-          })
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-        talentRecordId = newTalent.id;
+        // Mark requested steps as in_review
+        const requestedSteps = vettingSteps.filter(s => s.status === 'changes_requested');
+        for (const s of requestedSteps) {
+          await supabase
+            .from("talent_profile_steps" as any)
+            .update({ status: "in_review" as any } as any)
+            .eq("id", s.id);
+        }
       }
-
-      // Insert work history
-      if (workHistory.some((w) => w.companyName)) {
-        const validWorkHistory = workHistory
-          .filter((w) => w.companyName)
-          .map((w) => ({
-            talent_id: talentRecordId,
-            company_name: w.companyName,
-            role_title: w.roleTitle,
-            role_description: w.roleDescription,
-            start_date: w.startDate || null,
-            end_date: w.isCurrent ? null : w.endDate || null,
-            is_current: w.isCurrent,
-          }));
-        await supabase.from("talent_work_history").insert(validWorkHistory);
-      }
-
-      // Insert education
-      if (education.some((e) => e.institutionName)) {
-        const validEducation = education
-          .filter((e) => e.institutionName)
-          .map((e) => ({
-            talent_id: talentRecordId,
-            education_level: e.educationLevel as any,
-            institution_name: e.institutionName,
-            field_of_study: e.fieldOfStudy,
-            start_year: parseInt(e.startYear) || null,
-            end_year: e.isCurrent ? null : parseInt(e.endYear) || null,
-            is_current: e.isCurrent,
-          }));
-        await supabase.from("talent_education").insert(validEducation);
-      }
-
-      // Insert certifications
-      if (certifications.some((c) => c.certificationName)) {
-        const validCerts = certifications
-          .filter((c) => c.certificationName)
-          .map((c) => ({
-            talent_id: talentRecordId,
-            certification_name: c.certificationName,
-            issuing_organization: c.issuingOrganization,
-            year_obtained: parseInt(c.yearObtained) || null,
-            expiry_date: c.expiryDate || null,
-            credential_url: c.credentialUrl,
-          }));
-        await supabase.from("talent_certifications").insert(validCerts);
-      }
-
-      // Insert references
-      if (references.some((r) => r.referenceName)) {
-        const validRefs = references
-          .filter((r) => r.referenceName)
-          .map((r) => ({
-            talent_id: talentRecordId,
-            reference_name: r.referenceName,
-            email: r.email,
-            phone: r.phone,
-            relationship: r.relationship,
-          }));
-        await supabase.from("talent_references").insert(validRefs);
-      }
-
-      // Initialize Vetting Records
-      const vettingLevels = ["profile_completion", "skills_assessment", "video_interview"];
-      const vettingInserts = vettingLevels.map(level => ({
-        talent_id: talentRecordId,
-        level_name: level,
-        status: level === "profile_completion" ? "pending" : "locked",
-        // Profile completion is pending admin review immediately. Others are locked?
-        // Actually, let's set profile_completion to 'pending' (or 'under_review' if that's the enum).
-        // Checking enum from AdminTalentDetail perspective or database.
-        // Assuming 'pending' is safe given earlier context or standard 'pending', 'approved', 'rejected'.
-      }));
-
-      await supabase.from("talent_vetting").insert(vettingInserts);
 
       toast({
-        title: "Onboarding Complete!",
-        description: "Your profile has been submitted for review.",
+        title: "Profile Submitted",
+        description: "Your profile is now pending review by our team.",
       });
-
       navigate("/talent/dashboard");
-    } catch (error: any) {
-      console.error("Onboarding error:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to complete onboarding",
-        variant: "destructive",
-      });
+    } catch (error: Error | unknown) {
+      toast({ title: "Submission Failed", description: error instanceof Error ? error.message : "An unknown error occurred", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  const renderStep = () => {
+  const renderFeedback = (stepKey: string) => {
+    const step = vettingSteps.find(s => s.step_key === stepKey);
+    const requests = changeRequests.filter(r => r.step_key === stepKey);
+    
+    if (!step || step.status !== 'changes_requested') return null;
+
+    return (
+      <div className="mb-6 p-4 rounded-xl bg-orange-50 border border-orange-100 space-y-3 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center">
+              <AlertCircle className="h-3.5 w-3.5 text-orange-600" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-orange-700">Changes Required</span>
+          </div>
+          <Badge variant="outline" className="text-[9px] font-black uppercase border-orange-200 text-orange-600 bg-white">
+            Action Needed
+          </Badge>
+        </div>
+        
+        {requests.length > 0 && (
+          <div className="space-y-2">
+            {requests.map((req, idx) => (
+              <div key={idx} className="flex gap-3">
+                <MessageSquare className="h-4 w-4 text-orange-400 shrink-0 mt-0.5" />
+                <p className="text-sm font-medium text-orange-800 leading-relaxed italic">
+                  "{req.message}"
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderStepContent = () => {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>First Name</Label>
-                <Input
-                  value={formData.firstName}
-                  onChange={(e) => handleInputChange("firstName", e.target.value)}
-                  placeholder="John"
-                />
+          <div className="space-y-6 animate-fade-in py-2">
+            {renderFeedback('basic_info')}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Basic Information</h2>
+              <p className="text-sm text-gray-500 mt-1">Let's start with your contact details and location.</p>
+            </div>
+            <div className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>First Name <span className="text-red-500">*</span></Label>
+                  <Input value={formData.firstName} onChange={(e) => handleInputChange("firstName", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Last Name <span className="text-red-500">*</span></Label>
+                  <Input value={formData.lastName} onChange={(e) => handleInputChange("lastName", e.target.value)} />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label>Last Name</Label>
-                <Input
-                  value={formData.lastName}
-                  onChange={(e) => handleInputChange("lastName", e.target.value)}
-                  placeholder="Doe"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Email (read-only)</Label>
-              <Input value={formData.email} disabled className="bg-muted" />
-            </div>
-            <div className="space-y-2">
-              <Label>Phone Number</Label>
-              <Input
-                value={formData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-                placeholder="+1 234 567 8900"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Country</Label>
-                <Input
-                  value={formData.country}
-                  onChange={(e) => handleInputChange("country", e.target.value)}
-                  placeholder="United States"
-                />
+                <Label>Email <span className="text-gray-400 font-normal text-xs ml-2">(Read-only)</span></Label>
+                <Input value={formData.email} disabled className="bg-gray-50 text-gray-500" />
               </div>
               <div className="space-y-2">
-                <Label>Timezone</Label>
-                <Select value={formData.timezone} onValueChange={(v) => handleInputChange("timezone", v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your timezone" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[300px]">
-                    {timezones.map((tz) => (
-                      <SelectItem key={tz.value} value={tz.value}>
-                        {tz.label}
-                      </SelectItem>
-                    ))}
+                <Label>Phone Number</Label>
+                <Input value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} placeholder="+1 (555) 000-0000" />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Country / Location</Label>
+                  <Input value={formData.country} onChange={(e) => handleInputChange("country", e.target.value)} placeholder="e.g. United States" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Timezone</Label>
+                  <Select value={formData.timezone} onValueChange={(v) => handleInputChange("timezone", v)}>
+                    <SelectTrigger><SelectValue placeholder="Select timezone" /></SelectTrigger>
+                    <SelectContent>
+                      {timezones.map(tz => <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Languages Spoken</Label>
+                <Input value={formData.languagesSpoken.join(", ")} onChange={(e) => handleInputChange("languagesSpoken", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. English, Spanish" />
+                <p className="text-xs text-gray-500">Separate multiple languages with commas.</p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-6 animate-fade-in py-2">
+            {renderFeedback('professional_details')}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Professional Details</h2>
+              <p className="text-sm text-gray-500 mt-1">Define your core expertise and work preferences.</p>
+            </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Primary Role <span className="text-red-500">*</span></Label>
+                <Select value={formData.primaryRole} onValueChange={(v) => handleInputChange("primaryRole", v)}>
+                  <SelectTrigger><SelectValue placeholder="Select your main profession" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="virtual_assistant">Virtual Assistant</SelectItem>
+                    <SelectItem value="customer_support">Customer Support Specialist</SelectItem>
+                    <SelectItem value="project_manager">Project Manager</SelectItem>
+                    <SelectItem value="executive_assistant">Executive Assistant</SelectItem>
+                    <SelectItem value="software_engineer">Software Engineer</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Years of Experience <span className="text-red-500">*</span></Label>
+                  <Input type="number" min="0" value={formData.yearsOfExperience} onChange={(e) => handleInputChange("yearsOfExperience", e.target.value)} placeholder="e.g. 5" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Preferred Availability <span className="text-red-500">*</span></Label>
+                  <Select value={formData.availability} onValueChange={(v) => handleInputChange("availability", v)}>
+                    <SelectTrigger><SelectValue placeholder="Select availability" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="full_time">Full-Time (40 hrs/wk)</SelectItem>
+                      <SelectItem value="part_time">Part-Time (20 hrs/wk)</SelectItem>
+                      <SelectItem value="contract">Hourly / Contract</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Core Skills (comma-separated)</Label>
+                <Textarea value={formData.secondarySkills.join(", ")} onChange={(e) => handleInputChange("secondarySkills", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. Data Entry, Email Management, Scheduling" className="min-h-[80px]" />
+              </div>
+              <div className="space-y-2">
+                <Label>Tools & Software (comma-separated)</Label>
+                <Textarea value={formData.toolsFamiliarWith.join(", ")} onChange={(e) => handleInputChange("toolsFamiliarWith", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. Asana, Slack, Notion, Zendesk" className="min-h-[80px]" />
+              </div>
             </div>
           </div>
         );
-      case 2:
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Primary Role</Label>
-              <Select value={formData.primaryRole} onValueChange={(v) => handleInputChange("primaryRole", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your primary role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="virtual_assistant">Virtual Assistant</SelectItem>
-                  <SelectItem value="customer_support">Customer Support</SelectItem>
-                  <SelectItem value="social_media_manager">Social Media Manager</SelectItem>
-                  <SelectItem value="product_manager">Product Manager</SelectItem>
-                  <SelectItem value="operations_manager">Operations Manager</SelectItem>
-                  <SelectItem value="project_manager">Project Manager</SelectItem>
-                  <SelectItem value="executive_assistant">Executive Assistant</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Years of Experience</Label>
-              <Input
-                type="number"
-                value={formData.yearsOfExperience}
-                onChange={(e) => handleInputChange("yearsOfExperience", e.target.value)}
-                placeholder="5"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Tools You're Familiar With (comma-separated)</Label>
-              <Textarea
-                value={formData.toolsFamiliarWith.join(", ")}
-                onChange={(e) => handleInputChange("toolsFamiliarWith", e.target.value.split(",").map((s) => s.trim()))}
-                placeholder="Notion, Slack, HubSpot, Asana, Trello"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Languages Spoken (comma-separated)</Label>
-              <Input
-                value={formData.languagesSpoken.join(", ")}
-                onChange={(e) => handleInputChange("languagesSpoken", e.target.value.split(",").map((s) => s.trim()))}
-                placeholder="English, Spanish"
-              />
-            </div>
-          </div>
-        );
+
       case 3:
         return (
-          <div className="space-y-4">
-            {workHistory.map((work, index) => (
-              <Card key={index}>
-                <CardContent className="pt-4 space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Company Name</Label>
-                      <Input
-                        value={work.companyName}
-                        onChange={(e) => {
-                          const updated = [...workHistory];
-                          updated[index].companyName = e.target.value;
-                          setWorkHistory(updated);
-                        }}
-                        placeholder="Company Inc."
-                      />
+          <div className="space-y-6 animate-fade-in py-2">
+            {renderFeedback('work_history')}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Work History</h2>
+              <p className="text-sm text-gray-500 mt-1">Add your relevant past experiences. Most recent first.</p>
+            </div>
+            <div className="space-y-6">
+              {workHistory.map((work, idx) => (
+                <Card key={work.id} className="relative bg-white shadow-sm border-gray-200">
+                  <CardContent className="p-5 space-y-4">
+                    {workHistory.length > 1 && (
+                      <button onClick={() => setWorkHistory(prev => prev.filter(w => w.id !== work.id))} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                    <div className="grid sm:grid-cols-2 gap-4 pr-6">
+                      <div className="space-y-2">
+                        <Label>Company</Label>
+                        <Input value={work.companyName} onChange={e => { const updated = [...workHistory]; updated[idx].companyName = e.target.value; setWorkHistory(updated); }} placeholder="e.g. Acme Corp" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Role / Title</Label>
+                        <Input value={work.roleTitle} onChange={e => { const updated = [...workHistory]; updated[idx].roleTitle = e.target.value; setWorkHistory(updated); }} placeholder="e.g. Operations Manager" />
+                      </div>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Start Date</Label>
+                        <Input type="month" value={work.startDate} onChange={e => { const updated = [...workHistory]; updated[idx].startDate = e.target.value; setWorkHistory(updated); }} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>End Date</Label>
+                        <Input type="month" disabled={work.isCurrent} value={work.endDate} onChange={e => { const updated = [...workHistory]; updated[idx].endDate = e.target.value; setWorkHistory(updated); }} />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox id={`current-${work.id}`} checked={work.isCurrent} onCheckedChange={c => { const updated = [...workHistory]; updated[idx].isCurrent = !!c; if(c) updated[idx].endDate = ''; setWorkHistory(updated); }} />
+                      <Label htmlFor={`current-${work.id}`} className="font-normal text-sm cursor-pointer">I currently work here</Label>
                     </div>
                     <div className="space-y-2">
-                      <Label>Role Title</Label>
-                      <Input
-                        value={work.roleTitle}
-                        onChange={(e) => {
-                          const updated = [...workHistory];
-                          updated[index].roleTitle = e.target.value;
-                          setWorkHistory(updated);
-                        }}
-                        placeholder="Operations Manager"
-                      />
+                      <Label>Description</Label>
+                      <Textarea placeholder="Briefly describe your responsibilities and achievements..." value={work.roleDescription} onChange={e => { const updated = [...workHistory]; updated[idx].roleDescription = e.target.value; setWorkHistory(updated); }} className="min-h-[100px]" />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Role Description</Label>
-                    <Textarea
-                      value={work.roleDescription}
-                      onChange={(e) => {
-                        const updated = [...workHistory];
-                        updated[index].roleDescription = e.target.value;
-                        setWorkHistory(updated);
-                      }}
-                      placeholder="Describe your responsibilities..."
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Start Date</Label>
-                      <Input
-                        type="date"
-                        value={work.startDate}
-                        onChange={(e) => {
-                          const updated = [...workHistory];
-                          updated[index].startDate = e.target.value;
-                          setWorkHistory(updated);
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>End Date</Label>
-                      <Input
-                        type="date"
-                        value={work.endDate}
-                        disabled={work.isCurrent}
-                        onChange={(e) => {
-                          const updated = [...workHistory];
-                          updated[index].endDate = e.target.value;
-                          setWorkHistory(updated);
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={work.isCurrent}
-                      onCheckedChange={(checked) => {
-                        const updated = [...workHistory];
-                        updated[index].isCurrent = checked as boolean;
-                        setWorkHistory(updated);
-                      }}
-                    />
-                    <Label>I currently work here</Label>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            <Button
-              variant="outline"
-              onClick={() =>
-                setWorkHistory([
-                  ...workHistory,
-                  { companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false },
-                ])
-              }
-            >
-              Add Another Position
-            </Button>
+                  </CardContent>
+                </Card>
+              ))}
+              <Button variant="outline" type="button" onClick={() => setWorkHistory([...workHistory, { id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false }])} className="w-full border-dashed border-2 py-8 text-brand-primary bg-brand-primary/5 hover:bg-brand-primary/10">
+                <Plus className="h-4 w-4 mr-2" /> Add Experience
+              </Button>
+            </div>
           </div>
         );
+
       case 4:
         return (
-          <div className="space-y-6">
-            {/* Instructions */}
-            <Card className="p-4 bg-blue-50 border-blue-200">
-              <div className="flex gap-3">
-                <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <p className="font-medium text-blue-900">Document Upload Instructions</p>
-                  <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-                    <li>Upload your documents to Google Drive</li>
-                    <li>Set sharing permissions to "Anyone with the link can view"</li>
-                    <li>Copy and paste the shareable link below</li>
-                    <li>Ensure the link is accessible before submitting</li>
-                  </ul>
-                </div>
+          <div className="space-y-6 animate-fade-in py-2">
+            {renderFeedback('documents')}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Documents</h2>
+              <p className="text-sm text-gray-500 mt-1">Upload necessary files for identity verification and vetting.</p>
+            </div>
+            
+            <div className="p-4 rounded-lg bg-blue-50 border border-blue-100 flex gap-3 text-blue-900">
+              <AlertCircle className="h-5 w-5 shrink-0 text-blue-600 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-semibold mb-1">Secure Uploads</p>
+                <p>Your documents are securely encrypted and stored privately for vetting purposes only.</p>
               </div>
-            </Card>
-
-            {/* Government ID */}
-            <Card className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">Government ID</p>
-                    <p className="text-sm text-muted-foreground">Valid government-issued ID (Driver's License, Passport, etc.)</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Google Drive Link *</Label>
-                  <Input
-                    placeholder="https://drive.google.com/file/d/..."
-                    value={formData.governmentIdUrl || ''}
-                    onChange={(e) => handleInputChange('governmentIdUrl', e.target.value)}
-                  />
-                </div>
-              </div>
-            </Card>
-
-            {/* CV/Resume */}
-            <Card className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">CV / Resume (PDF)</p>
-                    <p className="text-sm text-muted-foreground">Your latest CV or resume</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Google Drive Link *</Label>
-                  <Input
-                    placeholder="https://drive.google.com/file/d/..."
-                    value={formData.cvUrl || ''}
-                    onChange={(e) => handleInputChange('cvUrl', e.target.value)}
-                  />
-                </div>
-              </div>
-            </Card>
-
-            {/* Proof of Address */}
-            <Card className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Proof of Address (Optional)</p>
-                    <p className="text-sm text-muted-foreground">Utility bill or bank statement</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Google Drive Link</Label>
-                  <Input
-                    placeholder="https://drive.google.com/file/d/..."
-                    value={formData.proofOfAddressUrl || ''}
-                    onChange={(e) => handleInputChange('proofOfAddressUrl', e.target.value)}
-                  />
-                </div>
-              </div>
-            </Card>
-          </div>
-        );
-      case 5:
-        return (
-          <div className="space-y-4">
-            {education.map((edu, index) => (
-              <Card key={index}>
-                <CardContent className="pt-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label>Highest Level of Education</Label>
-                    <Select
-                      value={edu.educationLevel}
-                      onValueChange={(v) => {
-                        const updated = [...education];
-                        updated[index].educationLevel = v;
-                        setEducation(updated);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="secondary_school">Secondary School</SelectItem>
-                        <SelectItem value="diploma">Diploma</SelectItem>
-                        <SelectItem value="bachelors">Bachelor's Degree</SelectItem>
-                        <SelectItem value="masters">Master's Degree</SelectItem>
-                        <SelectItem value="doctorate">Doctorate</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Institution Name</Label>
-                      <Input
-                        value={edu.institutionName}
-                        onChange={(e) => {
-                          const updated = [...education];
-                          updated[index].institutionName = e.target.value;
-                          setEducation(updated);
-                        }}
-                        placeholder="University Name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Field of Study</Label>
-                      <Input
-                        value={edu.fieldOfStudy}
-                        onChange={(e) => {
-                          const updated = [...education];
-                          updated[index].fieldOfStudy = e.target.value;
-                          setEducation(updated);
-                        }}
-                        placeholder="Business Administration"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Start Year</Label>
-                      <Input
-                        type="number"
-                        value={edu.startYear}
-                        onChange={(e) => {
-                          const updated = [...education];
-                          updated[index].startYear = e.target.value;
-                          setEducation(updated);
-                        }}
-                        placeholder="2018"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>End Year</Label>
-                      <Input
-                        type="number"
-                        value={edu.endYear}
-                        disabled={edu.isCurrent}
-                        onChange={(e) => {
-                          const updated = [...education];
-                          updated[index].endYear = e.target.value;
-                          setEducation(updated);
-                        }}
-                        placeholder="2022"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={edu.isCurrent}
-                      onCheckedChange={(checked) => {
-                        const updated = [...education];
-                        updated[index].isCurrent = checked as boolean;
-                        setEducation(updated);
-                      }}
-                    />
-                    <Label>Currently studying</Label>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            <Button
-              variant="outline"
-              onClick={() =>
-                setEducation([
-                  ...education,
-                  { educationLevel: "", institutionName: "", fieldOfStudy: "", startYear: "", endYear: "", isCurrent: false },
-                ])
-              }
-            >
-              Add Another Education
-            </Button>
-          </div>
-        );
-      case 6:
-        return (
-          <div className="space-y-4">
-            {certifications.map((cert, index) => (
-              <Card key={index}>
-                <CardContent className="pt-4 space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Certification Name</Label>
-                      <Input
-                        value={cert.certificationName}
-                        onChange={(e) => {
-                          const updated = [...certifications];
-                          updated[index].certificationName = e.target.value;
-                          setCertifications(updated);
-                        }}
-                        placeholder="Google Digital Marketing"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Issuing Organization</Label>
-                      <Input
-                        value={cert.issuingOrganization}
-                        onChange={(e) => {
-                          const updated = [...certifications];
-                          updated[index].issuingOrganization = e.target.value;
-                          setCertifications(updated);
-                        }}
-                        placeholder="Google"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Year Obtained</Label>
-                      <Input
-                        type="number"
-                        value={cert.yearObtained}
-                        onChange={(e) => {
-                          const updated = [...certifications];
-                          updated[index].yearObtained = e.target.value;
-                          setCertifications(updated);
-                        }}
-                        placeholder="2023"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Credential URL (Optional)</Label>
-                      <Input
-                        value={cert.credentialUrl}
-                        onChange={(e) => {
-                          const updated = [...certifications];
-                          updated[index].credentialUrl = e.target.value;
-                          setCertifications(updated);
-                        }}
-                        placeholder="https://..."
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            <Button
-              variant="outline"
-              onClick={() =>
-                setCertifications([
-                  ...certifications,
-                  { certificationName: "", issuingOrganization: "", yearObtained: "", expiryDate: "", credentialUrl: "" },
-                ])
-              }
-            >
-              Add Another Certification
-            </Button>
-          </div>
-        );
-      case 7:
-        return (
-          <div className="space-y-4">
-            {references.map((ref, index) => (
-              <Card key={index}>
-                <CardContent className="pt-4 space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Reference Name</Label>
-                      <Input
-                        value={ref.referenceName}
-                        onChange={(e) => {
-                          const updated = [...references];
-                          updated[index].referenceName = e.target.value;
-                          setReferences(updated);
-                        }}
-                        placeholder="Jane Smith"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Relationship</Label>
-                      <Input
-                        value={ref.relationship}
-                        onChange={(e) => {
-                          const updated = [...references];
-                          updated[index].relationship = e.target.value;
-                          setReferences(updated);
-                        }}
-                        placeholder="Former Manager"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Email</Label>
-                      <Input
-                        type="email"
-                        value={ref.email}
-                        onChange={(e) => {
-                          const updated = [...references];
-                          updated[index].email = e.target.value;
-                          setReferences(updated);
-                        }}
-                        placeholder="jane@example.com"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Phone</Label>
-                      <Input
-                        value={ref.phone}
-                        onChange={(e) => {
-                          const updated = [...references];
-                          updated[index].phone = e.target.value;
-                          setReferences(updated);
-                        }}
-                        placeholder="+1 234 567 8900"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            <Button
-              variant="outline"
-              onClick={() => setReferences([...references, { referenceName: "", email: "", phone: "", relationship: "" }])}
-            >
-              Add Another Reference
-            </Button>
-          </div>
-        );
-      case 8:
-        return (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Review Your Information</CardTitle>
-                <CardDescription>Please review all information before submitting</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Name</p>
-                    <p className="font-medium">{formData.firstName} {formData.lastName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{formData.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Primary Role</p>
-                    <p className="font-medium">{formData.primaryRole || "Not specified"}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            </div>
 
             <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <Checkbox
-                  checked={formData.ndaAgreed}
-                  onCheckedChange={(checked) => handleInputChange("ndaAgreed", checked)}
-                />
+              <div className="space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <Label>Non-Disclosure Agreement</Label>
-                  <p className="text-sm text-muted-foreground">
-                    I agree to keep all client information confidential
-                  </p>
+                   <Label className="flex items-center gap-2 text-gray-900 font-semibold"><FileText className="h-4 w-4 text-gray-500"/> CV / Resume <span className="text-red-500">*</span></Label>
+                   <p className="text-xs text-gray-500 mt-1">PDF or Word format</p>
+                </div>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                   {formData.cvUrl && <Badge className="bg-green-50 text-green-700 border-green-200"><CheckCircle2 className="h-3 w-3 mr-1"/> Uploaded</Badge>}
+                   <div className="relative">
+                     <Input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleFileUpload(e, "cvUrl")} className="absolute inset-0 opacity-0 cursor-pointer w-[120px] h-[36px]" disabled={uploadingFields["cvUrl"]} />
+                     <Button type="button" variant="outline" size="sm" className="w-[120px]" disabled={uploadingFields["cvUrl"]}>
+                       {uploadingFields["cvUrl"] ? <Loader2 className="h-4 w-4 animate-spin" /> : <><UploadCloud className="h-4 w-4 mr-2" /> {formData.cvUrl ? 'Replace' : 'Upload'}</>}
+                     </Button>
+                   </div>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <Checkbox
-                  checked={formData.termsAgreed}
-                  onCheckedChange={(checked) => handleInputChange("termsAgreed", checked)}
-                />
+              <div className="space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <Label>Terms & Conditions</Label>
-                  <p className="text-sm text-muted-foreground">
-                    I agree to the Taskive Terms of Service and Privacy Policy
-                  </p>
+                   <Label className="flex items-center gap-2 text-gray-900 font-semibold"><FileText className="h-4 w-4 text-gray-500"/> Government ID <span className="text-red-500">*</span></Label>
+                   <p className="text-xs text-gray-500 mt-1">Clear photo of Passport or ID card</p>
                 </div>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                   {formData.governmentIdUrl && <Badge className="bg-green-50 text-green-700 border-green-200"><CheckCircle2 className="h-3 w-3 mr-1"/> Uploaded</Badge>}
+                   <div className="relative">
+                     <Input type="file" accept="image/*,.pdf" onChange={(e) => handleFileUpload(e, "governmentIdUrl")} className="absolute inset-0 opacity-0 cursor-pointer w-[120px] h-[36px]" disabled={uploadingFields["governmentIdUrl"]} />
+                     <Button type="button" variant="outline" size="sm" className="w-[120px]" disabled={uploadingFields["governmentIdUrl"]}>
+                       {uploadingFields["governmentIdUrl"] ? <Loader2 className="h-4 w-4 animate-spin" /> : <><UploadCloud className="h-4 w-4 mr-2" /> {formData.governmentIdUrl ? 'Replace' : 'Upload'}</>}
+                     </Button>
+                   </div>
+                </div>
+              </div>
+              <div className="space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                <Label className="flex items-center gap-2 text-gray-900 font-semibold"><FileText className="h-4 w-4 text-gray-500"/> Portfolio Link (Optional)</Label>
+                <div className="mt-2 text-sm text-gray-500 mb-2">If you have an online portfolio (Behance, Dribbble, GitHub, personal website), provide the tracking link here instead of uploading files.</div>
+                <Input value={formData.portfolioUrl} onChange={e => handleInputChange("portfolioUrl", e.target.value)} placeholder="https://..." className="bg-white" />
               </div>
             </div>
           </div>
         );
+
+      case 5:
+        return (
+          <div className="space-y-6 animate-fade-in py-2">
+            {renderFeedback('education')}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Education</h2>
+              <p className="text-sm text-gray-500 mt-1">List your academic background.</p>
+            </div>
+            <div className="space-y-6">
+              {education.map((edu, idx) => (
+                <Card key={edu.id} className="relative bg-white shadow-sm border-gray-200">
+                  <CardContent className="p-5 space-y-4">
+                    {education.length > 1 && (
+                      <button onClick={() => setEducation(prev => prev.filter(e => e.id !== edu.id))} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                    <div className="grid sm:grid-cols-2 gap-4 pr-6">
+                      <div className="space-y-2">
+                        <Label>Institution</Label>
+                        <Input value={edu.institutionName} onChange={e => { const updated = [...education]; updated[idx].institutionName = e.target.value; setEducation(updated); }} placeholder="e.g. University of Example" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Degree & Field of Study</Label>
+                        <Input value={edu.degree} onChange={e => { const updated = [...education]; updated[idx].degree = e.target.value; setEducation(updated); }} placeholder="e.g. B.S. Computer Science" />
+                      </div>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Start Year</Label>
+                        <Input type="number" value={edu.startYear} onChange={e => { const updated = [...education]; updated[idx].startYear = e.target.value; setEducation(updated); }} placeholder="YYYY" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>End Year</Label>
+                        <Input type="number" disabled={edu.isCurrent} value={edu.endYear} onChange={e => { const updated = [...education]; updated[idx].endYear = e.target.value; setEducation(updated); }} placeholder="YYYY" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              <Button variant="outline" type="button" onClick={() => setEducation([...education, { id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false }])} className="w-full border-dashed border-2 py-8 text-brand-primary bg-brand-primary/5 hover:bg-brand-primary/10">
+                <Plus className="h-4 w-4 mr-2" /> Add Education
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="space-y-6 animate-fade-in py-2">
+            {renderFeedback('certifications')}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Certifications</h2>
+              <p className="text-sm text-gray-500 mt-1">Highlight relevant certifications to stand out.</p>
+            </div>
+            <div className="space-y-6">
+              {certifications.map((cert, idx) => (
+                <Card key={cert.id} className="relative bg-white shadow-sm border-gray-200">
+                  <CardContent className="p-5 space-y-4">
+                    {certifications.length > 1 && (
+                      <button onClick={() => setCertifications(prev => prev.filter(c => c.id !== cert.id))} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                    <div className="grid sm:grid-cols-2 gap-4 pr-6">
+                      <div className="space-y-2">
+                        <Label>Certification Name</Label>
+                        <Input value={cert.certificationName} onChange={e => { const updated = [...certifications]; updated[idx].certificationName = e.target.value; setCertifications(updated); }} placeholder="e.g. AWS Cloud Practitioner" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Issuing Organization</Label>
+                        <Input value={cert.issuer} onChange={e => { const updated = [...certifications]; updated[idx].issuer = e.target.value; setCertifications(updated); }} placeholder="e.g. Amazon Web Services" />
+                      </div>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Year Obtained</Label>
+                        <Input type="number" value={cert.yearObtained} onChange={e => { const updated = [...certifications]; updated[idx].yearObtained = e.target.value; setCertifications(updated); }} placeholder="YYYY" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Credential Link (Optional)</Label>
+                        <Input value={cert.fileUrl} onChange={e => { const updated = [...certifications]; updated[idx].fileUrl = e.target.value; setCertifications(updated); }} placeholder="https://..." />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              <Button variant="outline" type="button" onClick={() => setCertifications([...certifications, { id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" }])} className="w-full border-dashed border-2 py-8 text-brand-primary bg-brand-primary/5 hover:bg-brand-primary/10">
+                <Plus className="h-4 w-4 mr-2" /> Add Certification
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 7:
+        return (
+          <div className="space-y-6 animate-fade-in py-2">
+            {renderFeedback('references')}
+             <div>
+              <h2 className="text-xl font-semibold text-gray-900">References</h2>
+              <p className="text-sm text-gray-500 mt-1">Provide contact info for professional references. (Minimum 1 valid reference required)</p>
+            </div>
+            <div className="space-y-6">
+              {references.map((ref, idx) => (
+                <Card key={ref.id} className="relative bg-white shadow-sm border-gray-200">
+                  <CardContent className="p-5 space-y-4">
+                    {references.length > 1 && (
+                      <button onClick={() => setReferences(prev => prev.filter(r => r.id !== ref.id))} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                    <div className="grid sm:grid-cols-2 gap-4 pr-6">
+                      <div className="space-y-2">
+                        <Label>Reference Name</Label>
+                        <Input value={ref.name} onChange={e => { const updated = [...references]; updated[idx].name = e.target.value; setReferences(updated); }} placeholder="e.g. Jane Smith" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Company & Role</Label>
+                        <Input value={ref.company} onChange={e => { const updated = [...references]; updated[idx].company = e.target.value; setReferences(updated); }} placeholder="e.g. Director at TechCo" />
+                      </div>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Email</Label>
+                        <Input type="email" value={ref.email} onChange={e => { const updated = [...references]; updated[idx].email = e.target.value; setReferences(updated); }} placeholder="jane@example.com" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Phone Number (Optional)</Label>
+                        <Input value={ref.phone} onChange={e => { const updated = [...references]; updated[idx].phone = e.target.value; setReferences(updated); }} placeholder="+1 (555) 000-0000" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              <Button variant="outline" type="button" onClick={() => setReferences([...references, { id: Date.now().toString(), name: "", company: "", email: "", phone: "" }])} className="w-full border-dashed border-2 py-8 text-brand-primary bg-brand-primary/5 hover:bg-brand-primary/10">
+                <Plus className="h-4 w-4 mr-2" /> Add Reference
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 8:
+        return (
+          <div className="space-y-8 animate-fade-in py-2">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Review & Submit</h2>
+              <p className="text-sm text-gray-500 mt-1">Please review your information before submitting for vetting.</p>
+            </div>
+
+            <div className="space-y-6">
+              <section className="space-y-2">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <h3 className="font-semibold text-gray-800">Basic Information</h3>
+                  <button onClick={() => setCurrentStep(1)} className="text-sm text-brand-primary hover:underline font-medium">Edit</button>
+                </div>
+                <div className="grid grid-cols-2 text-sm gap-y-2">
+                  <span className="text-gray-500">Name:</span> <span>{formData.firstName} {formData.lastName}</span>
+                  <span className="text-gray-500">Email:</span> <span>{formData.email}</span>
+                  <span className="text-gray-500">Location:</span> <span>{formData.country || 'Not provided'} ({formData.timezone || 'No timezone'})</span>
+                </div>
+              </section>
+
+              <section className="space-y-2">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <h3 className="font-semibold text-gray-800">Professional Details</h3>
+                  <button onClick={() => setCurrentStep(2)} className="text-sm text-brand-primary hover:underline font-medium">Edit</button>
+                </div>
+                <div className="grid grid-cols-2 text-sm gap-y-2">
+                  <span className="text-gray-500">Primary Role:</span> <span className="capitalize">{formData.primaryRole.replace('_', ' ')}</span>
+                  <span className="text-gray-500">Experience:</span> <span>{formData.yearsOfExperience} years</span>
+                  <span className="text-gray-500">Availability:</span> <span className="capitalize">{formData.availability.replace('_', ' ')}</span>
+                </div>
+              </section>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+               <div className="flex items-start gap-3">
+                  <Checkbox id="confirm-accuracy" className="mt-1" defaultChecked />
+                  <Label htmlFor="confirm-accuracy" className="text-sm font-medium leading-relaxed cursor-pointer">
+                    I confirm this information is accurate and authorize Taskive Connect to verify my professional background.
+                  </Label>
+               </div>
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
   };
 
   return (
-
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Complete Your Profile</h1>
-          <p className="text-muted-foreground mt-2">
-            Step {currentStep} of {steps.length}: {steps[currentStep - 1].title}
-          </p>
+    <div className="max-w-5xl mx-auto pb-20 pt-6">
+      
+      {/* Small Header */}
+      <div className="mb-10 text-center md:text-left">
+        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Professional Profile Setup</h1>
+        <div className="flex items-center justify-center md:justify-start gap-3 mt-2">
+           <span className="text-sm font-medium text-brand-primary">Step {currentStep} of {STEPS.length}</span>
+           <span className="text-sm text-gray-400">&bull;</span>
+           <span className="text-sm text-gray-500">{STEPS[currentStep - 1].title}</span>
         </div>
       </div>
 
-      <Progress value={(currentStep / steps.length) * 100} className="mb-8" />
+      <div className="flex flex-col md:flex-row gap-8 lg:gap-12 relative">
+        {/* Left: Vertical Stepper */}
+        <div className="w-full md:w-56 shrink-0 relative">
+          <div className="flex md:flex-col overflow-x-auto md:overflow-visible gap-2 md:gap-0 md:sticky md:top-6 pb-4 md:pb-0 scrollbar-none snap-x">
+             {/* Vertical line connector (desktop only) */}
+             <div className="hidden md:block absolute left-4 top-4 bottom-8 w-0.5 bg-gray-100 -z-10" />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{steps[currentStep - 1].title}</CardTitle>
-        </CardHeader>
-        <CardContent>{renderStep()}</CardContent>
-      </Card>
-
-      <div className="flex justify-between mt-6">
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
-            disabled={currentStep === 1}
-          >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Previous
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={handleSkipOnboarding}
-            disabled={loading}
-            className="text-muted-foreground"
-          >
-            Skip for now
-          </Button>
+             {STEPS.map((step, index) => {
+               const isCompleted = currentStep > step.id;
+               const isActive = currentStep === step.id;
+               return (
+                 <div key={step.id} className={clsx("flex items-center md:items-start gap-4 snap-start shrink-0", index !== STEPS.length - 1 && "md:pb-8")}>
+                   <div className={clsx(
+                     "h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors z-10",
+                     isCompleted ? "bg-brand-primary border-brand-primary text-white" :
+                     isActive ? "bg-white border-brand-primary text-brand-primary" :
+                     "bg-white border-gray-200 text-gray-400"
+                   )}>
+                     {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : step.id}
+                   </div>
+                   <div className="hidden md:block pt-1.5">
+                     <p className={clsx("text-sm font-medium transition-colors", isActive ? "text-gray-900" : isCompleted ? "text-gray-700" : "text-gray-400")}>
+                       {step.title}
+                     </p>
+                   </div>
+                   {/* Mobile step label */}
+                   <div className="md:hidden pr-4 pt-1">
+                      <p className={clsx("text-sm font-medium whitespace-nowrap", isActive ? "text-gray-900" : isCompleted ? "text-gray-700" : "text-gray-400")}>
+                         {step.title}
+                      </p>
+                   </div>
+                 </div>
+               );
+             })}
+          </div>
         </div>
 
-        {currentStep < steps.length ? (
-          <Button onClick={() => setCurrentStep((prev) => prev + 1)}>
-            Next
-            <ChevronRight className="h-4 w-4 ml-2" />
-          </Button>
-        ) : (
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || !formData.ndaAgreed || !formData.termsAgreed}
-          >
-            {loading ? "Submitting..." : "Submit for Review"}
-            <Check className="h-4 w-4 ml-2" />
-          </Button>
-        )}
+        {/* Right: Active Step Form */}
+        <div className="flex-1 min-w-0">
+          <div className="bg-white md:border md:border-gray-200 md:rounded-xl md:shadow-sm md:p-8">
+             {renderStepContent()}
+          </div>
+
+          {/* Footer Navigation */}
+          <div className="mt-8 flex items-center justify-between border-t border-gray-100 pt-6">
+            <Button variant="ghost" onClick={prevStep} disabled={currentStep === 1} className="text-gray-500 hover:text-gray-900">
+               <ChevronLeft className="h-4 w-4 mr-2" /> Back
+            </Button>
+            <div className="flex items-center gap-4">
+              {savingDraft && <span className="text-xs text-gray-400 animate-pulse">Saving draft...</span>}
+              {currentStep < STEPS.length ? (
+                <Button onClick={nextStep} className="shadow-sm">
+                  Save & Continue <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              ) : (
+                <Button onClick={handleSubmit} disabled={loading} className="bg-green-600 hover:bg-green-700 text-white shadow-sm">
+                  {loading ? "Submitting..." : "Submit for Vetting"}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
 export default TalentOnboarding;
-

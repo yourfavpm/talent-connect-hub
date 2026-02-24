@@ -1,236 +1,196 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-    HelpCircle,
-    Search,
-    Plus,
-    Clock,
-    AlertCircle,
-    CheckCircle,
-    MessageSquare,
-    ChevronRight,
-    Filter
+  Search,
+  Plus,
+  ChevronRight,
+  LifeBuoy
 } from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 
 interface Ticket {
-    id: string;
-    category: string;
-    priority: string;
-    subject: string;
-    description: string;
-    status: string;
-    created_at: string;
-    updated_at: string;
+  id: string;
+  category: string;
+  priority: string;
+  subject: string;
+  description: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
-const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode; bg: string }> = {
-    open: { label: "Open", color: "text-blue-600", icon: <AlertCircle className="h-3 w-3" />, bg: "bg-blue-500" },
-    in_progress: { label: "In Progress", color: "text-amber-600", icon: <Clock className="h-3 w-3" />, bg: "bg-amber-500" },
-    resolved: { label: "Resolved", color: "text-emerald-600", icon: <CheckCircle className="h-3 w-3" />, bg: "bg-emerald-500" },
-    closed: { label: "Closed", color: "text-slate-600", icon: <CheckCircle className="h-3 w-3" />, bg: "bg-slate-500" },
+const statusConfig: Record<string, { label: string; color: string }> = {
+  open: { label: "Open", color: "bg-blue-50 text-blue-700 border-blue-200" },
+  in_progress: { label: "In Progress", color: "bg-amber-50 text-amber-700 border-amber-200" },
+  resolved: { label: "Resolved", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  closed: { label: "Closed", color: "bg-gray-50 text-gray-700 border-gray-200" },
 };
 
 const priorityConfig: Record<string, { label: string; color: string }> = {
-    low: { label: "Low", color: "bg-slate-100 text-slate-700" },
-    medium: { label: "Medium", color: "bg-blue-100 text-blue-700" },
-    high: { label: "High", color: "bg-orange-100 text-orange-700" },
-    urgent: { label: "Urgent", color: "bg-red-100 text-red-700" },
+  low: { label: "Low", color: "bg-gray-50 text-gray-700" },
+  medium: { label: "Medium", color: "bg-blue-50 text-blue-700" },
+  high: { label: "High", color: "bg-orange-50 text-orange-700" },
+  urgent: { label: "Urgent", color: "bg-red-50 text-red-700" },
 };
 
 const categoryLabels: Record<string, string> = {
-    payment: "Payment",
-    job: "Job",
-    technical: "Technical",
-    talent_issue: "Talent Issue",
-    billing: "Billing",
-    other: "Other",
+  payment: "Payment",
+  job: "Job",
+  technical: "Technical",
+  talent_issue: "Talent Issue",
+  billing: "Billing",
+  other: "Other",
 };
 
 const TalentSupport = () => {
-    const { user } = useAuth();
-    const [tickets, setTickets] = useState<Ticket[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [statusFilter, setStatusFilter] = useState<string>("all");
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-    useEffect(() => {
-        if (user) {
-            fetchTickets();
-        }
-    }, [user]);
+  useEffect(() => {
+    if (user) fetchTickets();
+  }, [user]);
 
-    const fetchTickets = async () => {
-        try {
-            const { data, error } = await supabase
-                .from("support_tickets")
-                .select("*")
-                .eq("user_id", user?.id)
-                .order("created_at", { ascending: false });
+  const fetchTickets = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("support_tickets")
+        .select("*")
+        .eq("user_id", user?.id)
+        .order("created_at", { ascending: false });
 
-            if (error) throw error;
-            setTickets(data || []);
-        } catch (error) {
-            console.error("Error fetching tickets:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const filteredTickets = tickets.filter((ticket) => {
-        const matchesSearch = ticket.subject.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesStatus = statusFilter === "all" || ticket.status === statusFilter;
-        return matchesSearch && matchesStatus;
-    });
-
-    const openCount = tickets.filter((t) => t.status === "open" || t.status === "in_progress").length;
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-            </div>
-        );
+      if (error) throw error;
+      setTickets(data || []);
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  const filteredTickets = tickets.filter((ticket) =>
+    ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    ticket.id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (loading) {
     return (
-        <div className="space-y-6 max-w-6xl mx-auto">
-            {/* Header */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 p-8 text-white">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
-                <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <HelpCircle className="h-6 w-6" />
-                            <h1 className="text-2xl md:text-3xl font-bold">Support</h1>
-                        </div>
-                        <p className="text-white/80">Get help from our support team</p>
-                    </div>
-                    <div className="flex gap-3">
-                        {openCount > 0 && (
-                            <div className="bg-white/20 rounded-xl px-4 py-2 backdrop-blur-sm">
-                                <p className="text-xs text-white/70">Open Tickets</p>
-                                <p className="text-2xl font-bold">{openCount}</p>
-                            </div>
-                        )}
-                        <Link to="/talent/support/new">
-                            <Button className="bg-white text-red-600 hover:bg-white/90 shadow-lg">
-                                <Plus className="h-4 w-4 mr-2" />
-                                New Ticket
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search tickets..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                    />
-                </div>
-                <div className="flex gap-2 flex-wrap">
-                    {["all", "open", "in_progress", "resolved", "closed"].map((status) => (
-                        <Button
-                            key={status}
-                            variant={statusFilter === status ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setStatusFilter(status)}
-                            className={statusFilter === status ? "bg-accent" : ""}
-                        >
-                            {status === "all" ? "All" : statusConfig[status]?.label || status}
-                        </Button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Tickets List */}
-            {filteredTickets.length === 0 ? (
-                <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-16">
-                        <div className="p-4 rounded-full bg-gradient-to-br from-orange-100 to-red-100 mb-4">
-                            <HelpCircle className="h-8 w-8 text-red-600" />
-                        </div>
-                        <h3 className="text-lg font-semibold mb-2">No Support Tickets</h3>
-                        <p className="text-muted-foreground text-center mb-4">
-                            {tickets.length === 0
-                                ? "You haven't created any support tickets yet."
-                                : "No tickets match your search criteria."}
-                        </p>
-                        {tickets.length === 0 && (
-                            <Link to="/talent/support/new">
-                                <Button>
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Create Ticket
-                                </Button>
-                            </Link>
-                        )}
-                    </CardContent>
-                </Card>
-            ) : (
-                <div className="space-y-4">
-                    {filteredTickets.map((ticket) => {
-                        const status = statusConfig[ticket.status] || statusConfig.open;
-                        const priority = priorityConfig[ticket.priority] || priorityConfig.medium;
-                        return (
-                            <Link key={ticket.id} to={`/talent/support/${ticket.id}`}>
-                                <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer">
-                                    <div className="flex">
-                                        <div className={`w-2 ${status.bg}`}></div>
-                                        <CardContent className="flex-1 p-6">
-                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                                <div className="space-y-2 flex-1">
-                                                    <div className="flex items-start justify-between">
-                                                        <h3 className="font-semibold group-hover:text-accent transition-colors">
-                                                            {ticket.subject}
-                                                        </h3>
-                                                        <Badge className={`${status.color} bg-opacity-10 border border-current`}>
-                                                            {status.icon}
-                                                            <span className="ml-1">{status.label}</span>
-                                                        </Badge>
-                                                    </div>
-
-                                                    <p className="text-sm text-muted-foreground line-clamp-2">
-                                                        {ticket.description}
-                                                    </p>
-
-                                                    <div className="flex flex-wrap gap-2">
-                                                        <Badge variant="outline" className="text-xs">
-                                                            {categoryLabels[ticket.category] || ticket.category}
-                                                        </Badge>
-                                                        <Badge className={`${priority.color} text-xs border-0`}>
-                                                            {priority.label} Priority
-                                                        </Badge>
-                                                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                                            <Clock className="h-3 w-3" />
-                                                            {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-accent transition-colors" />
-                                            </div>
-                                        </CardContent>
-                                    </div>
-                                </Card>
-                            </Link>
-                        );
-                    })}
-                </div>
-            )}
+      <div className="flex flex-col space-y-6 max-w-5xl mx-auto p-4">
+        <div className="flex justify-between">
+           <div className="h-8 w-48 bg-gray-100 animate-pulse rounded" />
+           <div className="h-10 w-32 bg-gray-100 animate-pulse rounded" />
         </div>
+        <div className="h-[400px] w-full bg-gray-100 animate-pulse rounded-xl mt-4" />
+      </div>
     );
+  }
+
+  return (
+    <div className="space-y-8 max-w-5xl mx-auto animate-fade-in pb-20">
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Support</h1>
+          <p className="text-sm text-gray-500 mt-1">Manage your helpdesk tickets and requests.</p>
+        </div>
+        <Button onClick={() => navigate("/talent/support/new")} className="bg-brand-primary text-white hover:bg-brand-primary/90 shadow-sm shrink-0">
+          <Plus className="h-4 w-4 mr-2" />
+          Create Ticket
+        </Button>
+      </div>
+
+      {/* Ticket List Area */}
+      <div className="space-y-4">
+         
+         {/* Search Filter */}
+         <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+               placeholder="Search tickets by subject or ID..."
+               value={searchQuery}
+               onChange={(e) => setSearchQuery(e.target.value)}
+               className="pl-9 bg-white border-gray-200 shadow-sm"
+            />
+         </div>
+
+         {/* Tickets Table */}
+         <Card className="border-gray-200 shadow-sm bg-white overflow-hidden">
+            {filteredTickets.length === 0 ? (
+               <div className="py-16 text-center bg-gray-50/50">
+                  <LifeBuoy className="h-8 w-8 mx-auto text-gray-300 mb-3" />
+                  <p className="text-sm font-medium text-gray-900">No support tickets yet.</p>
+                  <p className="text-sm text-gray-500 mt-1">When you create a ticket, it will appear here.</p>
+               </div>
+            ) : (
+               <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                     <thead className="bg-gray-50/80 border-b border-gray-200">
+                        <tr className="text-gray-500 font-medium">
+                           <th className="px-5 py-3 font-medium w-24">Ticket ID</th>
+                           <th className="px-5 py-3 font-medium">Subject</th>
+                           <th className="px-5 py-3 font-medium">Category</th>
+                           <th className="px-5 py-3 font-medium">Priority</th>
+                           <th className="px-5 py-3 font-medium">Status</th>
+                           <th className="px-5 py-3 font-medium whitespace-nowrap">Last Updated</th>
+                           <th className="px-5 py-3 w-10"></th>
+                        </tr>
+                     </thead>
+                     <tbody className="divide-y divide-gray-100">
+                        {filteredTickets.map(ticket => {
+                           const status = statusConfig[ticket.status] || statusConfig.open;
+                           const priority = priorityConfig[ticket.priority] || priorityConfig.medium;
+                           return (
+                              <tr 
+                                 key={ticket.id} 
+                                 onClick={() => navigate(`/talent/support/${ticket.id}`)}
+                                 className="hover:bg-gray-50/50 cursor-pointer transition-colors group"
+                              >
+                                 <td className="px-5 py-4 whitespace-nowrap">
+                                    <span className="font-mono text-xs text-gray-500">{ticket.id.slice(0, 8).toUpperCase()}</span>
+                                 </td>
+                                 <td className="px-5 py-4 min-w-[200px]">
+                                    <p className="font-medium text-gray-900 group-hover:text-brand-primary transition-colors line-clamp-1">{ticket.subject}</p>
+                                 </td>
+                                 <td className="px-5 py-4 whitespace-nowrap">
+                                    <span className="text-gray-600">{categoryLabels[ticket.category] || ticket.category}</span>
+                                 </td>
+                                 <td className="px-5 py-4 whitespace-nowrap">
+                                    <Badge variant="secondary" className={`font-medium px-2 py-0.5 text-xs rounded shadow-none ${priority.color}`}>
+                                       {priority.label}
+                                    </Badge>
+                                 </td>
+                                 <td className="px-5 py-4 whitespace-nowrap">
+                                    <Badge variant="outline" className={`font-medium px-2 py-0.5 text-xs rounded shadow-none ${status.color}`}>
+                                       {status.label}
+                                    </Badge>
+                                 </td>
+                                 <td className="px-5 py-4 whitespace-nowrap text-gray-500 text-xs text-right">
+                                    {formatDistanceToNow(new Date(ticket.updated_at || ticket.created_at), { addSuffix: true })}
+                                 </td>
+                                 <td className="px-5 py-4 text-right">
+                                    <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-gray-500 ml-auto" />
+                                 </td>
+                              </tr>
+                           );
+                        })}
+                     </tbody>
+                  </table>
+               </div>
+            )}
+         </Card>
+      </div>
+
+    </div>
+  );
 };
 
 export default TalentSupport;

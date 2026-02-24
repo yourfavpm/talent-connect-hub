@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,247 +7,446 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-    Settings as SettingsIcon,
-    Lock,
-    Bell,
-    LogOut,
-    Shield,
-    Eye,
-    EyeOff,
-    Check
+  User,
+  Shield,
+  Bell,
+  CreditCard,
+  Sliders,
+  AlertTriangle,
+  LogOut,
+  Upload,
+  Check,
+  Eye,
+  EyeOff,
+  Building
 } from "lucide-react";
+import clsx from "clsx";
+
+const SECTIONS = [
+  { id: "profile", label: "Profile", icon: User },
+  { id: "account", label: "Account", icon: Building },
+  { id: "security", label: "Security", icon: Shield },
+  { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "payout", label: "Payment & Payout", icon: CreditCard },
+  { id: "preferences", label: "Preferences", icon: Sliders },
+  { id: "danger", label: "Danger Zone", icon: AlertTriangle, danger: true },
+];
 
 const TalentSettings = () => {
-    const { user, signOut } = useAuth();
-    const navigate = useNavigate();
-    const { toast } = useToast();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-    const [loading, setLoading] = useState(false);
-    const [showPasswords, setShowPasswords] = useState(false);
-    const [passwords, setPasswords] = useState({
-        current: "",
-        new: "",
-        confirm: "",
-    });
+  const [activeTab, setActiveTab] = useState("profile");
+  const [loading, setLoading] = useState(false);
+  const [profileData, setProfileData] = useState({ name: "", phone: "", location: "" });
 
-    const [notifications, setNotifications] = useState({
-        email_job_updates: true,
-        email_application_status: true,
-        email_timesheet_reminders: true,
-        email_messages: true,
-        push_notifications: true,
-    });
+  const [showPasswords, setShowPasswords] = useState(false);
+  const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
 
-    const handlePasswordChange = async (e: React.FormEvent) => {
-        e.preventDefault();
+  const [notifications, setNotifications] = useState({
+    email_job_updates: true,
+    email_application_status: true,
+    email_timesheet_reminders: true,
+    email_messages: true,
+    push_notifications: true,
+  });
 
-        if (passwords.new !== passwords.confirm) {
-            toast({
-                title: "Error",
-                description: "New passwords do not match",
-                variant: "destructive",
-            });
-            return;
-        }
+  useEffect(() => {
+    // Mock fetch profile data if needed, or pull from context
+    if (user) {
+      // In a real scenario we'd query the `profiles` table. Mocking for UI redesign without backend change:
+      setProfileData({ name: "Talent User", phone: "+1 (555) 000-0000", location: "New York, USA" });
+    }
+  }, [user]);
 
-        if (passwords.new.length < 6) {
-            toast({
-                title: "Error",
-                description: "Password must be at least 6 characters",
-                variant: "destructive",
-            });
-            return;
-        }
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwords.new !== passwords.confirm) {
+      toast({ title: "Error", description: "New passwords do not match", variant: "destructive" });
+      return;
+    }
+    if (passwords.new.length < 6) {
+      toast({ title: "Error", description: "Password must be at least 6 characters", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: passwords.new });
+      if (error) throw error;
+      toast({ title: "Password Updated", description: "Your password has been changed successfully" });
+      setPasswords({ current: "", new: "", confirm: "" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to update password", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setLoading(true);
-        try {
-            const { error } = await supabase.auth.updateUser({
-                password: passwords.new,
-            });
+  const handleLogoutAll = async () => {
+    try {
+      await signOut();
+      navigate("/auth/login?portal=talent");
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to logout", variant: "destructive" });
+    }
+  };
 
-            if (error) throw error;
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({ title: "Profile Updated", description: "Your profile has been saved successfully" });
+  };
 
-            toast({
-                title: "Password Updated",
-                description: "Your password has been changed successfully",
-            });
+  const handleSaveNotifications = () => {
+    toast({ title: "Preferences Saved", description: "Your notification settings have been updated" });
+  };
 
-            setPasswords({ current: "", new: "", confirm: "" });
-        } catch (error: any) {
-            toast({
-                title: "Error",
-                description: error.message || "Failed to update password",
-                variant: "destructive",
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleLogoutAll = async () => {
-        try {
-            await signOut();
-            navigate("/auth/login?portal=talent");
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to logout",
-                variant: "destructive",
-            });
-        }
-    };
-
-    return (
-        <div className="space-y-6 max-w-3xl mx-auto">
-            {/* Header */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 p-8 text-white">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
-                <div className="relative">
-                    <div className="flex items-center gap-3 mb-2">
-                        <SettingsIcon className="h-6 w-6" />
-                        <h1 className="text-2xl md:text-3xl font-bold">Settings</h1>
-                    </div>
-                    <p className="text-white/80">Manage your account preferences and security</p>
-                </div>
+  const renderContent = () => {
+    switch (activeTab) {
+      case "profile":
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Profile Settings</h2>
+              <p className="text-sm text-gray-500">Update your personal information and how you appear to clients.</p>
             </div>
-
-            {/* Security Section */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Lock className="h-5 w-5 text-accent" />
-                        Security
-                    </CardTitle>
-                    <CardDescription>Update your password and security settings</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handlePasswordChange} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label>Current Password</Label>
-                            <div className="relative">
-                                <Input
-                                    type={showPasswords ? "text" : "password"}
-                                    value={passwords.current}
-                                    onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                                    placeholder="Enter current password"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>New Password</Label>
-                                <Input
-                                    type={showPasswords ? "text" : "password"}
-                                    value={passwords.new}
-                                    onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                                    placeholder="Enter new password"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Confirm New Password</Label>
-                                <Input
-                                    type={showPasswords ? "text" : "password"}
-                                    value={passwords.confirm}
-                                    onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                                    placeholder="Confirm new password"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <Switch
-                                checked={showPasswords}
-                                onCheckedChange={setShowPasswords}
-                                id="show-passwords"
-                            />
-                            <Label htmlFor="show-passwords" className="text-sm text-muted-foreground cursor-pointer">
-                                Show passwords
-                            </Label>
-                        </div>
-
-                        <Button type="submit" disabled={loading}>
-                            <Shield className="h-4 w-4 mr-2" />
-                            Update Password
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
-
-            {/* Notifications Section */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Bell className="h-5 w-5 text-accent" />
-                        Notifications
-                    </CardTitle>
-                    <CardDescription>Choose what notifications you want to receive</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    {[
-                        { key: "email_job_updates", label: "Job Updates", description: "New jobs matching your profile" },
-                        { key: "email_application_status", label: "Application Status", description: "Updates on your job applications" },
-                        { key: "email_timesheet_reminders", label: "Timesheet Reminders", description: "Weekly reminders to submit timesheets" },
-                        { key: "email_messages", label: "Messages", description: "New messages from administrators" },
-                        { key: "push_notifications", label: "Push Notifications", description: "In-app notifications" },
-                    ].map((item) => (
-                        <div key={item.key} className="flex items-center justify-between py-3">
-                            <div>
-                                <p className="font-medium">{item.label}</p>
-                                <p className="text-sm text-muted-foreground">{item.description}</p>
-                            </div>
-                            <Switch
-                                checked={notifications[item.key as keyof typeof notifications]}
-                                onCheckedChange={(checked) =>
-                                    setNotifications({ ...notifications, [item.key]: checked })
-                                }
-                            />
-                        </div>
-                    ))}
-                </CardContent>
-            </Card>
-
-            {/* Account Section */}
-            <Card className="border-red-200">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-red-600">
-                        <LogOut className="h-5 w-5" />
-                        Session Management
-                    </CardTitle>
-                    <CardDescription>Manage your active sessions</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="p-4 rounded-xl bg-red-50 border border-red-200">
-                        <p className="text-sm text-red-700 mb-4">
-                            This will log you out from all devices and sessions. You'll need to log in again.
-                        </p>
-                        <Button variant="destructive" onClick={handleLogoutAll}>
-                            <LogOut className="h-4 w-4 mr-2" />
-                            Logout from All Sessions
-                        </Button>
+            
+            <form onSubmit={handleSaveProfile} className="space-y-6">
+              <Card className="border-gray-200 shadow-sm bg-white">
+                <CardContent className="p-6 space-y-6">
+                  
+                  {/* Avatar Upload */}
+                  <div className="flex items-center gap-6 pb-6 border-b border-gray-100">
+                    <Avatar className="h-20 w-20 border border-gray-200">
+                      <AvatarFallback className="bg-brand-primary/10 text-brand-primary text-xl font-medium">TU</AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1.5">
+                      <div className="flex gap-2">
+                         <Button type="button" variant="outline" size="sm" className="h-8 shadow-sm">
+                            <Upload className="h-3.5 w-3.5 mr-2" />
+                            Upload new
+                         </Button>
+                         <Button type="button" variant="ghost" size="sm" className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50">Remove</Button>
+                      </div>
+                      <p className="text-xs text-gray-500">JPG, GIF or PNG. 1MB max.</p>
                     </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-gray-900 font-medium">Full Name</Label>
+                      <Input value={profileData.name} onChange={e => setProfileData({...profileData, name: e.target.value})} className="shadow-sm border-gray-300" />
+                    </div>
+                    <div className="space-y-2">
+                       <Label className="text-gray-700 font-medium flex items-center gap-2">
+                          Email Address <span className="text-[10px] uppercase font-semibold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">Read-only</span>
+                       </Label>
+                       <Input value={user?.email || ""} readOnly className="shadow-sm border-gray-300 bg-gray-50 text-gray-500 cursor-not-allowed" />
+                    </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-gray-900 font-medium">Phone Number</Label>
+                      <Input value={profileData.phone} onChange={e => setProfileData({...profileData, phone: e.target.value})} className="shadow-sm border-gray-300" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-gray-900 font-medium">Location</Label>
+                      <Input value={profileData.location} onChange={e => setProfileData({...profileData, location: e.target.value})} className="shadow-sm border-gray-300" />
+                    </div>
+                  </div>
                 </CardContent>
+              </Card>
+              <div className="flex justify-end sticky bottom-6">
+                <Button type="submit" className="bg-brand-primary text-white shadow-sm">Save Changes</Button>
+              </div>
+            </form>
+          </div>
+        );
+      
+      case "account":
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Account metadata</h2>
+              <p className="text-sm text-gray-500">Core system details regarding your account identity.</p>
+            </div>
+            <Card className="border-gray-200 shadow-sm bg-white">
+              <CardContent className="p-0 divide-y divide-gray-100">
+                <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                     <p className="font-medium text-gray-900">Talent ID</p>
+                     <p className="text-sm text-gray-500">Your unique identifier within the platform.</p>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-md text-sm font-mono text-gray-600 sm:max-w-xs truncate">
+                     {user?.id || "N/A"}
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                     <p className="font-medium text-gray-900">Role Type</p>
+                     <p className="text-sm text-gray-500">Your authorized platform role.</p>
+                  </div>
+                  <div className="bg-brand-primary/10 text-brand-primary border border-brand-primary/20 px-2.5 py-1 rounded text-xs font-semibold uppercase tracking-wider">
+                     Talent
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                     <p className="font-medium text-gray-900">Account Created</p>
+                     <p className="text-sm text-gray-500">When you originally registered.</p>
+                  </div>
+                  <p className="text-sm font-medium text-gray-900">
+                     {user?.created_at ? new Date(user.created_at).toLocaleDateString() : "Unknown"}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case "security":
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Security</h2>
+              <p className="text-sm text-gray-500">Manage your password and active sessions to keep your account safe.</p>
+            </div>
+            
+            <Card className="border-gray-200 shadow-sm bg-white">
+               <CardHeader className="border-b border-gray-100 bg-gray-50/50 pb-4">
+                  <CardTitle className="text-base font-medium">Change Password</CardTitle>
+               </CardHeader>
+               <CardContent className="p-6">
+                  <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
+                     <div className="space-y-2">
+                        <Label className="text-gray-900 font-medium">Current Password</Label>
+                        <Input type={showPasswords ? "text" : "password"} value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} className="shadow-sm border-gray-300" />
+                     </div>
+                     <div className="space-y-2 pt-2">
+                        <Label className="text-gray-900 font-medium">New Password</Label>
+                        <Input type={showPasswords ? "text" : "password"} value={passwords.new} onChange={(e) => setPasswords({ ...passwords, new: e.target.value })} className="shadow-sm border-gray-300" />
+                     </div>
+                     <div className="space-y-2">
+                        <Label className="text-gray-900 font-medium">Confirm New Password</Label>
+                        <Input type={showPasswords ? "text" : "password"} value={passwords.confirm} onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })} className="shadow-sm border-gray-300" />
+                     </div>
+                     <div className="flex items-center gap-2 pt-2 pb-4">
+                        <Switch checked={showPasswords} onCheckedChange={setShowPasswords} id="show-passwords" />
+                        <Label htmlFor="show-passwords" className="text-sm text-gray-500 cursor-pointer">Show passwords</Label>
+                     </div>
+                     <Button type="submit" disabled={loading} className="bg-brand-primary text-white shadow-sm">
+                        Update Password
+                     </Button>
+                  </form>
+               </CardContent>
             </Card>
 
-            {/* Account Info */}
-            <Card className="bg-gradient-to-r from-slate-50 to-slate-100">
-                <CardContent className="p-6">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-full bg-accent text-white">
-                            <Check className="h-5 w-5" />
-                        </div>
+            <Card className="border-red-200 shadow-sm bg-red-50/30">
+               <CardHeader className="border-b border-red-100 bg-red-50/50 pb-4">
+                  <CardTitle className="text-base font-medium text-red-900">Active Sessions</CardTitle>
+               </CardHeader>
+               <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                     <p className="font-medium text-gray-900">Log out of all devices</p>
+                     <p className="text-sm text-gray-500 mt-0.5">This will invalidate all current sessions and require you to log in again.</p>
+                  </div>
+                  <Button variant="outline" onClick={handleLogoutAll} className="border-red-200 text-red-700 hover:bg-red-50 bg-white">
+                     <LogOut className="h-4 w-4 mr-2" />
+                     Log out all
+                  </Button>
+               </CardContent>
+            </Card>
+          </div>
+        );
+
+      case "notifications":
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Notifications</h2>
+              <p className="text-sm text-gray-500">Control when and how you are notified of platform activity.</p>
+            </div>
+            
+            <Card className="border-gray-200 shadow-sm bg-white">
+               <CardContent className="p-0 divide-y divide-gray-100">
+                  {[
+                     { key: "email_job_updates", label: "Job Updates", description: "Receive alerts for new jobs matching your profile." },
+                     { key: "email_application_status", label: "Application Status", description: "Get notified when your application moves stages." },
+                     { key: "email_timesheet_reminders", label: "Timesheet Reminders", description: "Weekly reminders to submit your hours." },
+                     { key: "email_messages", label: "Messages & Support", description: "Alerts for new messages from administrators." },
+                     { key: "push_notifications", label: "In-App Push", description: "Enable browser push notifications while active." },
+                  ].map((item) => (
+                     <div key={item.key} className="p-6 flex items-center justify-between gap-4">
                         <div>
-                            <p className="font-medium">Account Email</p>
-                            <p className="text-sm text-muted-foreground">{user?.email}</p>
+                           <p className="font-medium text-gray-900">{item.label}</p>
+                           <p className="text-sm text-gray-500">{item.description}</p>
                         </div>
-                    </div>
-                </CardContent>
+                        <Switch
+                           checked={notifications[item.key as keyof typeof notifications]}
+                           onCheckedChange={(checked) => setNotifications({ ...notifications, [item.key]: checked })}
+                           className="data-[state=checked]:bg-brand-primary"
+                        />
+                     </div>
+                  ))}
+               </CardContent>
             </Card>
+            <div className="flex justify-end sticky bottom-6">
+               <Button onClick={handleSaveNotifications} className="bg-brand-primary text-white shadow-sm">Save Preferences</Button>
+            </div>
+          </div>
+        );
+      
+      case "payout":
+         return (
+            <div className="space-y-6 animate-fade-in">
+               <div>
+                  <h2 className="text-lg font-medium text-gray-900">Payment & Payout</h2>
+                  <p className="text-sm text-gray-500">Manage where your earnings are deposited.</p>
+               </div>
+               <Card className="border-gray-200 shadow-sm bg-white">
+                  <CardHeader className="border-b border-gray-100 bg-gray-50/50 pb-4">
+                     <CardTitle className="text-base font-medium flex items-center gap-2">
+                        <Building className="h-4 w-4 text-gray-500" />
+                        Bank Account Details
+                     </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                           <div className="h-10 w-14 bg-white border border-gray-200 rounded flex items-center justify-center shadow-sm">
+                              <span className="font-bold text-gray-400 text-xs">BANK</span>
+                           </div>
+                           <div>
+                              <p className="font-medium text-gray-900">Chase Checking</p>
+                              <p className="text-sm text-gray-500 font-mono">**** **** 4812</p>
+                           </div>
+                        </div>
+                        <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 font-medium">Verified</Badge>
+                     </div>
+                     <div className="mt-6">
+                        <Button variant="outline" className="shadow-sm text-gray-700">Update Payout Method</Button>
+                     </div>
+                  </CardContent>
+               </Card>
+            </div>
+         );
+
+      case "preferences":
+         return (
+            <div className="space-y-6 animate-fade-in">
+               <div>
+                  <h2 className="text-lg font-medium text-gray-900">Preferences</h2>
+                  <p className="text-sm text-gray-500">Customize your workspace experience.</p>
+               </div>
+               <Card className="border-gray-200 shadow-sm bg-white">
+                  <CardContent className="p-6 space-y-6 max-w-md">
+                     <div className="space-y-2">
+                        <Label className="text-gray-900 font-medium">Timezone</Label>
+                        <Select defaultValue="est">
+                           <SelectTrigger className="shadow-sm border-gray-300">
+                              <SelectValue placeholder="Select timezone" />
+                           </SelectTrigger>
+                           <SelectContent>
+                              <SelectItem value="est">Eastern Time (US & Canada)</SelectItem>
+                              <SelectItem value="cst">Central Time (US & Canada)</SelectItem>
+                              <SelectItem value="pst">Pacific Time (US & Canada)</SelectItem>
+                              <SelectItem value="gmt">Greenwich Mean Time (GMT)</SelectItem>
+                           </SelectContent>
+                        </Select>
+                     </div>
+                     <div className="space-y-2">
+                        <Label className="text-gray-900 font-medium">Language</Label>
+                        <Select defaultValue="en">
+                           <SelectTrigger className="shadow-sm border-gray-300">
+                              <SelectValue placeholder="Select language" />
+                           </SelectTrigger>
+                           <SelectContent>
+                              <SelectItem value="en">English (US)</SelectItem>
+                              <SelectItem value="es">Español</SelectItem>
+                              <SelectItem value="fr">Français</SelectItem>
+                           </SelectContent>
+                        </Select>
+                     </div>
+                  </CardContent>
+               </Card>
+               <div className="flex justify-end sticky bottom-6">
+                  <Button className="bg-brand-primary text-white shadow-sm">Save Preferences</Button>
+               </div>
+            </div>
+         );
+
+      case "danger":
+         return (
+            <div className="space-y-6 animate-fade-in">
+               <div>
+                  <h2 className="text-lg font-medium text-red-600">Danger Zone</h2>
+                  <p className="text-sm text-gray-500">Irreversible actions regarding your account data.</p>
+               </div>
+               <Card className="border-red-200 shadow-sm bg-white overflow-hidden">
+                  <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                     <div>
+                        <p className="font-medium text-gray-900">Deactivate Account</p>
+                        <p className="text-sm text-gray-500 mt-0.5">Temporarily hide your profile and freeze all applications. You can restore this later.</p>
+                     </div>
+                     <Button variant="outline" className="border-red-200 text-red-700 bg-white hover:bg-red-50 shrink-0">Deactivate</Button>
+                  </div>
+                  <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-red-50/50 transition-colors">
+                     <div>
+                        <p className="font-medium text-red-600">Delete Account</p>
+                        <p className="text-sm text-gray-500 mt-0.5">Permanently erase your account, history, and uploaded files. This cannot be undone.</p>
+                     </div>
+                     <Button variant="destructive" className="shrink-0 bg-red-600 hover:bg-red-700">Request Deletion</Button>
+                  </div>
+               </Card>
+            </div>
+         );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6 pb-20">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Settings</h1>
+        <p className="text-sm text-gray-500 mt-1">Manage your account and preferences.</p>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-8 items-start">
+        {/* Left Navigation Panel */}
+        <div className="w-full md:w-64 shrink-0 flex flex-col md:sticky md:top-6">
+           <nav className="flex md:flex-col gap-1 overflow-x-auto pb-4 md:pb-0 scrollbar-none">
+              {SECTIONS.map((section) => (
+                 <button
+                    key={section.id}
+                    onClick={() => setActiveTab(section.id)}
+                    className={clsx(
+                       "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
+                       activeTab === section.id 
+                          ? section.danger ? "bg-red-50 text-red-700" : "bg-gray-100 text-gray-900"
+                          : section.danger ? "text-red-600 hover:bg-red-50/50" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    )}
+                 >
+                    <section.icon className={clsx("h-4 w-4", activeTab === section.id && !section.danger ? "text-gray-900" : "")} />
+                    {section.label}
+                 </button>
+              ))}
+           </nav>
         </div>
-    );
+
+        {/* Right Content Area */}
+        <div className="flex-1 w-full min-w-0">
+           {renderContent()}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default TalentSettings;

@@ -2,14 +2,19 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   ArrowLeft,
   User,
@@ -18,16 +23,14 @@ import {
   Award,
   Users,
   FileText,
-  CheckCircle,
-  XCircle,
   Clock,
-  AlertCircle,
-  Shield,
-  UserCheck,
   Globe,
   Phone,
   Mail,
   MapPin,
+  CheckCircle,
+  AlertCircle,
+  XCircle
 } from "lucide-react";
 
 const TalentDetail = () => {
@@ -41,30 +44,42 @@ const TalentDetail = () => {
   const [certifications, setCertifications] = useState<any[]>([]);
   const [references, setReferences] = useState<any[]>([]);
   const [vettingLevels, setVettingLevels] = useState<any[]>([]);
-  const [admins, setAdmins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [vettingNotes, setVettingNotes] = useState<Record<string, string>>({});
-  const [publishing, setPublishing] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [adminNotes, setAdminNotes] = useState("");
+  
+  const [documentUrls, setDocumentUrls] = useState<{ cvUrl: string | null; governmentIdUrl: string | null }>({ cvUrl: null, governmentIdUrl: null });
+
+  // Modals
+  const [isRequestChangesOpen, setIsRequestChangesOpen] = useState(false);
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [modalReason, setModalReason] = useState("");
 
   useEffect(() => {
-    if (id) {
-      fetchTalentData();
-      fetchAdmins();
-    }
+    if (id) fetchTalentData();
   }, [id]);
 
   const fetchTalentData = async () => {
     try {
-      const { data: talentData, error } = await supabase
-        .from("talents")
-        .select("*")
-        .eq("id", id)
-        .single();
-
+      const { data: talentData, error } = await supabase.from("talents").select("*").eq("id", id).single();
       if (error) throw error;
       setTalent(talentData);
 
-      // Fetch all related data in parallel
+      const getSignedUrl = async (path: string | null) => {
+        if (!path) return null;
+        if (path.startsWith('http')) return path;
+        try {
+          const { data } = await supabase.storage.from('talent_documents').createSignedUrl(path, 60 * 60);
+          return data?.signedUrl || null;
+        } catch { return null; }
+      };
+
+      const [cvUrl, govIdUrl] = await Promise.all([
+        getSignedUrl(talentData.cv_url),
+        getSignedUrl(talentData.government_id_url)
+      ]);
+      setDocumentUrls({ cvUrl, governmentIdUrl: govIdUrl });
+
       const [workData, eduData, certData, refData, vettingData] = await Promise.all([
         supabase.from("talent_work_history").select("*").eq("talent_id", id).order("start_date", { ascending: false }),
         supabase.from("talent_education").select("*").eq("talent_id", id).order("start_year", { ascending: false }),
@@ -77,627 +92,439 @@ const TalentDetail = () => {
       setEducation(eduData.data || []);
       setCertifications(certData.data || []);
       setReferences(refData.data || []);
-      setVettingLevels(vettingData.data || []);
+      
+      const vettings = vettingData.data || [];
+      setVettingLevels(vettings);
+
+      // Initialize admin notes from the first level if available
+      if (vettings.length > 0) {
+        setAdminNotes(vettings[0].admin_notes || "");
+      }
     } catch (error) {
       console.error("Error fetching talent:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load talent data",
-        variant: "destructive",
-      });
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchAdmins = async () => {
+  const computeUiStatus = () => {
+    if (!talent) return "pending";
+    if (talent.vetting_status === "fully_vetted") return "approved";
+    if (vettingLevels.some(v => v.status === "rejected")) return "rejected";
+    if (vettingLevels.some(v => v.status === "needs_clarification")) return "changes";
+    return "pending";
+  };
+
+  const handleAction = async (action: "approve" | "changes" | "reject", reason?: string) => {
+    setActionLoading(true);
     try {
-      // Get all admin user IDs
-      const { data: adminRoles } = await supabase
-        .from("user_roles")
-        .select("user_id, role")
-        .in("role", ["super_admin", "operations_admin", "vetting_admin", "talent_manager"] as any);
+      const finalNotes = reason ? (adminNotes ? `${adminNotes}\n\nUpdate: ${reason}` : reason) : adminNotes;
 
-      if (adminRoles && adminRoles.length > 0) {
-        const userIds = adminRoles.map((r) => r.user_id);
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("*")
-          .in("user_id", userIds);
+      // 1. Update all vetting levels
+      let levelStatus = "pending";
+      if (action === "approve") levelStatus = "approved";
+      if (action === "changes") levelStatus = "needs_clarification";
+      if (action === "reject") levelStatus = "rejected";
 
-        setAdmins(
-          (profiles || []).map((p) => ({
-            ...p,
-            role: adminRoles.find((r) => r.user_id === p.user_id)?.role,
-          }))
-        );
+      for (const level of vettingLevels) {
+        await supabase.from("talent_vetting").update({
+          status: levelStatus,
+          admin_notes: finalNotes,
+          reviewed_at: new Date().toISOString()
+        }).eq("id", level.id);
       }
+
+      // 2. Update talent main status if approved
+      if (action === "approve") {
+        await supabase.from("talents").update({
+          vetting_status: "fully_vetted"
+        }).eq("id", id);
+      } else if (action === "changes") {
+        await supabase.from("talents").update({
+          vetting_status: "partially_vetted"
+        }).eq("id", id);
+      }
+
+      toast({ title: "Success", description: `Talent status updated to ${action}.` });
+      
+      // Reset modals and refresh
+      setIsRequestChangesOpen(false);
+      setIsRejectOpen(false);
+      setModalReason("");
+      fetchTalentData();
+
     } catch (error) {
-      console.error("Error fetching admins:", error);
-    }
-  };
-
-  const handleUpdateVettingLevel = async (levelId: string, status: "pending" | "approved" | "rejected" | "needs_clarification") => {
-    try {
-      const notes = vettingNotes[levelId] || "";
-      await supabase
-        .from("talent_vetting")
-        .update({
-          status,
-          admin_notes: notes,
-          reviewed_at: new Date().toISOString(),
-        })
-        .eq("id", levelId);
-
-      toast({
-        title: "Vetting Updated",
-        description: `Level status updated to ${status}`,
-      });
-
-      fetchTalentData();
-      setVettingNotes((prev) => ({ ...prev, [levelId]: "" }));
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleAssignManager = async (managerId: string) => {
-    try {
-      await supabase
-        .from("talents")
-        .update({ assigned_manager: managerId || null })
-        .eq("id", id);
-
-      toast({
-        title: "Manager Assigned",
-        description: "Talent manager has been updated",
-      });
-
-      fetchTalentData();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handlePublishToPool = async () => {
-    // Check if all vetting levels are approved
-    const allApproved = vettingLevels.every((level) => level.status === "approved");
-
-    if (!allApproved) {
-      toast({
-        title: "Cannot Publish",
-        description: "All vetting levels must be approved before publishing",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setPublishing(true);
-    try {
-      await supabase
-        .from("talents")
-        .update({ vetting_status: "fully_vetted" })
-        .eq("id", id);
-
-      toast({
-        title: "Talent Published",
-        description: "Talent is now visible in the vetted talent pool",
-      });
-
-      fetchTalentData();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error updating talent:", error);
+      toast({ title: "Error", description: "Could not update status.", variant: "destructive" });
     } finally {
-      setPublishing(false);
+      setActionLoading(false);
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "approved":
-        return <CheckCircle className="h-5 w-5 text-success" />;
-      case "rejected":
-        return <XCircle className="h-5 w-5 text-destructive" />;
-      case "needs_clarification":
-        return <AlertCircle className="h-5 w-5 text-warning" />;
-      default:
-        return <Clock className="h-5 w-5 text-muted-foreground" />;
+  const handleSaveNotes = async () => {
+    if (!vettingLevels.length) return;
+    try {
+      await supabase.from("talent_vetting").update({
+        admin_notes: adminNotes
+      }).eq("id", vettingLevels[0].id);
+      toast({ title: "Notes Saved", description: "Internal notes updated successfully." });
+    } catch (e) {
+      toast({ title: "Error", description: "Could not save notes.", variant: "destructive" });
     }
   };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "approved":
-        return <Badge className="bg-success/10 text-success">Approved</Badge>;
-      case "rejected":
-        return <Badge className="bg-destructive/10 text-destructive">Rejected</Badge>;
-      case "needs_clarification":
-        return <Badge className="bg-warning/10 text-warning">Needs Clarification</Badge>;
-      default:
-        return <Badge className="bg-muted text-muted-foreground">Pending</Badge>;
-    }
-  };
-
-  const allApproved = vettingLevels.every((level) => level.status === "approved");
-  const approvedCount = vettingLevels.filter((level) => level.status === "approved").length;
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-2 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  if (!talent) {
-    return (
-      <div className="p-8">
-        <Alert variant="destructive">
-          <AlertCircle className="h-5 w-5" />
-          <AlertTitle>Talent Not Found</AlertTitle>
-          <AlertDescription>The requested talent profile could not be found.</AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
+  if (!talent) return <div className="p-8 text-center text-gray-500">Talent not found.</div>;
+
+  const uiStatus = computeUiStatus();
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/talents")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              {talent.first_name} {talent.last_name}
-            </h1>
-            <p className="text-muted-foreground font-mono">{talent.talent_id}</p>
+    <div className="max-w-[1400px] mx-auto pb-10 space-y-6">
+      
+      <div className="flex items-center gap-4 border-b border-gray-200 pb-5">
+        <Button variant="ghost" size="icon" onClick={() => navigate("/admin/talents")} className="text-gray-500 hover:text-gray-900 border border-gray-200 shadow-sm h-9 w-9">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">{talent.first_name} {talent.last_name}</h1>
+            {!talent.onboarding_completed && (
+               <Badge className="bg-warning/10 text-warning hover:bg-warning/20 border-0 font-normal shadow-none h-6">Onboarding Incomplete</Badge>
+            )}
+          </div>
+          <p className="text-sm text-gray-500 font-mono mt-1">{talent.talent_id}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        
+        {/* LEFT PANEL: PROFILE DATA (READ ONLY) */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          <Card className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <CardHeader className="bg-gray-50/50 border-b border-gray-100 py-4 px-5">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-gray-900">
+                <User className="h-4 w-4 text-gray-400" /> Basic Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                  <p className="text-xs text-gray-500 mb-1 flex items-center gap-1.5"><Mail className="h-3 w-3" /> Email</p>
+                  <p className="text-sm font-medium text-gray-900">{talent.email}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1 flex items-center gap-1.5"><Phone className="h-3 w-3" /> Phone</p>
+                  <p className="text-sm font-medium text-gray-900">{talent.phone || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1 flex items-center gap-1.5"><MapPin className="h-3 w-3" /> Location</p>
+                  <p className="text-sm font-medium text-gray-900">{talent.country || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1 flex items-center gap-1.5"><Globe className="h-3 w-3" /> Timezone</p>
+                  <p className="text-sm font-medium text-gray-900">{talent.timezone || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1 flex items-center gap-1.5"><Clock className="h-3 w-3" /> Working Hours</p>
+                  <p className="text-sm font-medium text-gray-900">{talent.preferred_working_hours || "—"}</p>
+                </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <CardHeader className="bg-gray-50/50 border-b border-gray-100 py-4 px-5">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-gray-900">
+                <Briefcase className="h-4 w-4 text-gray-400" /> Professional Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-5 py-5 space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Primary Role</p>
+                  <p className="text-sm font-medium text-gray-900 capitalize">{talent.primary_role?.replace(/_/g, " ") || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Experience</p>
+                  <p className="text-sm font-medium text-gray-900">{talent.years_of_experience || 0} years</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Availability</p>
+                  <p className="text-sm font-medium text-gray-900 capitalize">{talent.availability?.replace(/_/g, " ") || "—"}</p>
+                </div>
+              </div>
+
+              {talent.secondary_skills && talent.secondary_skills.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-2">Secondary Skills</p>
+                  <div className="flex flex-wrap gap-2">
+                    {talent.secondary_skills.map((s: string) => <Badge key={s} variant="secondary" className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-normal">{s}</Badge>)}
+                  </div>
+                </div>
+              )}
+              {talent.tools_familiar_with && talent.tools_familiar_with.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-2">Tools</p>
+                  <div className="flex flex-wrap gap-2">
+                    {talent.tools_familiar_with.map((t: string) => <Badge key={t} variant="outline" className="text-gray-600 font-normal">{t}</Badge>)}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Work History */}
+          <Card className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <CardHeader className="bg-gray-50/50 border-b border-gray-100 py-4 px-5">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-gray-900">
+                <Briefcase className="h-4 w-4 text-gray-400" /> Work History
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {workHistory.length === 0 ? (
+                <div className="p-5 text-sm text-gray-500">No work history provided.</div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {workHistory.map((work) => (
+                    <div key={work.id} className="p-5">
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="text-sm font-semibold text-gray-900">{work.role_title} <span className="text-gray-400 font-normal mx-1">at</span> {work.company_name}</h4>
+                        {work.is_current && <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50/50 font-normal text-[10px] uppercase">Current</Badge>}
+                      </div>
+                      <p className="text-xs text-gray-500 font-mono mb-3">{work.start_date} — {work.is_current ? "Present" : work.end_date || "N/A"}</p>
+                      {work.role_description && <p className="text-sm text-gray-700 leading-relaxed">{work.role_description}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Documents */}
+          <Card className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+             <CardHeader className="bg-gray-50/50 border-b border-gray-100 py-4 px-5">
+               <CardTitle className="text-sm font-semibold flex items-center gap-2 text-gray-900">
+                 <FileText className="h-4 w-4 text-gray-400" /> Documents
+               </CardTitle>
+             </CardHeader>
+             <CardContent className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl border border-gray-200 flex items-center justify-between bg-white shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Resume / CV</p>
+                      <p className="text-xs text-gray-500">{documentUrls.cvUrl ? 'Uploaded' : 'Missing'}</p>
+                    </div>
+                  </div>
+                  {documentUrls.cvUrl && (
+                    <Button variant="outline" size="sm" asChild className="h-7 text-xs px-3 shadow-none">
+                      <a href={documentUrls.cvUrl} target="_blank" rel="noopener noreferrer">View</a>
+                    </Button>
+                  )}
+                </div>
+
+                <div className="p-4 rounded-xl border border-gray-200 flex items-center justify-between bg-white shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                      <User className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Government ID</p>
+                      <p className="text-xs text-gray-500">{documentUrls.governmentIdUrl ? 'Uploaded' : 'Missing'}</p>
+                    </div>
+                  </div>
+                  {documentUrls.governmentIdUrl && (
+                    <Button variant="outline" size="sm" asChild className="h-7 text-xs px-3 shadow-none">
+                      <a href={documentUrls.governmentIdUrl} target="_blank" rel="noopener noreferrer">View</a>
+                    </Button>
+                  )}
+                </div>
+             </CardContent>
+          </Card>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <Card className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+               <CardHeader className="bg-gray-50/50 border-b border-gray-100 py-4 px-5">
+                 <CardTitle className="text-sm font-semibold flex items-center gap-2 text-gray-900">
+                   <GraduationCap className="h-4 w-4 text-gray-400" /> Education
+                 </CardTitle>
+               </CardHeader>
+               <CardContent className="p-0">
+                  {education.length === 0 ? <p className="p-5 text-sm text-gray-500">No education provided.</p> : 
+                    <div className="divide-y divide-gray-100">
+                      {education.map(e => (
+                        <div key={e.id} className="p-5">
+                          <h4 className="text-sm font-semibold text-gray-900">{e.institution_name}</h4>
+                          <p className="text-sm text-gray-700 mt-1">{e.field_of_study} — <span className="capitalize">{e.education_level?.replace(/_/g, ' ')}</span></p>
+                          <p className="text-xs text-gray-500 font-mono mt-2">{e.start_year} — {e.is_current ? "Present" : e.end_year}</p>
+                        </div>
+                      ))}
+                    </div>
+                  }
+               </CardContent>
+            </Card>
+
+            <Card className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+               <CardHeader className="bg-gray-50/50 border-b border-gray-100 py-4 px-5">
+                 <CardTitle className="text-sm font-semibold flex items-center gap-2 text-gray-900">
+                   <Award className="h-4 w-4 text-gray-400" /> Certs & References
+                 </CardTitle>
+               </CardHeader>
+               <CardContent className="p-5 space-y-4">
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase text-gray-500 tracking-wider mb-2">Certifications</h4>
+                    {certifications.length === 0 ? <p className="text-sm text-gray-400">None provided</p> : certifications.map(c => (
+                      <div key={c.id} className="mb-2">
+                        <p className="text-sm font-medium text-gray-900">{c.certification_name}</p>
+                        <p className="text-xs text-gray-500">{c.issuing_organization} {c.year_obtained ? `(${c.year_obtained})` : ''}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <Separator />
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase text-gray-500 tracking-wider mb-2">References</h4>
+                    {references.length === 0 ? <p className="text-sm text-gray-400">None provided</p> : references.map(r => (
+                      <div key={r.id} className="mb-2">
+                        <p className="text-sm font-medium text-gray-900">{r.reference_name} <span className="font-normal text-gray-500">({r.relationship})</span></p>
+                        <p className="text-xs text-brand-primary">{r.email}</p>
+                      </div>
+                    ))}
+                  </div>
+               </CardContent>
+            </Card>
+          </div>
+
+        </div>
+
+        {/* RIGHT PANEL: STICKY ACTIONS */}
+        <div className="lg:sticky lg:top-24 space-y-6">
+          <Card className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <CardHeader className="bg-gray-50/50 border-b border-gray-100 py-4 px-5">
+              <CardTitle className="text-sm font-semibold text-gray-900 flex justify-between items-center">
+                Vetting Status
+                {uiStatus === "approved" && <Badge className="bg-success/10 text-success hover:bg-success/20 border-0 font-normal">Approved</Badge>}
+                {uiStatus === "rejected" && <Badge className="bg-destructive/10 text-destructive hover:bg-destructive/20 border-0 font-normal">Rejected</Badge>}
+                {uiStatus === "changes" && <Badge className="bg-warning/10 text-warning hover:bg-warning/20 border-0 font-normal">Changes Requested</Badge>}
+                {uiStatus === "pending" && <Badge className="bg-gray-200 text-gray-700 hover:bg-gray-200 border-0 font-normal">Pending Review</Badge>}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-5 space-y-5">
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-900 flex justify-between items-center">
+                  Internal Vetting Notes
+                  <Button variant="ghost" size="sm" className="h-6 text-[10px] uppercase font-semibold text-brand-primary px-2" onClick={handleSaveNotes}>Save</Button>
+                </label>
+                <Textarea 
+                  placeholder="These notes are invisible to the talent..."
+                  className="min-h-[120px] text-sm resize-none shadow-sm focus-visible:ring-1"
+                  value={adminNotes}
+                  onChange={e => setAdminNotes(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <Button 
+                  className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white shadow-none"
+                  onClick={() => handleAction("approve")}
+                  disabled={actionLoading || uiStatus === "approved" || !talent.onboarding_completed}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" /> Approve Talent
+                </Button>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="w-full shadow-none"
+                    onClick={() => setIsRequestChangesOpen(true)}
+                    disabled={actionLoading || uiStatus === "changes"}
+                  >
+                    Request Changes
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-destructive hover:text-destructive hover:bg-destructive/5 border-destructive/20 shadow-none"
+                    onClick={() => setIsRejectOpen(true)}
+                    disabled={actionLoading || uiStatus === "rejected"}
+                  >
+                    Reject Talent
+                  </Button>
+                </div>
+              </div>
+
+            </CardContent>
+          </Card>
+
+          {/* Audit Footer */}
+          <div className="px-1 space-y-1">
+            <p className="text-xs text-gray-500 font-mono">Submitted: {new Date(talent.created_at).toLocaleDateString()}</p>
+            {vettingLevels[0]?.reviewed_at && (
+              <p className="text-xs text-gray-500 font-mono">Last updated: {new Date(vettingLevels[0].reviewed_at).toLocaleDateString()}</p>
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {talent.onboarding_completed ? (
-            <Badge className="bg-success/10 text-success">Onboarding Complete</Badge>
-          ) : (
-            <Badge className="bg-warning/10 text-warning">Onboarding Incomplete</Badge>
-          )}
-          <Badge
-            className={
-              talent.vetting_status === "fully_vetted"
-                ? "bg-success/10 text-success"
-                : talent.vetting_status === "partially_vetted"
-                  ? "bg-warning/10 text-warning"
-                  : "bg-muted text-muted-foreground"
-            }
-          >
-            {talent.vetting_status === "fully_vetted"
-              ? "Fully Vetted"
-              : talent.vetting_status === "partially_vetted"
-                ? "Partially Vetted"
-                : "Unvetted"}
-          </Badge>
-        </div>
       </div>
 
-      {/* Cannot vet warning */}
-      {!talent.onboarding_completed && (
-        <Alert className="border-warning/50 bg-warning/5">
-          <AlertCircle className="h-5 w-5 text-warning" />
-          <AlertTitle className="text-warning">Cannot Vet - Onboarding Incomplete</AlertTitle>
-          <AlertDescription>
-            This talent has not completed their onboarding. Vetting can only begin once they complete their profile.
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* Request Changes Modal */}
+      <Dialog open={isRequestChangesOpen} onOpenChange={setIsRequestChangesOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Request Changes</DialogTitle>
+            <DialogDescription>
+              Describe what the talent needs to update in their profile. They will receive an email notification.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea
+              className="resize-none"
+              rows={4}
+              placeholder="e.g. Please upload a clearer copy of your Government ID..."
+              value={modalReason}
+              onChange={(e) => setModalReason(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRequestChangesOpen(false)}>Cancel</Button>
+            <Button onClick={() => handleAction("changes", modalReason)} disabled={!modalReason.trim() || actionLoading}>Submit Request</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Talent Info */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Basic Info Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" />
-                Personal Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{talent.email}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Phone className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <p className="font-medium">{talent.phone || "Not provided"}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Location</p>
-                    <p className="font-medium">{talent.country || "Not provided"}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Globe className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Timezone</p>
-                    <p className="font-medium">{talent.timezone || "Not provided"}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Working Hours</p>
-                    <p className="font-medium">{talent.preferred_working_hours || "Not provided"}</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Reject Modal */}
+      <Dialog open={isRejectOpen} onOpenChange={setIsRejectOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" /> Reject Talent
+            </DialogTitle>
+            <DialogDescription>
+              Provide an internal reason for rejecting this talent. This cannot be easily undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea
+              className="resize-none border-destructive/20 focus-visible:ring-destructive/20"
+              rows={3}
+              placeholder="Internal rejection reason..."
+              value={modalReason}
+              onChange={(e) => setModalReason(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRejectOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => handleAction("reject", modalReason)} disabled={!modalReason.trim() || actionLoading}>Reject Talent</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-          {/* Professional Info Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-primary" />
-                Professional Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                <div>
-                  <p className="text-sm text-muted-foreground">Primary Role</p>
-                  <p className="font-medium">{talent.primary_role?.replace("_", " ") || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Experience</p>
-                  <p className="font-medium">{talent.years_of_experience || 0} years</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Availability</p>
-                  <p className="font-medium">{talent.availability?.replace("_", " ") || "Not specified"}</p>
-                </div>
-              </div>
-
-              {talent.secondary_skills?.length > 0 && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Skills</p>
-                  <div className="flex flex-wrap gap-2">
-                    {talent.secondary_skills.map((skill: string) => (
-                      <Badge key={skill} variant="secondary">{skill}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {talent.tools_familiar_with?.length > 0 && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Tools</p>
-                  <div className="flex flex-wrap gap-2">
-                    {talent.tools_familiar_with.map((tool: string) => (
-                      <Badge key={tool} variant="outline">{tool}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {talent.languages_spoken?.length > 0 && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Languages</p>
-                  <div className="flex flex-wrap gap-2">
-                    {talent.languages_spoken.map((lang: string) => (
-                      <Badge key={lang} variant="outline">{lang}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Work History Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-primary" />
-                Work History
-                <Badge variant="outline" className="ml-auto">{workHistory.length} positions</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {workHistory.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No work history provided</p>
-              ) : (
-                <div className="space-y-4">
-                  {workHistory.map((work, index) => (
-                    <div key={work.id}>
-                      {index > 0 && <Separator className="mb-4" />}
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="font-semibold">{work.role_title}</h4>
-                          <p className="text-muted-foreground">{work.company_name}</p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {work.start_date} - {work.is_current ? "Present" : work.end_date || "N/A"}
-                          </p>
-                        </div>
-                        {work.is_current && <Badge className="bg-success/10 text-success">Current</Badge>}
-                      </div>
-                      {work.role_description && (
-                        <p className="text-sm mt-2">{work.role_description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Education Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <GraduationCap className="h-5 w-5 text-primary" />
-                Education
-                <Badge variant="outline" className="ml-auto">{education.length} entries</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {education.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No education provided</p>
-              ) : (
-                <div className="space-y-4">
-                  {education.map((edu, index) => (
-                    <div key={edu.id}>
-                      {index > 0 && <Separator className="mb-4" />}
-                      <h4 className="font-semibold">{edu.institution_name}</h4>
-                      <p className="text-muted-foreground">
-                        {edu.field_of_study} - {edu.education_level?.replace("_", " ")}
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {edu.start_year} - {edu.is_current ? "Present" : edu.end_year || "N/A"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Certifications Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5 text-primary" />
-                Certifications
-                <Badge variant="outline" className="ml-auto">{certifications.length} certs</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {certifications.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No certifications provided</p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {certifications.map((cert) => (
-                    <Card key={cert.id}>
-                      <CardContent className="p-4">
-                        <h4 className="font-semibold">{cert.certification_name}</h4>
-                        <p className="text-sm text-muted-foreground">{cert.issuing_organization}</p>
-                        {cert.year_obtained && (
-                          <p className="text-xs text-muted-foreground mt-1">Obtained: {cert.year_obtained}</p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* References Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                References
-                <Badge variant="outline" className="ml-auto">{references.length} refs</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {references.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No references provided</p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {references.map((ref) => (
-                    <Card key={ref.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold">{ref.reference_name}</h4>
-                          {getStatusBadge(ref.verification_status || "pending")}
-                        </div>
-                        <p className="text-sm text-muted-foreground">{ref.relationship}</p>
-                        <p className="text-sm">{ref.email}</p>
-                        {ref.phone && <p className="text-sm">{ref.phone}</p>}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column - Vetting Panel */}
-        <div className="space-y-6">
-          {/* Assign Manager */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserCheck className="h-5 w-5 text-primary" />
-                Talent Manager
-              </CardTitle>
-              <CardDescription>Assign a manager to oversee this talent</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Select
-                value={talent.assigned_manager || "unassigned"}
-                onValueChange={(value) => handleAssignManager(value === "unassigned" ? "" : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select manager" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {admins.map((admin) => (
-                    <SelectItem key={admin.user_id} value={admin.user_id}>
-                      {admin.first_name} {admin.last_name} ({admin.role?.replace("_", " ")})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-
-          {/* Vetting Progress */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-primary" />
-                TCF Vetting Progress
-              </CardTitle>
-              <CardDescription>
-                {approvedCount} of {vettingLevels.length} levels approved
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {vettingLevels.map((level) => (
-                <Card
-                  key={level.id}
-                  className={
-                    level.status === "approved"
-                      ? "border-success/50 bg-success/5"
-                      : level.status === "rejected"
-                        ? "border-destructive/50 bg-destructive/5"
-                        : ""
-                  }
-                >
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(level.status)}
-                        <span className="font-medium">Level {level.level}</span>
-                      </div>
-                      {getStatusBadge(level.status)}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{level.level_name}</p>
-
-                    {level.admin_notes && (
-                      <div className="p-2 bg-muted rounded text-sm">
-                        <p className="font-medium text-xs text-muted-foreground mb-1">Notes:</p>
-                        {level.admin_notes}
-                      </div>
-                    )}
-
-                    {level.status !== "approved" && talent.onboarding_completed && (
-                      <div className="space-y-2 pt-2 border-t">
-                        <Textarea
-                          placeholder="Add notes..."
-                          value={vettingNotes[level.id] || ""}
-                          onChange={(e) =>
-                            setVettingNotes((prev) => ({ ...prev, [level.id]: e.target.value }))
-                          }
-                          className="text-sm"
-                          rows={2}
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            className="flex-1 bg-success hover:bg-success/90"
-                            onClick={() => handleUpdateVettingLevel(level.id, "approved")}
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="flex-1"
-                            onClick={() => handleUpdateVettingLevel(level.id, "rejected")}
-                          >
-                            <XCircle className="h-4 w-4 mr-1" />
-                            Reject
-                          </Button>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="w-full"
-                          onClick={() => handleUpdateVettingLevel(level.id, "needs_clarification")}
-                        >
-                          <AlertCircle className="h-4 w-4 mr-1" />
-                          Request Clarification
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Publish Button */}
-          <Card className={allApproved ? "border-success/50 bg-success/5" : ""}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-primary" />
-                Publish to Talent Pool
-              </CardTitle>
-              <CardDescription>
-                {allApproved
-                  ? "All vetting levels approved. Ready to publish!"
-                  : `Complete all vetting levels to publish (${approvedCount}/${vettingLevels.length})`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {talent.vetting_status === "fully_vetted" ? (
-                <Alert className="border-success/50 bg-success/5">
-                  <CheckCircle className="h-5 w-5 text-success" />
-                  <AlertTitle className="text-success">Published</AlertTitle>
-                  <AlertDescription>
-                    This talent is visible in the vetted talent pool for clients.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <Button
-                  className="w-full"
-                  disabled={!allApproved || publishing || !talent.onboarding_completed}
-                  onClick={handlePublishToPool}
-                >
-                  {publishing ? "Publishing..." : "Approve & Publish to Pool"}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
     </div>
   );
 };

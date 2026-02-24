@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
@@ -14,11 +13,17 @@ import {
   MessageSquare,
   HelpCircle,
   ArrowRight,
-  Sparkles,
   Bell,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Check,
+  Copy,
+  ChevronRight,
+  Video,
+  DollarSign,
+  X
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TalentData {
   id: string;
@@ -42,25 +47,29 @@ interface DashboardStats {
 
 const TalentDashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
+  const [hideBanner, setHideBanner] = useState(() => {
+    return sessionStorage.getItem('hide_profile_banner_session') === 'true';
+  });
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['talentDashboard', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
 
-      // 1. Fetch Talent
       let { data: talentData } = await supabase
         .from("talents")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
 
-      // 2. Handle missing profile (Backfill for older users)
       if (!talentData) {
-        // Create new talent record
+        // Fallback robust ID generation if RPC fails or returns concurrently identical values
+        const fallbackId = `TAS-VA-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+        
         const { data: talentIdData } = await supabase.rpc("generate_talent_id");
-        const generatedTalentId = talentIdData || `TAS-VA-${Date.now()}`;
+        const generatedTalentId = talentIdData || fallbackId;
+        
         const firstName = user.user_metadata?.first_name || user.user_metadata?.firstName || "User";
         const lastName = user.user_metadata?.last_name || user.user_metadata?.lastName || "";
 
@@ -78,10 +87,30 @@ const TalentDashboard = () => {
           .select()
           .single();
 
-        if (error) throw error;
-        talentData = newTalent;
+        // If insert fails due to unique constraint on talent_id concurrently, retry with fallback
+        if (error?.code === '23505') {
+            const { data: retryTalent, error: retryError } = await supabase
+              .from("talents")
+              .insert({
+                user_id: user.id,
+                talent_id: fallbackId,
+                first_name: firstName,
+                last_name: lastName,
+                email: user.email || "",
+                onboarding_completed: false,
+                onboarding_step: 1,
+              })
+              .select()
+              .single();
+              
+            if (retryError) throw retryError;
+            talentData = retryTalent;
+        } else if (error) {
+            throw error;
+        } else {
+            talentData = newTalent;
+        }
       } else {
-        // Update name if missing (Backfill)
         if (!talentData.first_name || talentData.first_name === "User") {
           const firstName = user.user_metadata?.first_name || user.user_metadata?.firstName || "User";
           const lastName = user.user_metadata?.last_name || user.user_metadata?.lastName || "";
@@ -98,16 +127,16 @@ const TalentDashboard = () => {
         }
       }
 
-      // 3. Fetch Stats & Notifications
-      const [applicationsRes, contractsRes, timesheetsRes, messagesRes, ticketsRes, notificationsRes] = await Promise.all([
+      const [applicationsRes, contractsRes, timesheetsRes, messagesRes, ticketsRes, notificationsRes, stepsRes] = await Promise.all([
         supabase.from("job_applications").select("*", { count: "exact", head: true }).eq("talent_id", talentData.id),
         supabase.from("contracts").select("*", { count: "exact", head: true }).eq("talent_id", talentData.id).eq("status", "active"),
         supabase.from("timesheets").select("*", { count: "exact", head: true }).eq("talent_id", talentData.id).eq("status", "draft"),
         supabase.from("messages").select("*", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
         supabase.from("support_tickets").select("*", { count: "exact", head: true }).eq("user_id", user.id).in("status", ["open", "in_progress"]),
-        supabase.from("notifications").select("*").eq("user_id", user.id).order('created_at', { ascending: false }).limit(5)
+        supabase.from("notifications").select("*").eq("user_id", user.id).order('created_at', { ascending: false }).limit(5),
+        supabase.from("talent_profile_steps" as any).select("*").eq("talent_id", talentData.id)
       ]);
-
+ 
       return {
         talent: talentData as TalentData,
         stats: {
@@ -117,173 +146,407 @@ const TalentDashboard = () => {
           unreadMessages: messagesRes.count || 0,
           openTickets: ticketsRes.count || 0,
         } as DashboardStats,
-        notifications: notificationsRes.data || []
+        notifications: notificationsRes.data || [],
+        steps: (stepsRes.data as any[]) || []
       };
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 1, // 1 minute cache for dashboard
+    staleTime: 1000 * 60 * 1, // 1 minute cache
   });
-
-  const { talent, stats, notifications } = data || {
+ 
+  const { talent, stats, notifications, steps } = data || {
     talent: null,
     stats: { applications: 0, activeAssignments: 0, pendingTimesheets: 0, unreadMessages: 0, openTickets: 0 },
-    notifications: []
+    notifications: [],
+    steps: []
   };
 
-  if (isLoading) {
+  if (error) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+      <div className="p-4 bg-red-100 text-red-700 m-4 rounded-md font-mono text-sm max-w-full overflow-auto">
+        Error loading dashboard: {JSON.stringify(error, null, 2)}
       </div>
     );
   }
 
-  const quickActions = [
-    { label: "Browse Jobs", icon: Briefcase, href: "/talent/jobs", color: "from-blue-500 to-cyan-500" },
-    { label: "Applications", icon: FileText, href: "/talent/applications", count: stats.applications, color: "from-purple-500 to-pink-500" },
-    { label: "Assignments", icon: Briefcase, href: "/talent/assignments", count: stats.activeAssignments, color: "from-emerald-500 to-teal-500" },
-    { label: "Timesheets", icon: Clock, href: "/talent/timesheets", count: stats.pendingTimesheets, color: "from-amber-500 to-orange-500" },
-    { label: "Messages", icon: MessageSquare, href: "/talent/messages", count: stats.unreadMessages, color: "from-indigo-500 to-blue-500" },
-    { label: "Support", icon: HelpCircle, href: "/talent/support", count: stats.openTickets, color: "from-rose-500 to-red-500" },
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
+      </div>
+    );
+  }
+
+  const copyId = () => {
+    if (talent?.talent_id) {
+      navigator.clipboard.writeText(talent.talent_id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto p-4 md:p-6 animate-fade-in">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 md:p-12">
-        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="h-5 w-5 text-cyan-400" />
-            <span className="text-cyan-400 text-sm font-medium">Welcome to Taskive</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-            Hello, {talent?.first_name || "User"}!
+    <div className="space-y-8 animate-fade-in max-w-[1200px] mx-auto">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+            Welcome back, {talent?.first_name || "User"}
           </h1>
-          {talent?.talent_id && (
-            <div className="mb-4">
-              <Badge variant="outline" className="bg-white/10 border-white/30 text-white font-mono">
-                ID: {talent.talent_id}
-              </Badge>
+          <p className="text-sm text-gray-500 mt-1">Here's an overview of your work on Taskive.</p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <Link to="/talent/profile" className="text-sm font-medium text-brand-primary hover:text-brand-primary/80 flex items-center gap-1.5 transition-colors">
+            View Profile <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Talent ID Block & Profile Completion Banner */}
+      <div className="space-y-4">
+        {talent?.talent_id && (
+          <div className="inline-flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Talent ID</span>
+            <div className="h-4 w-px bg-gray-200 mx-1" />
+            <span className="text-sm font-mono text-gray-900">{talent.talent_id}</span>
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={copyId} className="ml-1 p-1 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+                    {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-gray-900 text-white text-xs border-none">
+                  Copy to clipboard
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
+        {(() => {
+          console.log("Banner conditions:", { 
+            talentExists: !!talent, 
+            onboardingCompleted: talent?.onboarding_completed, 
+            hideBanner 
+          });
+          return null;
+        })()}
+        {talent && !talent.onboarding_completed && !hideBanner && (
+          <div className="bg-[#EFF6FF] border border-gray-200 rounded-[12px] px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-4 animate-fade-in transition-all relative">
+            <button 
+              onClick={() => {
+                setHideBanner(true);
+                sessionStorage.setItem('hide_profile_banner_session', 'true');
+              }}
+              className="absolute top-3 right-3 sm:hidden text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="flex items-start sm:items-center gap-3 flex-1">
+              <div className="mt-0.5 sm:mt-0">
+                <AlertCircle className="h-5 w-5 text-blue-600/80" />
+              </div>
+              <div className="space-y-1 sm:space-y-0.5 pr-6 sm:pr-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                  <h3 className="text-sm font-medium text-gray-900">Complete your professional profile</h3>
+                  <Badge variant="outline" className="w-fit text-[10px] uppercase font-semibold text-blue-700 border-blue-200 bg-blue-50/50">
+                    Step {Math.min(talent.onboarding_step || 1, 8)} of 8
+                  </Badge>
+                </div>
+                <p className="text-sm text-gray-600">Finish setting up your profile to get vetted and matched with opportunities.</p>
+              </div>
             </div>
-          )}
-          <p className="text-slate-300 text-lg mb-6 max-w-2xl">
-            Your talent portal for managing applications, assignments, and connecting with opportunities.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link to="/talent/jobs">
-              <Button size="lg" className="bg-cyan-500 hover:bg-cyan-600 text-white">
-                <Briefcase className="h-4 w-4 mr-2" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 pt-2 sm:pt-0 border-t border-blue-100 sm:border-t-0">
+              <Link to="/talent/onboarding" className="w-full sm:w-auto">
+                <Button size="sm" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white shadow-none h-8 text-xs font-medium px-4">
+                  Complete Profile
+                </Button>
+              </Link>
+              <button 
+                onClick={() => {
+                  setHideBanner(true);
+                  sessionStorage.setItem('hide_profile_banner_session', 'true');
+                }}
+                className="hidden sm:block text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                Continue later
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Vetting Status Banner */}
+        {talent && talent.vetting_status === "changes_requested" && (
+          <div className="bg-orange-50 border border-orange-200 rounded-[12px] px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-4 animate-fade-in shadow-sm">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                <AlertCircle className="h-5 w-5 text-orange-600" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Changes Requested on your Profile</h3>
+                <p className="text-xs text-gray-600 font-medium leading-relaxed">
+                  Our vetting team has reviewed your profile and requested some adjustments. 
+                  Please update the marked sections to proceed.
+                </p>
+                {steps && steps.some(s => s.status === 'changes_requested') && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {steps.filter(s => s.status === 'changes_requested').map(s => (
+                      <Badge key={s.id} variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-none text-[10px] font-bold uppercase tracking-wide">
+                        {s.step_key.replace('_', ' ')}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <Link to="/talent/onboarding" className="shrink-0">
+              <Button className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white h-10 px-6 font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-orange-200">
+                Update Profile
+              </Button>
+            </Link>
+          </div>
+        )}
+
+        {/* Vetting Status Banner - Approved */}
+        {talent && talent.vetting_status === "approved" && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-[12px] px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-4 animate-fade-in shadow-sm">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                <CheckCircle className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Profile Fully Vetted</h3>
+                <p className="text-xs text-gray-600 font-medium leading-relaxed">
+                  Congratulations! Your profile has been successfully vetted and verified. You are now eligible for exclusive job opportunities and client matches.
+                </p>
+              </div>
+            </div>
+            <Link to="/talent/jobs" className="shrink-0">
+              <Button className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white h-10 px-6 font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-emerald-200">
                 Browse Jobs
               </Button>
             </Link>
-            <Link to="/talent/profile">
-              <Button size="lg" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-                View Profile
+          </div>
+        )}
+
+        {/* Profile Draft Changes Banner */}
+        {talent && (talent as any).profile_change_status === "draft" && (talent as any).changed_sections?.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-[12px] px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-4 animate-fade-in">
+            <div className="flex items-center gap-3 flex-1">
+              <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+              <div>
+                <h3 className="text-sm font-medium text-gray-900">You've updated your profile</h3>
+                <p className="text-xs text-gray-600">Submit for review to reflect changes publicly.</p>
+              </div>
+            </div>
+            <Link to="/talent/profile" className="shrink-0">
+              <Button size="sm" className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white h-8 px-4 text-xs font-medium">
+                Review & Submit
               </Button>
             </Link>
           </div>
-        </div>
+        )}
+
+        {/* Profile Submitted for Review Banner */}
+        {talent && (talent as any).profile_change_status === "submitted" && (
+          <div className="bg-blue-50 border border-blue-200 rounded-[12px] px-4 py-3 flex items-center gap-3 animate-fade-in">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-300 border-t-blue-600 shrink-0" />
+            <div>
+              <h3 className="text-sm font-medium text-gray-900">Profile under review</h3>
+              <p className="text-xs text-gray-600">Your profile changes are being reviewed by our team.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Profile Rejected Banner */}
+        {talent && (talent as any).profile_change_status === "rejected" && (
+          <div className="bg-red-50 border border-red-200 rounded-[12px] px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-4 animate-fade-in">
+            <div className="flex items-center gap-3 flex-1">
+              <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
+              <div>
+                <h3 className="text-sm font-medium text-gray-900">Profile changes were rejected</h3>
+                <p className="text-xs text-gray-600">Please review admin feedback and make corrections.</p>
+              </div>
+            </div>
+            <Link to="/talent/profile" className="shrink-0">
+              <Button size="sm" variant="outline" className="w-full sm:w-auto border-red-200 text-red-700 hover:bg-red-100 h-8 px-4 text-xs font-medium">
+                View Feedback
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
-      {/* Complete Profile Banner */}
-      {talent && !talent.onboarding_completed && (
-        <Card className="border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 animate-slide-up">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div>
-                <h3 className="font-semibold text-amber-900 text-lg mb-1">
-                  Complete Your Profile to Get Vetted
-                </h3>
-                <p className="text-amber-700 text-sm">
-                  Fill out your professional details to unlock job applications and get verified by our team.
-                </p>
-              </div>
-              <Link to="/talent/onboarding">
-                <Button className="bg-amber-600 hover:bg-amber-700 text-white whitespace-nowrap">
-                  Start Onboarding
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
+      {/* Quick Stats Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="shadow-sm border-gray-200/60">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="h-10 w-10 shrink-0 rounded-full bg-blue-50 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Active Contracts</p>
+              <p className="text-2xl font-semibold text-gray-900 mt-0.5">{stats.activeAssignments}</p>
             </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* Quick Actions Grid */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {quickActions.map((action) => (
-            <Link key={action.label} to={action.href}>
-              <Card className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-0 bg-gradient-to-br from-white to-slate-50">
-                <CardContent className="p-6">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                    <action.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <p className="font-medium text-sm mb-1">{action.label}</p>
-                  {action.count !== undefined && (
-                    <p className="text-2xl font-bold text-slate-900">{action.count}</p>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <Card className="shadow-sm border-gray-200/60">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="h-10 w-10 shrink-0 rounded-full bg-indigo-50 flex items-center justify-center">
+              <Video className="h-5 w-5 text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Pending Interviews</p>
+              <p className="text-2xl font-semibold text-gray-900 mt-0.5">0</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-gray-200/60">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="h-10 w-10 shrink-0 rounded-full bg-emerald-50 flex items-center justify-center">
+              <Clock className="h-5 w-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Pending Timesheets</p>
+              <p className="text-2xl font-semibold text-gray-900 mt-0.5">{stats.pendingTimesheets}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-gray-200/60">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="h-10 w-10 shrink-0 rounded-full bg-amber-50 flex items-center justify-center">
+              <DollarSign className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Unread Messages</p>
+              <p className="text-2xl font-semibold text-gray-900 mt-0.5">{stats.unreadMessages}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Recent Activity */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <Bell className="h-5 w-5 text-primary" /> Recent Activity
-        </h2>
-        <Card>
-          <CardContent className="p-0">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Active Contracts */}
+        <Card className="border-gray-200 shadow-sm flex flex-col h-full">
+          <CardHeader className="p-5 border-b border-gray-100 flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-base font-semibold text-gray-900">Active Contracts</CardTitle>
+            <Link to="/talent/contracts" className="text-sm font-medium text-brand-primary hover:text-brand-primary/80 transition-colors">
+              View All
+            </Link>
+          </CardHeader>
+          <CardContent className="p-0 flex-1 flex flex-col">
+            {stats.activeAssignments > 0 ? (
+               <div className="p-8 text-center flex-1 flex flex-col items-center justify-center text-gray-500">
+                 {/* Placeholder for real list mapping if data was fetched */}
+                 You have {stats.activeAssignments} active contracts.
+                 <Link to="/talent/contracts" className="mt-4 text-sm font-medium text-brand-primary hover:text-brand-primary/80 flex items-center gap-1.5 justify-center transition-colors">
+                   Go to Contracts <ArrowRight className="h-4 w-4" />
+                 </Link>
+               </div>
+            ) : (
+                <div className="p-8 text-center flex-1 flex flex-col items-center justify-center">
+                  <FileText className="h-8 w-8 text-gray-300 mx-auto border-gray-100 mb-3" />
+                  <p className="text-sm font-medium text-gray-900 mb-1">No active contracts</p>
+                  <p className="text-xs text-gray-500 max-w-[200px]">You don't have any ongoing work assignments at the moment.</p>
+                </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Upcoming Interviews */}
+        <Card className="border-gray-200 shadow-sm flex flex-col h-full">
+          <CardHeader className="p-5 border-b border-gray-100 flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-base font-semibold text-gray-900">Upcoming Interviews</CardTitle>
+            <Link to="/talent/interviews" className="text-sm font-medium text-brand-primary hover:text-brand-primary/80 transition-colors">
+              View All
+            </Link>
+          </CardHeader>
+          <CardContent className="p-0 flex-1 flex flex-col">
+            <div className="p-8 text-center flex-1 flex flex-col items-center justify-center">
+              <Video className="h-8 w-8 text-gray-300 mx-auto border-gray-100 mb-3" />
+              <p className="text-sm font-medium text-gray-900 mb-1">No upcoming interviews</p>
+              <p className="text-xs text-gray-500 max-w-[200px]">You don't have any scheduled interviews with clients right now.</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Applications */}
+        <Card className="border-gray-200 shadow-sm flex flex-col h-full">
+          <CardHeader className="p-5 border-b border-gray-100 flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-base font-semibold text-gray-900">Recent Applications</CardTitle>
+            <Link to="/talent/applications" className="text-sm font-medium text-brand-primary hover:text-brand-primary/80 transition-colors">
+              View All
+            </Link>
+          </CardHeader>
+          <CardContent className="p-0 flex-1 flex flex-col">
+            {stats.applications > 0 ? (
+               <div className="p-8 text-center flex-1 flex flex-col items-center justify-center text-gray-500">
+                 You have {stats.applications} recent applications.
+                 <Link to="/talent/applications" className="mt-4 text-sm font-medium text-brand-primary hover:text-brand-primary/80 flex items-center gap-1.5 justify-center transition-colors">
+                   Go to Applications <ArrowRight className="h-4 w-4" />
+                 </Link>
+               </div>
+            ) : (
+                <div className="p-8 text-center flex-1 flex flex-col items-center justify-center">
+                  <Briefcase className="h-8 w-8 text-gray-300 mx-auto border-gray-100 mb-3" />
+                  <p className="text-sm font-medium text-gray-900 mb-1">No recent applications</p>
+                  <p className="text-xs text-gray-500 max-w-[200px]">Start browsing open roles to submit new applications.</p>
+                  <Link to="/talent/jobs" className="mt-4 text-sm font-medium text-brand-primary hover:text-brand-primary/80 flex items-center gap-1.5 justify-center transition-colors">
+                    Browse Jobs <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity / Notifications */}
+        <Card className="border-gray-200 shadow-sm flex flex-col h-full">
+          <CardHeader className="p-5 border-b border-gray-100 flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-base font-semibold text-gray-900">Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0 flex-1 flex flex-col max-h-[300px] overflow-y-auto">
             {notifications && notifications.length > 0 ? (
-              <div className="divide-y">
-                {notifications.map((notif: any) => (
-                  <div key={notif.id} className="p-4 hover:bg-slate-50 transition-colors flex items-start gap-4">
-                    <div className={`mt-1 h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${notif.type === 'offer' ? 'bg-purple-100 text-purple-600' :
-                        notif.type === 'interview' ? 'bg-blue-100 text-blue-600' :
-                          'bg-slate-100 text-slate-600'
-                      }`}>
-                      {notif.type === 'offer' ? <Sparkles className="h-4 w-4" /> :
-                        notif.type === 'interview' ? <Clock className="h-4 w-4" /> :
-                          <AlertCircle className="h-4 w-4" />}
+              <div className="divide-y divide-gray-100">
+                {notifications.map((notif: { id: string; type: string; title: string; message: string; created_at: string; action_url?: string }) => (
+                  <div key={notif.id} className="p-4 hover:bg-gray-50 transition-colors flex items-start gap-3">
+                    <div className={`mt-0.5 h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
+                      notif.type === 'offer' ? 'bg-purple-50 text-purple-600' :
+                      notif.type === 'interview' ? 'bg-blue-50 text-blue-600' :
+                      notif.type === 'system' ? 'bg-indigo-50 text-indigo-600' :
+                      'bg-gray-100 text-gray-500'
+                    }`}>
+                      <Bell className="h-4 w-4" />
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-slate-900">{notif.title}</h4>
-                      <p className="text-sm text-slate-500 mt-1">{notif.message}</p>
-                      <p className="text-xs text-slate-400 mt-2">{new Date(notif.created_at).toLocaleDateString()} at {new Date(notif.created_at).toLocaleTimeString()}</p>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-gray-900 truncate">{notif.title}</h4>
+                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{notif.message}</p>
+                      <p className="text-[10px] text-gray-400 mt-1">{new Date(notif.created_at).toLocaleDateString()}</p>
                     </div>
                     {notif.action_url && (
                       <Link to={notif.action_url}>
-                        <Button variant="outline" size="sm" className="shrink-0">View</Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-gray-400 hover:text-gray-900">
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
                       </Link>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-12 text-center">
-                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                  <Clock className="h-8 w-8 text-slate-400" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">No Recent Activity</h3>
-                <p className="text-muted-foreground mb-6">
-                  Updates about your applications and interviews will appear here.
-                </p>
-                <Link to="/talent/jobs">
-                  <Button>
-                    <Briefcase className="h-4 w-4 mr-2" />
-                    Browse Available Jobs
-                  </Button>
-                </Link>
+              <div className="p-8 text-center flex-1 flex flex-col items-center justify-center">
+                <Bell className="h-8 w-8 text-gray-300 mx-auto border-gray-100 mb-3" />
+                <p className="text-sm font-medium text-gray-900 mb-1">No new notifications</p>
+                <p className="text-xs text-gray-500 max-w-[200px]">You're all caught up! We'll alert you when there's an update.</p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+
     </div>
   );
 };

@@ -7,6 +7,8 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   userRole: string | null;
+  permissions: string[];
+  hasPermission: (permission: string) => boolean;
   roleLoading: boolean;
   signOut: () => Promise<void>;
 }
@@ -18,28 +20,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [permissions, setPermissions] = useState<string[]>([]);
   const [roleLoading, setRoleLoading] = useState(false);
 
   const fetchUserRole = async (userId: string) => {
     setRoleLoading(true);
     try {
-      const { data, error } = await supabase
+      // 1. Fetch Legacy Role
+      const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", userId)
         .maybeSingle();
 
-      if (error) {
-        console.error("Error fetching user role:", error);
-        return;
+      if (roleError) {
+        console.error("Error fetching user role:", roleError);
+      } else {
+        setUserRole(roleData?.role ?? null);
       }
 
-      setUserRole(data?.role ?? null);
+      // 2. Fetch RBAC Permissions if Admin
+      if (roleData?.role && ['super_admin', 'operations_admin', 'vetting_admin', 'finance_admin', 'support_admin'].includes(roleData.role)) {
+          // Join through admin_roles -> role_permissions -> permissions
+          // Also include overrides
+          const { data: permData, error: permError } = await supabase
+            .rpc('get_admin_permissions' as any, { p_admin_id: userId });
+
+          if (permError) {
+            console.error("Error fetching RBAC permissions:", permError);
+          } else {
+            setPermissions((permData as string[]) || []);
+          }
+      }
     } catch (error) {
-      console.error("Error fetching user role:", error);
+      console.error("Error in fetchUserRole:", error);
     } finally {
       setRoleLoading(false);
     }
+  };
+
+  const hasPermission = (permission: string) => {
+    if (userRole === 'super_admin') return true;
+    return permissions.includes(permission);
   };
 
   useEffect(() => {
@@ -56,6 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }, 0);
         } else {
           setUserRole(null);
+          setPermissions([]);
           setRoleLoading(false);
         }
       }
@@ -79,10 +102,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setSession(null);
     setUserRole(null);
+    setPermissions([]);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, userRole, roleLoading, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, userRole, permissions, hasPermission, roleLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

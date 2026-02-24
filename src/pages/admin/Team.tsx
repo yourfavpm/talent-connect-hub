@@ -1,394 +1,499 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Shield, Search, UserPlus, Pencil } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { 
+    Plus, 
+    Search, 
+    Shield, 
+    History, 
+    MoreHorizontal, 
+    UserPlus, 
+    Filter,
+    Users,
+    Clock,
+    UserCheck,
+    UserMinus,
+    ExternalLink
+} from "lucide-react";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
-interface AdminUser {
-    user_id: string;
-    role: string;
-    profile?: {
-        first_name: string;
-        last_name: string;
-        email: string;
-    };
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+
+interface AdminWithRoles {
+    id: string;
+    email: string;
+    full_name: string;
+    status: string;
+    created_at: string;
+    last_active_at: string | null;
+    roles: Array<{
+        role: {
+            id: string;
+            name: string;
+        };
+    }>;
+}
+
+interface Role {
+    id: string;
+    name: string;
 }
 
 const AdminTeam = () => {
-    const { toast } = useToast();
-    const { userRole, user } = useAuth();
-    const [admins, setAdmins] = useState<AdminUser[]>([]);
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const [inviteOpen, setInviteOpen] = useState(false);
-
-    // Invite Form
-    const [searchEmail, setSearchEmail] = useState("");
-    const [selectedRole, setSelectedRole] = useState("operations_admin");
-    const [foundUser, setFoundUser] = useState<any>(null);
-    const [searching, setSearching] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [admins, setAdmins] = useState<AdminWithRoles[]>([]);
+    const [roles, setRoles] = useState<Role[]>([]);
+    const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState("all");
+    
+    // Dialog States
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [selectedAdmin, setSelectedAdmin] = useState<AdminWithRoles | null>(null);
+    const [formData, setFormData] = useState({ name: "", email: "", role_id: "" });
+    const [editData, setEditData] = useState({ role_id: "" });
 
     useEffect(() => {
-        fetchAdmins();
+        init();
     }, []);
 
-    const fetchAdmins = async () => {
-        setLoading(true);
+    const init = async () => {
         try {
-            // Fetch all user roles that are admin types
-            const { data: roleData, error } = await supabase
-                .from("user_roles")
-                .select("user_id, role")
-                .in("role", ["super_admin", "operations_admin", "vetting_admin", "finance_admin", "support_admin", "talent_manager", "account_manager"] as any);
+            setLoading(true);
+            const [adminsRes, rolesRes] = await Promise.all([
+                supabase
+                    .from("admin_users")
+                    .select("*, roles:admin_roles(role:roles(name, id))")
+                    .order("created_at", { ascending: false }),
+                supabase.from("roles").select("id, name").order("name")
+            ]);
 
-            if (error) throw error;
+            if (adminsRes.error) throw adminsRes.error;
+            if (rolesRes.error) throw rolesRes.error;
 
-            // Fetch profiles for these users
-            const userIds = roleData.map(r => r.user_id);
-            const { data: profileData } = await supabase
-                .from("profiles")
-                .select("user_id, first_name, last_name, email")
-                .in("user_id", userIds);
-
-            // Merge details
-            const merged = roleData.map(r => ({
-                ...r,
-                profile: profileData?.find(p => p.user_id === r.user_id)
-            }));
-
-            setAdmins(merged);
+            setAdmins(adminsRes.data || []);
+            setRoles(rolesRes.data || []);
         } catch (error: any) {
-            console.error("Error fetching admins:", error);
-            toast({ title: "Error", description: error.message, variant: "destructive" });
+            toast.error("Initialization failed: " + error.message);
         } finally {
             setLoading(false);
         }
     };
 
-    const [creatingUser, setCreatingUser] = useState(false);
-    const [newUser, setNewUser] = useState({ firstName: "", lastName: "", email: "", password: "" });
-
-    const handleCreateUser = async () => {
-        if (!newUser.email || !newUser.password || !newUser.firstName || !newUser.lastName) {
-            toast({ title: "Error", description: "All fields are required", variant: "destructive" });
-            return;
-        }
-        setCreatingUser(true);
+    const fetchAdmins = async () => {
         try {
-            const { data, error } = await supabase.functions.invoke('create-user', {
-                body: {
-                    email: newUser.email,
-                    password: newUser.password,
-                    role: selectedRole,
-                    firstName: newUser.firstName,
-                    lastName: newUser.lastName
-                }
+            const { data, error } = await supabase
+                .from("admin_users")
+                .select("*, roles:admin_roles(role:roles(name, id))")
+                .order("created_at", { ascending: false });
+
+            if (error) throw error;
+            setAdmins(data || []);
+        } catch (error: any) {
+            toast.error("Failed to refresh team: " + error.message);
+        }
+    };
+
+    const handleAddAdmin = async () => {
+        try {
+            setSubmitting(true);
+            const { error } = await supabase.rpc('invite_admin', {
+                p_email: formData.email,
+                p_full_name: formData.name,
+                p_role_id: formData.role_id
             });
 
             if (error) throw error;
 
-            toast({ title: "Success", description: "Admin account created successfully." });
-            setInviteOpen(false);
-            setNewUser({ firstName: "", lastName: "", email: "", password: "" });
+            toast.success("Admin invited successfully");
+            setIsAddDialogOpen(false);
+            setFormData({ name: "", email: "", role_id: "" });
             fetchAdmins();
         } catch (error: any) {
-            console.error("Create user error:", error);
-            toast({ title: "Error", description: error.message || "Failed to create user", variant: "destructive" });
+            toast.error("Invitation failed: " + error.message);
         } finally {
-            setCreatingUser(false);
+            setSubmitting(false);
         }
     };
-
-    // Role Editing State
-    const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-    const [newRole, setNewRole] = useState("");
-    const [newFirstName, setNewFirstName] = useState("");
-    const [newLastName, setNewLastName] = useState("");
 
     const handleUpdateRole = async () => {
-        if (!editingUser || !newRole) return;
-        setLoading(true);
+        if (!selectedAdmin) return;
         try {
-            // 1. Update Role
-            const { error: roleError } = await supabase
-                .from("user_roles")
-                .update({ role: newRole as any })
-                .eq("user_id", editingUser.user_id);
+            setSubmitting(true);
+            const { error } = await supabase.rpc('update_admin_role', {
+                p_admin_id: selectedAdmin.id,
+                p_role_id: editData.role_id
+            });
 
-            if (roleError) throw roleError;
-
-            // 2. Update Profile (Name)
-            if (newFirstName !== editingUser.profile?.first_name || newLastName !== editingUser.profile?.last_name) {
-                const { error: profileError } = await supabase
-                    .from("profiles")
-                    .update({
-                        first_name: newFirstName,
-                        last_name: newLastName
-                    })
-                    .eq("user_id", editingUser.user_id);
-
-                if (profileError) throw profileError;
-
-                // 3. Update auth.users metadata to sync the names
-                const { error: userMetadataError } = await supabase.auth.admin.updateUserById(
-                    editingUser.user_id,
-                    {
-                        user_metadata: {
-                            first_name: newFirstName,
-                            last_name: newLastName
-                        }
-                    }
-                );
-
-                if (userMetadataError) {
-                    console.error("Error updating user metadata:", userMetadataError);
-                    // Don't throw - profile update succeeded, metadata is secondary
-                }
-            }
-
-            toast({ title: "Success", description: "Admin updated successfully." });
-            setEditingUser(null);
+            if (error) throw error;
+            
+            toast.success("Role updated successfully");
+            setIsEditDialogOpen(false);
             fetchAdmins();
         } catch (error: any) {
-            console.error("Error updating admin:", error);
-            toast({ title: "Error", description: error.message, variant: "destructive" });
+            toast.error("Role update failed: " + error.message);
         } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     };
 
-    // Kept for backward compatibility if needed, but UI now uses Create User. 
-    // ... handlesearchUser etc could be removed if we are fully switching.
-    // For now I replaced the Dialog UI so these are unused but harmless unless I remove them.
-    // I will remove them to be clean? No, I'll update the Dialog content replacement which I did above.
-    // So I will just leave the old handlers unused or delete them.
-    // I will remove handleSearchUser and handlePromoteUser to avoid confusion.
-    // Wait, the "Add New Admin" dialog usage REPLACED the Promote User usage.
-    // So I should clean up the unused state/funcs.
+    const handleStatusToggle = async (admin: AdminWithRoles, newStatus: string) => {
+        try {
+            const { error } = await supabase.rpc('toggle_admin_status', {
+                p_admin_id: admin.id,
+                p_status: newStatus
+            });
+            if (error) throw error;
+            toast.success(`Admin ${newStatus}`);
+            fetchAdmins();
+        } catch (error: any) {
+            toast.error("Status update failed: " + error.message);
+        }
+    };
 
+    const stats = {
+        active: admins.filter(a => a.status === 'active').length,
+        invited: admins.filter(a => a.status === 'invited').length,
+        suspended: admins.filter(a => a.status === 'suspended').length,
+        roles: roles.length,
+    };
+
+    const filteredAdmins = admins.filter(admin => {
+        const matchesSearch = 
+            admin.full_name?.toLowerCase().includes(search.toLowerCase()) || 
+            admin.email?.toLowerCase().includes(search.toLowerCase());
+        const matchesStatus = statusFilter === "all" || admin.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+
+    const getStatusBadge = (status: string) => {
+        const base = "shadow-none border-0 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider";
+        switch (status) {
+            case "active": return <Badge className={cn(base, "bg-emerald-50 text-emerald-700")}>Active</Badge>;
+            case "invited": return <Badge className={cn(base, "bg-blue-50 text-blue-700")}>Invited</Badge>;
+            case "suspended": return <Badge className={cn(base, "bg-gray-100 text-gray-600")}>Suspended</Badge>;
+            default: return <Badge variant="outline" className={base}>{status}</Badge>;
+        }
+    };
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <div className="flex justify-between items-center">
+        <div className="space-y-6 animate-fade-in bg-white p-6 -m-6 rounded-lg min-h-screen">
+            {/* Header */}
+            <div className="flex justify-between items-end border-b border-gray-100 pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold">Admin Team</h1>
-                    <p className="text-muted-foreground">Manage platform administrators and roles</p>
+                    <h1 className="text-xl font-bold tracking-tight text-gray-900">Team</h1>
+                    <p className="text-[12px] text-gray-500 font-medium mt-0.5">Manage administrators, roles and permissions.</p>
                 </div>
-                {userRole === "super_admin" && (
-                    <div className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => {
-                                const url = `${window.location.origin}/auth/admin-signup`;
-                                navigator.clipboard.writeText(url);
-                                toast({ title: "Success", description: "Admin Signup Link copied to clipboard!" });
-                            }}
-                        >
-                            <UserPlus className="h-4 w-4 mr-2" />
-                            Copy Invite Link
-                        </Button>
-                        <Dialog open={inviteOpen} onOpenChange={(open) => {
-                            setInviteOpen(open);
-                            if (!open) {
-                                setFoundUser(null);
-                                setSearchEmail("");
-                                setSelectedRole("operations_admin");
-                            }
-                        }}>
-                            <DialogTrigger asChild>
-                                <Button className="gap-2" onClick={() => setInviteOpen(true)}>
-                                    <UserPlus className="h-4 w-4" />
-                                    Add Admin
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[425px]">
-                                <DialogHeader>
-                                    <DialogTitle>Add New Admin</DialogTitle>
-                                    <DialogDescription>
-                                        Create a new admin account with password.
-                                    </DialogDescription>
-                                </DialogHeader>
-
-                                <div className="space-y-4 py-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>First Name</Label>
-                                            <Input
-                                                value={newUser.firstName}
-                                                onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Last Name</Label>
-                                            <Input
-                                                value={newUser.lastName}
-                                                onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Email</Label>
-                                        <Input
-                                            type="email"
-                                            value={newUser.email}
-                                            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Password</Label>
-                                        <Input
-                                            type="password"
-                                            value={newUser.password}
-                                            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Role</Label>
-                                        <Select
-                                            value={selectedRole}
-                                            onValueChange={setSelectedRole}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="operations_admin">Operations Admin</SelectItem>
-                                                <SelectItem value="vetting_admin">Vetting Admin</SelectItem>
-                                                <SelectItem value="finance_admin">Finance Admin</SelectItem>
-                                                <SelectItem value="support_admin">Support Admin</SelectItem>
-                                                <SelectItem value="talent_manager">Talent Manager</SelectItem>
-                                                <SelectItem value="account_manager">Account Manager</SelectItem>
-                                                <SelectItem value="super_admin">Super Admin</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
-                                    <Button onClick={handleCreateUser} disabled={creatingUser}>
-                                        {creatingUser ? "Creating..." : "Create Account"}
-                                    </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
-                    </div>
-                )}
+                <div className="flex gap-3">
+                    <Button variant="outline" size="sm" className="h-9 border-gray-200 text-gray-600 font-bold" onClick={() => navigate("audit")}>
+                        <History className="h-4 w-4 mr-2" /> Audit Log
+                    </Button>
+                    <Button variant="outline" size="sm" className="h-9 border-gray-200 text-gray-600 font-bold" onClick={() => navigate("roles")}>
+                        <Shield className="h-4 w-4 mr-2" /> Roles & Permissions
+                    </Button>
+                    <Button 
+                        size="sm" 
+                        className="h-9 bg-gray-900 hover:bg-gray-800 text-white font-bold border-0 shadow-sm"
+                        onClick={() => setIsAddDialogOpen(true)}
+                    >
+                        <Plus className="h-4 w-4 mr-2" /> Invite Admin
+                    </Button>
+                </div>
             </div>
 
-            {/* EDIT ROLE DIALOG */}
-            <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>Edit Admin Role</DialogTitle>
-                        <DialogDescription>
-                            Change the access level for {editingUser?.profile?.first_name} {editingUser?.profile?.last_name}.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4 space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>First Name</Label>
-                                <Input
-                                    value={newFirstName}
-                                    onChange={(e) => setNewFirstName(e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Last Name</Label>
-                                <Input
-                                    value={newLastName}
-                                    onChange={(e) => setNewLastName(e.target.value)}
-                                />
-                            </div>
+            {/* Stats Row */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {[
+                    { label: "Active Admins", value: stats.active, icon: UserCheck, color: "text-emerald-600", bg: "bg-emerald-50" },
+                    { label: "Pending Invites", value: stats.invited, icon: Clock, color: "text-blue-600", bg: "bg-blue-50" },
+                    { label: "Suspended", value: stats.suspended, icon: UserMinus, color: "text-gray-600", bg: "bg-gray-50" },
+                    { label: "Roles Defined", value: stats.roles, icon: Shield, color: "text-purple-600", bg: "bg-purple-50" },
+                ].map((stat, i) => (
+                    <div key={i} className="bg-white border border-gray-100 rounded-lg p-4 flex items-center gap-4">
+                        <div className={cn("p-2 rounded-md", stat.bg)}>
+                            <stat.icon className={cn("h-4 w-4", stat.color)} />
                         </div>
-                        <div className="space-y-2">
-                            <Label>Select Role</Label>
-                            <Select
-                                value={newRole}
-                                onValueChange={setNewRole}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="operations_admin">Operations Admin</SelectItem>
-                                    <SelectItem value="vetting_admin">Vetting Admin</SelectItem>
-                                    <SelectItem value="finance_admin">Finance Admin</SelectItem>
-                                    <SelectItem value="support_admin">Support Admin</SelectItem>
-                                    <SelectItem value="talent_manager">Talent Manager</SelectItem>
-                                    <SelectItem value="account_manager">Account Manager</SelectItem>
-                                    <SelectItem value="super_admin">Super Admin</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</p>
+                            <p className="text-lg font-bold text-gray-900">{stat.value}</p>
                         </div>
                     </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
-                        <Button onClick={handleUpdateRole} disabled={loading}>
-                            {loading ? "Updating..." : "Save Changes"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                ))}
+            </div>
 
-            <div className="rounded-md border">
+            {/* Filters */}
+            <div className="flex flex-wrap items-center justify-between gap-4 py-2">
+                <div className="flex items-center gap-3 flex-1 min-w-[300px]">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                        <Input 
+                            placeholder="Search by name or email..." 
+                            className="pl-9 h-9 text-sm border-gray-200 focus-visible:ring-gray-200 placeholder:text-gray-400"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-[140px] h-9 border-gray-200 text-[12px] font-bold">
+                            <Filter className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="invited">Invited</SelectItem>
+                            <SelectItem value="suspended">Suspended</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            {/* Table */}
+            <div className="border border-gray-100 rounded-lg overflow-hidden">
                 <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>User</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                    <TableHeader className="bg-gray-50/50">
+                        <TableRow className="hover:bg-transparent border-gray-100">
+                            <TableHead className="text-[10px] font-bold text-gray-400 uppercase tracking-widest h-10">Name</TableHead>
+                            <TableHead className="text-[10px] font-bold text-gray-400 uppercase tracking-widest h-10">Email</TableHead>
+                            <TableHead className="text-[10px] font-bold text-gray-400 uppercase tracking-widest h-10">Role(s)</TableHead>
+                            <TableHead className="text-[10px] font-bold text-gray-400 uppercase tracking-widest h-10">Status</TableHead>
+                            <TableHead className="text-[10px] font-bold text-gray-400 uppercase tracking-widest h-10 text-right">Last Active</TableHead>
+                            <TableHead className="text-[10px] font-bold text-gray-400 uppercase tracking-widest h-10 text-right">Joined</TableHead>
+                            <TableHead className="text-right h-10"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {loading && !admins.length ? (
-                            <TableRow><TableCell colSpan={4} className="text-center h-24">Loading...</TableCell></TableRow>
-                        ) : admins.map((admin) => (
-                            <TableRow key={admin.user_id}>
-                                <TableCell className="font-medium">
-                                    {admin.profile ? `${admin.profile.first_name} ${admin.profile.last_name}` : "Unknown"}
+                        {loading ? (
+                            <TableRow>
+                                <TableCell colSpan={7} className="h-24 text-center">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="h-4 w-4 border-2 border-gray-200 border-t-gray-800 animate-spin rounded-full"></div>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest italic">Syncing Team...</span>
+                                    </div>
                                 </TableCell>
-                                <TableCell>{admin.profile?.email}</TableCell>
+                            </TableRow>
+                        ) : filteredAdmins.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={7} className="h-32 text-center">
+                                    <div className="flex flex-col items-center gap-1">
+                                        <Users className="h-8 w-8 text-gray-100 mb-2" />
+                                        <p className="text-sm font-bold text-gray-900">No admins found</p>
+                                        <p className="text-xs text-gray-500">Try adjusting your search or filters.</p>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : filteredAdmins.map((admin) => (
+                            <TableRow 
+                                key={admin.id} 
+                                className="hover:bg-gray-50/50 border-gray-100 cursor-pointer group"
+                                onClick={() => navigate(`admins/${admin.id}`)}
+                            >
+                                <TableCell className="whitespace-nowrap font-bold text-gray-900">{admin.full_name || "Unknown Admin"}</TableCell>
+                                <TableCell className="text-gray-500 font-medium">{admin.email}</TableCell>
                                 <TableCell>
-                                    <Badge variant="outline" className="capitalize">
-                                        {admin.role.replace("_", " ")}
-                                    </Badge>
+                                    <div className="flex flex-wrap gap-1">
+                                        {admin.roles?.map((r, idx) => (
+                                            <span key={idx} className="text-[11px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
+                                                {r.role?.name}
+                                            </span>
+                                        ))}
+                                        {(!admin.roles || admin.roles.length === 0) && (
+                                            <span className="text-[11px] text-gray-400 italic">No Role</span>
+                                        )}
+                                    </div>
                                 </TableCell>
-                                <TableCell className="text-right">
-                                    {/* Only Super Admin can edit/remove, and cannot edit self */}
-                                    {userRole === "super_admin" && admin.user_id !== user?.id && (
-                                        <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
+                                <TableCell>{getStatusBadge(admin.status)}</TableCell>
+                                <TableCell className="text-right text-[11px] font-mono text-gray-400 group-hover:text-gray-900 transition-colors">
+                                    {admin.last_active_at ? format(new Date(admin.last_active_at), "MMM d, HH:mm") : "Never"}
+                                </TableCell>
+                                <TableCell className="text-right text-[11px] font-mono text-gray-400">
+                                    {format(new Date(admin.created_at), "MMM d, yyyy")}
+                                </TableCell>
+                                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-gray-100">
+                                                <MoreHorizontal className="h-4 w-4 text-gray-400" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-48 shadow-lg border-gray-100">
+                                            <DropdownMenuLabel className="text-[11px] font-bold text-gray-400 uppercase tracking-widest px-3 py-2">Management</DropdownMenuLabel>
+                                            <DropdownMenuItem onClick={() => navigate(`admins/${admin.id}`)} className="flex items-center px-3 py-2 text-sm font-medium">
+                                                <ExternalLink className="h-4 w-4 mr-2 text-gray-400" /> View Profile
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem 
                                                 onClick={() => {
-                                                    setEditingUser(admin);
-                                                    setNewRole(admin.role);
-                                                    setNewFirstName(admin.profile?.first_name || "");
-                                                    setNewLastName(admin.profile?.last_name || "");
+                                                    setSelectedAdmin(admin);
+                                                    setEditData({ role_id: admin.roles?.[0]?.role?.id || "" });
+                                                    setIsEditDialogOpen(true);
                                                 }}
+                                                className="flex items-center px-3 py-2 text-sm font-medium"
                                             >
-                                                <Pencil className="h-4 w-4 text-slate-500" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="text-destructive">
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    )}
+                                                <Shield className="h-4 w-4 mr-2 text-gray-400" /> Edit Role
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator className="bg-gray-50" />
+                                            {admin.status === 'active' ? (
+                                                <DropdownMenuItem 
+                                                    onClick={() => handleStatusToggle(admin, 'suspended')}
+                                                    className="flex items-center px-3 py-2 text-sm font-medium text-red-600 focus:text-red-700 focus:bg-red-50"
+                                                >
+                                                    <UserMinus className="h-4 w-4 mr-2" /> Suspend Admin
+                                                </DropdownMenuItem>
+                                            ) : (
+                                                <DropdownMenuItem 
+                                                    onClick={() => handleStatusToggle(admin, 'active')}
+                                                    className="flex items-center px-3 py-2 text-sm font-medium text-emerald-600 focus:text-emerald-700 focus:bg-emerald-50"
+                                                >
+                                                    <UserCheck className="h-4 w-4 mr-2" /> Restore Admin
+                                                </DropdownMenuItem>
+                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Invite Admin Dialog */}
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-bold">Invite New Admin</DialogTitle>
+                        <DialogDescription className="text-xs">
+                            This will create an internal admin account. Access will be granted immediately.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-gray-400">Full Name</Label>
+                            <Input 
+                                id="name" 
+                                value={formData.name} 
+                                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                className="h-10 text-sm border-gray-200"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-gray-400">Email Address</Label>
+                            <Input 
+                                id="email" 
+                                type="email"
+                                value={formData.email} 
+                                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                className="h-10 text-sm border-gray-200"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-gray-400">Primary Role</Label>
+                            <Select 
+                                value={formData.role_id} 
+                                onValueChange={(val) => setFormData({...formData, role_id: val})}
+                            >
+                                <SelectTrigger className="h-10 text-sm border-gray-200">
+                                    <SelectValue placeholder="Select a role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {roles.map(role => (
+                                        <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setIsAddDialogOpen(false)} disabled={submitting} className="font-bold text-gray-500">Cancel</Button>
+                        <Button 
+                            onClick={handleAddAdmin} 
+                            disabled={submitting || !formData.email || !formData.role_id}
+                            className="bg-gray-900 hover:bg-gray-800 text-white font-bold h-10 px-8"
+                        >
+                            {submitting ? <Clock className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
+                            Send Invitation
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Role Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-bold">Edit Access Role</DialogTitle>
+                        <DialogDescription className="text-xs">
+                            Update the primary role for {selectedAdmin?.full_name}.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-gray-400">Primary Role</Label>
+                            <Select 
+                                value={editData.role_id} 
+                                onValueChange={(val) => setEditData({...editData, role_id: val})}
+                            >
+                                <SelectTrigger className="h-10 text-sm border-gray-200">
+                                    <SelectValue placeholder="Select a role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {roles.map(role => (
+                                        <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setIsEditDialogOpen(false)} disabled={submitting} className="font-bold text-gray-500">Cancel</Button>
+                        <Button 
+                            onClick={handleUpdateRole} 
+                            disabled={submitting || !editData.role_id}
+                            className="bg-gray-900 hover:bg-gray-800 text-white font-bold h-10 px-8"
+                        >
+                            {submitting ? <Clock className="h-4 w-4 animate-spin mr-2" /> : <Shield className="h-4 w-4 mr-2" />}
+                            Update Access
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

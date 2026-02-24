@@ -1,108 +1,123 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
+import typography from "@tailwindcss/typography";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "1280px", /* Design Bible max width */
+        "2xl": "1536px",
       },
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "IBM Plex Sans", "system-ui", "-apple-system", "sans-serif"],
-        serif: ["Source Serif 4", "serif"],
+        sans: ["Inter", "Satoshi", "Manrope", "system-ui", "sans-serif"],
       },
       fontSize: {
-        /* Design Bible Typography */
-        "display": ["3.5rem", { lineHeight: "1.1", fontWeight: "700", letterSpacing: "-0.02em" }],
-        "h1": ["3rem", { lineHeight: "1.15", fontWeight: "700", letterSpacing: "-0.02em" }],
-        "h2": ["2.25rem", { lineHeight: "1.2", fontWeight: "600", letterSpacing: "-0.01em" }],
-        "h3": ["1.75rem", { lineHeight: "1.3", fontWeight: "600" }],
-        "body": ["1rem", { lineHeight: "1.65" }],
-        "body-lg": ["1.125rem", { lineHeight: "1.7" }],
-        "caption": ["0.8125rem", { lineHeight: "1.5" }],
-      },
-      colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        success: {
-          DEFAULT: "hsl(var(--success))",
-          foreground: "hsl(var(--success-foreground))",
-        },
-        warning: {
-          DEFAULT: "hsl(var(--warning))",
-          foreground: "hsl(var(--warning-foreground))",
-        },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
-        },
-        /* Design Bible Named Colors */
-        taskive: {
-          navy: "hsl(var(--taskive-navy))",
-          slate: "hsl(var(--taskive-slate))",
-          teal: "hsl(var(--taskive-teal))",
-          amber: "hsl(var(--taskive-amber))",
-        },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        xl: "0.75rem", /* 12px max for cards */
+        xs: "12px",
+        sm: "14px",
+        base: "16px",
+        lg: "18px",
+        xl: "20px",
+        "2xl": "24px",
+        "3xl": "30px",
+        "4xl": "36px",
       },
       spacing: {
-        /* Design Bible section padding */
-        "section": "5rem",      /* 80px */
-        "section-lg": "7.5rem", /* 120px */
+        "1": "4px",
+        "2": "8px",
+        "3": "12px",
+        "4": "16px",
+        "5": "20px",
+        "6": "24px",
+        "8": "32px",
+        "10": "40px",
+        "12": "48px",
+        "16": "64px",
+      },
+      borderRadius: {
+        sm: "6px",
+        md: "10px",
+        lg: "14px",
+        xl: "20px",
+      },
+      colors: {
+        brand: {
+          primary: "var(--color-brand-primary)",
+          secondary: "var(--color-brand-secondary)",
+          accent: "var(--color-brand-accent)",
+        },
+        gray: {
+          950: "var(--gray-950)",
+          900: "var(--gray-900)",
+          800: "var(--gray-800)",
+          700: "var(--gray-700)",
+          600: "var(--gray-600)",
+          500: "var(--gray-500)",
+          400: "var(--gray-400)",
+          300: "var(--gray-300)",
+          200: "var(--gray-200)",
+          100: "var(--gray-100)",
+          50: "var(--gray-50)",
+        },
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
+        },
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+        },
+        destructive: {
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
+        },
+        muted: {
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
+        },
+        accent: {
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+        },
+        popover: {
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
+        },
+        card: {
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
+        },
+        sidebar: {
+          DEFAULT: "var(--sidebar-background)",
+          foreground: "var(--sidebar-foreground)",
+          primary: "var(--sidebar-primary)",
+          "primary-foreground": "var(--sidebar-primary-foreground)",
+          accent: "var(--sidebar-accent)",
+          "accent-foreground": "var(--sidebar-accent-foreground)",
+          border: "var(--sidebar-border)",
+          ring: "var(--sidebar-ring)",
+        },
       },
       boxShadow: {
-        "taskive-sm": "var(--shadow-sm)",
-        "taskive-md": "var(--shadow-md)",
-        "taskive-lg": "var(--shadow-lg)",
-        "taskive-xl": "var(--shadow-xl)",
+        sm: "var(--shadow-sm)",
+        md: "var(--shadow-md)",
+        lg: "var(--shadow-lg)",
       },
       keyframes: {
         "accordion-down": {
@@ -125,10 +140,10 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.2s ease-out forwards",
-        "slide-up": "slide-up 0.25s ease-out forwards",
+        "fade-in": "fade-in 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        "slide-up": "slide-up 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate, typography],
 } satisfies Config;

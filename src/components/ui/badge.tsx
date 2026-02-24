@@ -4,14 +4,17 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
-        default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
+        default: "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20",
+        secondary: "bg-gray-100 text-gray-800 hover:bg-gray-200",
+        destructive: "bg-status-error/10 text-status-error hover:bg-status-error/20",
+        outline: "border border-gray-300 text-gray-800",
+        success: "bg-status-success/10 text-status-success hover:bg-status-success/20",
+        warning: "bg-status-warning/10 text-status-warning hover:bg-status-warning/20",
+        info: "bg-status-info/10 text-status-info hover:bg-status-info/20",
       },
     },
     defaultVariants: {
@@ -26,4 +29,5 @@ function Badge({ className, variant, ...props }: BadgeProps) {
   return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Badge, badgeVariants };

@@ -9,16 +9,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-accent text-accent-foreground hover:bg-accent/90",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border-2 border-primary bg-transparent text-primary hover:bg-primary hover:text-primary-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-secondary hover:text-secondary-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        success: "bg-success text-success-foreground hover:bg-success/90",
+        default: "bg-brand-primary text-white hover:bg-brand-primary/90",
+        destructive: "bg-status-error text-white hover:bg-status-error/90",
+        outline: "border border-gray-300 bg-transparent text-gray-800 hover:bg-gray-50",
+        secondary: "border border-gray-300 bg-white text-gray-800 hover:bg-gray-50",
+        ghost: "hover:bg-gray-100 hover:text-gray-900",
+        link: "text-brand-primary underline-offset-4 hover:underline",
+        success: "bg-status-success text-white hover:bg-status-success/90",
       },
       size: {
-        default: "h-11 px-5 py-2",    /* 44px height */
+        default: "h-11 px-5 py-3",    /* 44px height */
         sm: "h-9 px-4 text-xs",
         lg: "h-12 px-8 text-base",    /* 48px height */
         xl: "h-14 px-10 text-base font-semibold",
@@ -46,4 +46,5 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = "Button";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants };

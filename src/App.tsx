@@ -18,17 +18,20 @@ import Signup from "./pages/auth/Signup";
 import AdminSignup from "./pages/auth/AdminSignup";
 import ResetPassword from "./pages/auth/ResetPassword";
 import ClientLayout from "./components/client/ClientLayout";
-import ClientOnboarding from "./pages/client/Onboarding";
-import ClientDashboard from "./pages/client/Dashboard";
-import BrowseTalents from "./pages/client/BrowseTalents";
-import Jobs from "./pages/client/Jobs";
-import ClientJobDetail from "./pages/client/JobDetail";
-import Contracts from "./pages/client/Contracts";
-import Invoices from "./pages/client/Invoices";
-import ClientPayments from "./pages/client/Payments";
-import ClientTimesheets from "./pages/client/Timesheets";
-import Team from "./pages/client/Team";
-import ClientSupport from "./pages/client/Support";
+import ClientOnboarding from "@/pages/client/Onboarding";
+import ClientDashboard from "@/pages/client/Dashboard";
+import BrowseTalents from "@/pages/client/BrowseTalents";
+import ClientTalentProfile from "@/pages/client/TalentProfile";
+import Jobs from "@/pages/client/Jobs";
+import CreateJob from "@/pages/client/CreateJob";
+import ClientJobDetail from "@/pages/client/JobDetail";
+import Contracts from "@/pages/client/Contracts";
+import Invoices from "@/pages/client/Invoices";
+import ClientPayments from "@/pages/client/Payments";
+import ClientTimesheets from "@/pages/client/Timesheets";
+import Team from "@/pages/client/Team";
+import ClientSupport from "@/pages/client/Support";
+import ClientSettings from "@/pages/client/Settings";
 
 import TalentLayout from "./components/talent/TalentLayout";
 import TalentOnboarding from "./pages/talent/Onboarding";
@@ -39,6 +42,7 @@ import TalentContracts from "./pages/talent/Contracts";
 import TalentOffers from "./pages/talent/Offers";
 import TalentJobDetail from "./pages/talent/JobDetail";
 import TalentApplications from "./pages/talent/Applications";
+import TalentInterviews from "./pages/talent/Interviews";
 import TalentAssignments from "./pages/talent/Assignments";
 import TalentTimesheets from "./pages/talent/Timesheets";
 import TimesheetForm from "./pages/talent/TimesheetForm";
@@ -54,20 +58,41 @@ import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminTalents from "./pages/admin/Talents";
 import AdminTalentDetail from "./pages/admin/TalentDetail";
-import AdminClients from "./pages/admin/Clients";
-import AdminJobs from "./pages/admin/Jobs";
-import AdminJobDetail from "./pages/admin/JobDetail";
-import AdminOffers from "./pages/admin/Offers";
-import AdminContracts from "./pages/admin/Contracts";
-import AdminInvoices from "./pages/admin/Invoices";
-import AdminSupport from "./pages/admin/Support";
-import AdminTeam from "./pages/admin/Team";
-import AdminSettings from "./pages/admin/Settings";
-import AdminConsultations from "./pages/admin/Consultations";
-import AdminOfferConfig from "./pages/admin/OfferConfiguration";
-import AgreementTemplates from "./pages/admin/AgreementTemplates";
-import AdminTimesheets from "./pages/admin/Timesheets";
-import AdminPayments from "./pages/admin/Payments";
+import VettingWorkspace from "./pages/admin/TalentVetting/VettingWorkspace";
+import AdminClients from "@/pages/admin/Clients";
+import AdminClientDetail from "@/pages/admin/ClientDetail";
+import AdminJobs from "@/pages/admin/Jobs";
+import AdminJobDetail from "@/pages/admin/JobDetail";
+import AdminOffers from "@/pages/admin/Offers";
+import AdminContracts from "@/pages/admin/Contracts";
+import AdminInvoices from "@/pages/admin/Invoices";
+import AdminSupport from "@/pages/admin/Support";
+import AdminSupportDetail from "@/pages/admin/SupportDetail";
+import AdminInvoiceDetail from "@/pages/admin/InvoiceDetail";
+import AdminTeam from "@/pages/admin/Team";
+import AdminDetail from "@/pages/admin/Team/AdminDetail";
+import RolesPermissions from "@/pages/admin/Team/RolesPermissions";
+import AuditLog from "@/pages/admin/Team/AuditLog";
+import AdminSettings from "@/pages/admin/Settings";
+import AdminConsultations from "@/pages/admin/Consultations";
+import AdminConsultationDetail from "@/pages/admin/ConsultationDetail";
+import AdminOfferConfig from "@/pages/admin/OfferConfiguration";
+import AgreementTemplates from "@/pages/admin/AgreementTemplates";
+import AdminTimesheets from "@/pages/admin/Timesheets";
+import AdminTimesheetDetail from "@/pages/admin/TimesheetDetail";
+import AdminPayments from "@/pages/admin/Payments";
+import SettingsLayout from "@/pages/admin/Settings/SettingsLayout";
+import OrganizationSettings from "@/pages/admin/Settings/sections/Organization";
+import ServiceModelsSettings from "@/pages/admin/Settings/sections/ServiceModels";
+import ContractsSettings from "@/pages/admin/Settings/sections/Contracts";
+import FinanceSettings from "@/pages/admin/Settings/sections/Finance";
+import WorkflowSettings from "@/pages/admin/Settings/sections/Workflows";
+import NotificationSettings from "@/pages/admin/Settings/sections/Notifications";
+import SecuritySettings from "@/pages/admin/Settings/sections/Security";
+import BrandingSettings from "@/pages/admin/Settings/sections/Branding";
+import IntegrationsSettings from "@/pages/admin/Settings/sections/Integrations";
+import DataSettings from "@/pages/admin/Settings/sections/Data";
+import SettingsAuditLog from "@/pages/admin/Settings/sections/AuditLogs";
 import PublicJobs from "./pages/PublicJobs";
 import NotFound from "./pages/NotFound";
 
@@ -109,7 +134,9 @@ const App = () => (
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<ClientDashboard />} />
               <Route path="browse-talents" element={<BrowseTalents />} />
+              <Route path="browse-talents/:talentId" element={<ClientTalentProfile />} />
               <Route path="jobs" element={<Jobs />} />
+              <Route path="jobs/new" element={<CreateJob />} />
               <Route path="jobs/:id" element={<ClientJobDetail />} />
               <Route path="contracts" element={<Contracts />} />
               <Route path="timesheets" element={<ClientTimesheets />} />
@@ -117,6 +144,7 @@ const App = () => (
               <Route path="payments" element={<ClientPayments />} />
               <Route path="team" element={<Team />} />
               <Route path="support" element={<ClientSupport />} />
+              <Route path="settings" element={<ClientSettings />} />
             </Route>
 
             {/* Talent Portal */}
@@ -129,6 +157,7 @@ const App = () => (
               <Route path="jobs/:id" element={<TalentJobDetail />} />
               <Route path="offers" element={<TalentOffers />} />
               <Route path="applications" element={<TalentApplications />} />
+              <Route path="interviews" element={<TalentInterviews />} />
               <Route path="assignments" element={<TalentAssignments />} />
               <Route path="contracts" element={<TalentContracts />} />
               <Route path="timesheets" element={<TalentTimesheets />} />
@@ -150,7 +179,9 @@ const App = () => (
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="talents" element={<AdminTalents />} />
               <Route path="talents/:id" element={<AdminTalentDetail />} />
+              <Route path="talents/:id/vetting" element={<VettingWorkspace />} />
               <Route path="clients" element={<AdminClients />} />
+              <Route path="clients/:id" element={<AdminClientDetail />} />
               <Route path="jobs" element={<AdminJobs />} />
               <Route path="jobs/:id" element={<AdminJobDetail />} />
               <Route path="offers" element={<AdminOffers />} />
@@ -160,18 +191,39 @@ const App = () => (
               <Route path="invoices" element={<AdminInvoices />} />
               <Route path="payments" element={<AdminPayments />} />
               <Route path="timesheets" element={<AdminTimesheets />} />
+              <Route path="timesheets/:id" element={<AdminTimesheetDetail />} />
               <Route path="consultations" element={<AdminConsultations />} />
+              <Route path="consultations/:id" element={<AdminConsultationDetail />} />
               <Route path="support" element={<AdminSupport />} />
-              <Route path="team" element={<AdminTeam />} />
-              <Route path="settings" element={<AdminSettings />} />
+              <Route path="support/:id" element={<AdminSupportDetail />} />
+              <Route path="team">
+                <Route index element={<AdminTeam />} />
+                <Route path="admins/:id" element={<AdminDetail />} />
+                <Route path="roles" element={<RolesPermissions />} />
+                <Route path="audit" element={<AuditLog />} />
+              </Route>
+              <Route path="settings" element={<SettingsLayout />}>
+                <Route index element={<Navigate to="organization" replace />} />
+                <Route path="organization" element={<OrganizationSettings />} />
+                <Route path="service-models" element={<ServiceModelsSettings />} />
+                <Route path="contracts" element={<ContractsSettings />} />
+                <Route path="finance" element={<FinanceSettings />} />
+                <Route path="workflows" element={<WorkflowSettings />} />
+                <Route path="notifications" element={<NotificationSettings />} />
+                <Route path="security" element={<SecuritySettings />} />
+                <Route path="branding" element={<BrandingSettings />} />
+                <Route path="integrations" element={<IntegrationsSettings />} />
+                <Route path="data" element={<DataSettings />} />
+                <Route path="audit" element={<SettingsAuditLog />} />
+              </Route>
             </Route>
 
             <Route path="*" element={<NotFound />} />
-          </Routes >
-        </BrowserRouter >
-      </TooltipProvider >
-    </AuthProvider >
-  </QueryClientProvider >
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
+  </QueryClientProvider>
 );
 
 export default App;

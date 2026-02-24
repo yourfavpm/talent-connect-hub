@@ -1,38 +1,61 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import StatCard from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import NotificationWidget from "@/components/NotificationWidget";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Users,
   Briefcase,
-  FileText,
   UserCheck,
-  Clock,
-  DollarSign,
+  Calendar,
   AlertCircle,
   Receipt,
-  MessageSquare
+  MessageSquare,
+  ArrowRight,
+  Plus,
+  FileText,
+  Clock,
+  RefreshCw,
+  Wallet
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import type { Database } from "@/integrations/supabase/types";
+
+type Job = Database["public"]["Tables"]["jobs"]["Row"] & {
+  clients?: { company_name: string | null };
+};
+type Talent = Database["public"]["Tables"]["talents"]["Row"];
+type Ticket = Database["public"]["Tables"]["support_tickets"]["Row"];
 
 const AdminDashboard = () => {
   const { userRole } = useAuth();
+  
   const [stats, setStats] = useState({
-    totalClients: 0,
-    activeTalents: 0,
-    openJobs: 0,
-    pendingOffers: 0,
     pendingVetting: 0,
+    pendingJobs: 0,
     activeContracts: 0,
-    pendingInvoices: 0,
+    outstandingInvoices: 0,
     openTickets: 0,
+    pendingInterviews: 0,
+    invoiceTotal: 0,
   });
-  const [recentOffers, setRecentOffers] = useState<any[]>([]);
-  const [pendingJobs, setPendingJobs] = useState<any[]>([]);
+
+  const [queues, setQueues] = useState<{
+    talents: Talent[];
+    jobs: Job[];
+    tickets: Ticket[];
+  }>({ talents: [], jobs: [], tickets: [] });
+
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,65 +63,67 @@ const AdminDashboard = () => {
   }, []);
 
   const fetchDashboardData = async () => {
+    setLoading(true);
     try {
-      // Fetch counts
+      // Fetch queue tables (limit 5)
       const [
-        clientsRes,
-        talentsRes,
-        jobsRes,
-        offersRes,
-        contractsRes,
-        pendingVettingRes,
-        invoicesRes,
-        ticketsRes
+        { data: pendingTalents },
+        { data: pendingJobsData },
+        { data: openTicketsData },
       ] = await Promise.all([
-        supabase.from("clients").select("id", { count: "exact", head: true }),
-        supabase.from("talents").select("id", { count: "exact", head: true }).eq("vetting_status", "fully_vetted"),
-        supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "published"),
-        supabase.from("offers").select("id", { count: "exact", head: true }).eq("status", "sent_to_admin"),
-        supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("talents").select("id", { count: "exact", head: true }).eq("vetting_status", "unvetted"),
-        supabase.from("invoices").select("id", { count: "exact", head: true }).in("status", ["pending", "overdue"]),
-        supabase.from("support_tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
+        supabase.from("talents").select("*").eq("vetting_status", "unvetted").order("created_at", { ascending: false }).limit(5),
+        supabase.from("jobs").select("*, clients(company_name)").eq("status", "submitted").order("created_at", { ascending: false }).limit(5),
+        supabase.from("support_tickets").select("*").in("status", ["open", "in_progress"]).order("created_at", { ascending: false }).limit(5),
       ]);
 
-      setStats({
-        totalClients: clientsRes.count || 0,
-        activeTalents: talentsRes.count || 0,
-        openJobs: jobsRes.count || 0,
-        pendingOffers: offersRes.count || 0,
-        activeContracts: contractsRes.count || 0,
-        pendingVetting: pendingVettingRes.count || 0,
-        pendingInvoices: invoicesRes.count || 0,
-        openTickets: ticketsRes.count || 0,
+      setQueues({
+        talents: pendingTalents || [],
+        jobs: pendingJobsData || [],
+        tickets: openTicketsData || [],
       });
 
-      // Fetch recent offers
-      const { data: offersData } = await supabase
-        .from("offers")
-        .select(`
-          *,
-          clients(company_name),
-          talents(first_name, last_name)
-        `)
-        .in("status", ["sent_to_admin", "pending"])
-        .order("created_at", { ascending: false })
-        .limit(5);
+      // Fetch global counts & aggregated amounts
+      const [
+        { count: unvettedCount },
+        { count: submittedJobsCount },
+        { count: activeContractsCount },
+        { data: invoicesData },
+        { count: openTicketsCount },
+        { count: pendingInterviewsCount },
+        { data: recentOffers }
+      ] = await Promise.all([
+        supabase.from("talents").select("id", { count: "exact", head: true }).eq("vetting_status", "unvetted"),
+        supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "submitted"),
+        supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("invoices").select("amount").in("status", ["pending", "overdue"]),
+        supabase.from("support_tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
+        supabase.from("interviews").select("id", { count: "exact", head: true }).eq("status", "scheduled"), // Best effort assumption for interviews table
+        supabase.from("offers").select("*, talents(first_name, last_name)").order("created_at", { ascending: false }).limit(5)
+      ]);
 
-      setRecentOffers(offersData || []);
+      const invoiceSum = (invoicesData || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
 
-      // Fetch pending jobs for approval
-      const { data: jobsData } = await supabase
-        .from("jobs")
-        .select(`
-          *,
-          clients(company_name)
-        `)
-        .eq("status", "submitted")
-        .order("created_at", { ascending: false })
-        .limit(5);
+      setStats({
+        pendingVetting: unvettedCount || 0,
+        pendingJobs: submittedJobsCount || 0,
+        activeContracts: activeContractsCount || 0,
+        outstandingInvoices: invoicesData?.length || 0,
+        openTickets: openTicketsCount || 0,
+        pendingInterviews: pendingInterviewsCount || 0,
+        invoiceTotal: invoiceSum,
+      });
 
-      setPendingJobs(jobsData || []);
+      // Format basic recent activity feed using offers for now
+      const formattedActivity = (recentOffers || []).map(offer => ({
+        id: offer.id,
+        type: 'Offer Created',
+        description: `Offer created for ${offer.talents?.first_name} ${offer.talents?.last_name} as ${offer.role_title}`,
+        time: offer.created_at,
+        status: offer.status
+      }));
+
+      setRecentActivity(formattedActivity);
+
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
@@ -108,10 +133,7 @@ const AdminDashboard = () => {
 
   const handleApproveJob = async (jobId: string) => {
     try {
-      await supabase
-        .from("jobs")
-        .update({ status: "published", published_at: new Date().toISOString() })
-        .eq("id", jobId);
+      await supabase.from("jobs").update({ status: "published", published_at: new Date().toISOString() }).eq("id", jobId);
       fetchDashboardData();
     } catch (error) {
       console.error("Error approving job:", error);
@@ -120,167 +142,329 @@ const AdminDashboard = () => {
 
   const hasAccess = (roles: string[]) => !userRole || roles.includes(userRole);
 
-  const allStatCards = [
-    { title: "Total Clients", value: stats.totalClients, icon: Users, subtitle: "Active accounts", roles: ['super_admin', 'operations_admin'] },
-    { title: "Vetted Talents", value: stats.activeTalents, icon: UserCheck, subtitle: "In talent pool", roles: ['super_admin', 'operations_admin', 'vetting_admin'] },
-    { title: "Open Jobs", value: stats.openJobs, icon: Briefcase, subtitle: "Active postings", roles: ['super_admin', 'operations_admin'] },
-    { title: "Pending Offers", value: stats.pendingOffers, icon: FileText, subtitle: "Awaiting action", roles: ['super_admin', 'operations_admin', 'finance_admin'] },
-    { title: "Active Contracts", value: stats.activeContracts, icon: DollarSign, subtitle: "In progress", roles: ['super_admin', 'operations_admin', 'finance_admin'] },
-    { title: "Pending Vetting", value: stats.pendingVetting, icon: AlertCircle, subtitle: "Need review", roles: ['super_admin', 'operations_admin', 'vetting_admin'] },
-    { title: "Pending Invoices", value: stats.pendingInvoices, icon: Receipt, subtitle: "Unpaid", roles: ['super_admin', 'finance_admin', 'operations_admin'] },
-    { title: "Open Tickets", value: stats.openTickets, icon: MessageSquare, subtitle: "Need response", roles: ['super_admin', 'support_admin', 'operations_admin'] },
-  ];
-
-  const visibleStats = allStatCards.filter(stat => hasAccess(stat.roles));
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'unvetted':
+      case 'submitted':
+      case 'open':
+      case 'pending':
+        return <Badge className="bg-warning/10 text-warning hover:bg-warning/20 border-0 text-xs font-normal px-2 py-0.5">{status}</Badge>;
+      case 'in_progress':
+      case 'active':
+      case 'published':
+        return <Badge className="bg-success/10 text-success hover:bg-success/20 border-0 text-xs font-normal px-2 py-0.5">{status}</Badge>;
+      case 'rejected':
+      case 'overdue':
+      case 'closed':
+        return <Badge className="bg-destructive/10 text-destructive hover:bg-destructive/20 border-0 text-xs font-normal px-2 py-0.5">{status}</Badge>;
+      default:
+        return <Badge className="bg-muted text-muted-foreground hover:bg-muted border-0 text-xs font-normal px-2 py-0.5">{status}</Badge>;
+    }
+  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-2 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          Welcome back, {userRole ? userRole.replace('_', ' ').toUpperCase() : 'Admin'}
-        </p>
+    <div className="space-y-6 max-w-[1400px] mx-auto pb-10">
+      
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-gray-200 pb-5">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Admin Overview</h1>
+          <p className="text-sm text-gray-500 mt-1">Operational summary across Taskive.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={fetchDashboardData} className="h-9 px-3 text-gray-600">
+            <RefreshCw className="h-4 w-4 mr-2 text-gray-400" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {visibleStats.map((stat) => (
-          <StatCard key={stat.title} {...stat} />
-        ))}
+      {/* Stat Cards Row */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <Link to="/admin/talents" className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
+          <div className="flex items-center justify-between mb-3">
+            <UserCheck className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
+          </div>
+          <p className="text-xs font-medium text-gray-500 mb-1">Pending Vetting</p>
+          <p className="text-2xl font-semibold text-gray-900">{stats.pendingVetting}</p>
+        </Link>
+
+        <Link to="/admin/jobs" className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
+          <div className="flex items-center justify-between mb-3">
+            <Briefcase className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
+          </div>
+          <p className="text-xs font-medium text-gray-500 mb-1">Jobs for Approval</p>
+          <p className="text-2xl font-semibold text-gray-900">{stats.pendingJobs}</p>
+        </Link>
+
+        <Link to="/admin/contracts" className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
+          <div className="flex items-center justify-between mb-3">
+            <FileText className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
+          </div>
+          <p className="text-xs font-medium text-gray-500 mb-1">Active Contracts</p>
+          <p className="text-2xl font-semibold text-gray-900">{stats.activeContracts}</p>
+        </Link>
+        
+        <Link to="/admin/invoices" className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
+          <div className="flex items-center justify-between mb-3">
+            <Receipt className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
+          </div>
+          <p className="text-xs font-medium text-gray-500 mb-1">Unpaid Invoices</p>
+          <p className="text-2xl font-semibold text-gray-900">{stats.outstandingInvoices}</p>
+        </Link>
+
+        <Link to="/admin/support" className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
+          <div className="flex items-center justify-between mb-3">
+            <MessageSquare className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
+          </div>
+          <p className="text-xs font-medium text-gray-500 mb-1">Open Tickets</p>
+          <p className="text-2xl font-semibold text-gray-900">{stats.openTickets}</p>
+        </Link>
+
+        <div className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-left">
+          <div className="flex items-center justify-between mb-3">
+            <Calendar className="h-4 w-4 text-gray-500" />
+          </div>
+          <p className="text-xs font-medium text-gray-500 mb-1">Pending Interviews</p>
+          <p className="text-2xl font-semibold text-gray-900">{stats.pendingInterviews}</p>
+        </div>
       </div>
 
-      {/* Notifications & Actions Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {hasAccess(['super_admin', 'operations_admin', 'support_admin']) && <NotificationWidget />}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        
+        {/* Main Operational Column (Left 2/3) */}
+        <div className="xl:col-span-2 space-y-6">
+          
+          {/* QUEUE 1: Talent Vetting */}
+          <Card className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <CardHeader className="border-b border-gray-100 bg-gray-50/50 py-4 px-5 flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                <Users className="h-4 w-4 text-gray-500" />
+                Talent Vetting Queue
+              </CardTitle>
+              <Link to="/admin/talents">
+                <Button variant="ghost" size="sm" className="h-8 text-xs text-gray-600 hover:text-gray-900">
+                  View All <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </Link>
+            </CardHeader>
+            <CardContent className="p-0">
+              {queues.talents.length === 0 ? (
+                <div className="p-8 text-center text-sm text-gray-500">No talents pending vetting.</div>
+              ) : (
+                <Table>
+                  <TableHeader className="bg-transparent">
+                    <TableRow className="hover:bg-transparent border-gray-100">
+                      <TableHead className="font-medium text-xs text-gray-500 py-3">Talent</TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 py-3">Role</TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 py-3">Submitted</TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 py-3">Status</TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 py-3 text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {queues.talents.map((t) => (
+                      <TableRow key={t.id} className="border-gray-100">
+                        <TableCell className="py-3 text-sm font-medium text-gray-900">{t.first_name} {t.last_name}</TableCell>
+                        <TableCell className="py-3 text-sm text-gray-600">{t.primary_role || 'General'}</TableCell>
+                        <TableCell className="py-3 text-sm text-gray-600">{new Date(t.created_at || '').toLocaleDateString()}</TableCell>
+                        <TableCell className="py-3">{getStatusBadge(t.vetting_status || 'unvetted')}</TableCell>
+                        <TableCell className="py-3 text-right">
+                          <Link to={`/admin/talents/${t.id}`}>
+                            <Button variant="secondary" size="sm" className="h-7 px-3 text-xs">Review</Button>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Pending Job Approvals */}
-        {hasAccess(['super_admin', 'operations_admin']) && (
-          <Card className="lg:col-span-2">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5" />
-                Pending Job Approvals
+          {/* QUEUE 2: Job Approvals */}
+          <Card className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <CardHeader className="border-b border-gray-100 bg-gray-50/50 py-4 px-5 flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                <Briefcase className="h-4 w-4 text-gray-500" />
+                Job Approval Queue
               </CardTitle>
               <Link to="/admin/jobs">
-                <Button variant="outline" size="sm">View All</Button>
+                <Button variant="ghost" size="sm" className="h-8 text-xs text-gray-600 hover:text-gray-900">
+                  View All <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
               </Link>
             </CardHeader>
-            <CardContent>
-              {pendingJobs.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No pending jobs</p>
+            <CardContent className="p-0">
+              {queues.jobs.length === 0 ? (
+                <div className="p-8 text-center text-sm text-gray-500">No jobs pending approval.</div>
               ) : (
-                <div className="space-y-3">
-                  {pendingJobs.map((job) => (
-                    <div key={job.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                      <div>
-                        <p className="font-medium">{job.title}</p>
-                        <p className="text-sm text-muted-foreground">{job.clients?.company_name} • {job.service_model}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" onClick={() => handleApproveJob(job.id)}>
-                          Approve
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <Table>
+                  <TableHeader className="bg-transparent">
+                    <TableRow className="hover:bg-transparent border-gray-100">
+                      <TableHead className="font-medium text-xs text-gray-500 py-3">Job Title</TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 py-3">Client</TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 py-3">Type</TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 py-3">Submitted</TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 py-3 text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {queues.jobs.map((j) => (
+                      <TableRow key={j.id} className="border-gray-100">
+                        <TableCell className="py-3 text-sm font-medium text-gray-900">{j.title}</TableCell>
+                        <TableCell className="py-3 text-sm text-gray-600">{j.clients?.company_name || 'Internal'}</TableCell>
+                        <TableCell className="py-3 text-sm text-gray-600 capitalize">{j.service_model?.replace('_', ' ')}</TableCell>
+                        <TableCell className="py-3 text-sm text-gray-600">{new Date(j.created_at || '').toLocaleDateString()}</TableCell>
+                        <TableCell className="py-3 text-right flex justify-end gap-2">
+                          <Link to={`/admin/jobs/${j.id}`}>
+                            <Button variant="outline" size="sm" className="h-7 px-3 text-xs">Review</Button>
+                          </Link>
+                          <Button variant="default" size="sm" className="h-7 px-3 text-xs" onClick={() => handleApproveJob(j.id)}>Approve</Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>
-        )}
-      </div>
 
-      {/* Recent Offers & Quick Action */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Offers */}
-        {hasAccess(['super_admin', 'operations_admin', 'finance_admin']) && (
-          <Card className="lg:col-span-2">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Recent Offers
+          {/* QUEUE 3: Support Tickets */}
+          <Card className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <CardHeader className="border-b border-gray-100 bg-gray-50/50 py-4 px-5 flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-gray-500" />
+                Active Support Tickets
               </CardTitle>
-              <Link to="/admin/offers">
-                <Button variant="outline" size="sm">View All</Button>
+              <Link to="/admin/support">
+                <Button variant="ghost" size="sm" className="h-8 text-xs text-gray-600 hover:text-gray-900">
+                  View All <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
               </Link>
             </CardHeader>
-            <CardContent>
-              {recentOffers.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No pending offers</p>
+            <CardContent className="p-0">
+              {queues.tickets.length === 0 ? (
+                <div className="p-8 text-center text-sm text-gray-500">No active support tickets.</div>
               ) : (
-                <div className="space-y-3">
-                  {recentOffers.map((offer) => (
-                    <div key={offer.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                      <div>
-                        <p className="font-medium">
-                          {offer.talents?.first_name} {offer.talents?.last_name} → {offer.clients?.company_name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">{offer.role_title}</p>
-                      </div>
-                      <Badge className={
-                        offer.status === "sent_to_admin"
-                          ? "bg-warning/10 text-warning"
-                          : "bg-primary/10 text-primary"
-                      }>
-                        {offer.status === "sent_to_admin" ? "Generate Contract" : "Pending"}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
+                <Table>
+                  <TableHeader className="bg-transparent">
+                    <TableRow className="hover:bg-transparent border-gray-100">
+                      <TableHead className="font-medium text-xs text-gray-500 py-3">Subject</TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 py-3">Priority</TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 py-3">Status</TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 py-3 text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {queues.tickets.map((ticket) => (
+                      <TableRow key={ticket.id} className="border-gray-100">
+                        <TableCell className="py-3 text-sm font-medium text-gray-900">{ticket.subject}</TableCell>
+                        <TableCell className="py-3 text-sm text-gray-600 capitalize">{ticket.priority}</TableCell>
+                        <TableCell className="py-3">{getStatusBadge(ticket.status || 'open')}</TableCell>
+                        <TableCell className="py-3 text-right">
+                          <Link to={`/admin/support/${ticket.id}`}>
+                            <Button variant="secondary" size="sm" className="h-7 px-3 text-xs">Resolve</Button>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>
-        )}
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {hasAccess(['super_admin', 'operations_admin', 'vetting_admin']) && (
-                <Link to="/admin/talents" className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors">
-                  <UserCheck className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">Vet Talents</p>
-                  </div>
+        </div>
+
+        {/* Right Action & Info Column (Right 1/3) */}
+        <div className="space-y-6">
+          
+          {/* Quick Actions */}
+          <Card className="rounded-xl border border-gray-200 shadow-sm">
+            <CardHeader className="py-4 px-5 pb-2">
+              <CardTitle className="text-sm font-semibold text-gray-900">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="px-5 pb-5">
+              <div className="flex flex-col gap-2">
+                <Button variant="outline" className="justify-start h-9 text-sm font-normal text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-none">
+                  <UserCheck className="mr-2 h-4 w-4 text-gray-400" />
+                  Add Talent
+                </Button>
+                <Link to="/admin/jobs/new">
+                  <Button variant="outline" className="justify-start w-full h-9 text-sm font-normal text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-none">
+                    <Briefcase className="mr-2 h-4 w-4 text-gray-400" />
+                    Post Job
+                  </Button>
                 </Link>
-              )}
-              {hasAccess(['super_admin', 'operations_admin']) && (
-                <Link to="/admin/jobs" className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors">
-                  <Briefcase className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">Manage Jobs</p>
+                <Button variant="outline" className="justify-start h-9 text-sm font-normal text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-none">
+                  <FileText className="mr-2 h-4 w-4 text-gray-400" />
+                  Create Contract
+                </Button>
+                <Button variant="outline" className="justify-start h-9 text-sm font-normal text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-none">
+                  <MessageSquare className="mr-2 h-4 w-4 text-gray-400" />
+                  Open Support
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Finance Snapshot */}
+          <Card className="rounded-xl border border-gray-200 shadow-sm bg-gray-900 text-white">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Wallet className="h-4 w-4 text-gray-400" />
+                <h3 className="text-sm font-medium text-gray-300">Finance Snapshot</h3>
+              </div>
+              <p className="text-xs text-gray-400 mb-1">Outstanding Invoices</p>
+              <div className="flex items-end gap-3 mb-6">
+                <p className="text-3xl font-semibold">${stats.invoiceTotal.toLocaleString()}</p>
+                <span className="text-sm font-medium text-warning mb-1">{stats.outstandingInvoices} Pending</span>
+              </div>
+              <Link to="/admin/invoices">
+                <Button variant="outline" size="sm" className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white shadow-none">
+                  Go to Finance <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Activity Feed */}
+          <Card className="rounded-xl border border-gray-200 shadow-sm">
+            <CardHeader className="py-4 px-5 border-b border-gray-100">
+              <CardTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                <Clock className="h-4 w-4 text-gray-500" />
+                Recent Activity
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-gray-100">
+                {recentActivity.length > 0 ? recentActivity.map((activity, i) => (
+                  <div key={i} className="p-4 flex gap-3 items-start hover:bg-gray-50 transition-colors">
+                    <div className="w-2 h-2 rounded-full bg-brand-primary mt-1.5 shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-gray-900">{activity.type}</p>
+                      <p className="text-xs text-gray-600 mt-0.5">{activity.description}</p>
+                      <p className="text-[10px] text-gray-400 mt-1">{new Date(activity.time).toLocaleString()}</p>
+                    </div>
                   </div>
-                </Link>
-              )}
-              {hasAccess(['super_admin', 'finance_admin']) && (
-                <Link to="/admin/contracts" className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">Contracts</p>
-                  </div>
-                </Link>
-              )}
-              {hasAccess(['super_admin', 'support_admin']) && (
-                <Link to="/admin/support" className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors">
-                  <MessageSquare className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">Support Tickets</p>
-                  </div>
-                </Link>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                )) : (
+                  <div className="p-6 text-center text-sm text-gray-500">No recent activity.</div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+        </div>
+
       </div>
     </div>
   );

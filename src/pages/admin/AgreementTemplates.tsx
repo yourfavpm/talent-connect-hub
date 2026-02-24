@@ -1,14 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from "@/components/ui/select";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetFooter,
+} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
     FileText,
     Plus,
@@ -17,9 +34,16 @@ import {
     Copy,
     Star,
     Eye,
-    Trash2,
+    Search,
+    Filter,
+    ExternalLink,
+    ChevronRight,
+    History,
     AlertCircle,
+    CheckCircle2,
+    XCircle
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface AgreementTemplate {
     id: string;
@@ -35,19 +59,40 @@ interface AgreementTemplate {
     created_by: string;
 }
 
+const SERVICE_MODELS = [
+    { value: 'direct_hire', label: 'Direct Hire' },
+    { value: 'trial_to_hire', label: 'Trial-to-Hire' },
+    { value: 'contract_talent', label: 'Contract Talent' }
+];
+
+const USER_TYPES = [
+    { value: 'client', label: 'Client' },
+    { value: 'talent', label: 'Talent' }
+];
+
+const TEMPLATE_VARIABLES = [
+    "talentName", "clientCompany", "jobTitle", "startDate", "talentRate", 
+    "clientRate", "expectedWeeklyHours", "billingFrequency", "compensationType",
+    "duration", "workingArrangement", "overtimeClause", "timeTrackingRequired",
+    "talentId", "placementFee", "billingDay", "paymentFrequency", "payday"
+];
+
 const AgreementTemplates = () => {
     const { toast } = useToast();
     const [templates, setTemplates] = useState<AgreementTemplate[]>([]);
     const [loading, setLoading] = useState(true);
+    
+    // Filters
+    const [searchQuery, setSearchQuery] = useState("");
     const [filterUserType, setFilterUserType] = useState<string>("all");
     const [filterServiceModel, setFilterServiceModel] = useState<string>("all");
     const [filterStatus, setFilterStatus] = useState<string>("active");
 
-    // Dialog states
-    const [createDialogOpen, setCreateDialogOpen] = useState(false);
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+    // Drawer states
+    const [editorOpen, setEditorOpen] = useState(false);
+    const [previewOpen, setPreviewOpen] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState<AgreementTemplate | null>(null);
+    const [isDuplicating, setIsDuplicating] = useState(false);
 
     // Form states
     const [formData, setFormData] = useState({
@@ -60,46 +105,43 @@ const AgreementTemplates = () => {
 
     useEffect(() => {
         fetchTemplates();
-    }, [filterUserType, filterServiceModel, filterStatus]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const fetchTemplates = async () => {
         try {
             setLoading(true);
-            let query = supabase
+            const { data, error } = await supabase
                 .from('agreement_templates')
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            if (filterUserType !== 'all') {
-                query = query.eq('user_type', filterUserType);
-            }
-            if (filterServiceModel !== 'all') {
-                query = query.eq('service_model', filterServiceModel);
-            }
-            if (filterStatus !== 'all') {
-                query = query.eq('status', filterStatus);
-            }
-
-            const { data, error } = await query;
-
             if (error) throw error;
             setTemplates(data || []);
-        } catch (error: any) {
-            toast({
-                title: "Error",
-                description: error.message,
-                variant: "destructive",
-            });
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : "An unknown error occurred";
+            toast({ title: "Error", description: message, variant: "destructive" });
         } finally {
             setLoading(false);
         }
     };
 
-    const handleCreate = async () => {
+    const resetForm = () => {
+        setFormData({
+            user_type: 'client',
+            service_model: 'trial_to_hire',
+            clause_name: '',
+            clause_body: '',
+            is_default: false,
+        });
+        setIsDuplicating(false);
+    };
+
+    const handleCreateOrDuplicate = async () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
 
-            // Get next version number
+            // Find max version for this combination
             const { data: existing } = await supabase
                 .from('agreement_templates')
                 .select('version_number')
@@ -118,20 +160,13 @@ const AgreementTemplates = () => {
 
             if (error) throw error;
 
-            toast({
-                title: "Success",
-                description: "Agreement template created successfully",
-            });
-
-            setCreateDialogOpen(false);
+            toast({ title: "Success", description: `Template ${isDuplicating ? 'duplicated' : 'created'} successfully` });
+            setEditorOpen(false);
             resetForm();
             fetchTemplates();
-        } catch (error: any) {
-            toast({
-                title: "Error",
-                description: error.message,
-                variant: "destructive",
-            });
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : "An unknown error occurred";
+            toast({ title: "Error", description: message, variant: "destructive" });
         }
     };
 
@@ -151,487 +186,514 @@ const AgreementTemplates = () => {
 
             if (error) throw error;
 
-            toast({
-                title: "Success",
-                description: "Agreement template updated successfully",
-            });
-
-            setEditDialogOpen(false);
+            toast({ title: "Success", description: "Agreement template updated successfully" });
+            setEditorOpen(false);
             setSelectedTemplate(null);
             resetForm();
             fetchTemplates();
-        } catch (error: any) {
-            toast({
-                title: "Error",
-                description: error.message,
-                variant: "destructive",
-            });
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : "An unknown error occurred";
+            toast({ title: "Error", description: message, variant: "destructive" });
         }
     };
 
     const handleSetAsDefault = async (template: AgreementTemplate) => {
+        const confirmMsg = `This will replace the current default for ${getServiceModelLabel(template.service_model)} ${getUserTypeLabel(template.user_type)} agreements. Continue?`;
+        if (!window.confirm(confirmMsg)) return;
+
         try {
+            // Supabase unique index idx_one_default_per_combination handles resetting others
             const { error } = await supabase
                 .from('agreement_templates')
                 .update({ is_default: true, updated_at: new Date().toISOString() })
                 .eq('id', template.id);
 
             if (error) throw error;
-
-            toast({
-                title: "Success",
-                description: "Template set as default",
-            });
-
+            toast({ title: "Success", description: "Template set as default" });
             fetchTemplates();
-        } catch (error: any) {
-            toast({
-                title: "Error",
-                description: error.message,
-                variant: "destructive",
-            });
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : "An unknown error occurred";
+            toast({ title: "Error", description: message, variant: "destructive" });
         }
     };
 
-    const handleArchive = async (template: AgreementTemplate) => {
+    const toggleStatus = async (template: AgreementTemplate) => {
+        const newStatus = template.status === 'active' ? 'archived' : 'active';
+        if (newStatus === 'archived' && template.is_default) {
+            toast({ title: "Action blocked", description: "Cannot deactivate a default template. Set another as default first.", variant: "destructive" });
+            return;
+        }
+
         try {
             const { error } = await supabase
                 .from('agreement_templates')
-                .update({ status: 'archived', updated_at: new Date().toISOString() })
+                .update({ status: newStatus, updated_at: new Date().toISOString() })
                 .eq('id', template.id);
 
             if (error) throw error;
-
-            toast({
-                title: "Success",
-                description: "Template archived",
-            });
-
+            toast({ title: "Success", description: `Template ${newStatus === 'active' ? 'activated' : 'deactivated'}` });
             fetchTemplates();
-        } catch (error: any) {
-            toast({
-                title: "Error",
-                description: error.message,
-                variant: "destructive",
-            });
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : "An unknown error occurred";
+            toast({ title: "Error", description: message, variant: "destructive" });
         }
     };
 
-    const handleDuplicate = async (template: AgreementTemplate) => {
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
+    const insertVariable = (variable: string) => {
+        const textarea = document.getElementById('clause-body-editor') as HTMLTextAreaElement;
+        if (!textarea) return;
 
-            // Get next version number
-            const { data: existing } = await supabase
-                .from('agreement_templates')
-                .select('version_number')
-                .eq('user_type', template.user_type)
-                .eq('service_model', template.service_model)
-                .order('version_number', { ascending: false })
-                .limit(1);
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = formData.clause_body;
+        const before = text.substring(0, start);
+        const after = text.substring(end);
+        
+        const newText = `${before}{{${variable}}}${after}`;
+        setFormData({ ...formData, clause_body: newText });
 
-            const nextVersion = existing && existing.length > 0 ? existing[0].version_number + 1 : 1;
-
-            const { error } = await supabase.from('agreement_templates').insert({
-                user_type: template.user_type,
-                service_model: template.service_model,
-                clause_name: `${template.clause_name} (Copy)`,
-                clause_body: template.clause_body,
-                version_number: nextVersion,
-                is_default: false,
-                created_by: user?.id,
-            });
-
-            if (error) throw error;
-
-            toast({
-                title: "Success",
-                description: "Template duplicated successfully",
-            });
-
-            fetchTemplates();
-        } catch (error: any) {
-            toast({
-                title: "Error",
-                description: error.message,
-                variant: "destructive",
-            });
-        }
+        // Set cursor position after insertion
+        setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(start + variable.length + 4, start + variable.length + 4);
+        }, 0);
     };
 
-    const resetForm = () => {
-        setFormData({
-            user_type: 'client',
-            service_model: 'trial_to_hire',
-            clause_name: '',
-            clause_body: '',
-            is_default: false,
+    const filteredTemplates = useMemo(() => {
+        return templates.filter(t => {
+            const matchesSearch = t.clause_name.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesUserType = filterUserType === 'all' || t.user_type === filterUserType;
+            const matchesServiceModel = filterServiceModel === 'all' || t.service_model === filterServiceModel;
+            const matchesStatus = filterStatus === 'all' || t.status === filterStatus;
+            return matchesSearch && matchesUserType && matchesServiceModel && matchesStatus;
         });
-    };
+    }, [templates, searchQuery, filterUserType, filterServiceModel, filterStatus]);
 
-    const openEditDialog = (template: AgreementTemplate) => {
-        setSelectedTemplate(template);
-        setFormData({
-            user_type: template.user_type,
-            service_model: template.service_model,
-            clause_name: template.clause_name,
-            clause_body: template.clause_body,
-            is_default: template.is_default,
+    const groupedTemplates = useMemo(() => {
+        const groups: Record<string, Record<string, AgreementTemplate[]>> = {};
+        
+        SERVICE_MODELS.forEach(sm => {
+            groups[sm.value] = {
+                client: filteredTemplates.filter(t => t.service_model === sm.value && t.user_type === 'client'),
+                talent: filteredTemplates.filter(t => t.service_model === sm.value && t.user_type === 'talent')
+            };
         });
-        setEditDialogOpen(true);
-    };
+        
+        return groups;
+    }, [filteredTemplates]);
 
     const getServiceModelLabel = (model: string) => {
-        const labels: Record<string, string> = {
-            direct_hire: 'Direct Hire',
-            trial_to_hire: 'Trial-to-Hire',
-            contract_talent: 'Contract Talent',
-        };
-        return labels[model] || model;
+        return SERVICE_MODELS.find(sm => sm.value === model)?.label || model;
     };
 
     const getUserTypeLabel = (type: string) => {
         return type.charAt(0).toUpperCase() + type.slice(1);
     };
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+    const AgreementRow = ({ template }: { template: AgreementTemplate }) => (
+        <div className="group flex items-center justify-between p-4 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors">
+            <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-900">{template.clause_name}</span>
+                    {template.is_default && (
+                        <Badge className="bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-50 px-1.5 py-0 text-[10px] uppercase tracking-wider font-bold">
+                            Default
+                        </Badge>
+                    )}
+                    {template.status === 'archived' && (
+                        <Badge variant="secondary" className="px-1.5 py-0 text-[10px] uppercase tracking-wider font-bold">
+                            Inactive
+                        </Badge>
+                    )}
+                </div>
+                <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <span className="flex items-center gap-1"><History className="h-3 w-3" /> v{template.version_number}</span>
+                    <span>Updated {new Date(template.updated_at).toLocaleDateString()}</span>
+                </div>
             </div>
-        );
-    }
+            
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 text-gray-400 hover:text-gray-900"
+                    onClick={() => {
+                        setSelectedTemplate(template);
+                        setPreviewOpen(true);
+                    }}
+                >
+                    <Eye className="h-4 w-4" />
+                </Button>
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 text-gray-400 hover:text-gray-900"
+                    onClick={() => {
+                        setSelectedTemplate(template);
+                        setFormData({
+                            user_type: template.user_type,
+                            service_model: template.service_model,
+                            clause_name: template.clause_name,
+                            clause_body: template.clause_body,
+                            is_default: template.is_default
+                        });
+                        setEditorOpen(true);
+                    }}
+                >
+                    <Edit className="h-4 w-4" />
+                </Button>
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 text-gray-400 hover:text-gray-900"
+                    onClick={() => {
+                        setIsDuplicating(true);
+                        setFormData({
+                            user_type: template.user_type,
+                            service_model: template.service_model,
+                            clause_name: `${template.clause_name} (Copy)`,
+                            clause_body: template.clause_body,
+                            is_default: false
+                        });
+                        setEditorOpen(true);
+                    }}
+                >
+                    <Copy className="h-4 w-4" />
+                </Button>
+                {!template.is_default && template.status === 'active' && (
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 text-gray-400 hover:text-amber-600"
+                        onClick={() => handleSetAsDefault(template)}
+                    >
+                        <Star className="h-4 w-4" />
+                    </Button>
+                )}
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className={`h-8 w-8 p-0 ${template.status === 'active' ? 'text-gray-400 hover:text-red-600' : 'text-gray-400 hover:text-emerald-600'}`}
+                    onClick={() => toggleStatus(template)}
+                >
+                    {template.status === 'active' ? <Archive className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                </Button>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="space-y-6 animate-fade-in">
+        <div className="max-w-7xl mx-auto pb-12 animate-fade-in space-y-8">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-foreground">Agreement Templates</h1>
-                    <p className="text-muted-foreground mt-1">
-                        Manage legal agreement clauses for contracts
-                    </p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Agreements</h1>
+                    <p className="text-sm text-gray-500">Manage legal contract templates by service type and user role.</p>
                 </div>
-                <Button onClick={() => setCreateDialogOpen(true)}>
+                <Button onClick={() => { resetForm(); setEditorOpen(true); }} className="bg-gray-900 text-white hover:bg-gray-800">
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Template
+                    Create Agreement
                 </Button>
             </div>
 
-            {/* Filters */}
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                            <Label>User Type</Label>
-                            <Select value={filterUserType} onValueChange={setFilterUserType}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Types</SelectItem>
-                                    <SelectItem value="client">Client</SelectItem>
-                                    <SelectItem value="talent">Talent</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Service Model</Label>
-                            <Select value={filterServiceModel} onValueChange={setFilterServiceModel}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Models</SelectItem>
-                                    <SelectItem value="direct_hire">Direct Hire</SelectItem>
-                                    <SelectItem value="trial_to_hire">Trial-to-Hire</SelectItem>
-                                    <SelectItem value="contract_talent">Contract Talent</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Status</Label>
-                            <Select value={filterStatus} onValueChange={setFilterStatus}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Statuses</SelectItem>
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="archived">Archived</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Templates Grid */}
-            <div className="grid gap-4">
-                {templates.length === 0 ? (
-                    <Card>
-                        <CardContent className="py-12 text-center">
-                            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                            <p className="text-muted-foreground">No templates found</p>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    templates.map((template) => (
-                        <Card key={template.id} className="hover:shadow-md transition-shadow">
-                            <CardContent className="p-6">
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <h3 className="text-lg font-semibold">{template.clause_name}</h3>
-                                            {template.is_default && (
-                                                <Badge className="bg-amber-100 text-amber-700">
-                                                    <Star className="h-3 w-3 mr-1" />
-                                                    Default
-                                                </Badge>
-                                            )}
-                                            <Badge variant={template.status === 'active' ? 'default' : 'secondary'}>
-                                                {template.status}
-                                            </Badge>
-                                        </div>
-                                        <div className="flex gap-4 text-sm text-muted-foreground">
-                                            <span>
-                                                <strong>Type:</strong> {getUserTypeLabel(template.user_type)}
-                                            </span>
-                                            <span>
-                                                <strong>Model:</strong> {getServiceModelLabel(template.service_model)}
-                                            </span>
-                                            <span>
-                                                <strong>Version:</strong> {template.version_number}
-                                            </span>
-                                            <span>
-                                                <strong>Updated:</strong> {new Date(template.updated_at).toLocaleDateString()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => {
-                                                setSelectedTemplate(template);
-                                                setPreviewDialogOpen(true);
-                                            }}
-                                        >
-                                            <Eye className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => openEditDialog(template)}
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
-                                        {!template.is_default && template.status === 'active' && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleSetAsDefault(template)}
-                                            >
-                                                <Star className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleDuplicate(template)}
-                                        >
-                                            <Copy className="h-4 w-4" />
-                                        </Button>
-                                        {template.status === 'active' && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleArchive(template)}
-                                            >
-                                                <Archive className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))
-                )}
+            {/* Filter Bar */}
+            <div className="flex flex-col md:flex-row items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="relative flex-1 w-full">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input 
+                        placeholder="Search by template name..." 
+                        className="pl-9 bg-gray-50/50 border-gray-200"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                    <Select value={filterUserType} onValueChange={setFilterUserType}>
+                        <SelectTrigger className="w-full md:w-[130px] bg-gray-50/50 border-gray-200">
+                            <SelectValue placeholder="User Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Types</SelectItem>
+                            <SelectItem value="client">Client</SelectItem>
+                            <SelectItem value="talent">Talent</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select value={filterServiceModel} onValueChange={setFilterServiceModel}>
+                        <SelectTrigger className="w-full md:w-[160px] bg-gray-50/50 border-gray-200">
+                            <SelectValue placeholder="Service Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Services</SelectItem>
+                            {SERVICE_MODELS.map(sm => (
+                                <SelectItem key={sm.value} value={sm.value}>{sm.label}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                        <SelectTrigger className="w-full md:w-[120px] bg-gray-50/50 border-gray-200">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="archived">Inactive</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
-            {/* Create Dialog */}
-            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Create Agreement Template</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>User Type</Label>
-                                <Select
-                                    value={formData.user_type}
-                                    onValueChange={(value: 'client' | 'talent') =>
-                                        setFormData({ ...formData, user_type: value })
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="client">Client</SelectItem>
-                                        <SelectItem value="talent">Talent</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Service Model</Label>
-                                <Select
-                                    value={formData.service_model}
-                                    onValueChange={(value: 'direct_hire' | 'trial_to_hire' | 'contract_talent') =>
-                                        setFormData({ ...formData, service_model: value })
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="direct_hire">Direct Hire</SelectItem>
-                                        <SelectItem value="trial_to_hire">Trial-to-Hire</SelectItem>
-                                        <SelectItem value="contract_talent">Contract Talent</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Template Name</Label>
-                            <Input
-                                value={formData.clause_name}
-                                onChange={(e) => setFormData({ ...formData, clause_name: e.target.value })}
-                                placeholder="e.g. Trial-to-Hire Client Agreement v2"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Agreement Content (HTML supported)</Label>
-                            <Textarea
-                                value={formData.clause_body}
-                                onChange={(e) => setFormData({ ...formData, clause_body: e.target.value })}
-                                rows={15}
-                                className="font-mono text-sm"
-                                placeholder="Enter agreement content with HTML formatting..."
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Available variables: {'{{talentName}}, {{clientCompany}}, {{jobTitle}}, {{clientRate}}, {{talentRate}}, etc.'}
-                            </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <input
-                                type="checkbox"
-                                id="is_default"
-                                checked={formData.is_default}
-                                onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
-                                className="rounded"
-                            />
-                            <Label htmlFor="is_default">Set as default template for this combination</Label>
-                        </div>
-                        {formData.is_default && (
-                            <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
-                                <div className="flex items-start gap-2">
-                                    <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5" />
-                                    <p className="text-sm text-amber-900">
-                                        This will replace any existing default template for {getUserTypeLabel(formData.user_type)} + {getServiceModelLabel(formData.service_model)}
-                                    </p>
+            {/* Grouped Accordion */}
+            <Accordion type="multiple" defaultValue={SERVICE_MODELS.map(sm => sm.value)} className="space-y-4">
+                {SERVICE_MODELS.map(sm => {
+                    const clientCount = groupedTemplates[sm.value].client.length;
+                    const talentCount = groupedTemplates[sm.value].talent.length;
+                    
+                    if (filterServiceModel !== 'all' && filterServiceModel !== sm.value) return null;
+                    if (clientCount === 0 && talentCount === 0 && searchQuery !== "") return null;
+
+                    return (
+                        <AccordionItem key={sm.value} value={sm.value} className="border border-gray-200 rounded-lg bg-white overflow-hidden px-0">
+                            <AccordionTrigger className="px-6 py-4 hover:bg-gray-50/50 transition-colors hover:no-underline border-b border-gray-100">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-gray-100 rounded-md">
+                                        <FileText className="h-5 w-5 text-gray-600" />
+                                    </div>
+                                    <div className="flex flex-col items-start gap-0.5">
+                                        <span className="text-base font-semibold text-gray-900">{sm.label}</span>
+                                        <span className="text-xs text-gray-500">
+                                            {clientCount} Client • {talentCount} Talent Templates
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                        <div className="flex gap-3 justify-end">
-                            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleCreate}>
-                                Create Template
-                            </Button>
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
+                            </AccordionTrigger>
+                            <AccordionContent className="p-0">
+                                {clientCount === 0 && talentCount === 0 ? (
+                                    <div className="p-12 text-center">
+                                        <p className="text-sm text-gray-400">No agreements created for this service type.</p>
+                                        <Button 
+                                            variant="link" 
+                                            className="mt-2 text-brand-primary h-auto p-0"
+                                            onClick={() => {
+                                                resetForm();
+                                                setFormData(prev => ({ ...prev, service_model: sm.value as any }));
+                                                setEditorOpen(true);
+                                            }}
+                                        >
+                                            Create Agreement
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col">
+                                        {/* Client Subsection */}
+                                        <div className="bg-gray-50/30 px-6 py-2 border-b border-gray-100">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Client Agreements</span>
+                                        </div>
+                                        {groupedTemplates[sm.value].client.length > 0 ? (
+                                            groupedTemplates[sm.value].client.map(t => <AgreementRow key={t.id} template={t} />)
+                                        ) : (
+                                            <div className="p-4 text-center border-b border-gray-100 italic text-xs text-gray-400">None</div>
+                                        )}
 
-            {/* Edit Dialog */}
-            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Edit Agreement Template</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                        <div className="p-3 bg-muted rounded-md">
-                            <p className="text-sm">
-                                <strong>Type:</strong> {getUserTypeLabel(formData.user_type)} •
-                                <strong> Model:</strong> {getServiceModelLabel(formData.service_model)} •
-                                <strong> Version:</strong> {selectedTemplate?.version_number}
-                            </p>
+                                        {/* Talent Subsection */}
+                                        <div className="bg-gray-50/30 px-6 py-2 border-b border-gray-100">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Talent Agreements</span>
+                                        </div>
+                                        {groupedTemplates[sm.value].talent.length > 0 ? (
+                                            groupedTemplates[sm.value].talent.map(t => <AgreementRow key={t.id} template={t} />)
+                                        ) : (
+                                            <div className="p-4 text-center italic text-xs text-gray-400">None</div>
+                                        )}
+                                    </div>
+                                )}
+                            </AccordionContent>
+                        </AccordionItem>
+                    );
+                })}
+            </Accordion>
+
+            {/* Editor Drawer */}
+            <Sheet open={editorOpen} onOpenChange={(open) => { if(!open) { setEditorOpen(false); resetForm(); setSelectedTemplate(null); } }}>
+                <SheetContent side="right" className="sm:max-w-[720px] w-full p-0 flex flex-col">
+                    <SheetHeader className="px-6 py-4 border-b border-gray-100">
+                        <div className="flex items-center justify-between">
+                            <SheetTitle className="text-xl font-semibold">
+                                {isDuplicating ? 'Duplicate Template' : selectedTemplate ? 'Edit Template' : 'Create Template'}
+                            </SheetTitle>
+                            <div className="flex items-center gap-2">
+                                {formData.is_default && (
+                                    <Badge className="bg-amber-50 text-amber-700 border-amber-100">Default</Badge>
+                                )}
+                                {selectedTemplate && !isDuplicating && (
+                                    <Badge variant="secondary">v{selectedTemplate.version_number}</Badge>
+                                )}
+                            </div>
                         </div>
+                    </SheetHeader>
+
+                    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
+                        {/* Meta Grid */}
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label className="text-xs font-semibold uppercase text-gray-400 tracking-wider">User Type</Label>
+                                <Select 
+                                    disabled={!!selectedTemplate && !isDuplicating}
+                                    value={formData.user_type} 
+                                    onValueChange={(v: 'client' | 'talent') => setFormData({ ...formData, user_type: v })}
+                                >
+                                    <SelectTrigger className="bg-gray-50/50">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {USER_TYPES.map(ut => <SelectItem key={ut.value} value={ut.value}>{ut.label}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-xs font-semibold uppercase text-gray-400 tracking-wider">Service Model</Label>
+                                <Select 
+                                    disabled={!!selectedTemplate && !isDuplicating}
+                                    value={formData.service_model} 
+                                    onValueChange={(v: 'direct_hire' | 'trial_to_hire' | 'contract_talent') => setFormData({ ...formData, service_model: v })}
+                                >
+                                    <SelectTrigger className="bg-gray-50/50">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {SERVICE_MODELS.map(sm => <SelectItem key={sm.value} value={sm.value}>{sm.label}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
-                            <Label>Template Name</Label>
-                            <Input
+                            <Label className="text-xs font-semibold uppercase text-gray-400 tracking-wider">Template Name</Label>
+                            <Input 
+                                placeholder="e.g. Direct Hire Client Agreement"
                                 value={formData.clause_name}
                                 onChange={(e) => setFormData({ ...formData, clause_name: e.target.value })}
+                                className="bg-gray-50/50"
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label>Agreement Content (HTML supported)</Label>
-                            <Textarea
-                                value={formData.clause_body}
-                                onChange={(e) => setFormData({ ...formData, clause_body: e.target.value })}
-                                rows={15}
-                                className="font-mono text-sm"
-                            />
-                        </div>
-                        <div className="flex items-center space-x-2">
+
+                        <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-0.5">
+                                <span className="text-sm font-medium text-gray-900">Set as default template</span>
+                                <span className="text-xs text-gray-500">Make this the primary template for new contracts</span>
+                            </div>
                             <input
                                 type="checkbox"
-                                id="edit_is_default"
                                 checked={formData.is_default}
                                 onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
-                                className="rounded"
+                                className="h-4 w-4 rounded border-gray-300 text-brand-primary"
                             />
-                            <Label htmlFor="edit_is_default">Set as default template</Label>
                         </div>
-                        <div className="flex gap-3 justify-end">
-                            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleUpdate}>
-                                Update Template
-                            </Button>
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
 
-            {/* Preview Dialog */}
-            <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Template Preview</DialogTitle>
-                    </DialogHeader>
+                        {/* Content Tabs */}
+                        <Tabs defaultValue="editor" className="w-full">
+                            <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1">
+                                <TabsTrigger value="editor">Editor</TabsTrigger>
+                                <TabsTrigger value="preview">Live Preview</TabsTrigger>
+                            </TabsList>
+                            
+                            <TabsContent value="editor" className="mt-4 space-y-4">
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between pb-1">
+                                        <Label className="text-xs font-semibold uppercase text-gray-400 tracking-wider">HTML Content</Label>
+                                        <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
+                                            <AlertCircle className="h-3 w-3" />
+                                            Variables must be wrapped in double curly braces
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Variable Panel */}
+                                    <div className="p-3 bg-gray-50 border border-gray-200 rounded-md space-y-2">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Available Variables</span>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {TEMPLATE_VARIABLES.map(v => (
+                                                <button 
+                                                    key={v}
+                                                    onClick={() => insertVariable(v)}
+                                                    className="px-2 py-1 bg-white border border-gray-200 rounded text-[10px] font-mono hover:border-gray-900 transition-colors"
+                                                >
+                                                    {v}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <Textarea 
+                                        id="clause-body-editor"
+                                        rows={20}
+                                        value={formData.clause_body}
+                                        onChange={(e) => setFormData({ ...formData, clause_body: e.target.value })}
+                                        className="font-mono text-xs leading-relaxed bg-gray-50/50 resize-none focus:bg-white transition-colors"
+                                        placeholder="<h2>Agreement Title</h2><p>Content goes here...</p>"
+                                    />
+                                </div>
+                            </TabsContent>
+                            
+                            <TabsContent value="preview" className="mt-4">
+                                <div className="p-6 bg-white border border-gray-200 rounded-lg min-h-[400px] prose prose-sm max-w-none prose-gray">
+                                    <div dangerouslySetInnerHTML={{ __html: formData.clause_body }} />
+                                </div>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
+
+                    <SheetFooter className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50">
+                        <Button variant="ghost" onClick={() => setEditorOpen(false)}>Cancel</Button>
+                        <Button 
+                            className="bg-gray-900 text-white hover:bg-gray-800"
+                            onClick={selectedTemplate && !isDuplicating ? handleUpdate : handleCreateOrDuplicate}
+                            disabled={!formData.clause_name || !formData.clause_body}
+                        >
+                            {isDuplicating ? 'Create Duplicate' : selectedTemplate ? 'Update Template' : 'Create Template'}
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
+
+            {/* Preview Drawer */}
+            <Sheet open={previewOpen} onOpenChange={setPreviewOpen}>
+                <SheetContent side="right" className="sm:max-w-[720px] w-full p-0 flex flex-col">
+                    <SheetHeader className="px-6 py-4 border-b border-gray-100">
+                        <div className="flex items-center justify-between">
+                            <SheetTitle className="text-xl font-semibold">Agreement Preview</SheetTitle>
+                            <Button variant="ghost" size="sm" onClick={() => setPreviewOpen(false)}>Close</Button>
+                        </div>
+                    </SheetHeader>
+                    
                     {selectedTemplate && (
-                        <div className="space-y-4">
-                            <div className="p-4 bg-muted rounded-md">
-                                <h3 className="font-semibold mb-2">{selectedTemplate.clause_name}</h3>
-                                <div className="flex gap-4 text-sm text-muted-foreground">
-                                    <span><strong>Type:</strong> {getUserTypeLabel(selectedTemplate.user_type)}</span>
-                                    <span><strong>Model:</strong> {getServiceModelLabel(selectedTemplate.service_model)}</span>
-                                    <span><strong>Version:</strong> {selectedTemplate.version_number}</span>
+                        <div className="flex-1 overflow-y-auto p-8 space-y-8">
+                            <div className="flex flex-col gap-4 p-4 bg-gray-50 border border-gray-100 rounded-lg">
+                                <h3 className="text-lg font-semibold text-gray-900">{selectedTemplate.clause_name}</h3>
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Service Model</span>
+                                        <span className="text-sm text-gray-700">{getServiceModelLabel(selectedTemplate.service_model)}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">User Type</span>
+                                        <span className="text-sm text-gray-700">{getUserTypeLabel(selectedTemplate.user_type)}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Version</span>
+                                        <span className="text-sm text-gray-700">v{selectedTemplate.version_number}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Last Updated</span>
+                                        <span className="text-sm text-gray-700">{new Date(selectedTemplate.updated_at).toLocaleDateString()}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div
-                                className="prose max-w-none p-6 bg-white rounded-lg border"
-                                dangerouslySetInnerHTML={{ __html: selectedTemplate.clause_body }}
-                            />
+
+                            <div className="prose prose-sm max-w-none prose-gray bg-white p-8 border border-gray-200 rounded-lg shadow-sm">
+                                <div dangerouslySetInnerHTML={{ __html: selectedTemplate.clause_body }} />
+                            </div>
                         </div>
                     )}
-                </DialogContent>
-            </Dialog>
+                </SheetContent>
+            </Sheet>
         </div>
     );
 };

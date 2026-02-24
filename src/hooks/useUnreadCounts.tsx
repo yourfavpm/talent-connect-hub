@@ -10,7 +10,8 @@ export const useUnreadCounts = () => {
         adminOffers: 0,
         clientContracts: 0,
         clientTimesheets: 0,
-        adminContracts: 0, // maybe admin needs to know about signed matches?
+        adminContracts: 0,
+        adminSupportTickets: 0,
     });
 
     useEffect(() => {
@@ -28,12 +29,19 @@ export const useUnreadCounts = () => {
                 // 2. Admin Specifics
                 let adminOffers = 0;
                 let adminContracts = 0;
+                let adminSupportTickets = 0;
                 if (userRole && ["super_admin", "operations_admin", "finance_admin"].includes(userRole)) {
                     const { count: offerCount } = await supabase
                         .from("offers")
                         .select("*", { count: "exact", head: true })
                         .eq("status", "sent_to_admin");
                     adminOffers = offerCount || 0;
+
+                    const { count: supportCount } = await supabase
+                        .from("support_tickets")
+                        .select("*", { count: "exact", head: true })
+                        .eq("unread_by_admin", true);
+                    adminSupportTickets = supportCount || 0;
                 }
 
                 // 3. Client Specifics
@@ -82,7 +90,8 @@ export const useUnreadCounts = () => {
                     adminOffers,
                     clientContracts,
                     clientTimesheets,
-                    adminContracts
+                    adminContracts,
+                    adminSupportTickets
                 });
 
             } catch (error) {

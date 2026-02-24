@@ -4,145 +4,118 @@
 
 @layer base {
   :root {
-    /* Taskive HR Solutions - Design Bible Colors */
-
-    /* Primary Brand Colors */
-    --taskive-navy: 222 47% 11%;
-    /* #0F172A - Deep Navy (Primary) */
-    --taskive-slate: 215 25% 27%;
-    /* #334155 - Slate 700 (Text) */
-
-    /* Accent Colors */
-    --taskive-blue: 221 83% 53%;
-    /* #2563EB - Muted Blue (Links/CTAs) */
+    /* TASKIVE CONNECT DESIGN TOKENS */
+    /* Core Brand */
+    --color-brand-primary: #1e40af;
+    --color-brand-secondary: #0f172a;
+    --color-brand-accent: #2563eb;
 
     /* Neutrals */
-    --off-white: 210 40% 98%;
-    /* #F8FAFC - Warm White (Background) */
-    --cool-gray: 214 32% 91%;
-    /* #E2E8F0 - Slate 200 (Borders) */
+    --gray-950: #020617;
+    --gray-900: #0f172a;
+    --gray-800: #1e293b;
+    --gray-700: #334155;
+    --gray-600: #475569;
+    --gray-500: #64748b;
+    --gray-400: #94a3b8;
+    --gray-300: #cbd5e1;
+    --gray-200: #e2e8f0;
+    --gray-100: #f1f5f9;
+    --gray-50: #f8fafc;
+    --white: #ffffff;
 
-    /* Missing Brand Colors */
-    --taskive-teal: 173 58% 39%;
-    /* #2A9D8F */
-    --taskive-amber: 43 96% 64%;
-    /* #E9C46A */
+    /* Status (Strict) */
+    --status-success: #16a34a;
+    --status-warning: #f59e0b;
+    --status-info: #2563eb;
+    --status-error: #dc2626;
 
-    /* Semantic Mappings - LIGHT THEME (Reverted) */
-    --background: var(--off-white);
-    --foreground: var(--taskive-navy);
+    /* Semantic Mappings for shadcn/ui (Light Mode) */
+    --background: var(--gray-50);
+    --foreground: var(--gray-900);
 
-    --card: 0 0% 100%;
-    --card-foreground: var(--taskive-navy);
+    --card: var(--white);
+    --card-foreground: var(--gray-900);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: var(--taskive-navy);
+    --popover: var(--white);
+    --popover-foreground: var(--gray-900);
 
-    --primary: var(--taskive-navy);
-    --primary-foreground: 0 0% 98%;
+    --primary: var(--color-brand-primary);
+    --primary-foreground: var(--white);
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --secondary: var(--gray-100);
+    --secondary-foreground: var(--gray-800);
 
-    --accent: var(--taskive-blue);
-    --accent-foreground: 0 0% 100%;
+    --muted: var(--gray-100);
+    --muted-foreground: var(--gray-500);
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: var(--color-brand-accent);
+    --accent-foreground: var(--white);
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: var(--taskive-navy);
+    --destructive: var(--status-error);
+    --destructive-foreground: var(--white);
 
-    /* Primary - Taskive Navy */
-    --primary: var(--taskive-navy);
-    --primary-foreground: 0 0% 100%;
+    --border: var(--gray-200);
+    --input: var(--gray-200);
+    --ring: var(--color-brand-primary);
 
-    /* Secondary - Light slate */
-    --secondary: 216 20% 96%;
-    --secondary-foreground: var(--taskive-navy);
+    --radius: 10px; /* Radius Md base */
 
-    /* Muted */
-    --muted: 216 20% 96%;
-    --muted-foreground: var(--taskive-slate);
+    /* Sidebar Variables */
+    --sidebar-background: var(--white);
+    --sidebar-foreground: var(--gray-900);
+    --sidebar-primary: var(--color-brand-primary);
+    --sidebar-primary-foreground: var(--white);
+    --sidebar-accent: #eff6ff; /* Active Nav Background */
+    --sidebar-accent-foreground: var(--color-brand-primary);
+    --sidebar-border: var(--gray-200);
+    --sidebar-ring: var(--color-brand-primary);
 
-    /* Accent - Trust Teal */
-    --accent: var(--taskive-teal);
-    --accent-foreground: 0 0% 100%;
-
-    /* Success - Trust Teal */
-    --success: var(--taskive-teal);
-    --success-foreground: 0 0% 100%;
-
-    /* Warning - Soft Amber */
-    --warning: var(--taskive-amber);
-    --warning-foreground: var(--taskive-navy);
-
-    /* Destructive */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: var(--cool-gray);
-    --input: var(--cool-gray);
-    --ring: var(--taskive-teal);
-
-    --radius: 0.625rem;
-    /* 10px - Design Bible specification */
-
-    /* Sidebar */
-    --sidebar-background: var(--taskive-navy);
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: var(--taskive-navy);
-    --sidebar-accent: var(--taskive-teal);
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: var(--taskive-slate);
-    --sidebar-ring: var(--taskive-teal);
-
-    /* Shadows - Soft, no heavy borders */
-    --shadow-sm: 0 1px 2px 0 hsl(var(--taskive-navy) / 0.04);
-    --shadow-md: 0 4px 8px -2px hsl(var(--taskive-navy) / 0.06), 0 2px 4px -2px hsl(var(--taskive-navy) / 0.04);
-    --shadow-lg: 0 12px 24px -4px hsl(var(--taskive-navy) / 0.08), 0 4px 8px -4px hsl(var(--taskive-navy) / 0.04);
-    --shadow-xl: 0 24px 48px -8px hsl(var(--taskive-navy) / 0.1), 0 8px 16px -8px hsl(var(--taskive-navy) / 0.05);
+    /* Shadow System */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.08);
   }
 
   .dark {
-    --background: 220 25% 8%;
-    --foreground: 210 40% 98%;
+    /* Semantic Mappings (Dark Mode - keeping neutral contrast) */
+    --background: var(--gray-950);
+    --foreground: var(--gray-50);
 
-    --card: 220 25% 10%;
-    --card-foreground: 210 40% 98%;
+    --card: var(--gray-900);
+    --card-foreground: var(--gray-50);
 
-    --popover: 220 25% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: var(--gray-900);
+    --popover-foreground: var(--gray-50);
 
-    --primary: var(--taskive-teal);
-    --primary-foreground: 0 0% 100%;
+    --primary: var(--color-brand-primary);
+    --primary-foreground: var(--white);
 
-    --secondary: 220 20% 18%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: var(--gray-800);
+    --secondary-foreground: var(--gray-100);
 
-    --muted: 220 20% 16%;
-    --muted-foreground: 215 15% 55%;
+    --muted: var(--gray-800);
+    --muted-foreground: var(--gray-400);
 
-    --accent: var(--taskive-teal);
-    --accent-foreground: 0 0% 100%;
+    --accent: var(--color-brand-accent);
+    --accent-foreground: var(--white);
 
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: var(--status-error);
+    --destructive-foreground: var(--white);
 
-    --border: 220 20% 18%;
-    --input: 220 20% 18%;
-    --ring: var(--taskive-teal);
+    --border: var(--gray-800);
+    --input: var(--gray-800);
+    --ring: var(--color-brand-primary);
 
-    --sidebar-background: 220 25% 6%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: var(--taskive-teal);
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 25% 14%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 220 20% 16%;
-    --sidebar-ring: var(--taskive-teal);
+    /* Sidebar Dark */
+    --sidebar-background: var(--gray-950);
+    --sidebar-foreground: var(--gray-50);
+    --sidebar-primary: var(--color-brand-primary);
+    --sidebar-primary-foreground: var(--white);
+    --sidebar-accent: var(--gray-800);
+    --sidebar-accent-foreground: var(--gray-100);
+    --sidebar-border: var(--gray-800);
+    --sidebar-ring: var(--color-brand-primary);
   }
 }
 
@@ -157,8 +130,12 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-feature-settings: 'cv11', 'ss01';
+    font-family:
+      "Inter",
+      system-ui,
+      -apple-system,
+      sans-serif;
+    font-feature-settings: "cv11", "ss01";
     /* Inter stylistic alternates */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -201,7 +178,6 @@
 }
 
 @layer components {
-
   /* Card styling - Soft shadow, no heavy borders */
   .taskive-card {
     @apply bg-card rounded-xl border border-border/50 shadow-sm transition-shadow duration-200;

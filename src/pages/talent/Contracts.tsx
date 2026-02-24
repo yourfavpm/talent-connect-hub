@@ -102,10 +102,9 @@ const ContractList = ({
                                     {new Date(contract.startDate).toLocaleDateString()}
                                 </p>
                             </div>
-                            <Button variant="outline" size="sm" onClick={() => onView(contract)}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                View
-                            </Button>
+                            <button className="text-sm font-medium text-brand-primary hover:text-brand-primary/80 flex items-center gap-1.5 transition-colors" onClick={() => onView(contract)}>
+                                View <ArrowRight className="h-4 w-4" />
+                            </button>
                         </div>
                     </div>
                 </div>

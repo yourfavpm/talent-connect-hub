@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,21 +11,64 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Receipt, CheckCircle, Clock, AlertTriangle, Download, FileText, Send, Search, DollarSign } from "lucide-react";
+import { 
+    Receipt, 
+    CheckCircle, 
+    Clock, 
+    AlertTriangle, 
+    Download, 
+    FileText, 
+    Send, 
+    Search, 
+    DollarSign,
+    Filter,
+    Plus,
+    MoreHorizontal,
+    ArrowUpRight,
+    Loader2,
+    Calendar,
+    ChevronRight,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
-} from "@/components/ui/dialog";
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+    SheetFooter,
+} from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { 
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 
 const AdminInvoices = () => {
-    const [invoices, setInvoices] = useState<any[]>([]);
+    const navigate = useNavigate();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [invoices, setInvoices] = useState<any[]>([]); 
     const [loading, setLoading] = useState(true);
-    const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState("all");
+    const [paymentFilter, setPaymentFilter] = useState("all");
+    
+    // Generation Drawer State
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [billingPeriod, setBillingPeriod] = useState("current_month");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [pendingTimesheets, setPendingTimesheets] = useState<any[]>([]);
+    const [selectedTimesheets, setSelectedTimesheets] = useState<string[]>([]);
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     useEffect(() => {
         fetchInvoices();
@@ -32,17 +76,17 @@ const AdminInvoices = () => {
 
     const fetchInvoices = async () => {
         try {
+            setLoading(true);
             const { data, error } = await supabase
                 .from("invoices")
                 .select(`
-          *,
-          clients (company_name),
-          contracts (
-            client_rate,
-            talent_rate,
-            talents (first_name, last_name)
-          )
-        `)
+                    *,
+                    clients (company_name),
+                    contracts (
+                        service_type,
+                        talents (first_name, last_name)
+                    )
+                `)
                 .order("due_date", { ascending: false });
 
             if (error) throw error;
@@ -54,274 +98,422 @@ const AdminInvoices = () => {
         }
     };
 
-    const handleMarkPaid = async () => {
-        if (!selectedInvoice) return;
-
-        try {
-            const { error } = await supabase
-                .from("invoices")
-                .update({
-                    status: "paid",
-                    paid_at: new Date().toISOString()
-                })
-                .eq("id", selectedInvoice.id);
-
-            if (error) throw error;
-
-            toast.success("Invoice marked as paid");
-            setSelectedInvoice(null);
-            fetchInvoices();
-        } catch (error: any) {
-            toast.error("Error updating invoice: " + error.message);
-        }
-    };
-
     const [stats, setStats] = useState({
-        totalRevenue: 0,
-        totalPayout: 0,
-        averageMargin: 0
+        draft: 0,
+        outstanding: 0,
+        paidThisPeriod: 0,
+        pendingPayout: 0
     });
 
     useEffect(() => {
         if (invoices.length > 0) {
             calculateStats();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [invoices]);
 
     const calculateStats = () => {
-        let revenue = 0;
-        let payout = 0;
+        const now = new Date();
+        const startOfCurMonth = startOfMonth(now);
+
+        let draftCount = 0;
+        let outstandingAmt = 0;
+        let paidAmt = 0;
+        let pendingPayoutAmt = 0;
 
         invoices.forEach(inv => {
-            const amount = inv.total_amount || 0;
-            revenue += amount;
+            if (inv.status === 'draft' || inv.status === 'pending') draftCount++;
+            if (inv.status !== 'paid' && inv.status !== 'cancelled') outstandingAmt += (inv.total_amount || 0);
+            
+            if (inv.status === 'paid' && inv.paid_at && new Date(inv.paid_at) >= startOfCurMonth) {
+                paidAmt += (inv.total_amount || 0);
+            }
 
-            // Estimate payout based on contract rates if available
-            const contract = inv.contracts;
-            if (contract && contract.client_rate && contract.talent_rate) {
-                const margin = (contract.client_rate - contract.talent_rate) / contract.client_rate;
-                const cost = amount * (1 - margin); // Or simply amount * (talent_rate / client_rate)
-                // Accurate way: amount is (hours * client_rate). Payout is (hours * talent_rate).
-                // So Payout = amount * (talent_rate / client_rate).
-                payout += amount * (contract.talent_rate / contract.client_rate);
-            } else {
-                // Fallback if no rates (e.g. fixed price without breakdown): assume 20% margin? 
-                // Or just count 0 payout? Let's assume 80% payout.
-                payout += amount * 0.8;
+            if (inv.status === 'paid' && inv.payment_status === 'paid') {
+                // If paid but payout not reconciled? 
+                // For simplified finance card, we show margin/payout readiness
+                pendingPayoutAmt += (inv.payout_amount || (inv.total_amount * 0.8));
             }
         });
 
         setStats({
-            totalRevenue: revenue,
-            totalPayout: payout,
-            averageMargin: revenue > 0 ? ((revenue - payout) / revenue) * 100 : 0
+            draft: draftCount,
+            outstanding: outstandingAmt,
+            paidThisPeriod: paidAmt,
+            pendingPayout: pendingPayoutAmt
         });
     };
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "paid": return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Paid</Badge>;
-            case "pending": return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>;
-            case "overdue": return <Badge variant="destructive">Overdue</Badge>;
-            default: return <Badge variant="outline">{status}</Badge>;
-        }
-    };
-
-    const handleGenerateInvoices = async () => {
+    const fetchPendingTimesheets = async () => {
         try {
-            setLoading(true);
-
-            // 1. Get all approved timesheets that are NOT invoiced
-            const { data: timesheets, error: tsError } = await supabase
+            setIsGenerating(true);
+            const { data, error } = await supabase
                 .from("timesheets")
                 .select(`
-                    id, 
-                    total_hours, 
+                    id,
+                    total_hours,
+                    week_start,
+                    week_end,
                     contract:contracts (
                         id,
-                        client_id,
+                        contract_number,
                         client_gross_rate,
-                        client_rate, 
-                        talent_rate,
-                        weekly_hours,
-                        contract_number
+                        client_id,
+                        clients:clients (company_name),
+                        talents (first_name, last_name)
                     )
                 `)
                 .eq("status", "approved")
                 .is("invoice_id", null);
 
-            if (tsError) throw tsError;
-
-            // Cast to any to handle new columns not yet in types
-            const pendingTimesheets = (timesheets || []) as any[];
-
-            if (pendingTimesheets.length === 0) {
-                toast.info("No approved timesheets found to invoice.");
-                setLoading(false);
-                return;
-            }
-
-            // 2. Group by Contract (or Client? Usually grouping by Contract for simplicity first)
-            // One invoice per timesheet for MVP to handle Overtime Logic easily? 
-            // Or group multiple timesheets into one invoice? 
-            // Let's do One Invoice Per Timesheet for maximum clarity on the "Overtime" line item.
-
-            let generatedCount = 0;
-
-            for (const ts of pendingTimesheets) {
-                const contract = ts.contract;
-                const clientRate = contract.client_gross_rate || contract.client_rate || 0;
-                const talentRate = contract.talent_rate || 0; // Net logic if needed for payout records later
-
-                // Overtime Logic
-                const weeklyThreshold = contract.weekly_hours || 40;
-                const regularHours = Math.min(ts.total_hours, weeklyThreshold);
-                const overtimeHours = Math.max(0, ts.total_hours - weeklyThreshold);
-
-                const regularAmount = regularHours * clientRate;
-                const overtimeAmount = overtimeHours * (clientRate * 1.5);
-                const totalAmount = regularAmount + overtimeAmount;
-
-                // Create Invoice
-                const { data: invoice, error: invError } = await supabase
-                    .from("invoices")
-                    .insert({
-                        client_id: contract.client_id,
-                        contract_id: contract.id,
-                        total_amount: totalAmount,
-                        status: 'pending',
-                        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                        metadata: {
-                            regular_hours: regularHours,
-                            overtime_hours: overtimeHours,
-                            regular_rate: clientRate,
-                            overtime_rate: clientRate * 1.5,
-                            timesheet_id: ts.id
-                        }
-                    } as any)
-                    .select()
-                    .single();
-
-                if (invError) {
-                    console.error("Failed to create invoice for TS", ts.id, invError);
-                    continue;
-                }
-
-                // Link TS to Invoice
-                await supabase
-                    .from("timesheets")
-                    .update({ invoice_id: invoice.id } as any)
-                    .eq("id", ts.id);
-
-                generatedCount++;
-            }
-
-            toast.success(`Generated ${generatedCount} invoices.`);
-            fetchInvoices();
-
+            if (error) throw error;
+            setPendingTimesheets(data || []);
+            setSelectedTimesheets((data || []).map(ts => ts.id));
         } catch (error: any) {
-            toast.error("Error generating invoices: " + error.message);
+            toast.error("Failed to fetch pending timesheets");
         } finally {
-            setLoading(false);
+            setIsGenerating(false);
         }
     };
 
+    const handleConfirmGeneration = async () => {
+        if (selectedTimesheets.length === 0) return;
+        
+        try {
+            setIsGenerating(true);
+            let count = 0;
+            
+            for (const tsId of selectedTimesheets) {
+                const ts = pendingTimesheets.find(t => t.id === tsId);
+                if (!ts) continue;
+
+                const contract = ts.contract;
+                const rate = contract.client_gross_rate || 0;
+                const amount = ts.total_hours * rate;
+                
+                // 1. Create Invoice
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const { data: inv, error: invErr } = await (supabase.from('invoices').insert({
+                    invoice_number: `INV-${Math.floor(Math.random() * 900000) + 100000}`,
+                    client_id: contract.client_id,
+                    contract_id: contract.id,
+                    billing_period_start: ts.week_start,
+                    billing_period_end: ts.week_end,
+                    total_hours: ts.total_hours,
+                    hourly_rate: rate,
+                    subtotal: amount,
+                    total_amount: amount,
+                    status: 'draft',
+                    due_date: format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd"),
+                    payout_amount: amount * 0.8, // simplified logic for demo
+                    margin_amount: amount * 0.2
+                } as any).select().single() as any);
+
+                if (invErr) throw invErr;
+
+                // 2. Link Timesheet
+                await supabase.from('timesheets').update({ invoice_id: inv.id } as any).eq('id', ts.id);
+                
+                // 3. Create Line Item
+                await supabase.from('invoice_line_items' as any).insert({
+                    invoice_id: inv.id,
+                    description: `Professional Services: ${format(new Date(ts.week_start), "MMM d")} - ${format(new Date(ts.week_end), "MMM d")}`,
+                    amount: amount,
+                    quantity: ts.total_hours,
+                    unit_price: rate,
+                    type: 'regular'
+                });
+
+                count++;
+            }
+
+            toast.success(`Generated ${count} draft invoices`);
+            setDrawerOpen(false);
+            fetchInvoices();
+        } catch (error: any) {
+            toast.error("Generation failed: " + error.message);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    const getStatusBadge = (status: string) => {
+        const base = "shadow-none border-0 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider";
+        switch (status) {
+            case "paid": return <Badge className={cn(base, "bg-emerald-50 text-emerald-700")}>Paid</Badge>;
+            case "draft": return <Badge className={cn(base, "bg-gray-100 text-gray-600")}>Draft</Badge>;
+            case "pending": return <Badge className={cn(base, "bg-blue-50 text-blue-700")}>Pending</Badge>;
+            case "overdue": return <Badge className={cn(base, "bg-red-50 text-red-700")}>Overdue</Badge>;
+            case "sent": return <Badge className={cn(base, "bg-blue-50 text-blue-700")}>Sent</Badge>;
+            default: return <Badge variant="outline" className={base}>{status}</Badge>;
+        }
+    };
+
+    const filteredInvoices = invoices.filter(inv => {
+        const matchesSearch = inv.invoice_number?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                             inv.clients?.company_name?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStatus = statusFilter === "all" || inv.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+
     return (
-        <div className="space-y-6 animate-fade-in">
-            <div className="flex justify-between items-center">
+        <div className="space-y-8 animate-fade-in bg-white p-6 -m-6 rounded-lg min-h-screen">
+            {/* Header */}
+            <div className="flex justify-between items-end border-b border-gray-100 pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold">Invoices & Payments</h1>
-                    <p className="text-muted-foreground">Manage client billing and talent payments</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-gray-900">Invoices</h1>
+                    <p className="text-sm text-gray-500 mt-1">Manage client billing and revenue cycle.</p>
                 </div>
-                <Button onClick={handleGenerateInvoices} disabled={loading}>
-                    <Send className="mr-2 h-4 w-4" />
-                    Generate Invoices
-                </Button>
+                <div className="flex gap-3">
+                    <Button variant="outline" size="sm" className="h-9 border-gray-200 text-gray-600 font-bold px-4">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export
+                    </Button>
+                    <Sheet open={drawerOpen} onOpenChange={(open) => {
+                        setDrawerOpen(open);
+                        if (open) fetchPendingTimesheets();
+                    }}>
+                        <SheetTrigger asChild>
+                            <Button className="h-9 bg-gray-900 hover:bg-gray-800 text-white font-bold px-4 shadow-sm border-0">
+                                <Plus className="h-4 w-4 mr-2" />
+                                Generate Invoices
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent className="sm:max-w-xl p-0 flex flex-col h-full border-l border-gray-100">
+                            <SheetHeader className="p-6 border-b border-gray-50 bg-gray-50/50">
+                                <SheetTitle className="text-xl font-bold">Generate Invoices</SheetTitle>
+                                <SheetDescription className="text-sm">Batch create invoices from approved timesheets.</SheetDescription>
+                            </SheetHeader>
+                            
+                            <div className="flex-1 overflow-y-auto p-6 space-y-8 text-gray-900">
+                                <div className="space-y-3">
+                                    <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Billing Period</Label>
+                                    <Select value={billingPeriod} onValueChange={setBillingPeriod}>
+                                        <SelectTrigger className="h-10 text-sm border-gray-200">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="current_month">Current Month ({format(new Date(), "MMMM")})</SelectItem>
+                                            <SelectItem value="last_month">Last Month ({format(subMonths(new Date(), 1), "MMMM")})</SelectItem>
+                                            <SelectItem value="custom">Custom Range</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Review Drafts ({selectedTimesheets.length})</Label>
+                                        <Button variant="ghost" size="sm" className="text-[11px] underline h-6 px-0 decoration-gray-300" 
+                                            onClick={() => setSelectedTimesheets(pendingTimesheets.map(t => t.id))}>Select All</Button>
+                                    </div>
+                                    
+                                    <div className="space-y-0.5 border border-gray-100 rounded-lg overflow-hidden shadow-sm">
+                                        {isGenerating ? (
+                                            <div className="p-8 flex flex-col items-center gap-3 text-gray-400">
+                                                <Loader2 className="h-5 w-5 animate-spin" />
+                                                <span className="text-[11px] font-bold uppercase tracking-tighter">Analyzing approvals...</span>
+                                            </div>
+                                        ) : pendingTimesheets.length === 0 ? (
+                                            <div className="p-8 text-center text-gray-400 text-xs italic">No approved timesheets pending.</div>
+                                        ) : pendingTimesheets.map((ts) => (
+                                            <div key={ts.id} className="p-4 bg-white hover:bg-gray-50/50 border-b border-gray-50 last:border-0 flex items-center justify-between transition-colors">
+                                                <div className="flex items-center gap-4">
+                                                    <Checkbox 
+                                                        checked={selectedTimesheets.includes(ts.id)}
+                                                        onCheckedChange={(checked) => {
+                                                            if (checked) setSelectedTimesheets(prev => [...prev, ts.id]);
+                                                            else setSelectedTimesheets(prev => prev.filter(id => id !== ts.id));
+                                                        }}
+                                                    />
+                                                    <div>
+                                                        <p className="text-[13px] font-bold text-gray-900">{ts.contract?.clients?.company_name}</p>
+                                                        <p className="text-[11px] text-gray-500 font-mono tracking-tighter uppercase">
+                                                            {ts.contract?.talents?.first_name} {ts.contract?.talents?.last_name} • {ts.total_hours}h • {ts.contract?.contract_number}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-[13px] font-bold text-gray-900">${(ts.total_hours * (ts.contract?.client_gross_rate || 0)).toLocaleString()}</p>
+                                                    <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-tighter">Approx. Invoice</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <SheetFooter className="p-6 border-t border-gray-100 bg-gray-50/50">
+                                <Button variant="outline" className="flex-1 h-11 border-gray-200 text-gray-600 font-bold" onClick={() => setDrawerOpen(false)}>Cancel</Button>
+                                <Button 
+                                    className="flex-1 h-11 bg-gray-900 hover:bg-gray-800 text-white font-bold" 
+                                    onClick={handleConfirmGeneration}
+                                    disabled={selectedTimesheets.length === 0 || isGenerating}
+                                >
+                                    {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Confirm & Generate ({selectedTimesheets.length})
+                                </Button>
+                            </SheetFooter>
+                        </SheetContent>
+                    </Sheet>
+                </div>
             </div>
 
-            {/* Financial Overview Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="p-6 rounded-xl border bg-card text-card-foreground shadow-sm">
-                    <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <h3 className="tracking-tight text-sm font-medium text-muted-foreground">Total Invoiced</h3>
-                        <Receipt className="h-4 w-4 text-muted-foreground" />
+            {/* Financial Overview - Stripe Style */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative group hover:border-gray-300 transition-all">
+                    <div className="flex justify-between items-start mb-2">
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Draft Invoices</span>
+                        <div className="p-1.5 rounded-lg bg-gray-50 text-gray-400 group-hover:bg-gray-100"><Receipt className="h-4 w-4" /></div>
                     </div>
-                    <div className="text-2xl font-bold">${stats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Gross Revenue from Clients</p>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold tracking-tight text-gray-900">{stats.draft}</span>
+                        <span className="text-xs text-gray-400 font-medium">unissued</span>
+                    </div>
                 </div>
-                <div className="p-6 rounded-xl border bg-card text-card-foreground shadow-sm">
-                    <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <h3 className="tracking-tight text-sm font-medium text-muted-foreground">Est. Payout</h3>
-                        <CheckCircle className="h-4 w-4 text-emerald-500" />
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative group hover:border-gray-300 transition-all">
+                    <div className="flex justify-between items-start mb-2">
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Outstanding</span>
+                        <div className="p-1.5 rounded-lg bg-orange-50 text-orange-400 group-hover:bg-orange-100"><Clock className="h-4 w-4" /></div>
                     </div>
-                    <div className="text-2xl font-bold">${stats.totalPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Estimated Talent Payments</p>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold tracking-tight text-gray-900">${stats.outstanding.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <span className="text-xs text-orange-400 font-bold">Awaiting</span>
+                    </div>
                 </div>
-                <div className="p-6 rounded-xl border bg-card text-card-foreground shadow-sm">
-                    <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <h3 className="tracking-tight text-sm font-medium text-muted-foreground">Net Margin</h3>
-                        <Clock className="h-4 w-4 text-blue-500" />
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative group hover:border-gray-300 transition-all">
+                    <div className="flex justify-between items-start mb-2">
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Paid (Period)</span>
+                        <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-400 group-hover:bg-emerald-100"><CheckCircle className="h-4 w-4" /></div>
                     </div>
-                    <div className="text-2xl font-bold text-blue-600">
-                        {stats.averageMargin.toFixed(1)}%
-                        <span className="text-base font-normal text-muted-foreground ml-2">
-                            (${(stats.totalRevenue - stats.totalPayout).toLocaleString(undefined, { maximumFractionDigits: 0 })})
-                        </span>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold tracking-tight text-gray-900">${stats.paidThisPeriod.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <span className="text-xs text-emerald-400 font-bold">Collected</span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">Average Profit Margin</p>
+                </div>
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative group hover:border-gray-300 transition-all">
+                    <div className="flex justify-between items-start mb-2">
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Est. Payouts</span>
+                        <div className="p-1.5 rounded-lg bg-blue-50 text-blue-400 group-hover:bg-blue-100"><DollarSign className="h-4 w-4" /></div>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold tracking-tight text-gray-900">${stats.pendingPayout.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <span className="text-xs text-blue-400 font-bold">Payable</span>
+                    </div>
                 </div>
             </div>
 
-            <div className="rounded-md border">
+            {/* Advanced Filters */}
+            <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+                <div className="flex flex-1 items-center gap-3 w-full md:w-auto">
+                    <div className="relative flex-1 md:max-w-sm">
+                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                        <Input 
+                            placeholder="Search ID or Client..." 
+                            className="pl-10 h-10 border-gray-200 bg-white shadow-sm focus:border-brand-primary" 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-40 h-10 border-gray-200 bg-white font-medium text-gray-600">
+                             <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Statuses</SelectItem>
+                            <SelectItem value="draft">Draft</SelectItem>
+                            <SelectItem value="sent">Sent</SelectItem>
+                            <SelectItem value="overdue">Overdue</SelectItem>
+                            <SelectItem value="paid">Paid</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" className="h-9 px-3 text-gray-500 font-bold text-xs uppercase tracking-tight">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Custom Range
+                    </Button>
+                    <Separator orientation="vertical" className="h-6" />
+                    <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400">
+                        <Filter className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+
+            {/* Data Table */}
+            <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
                 <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Invoice #</TableHead>
-                            <TableHead>Client</TableHead>
-                            <TableHead>Talent</TableHead>
-                            <TableHead>Amount</TableHead>
-                            <TableHead>Due Date</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                    <TableHeader className="bg-gray-50/30">
+                        <TableRow className="hover:bg-transparent border-gray-100">
+                            <TableHead className="w-[120px] text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-6">ID</TableHead>
+                            <TableHead className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Client</TableHead>
+                            <TableHead className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Type</TableHead>
+                            <TableHead className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Amount</TableHead>
+                            <TableHead className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Status</TableHead>
+                            <TableHead className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Due Date</TableHead>
+                            <TableHead className="w-[50px] pr-6"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center h-24">Loading...</TableCell>
+                                <TableCell colSpan={7} className="h-64 text-center">
+                                    <div className="flex flex-col items-center gap-3 text-gray-300">
+                                        <Loader2 className="h-6 w-6 animate-spin text-gray-200" />
+                                        <span className="text-[10px] font-bold uppercase tracking-widest">Retrieving Ledger...</span>
+                                    </div>
+                                </TableCell>
                             </TableRow>
-                        ) : invoices.length === 0 ? (
+                        ) : filteredInvoices.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center h-24">No invoices found</TableCell>
+                                <TableCell colSpan={7} className="h-64 text-center">
+                                    <div className="flex flex-col items-center gap-2 text-gray-400">
+                                        <Receipt className="h-8 w-8 text-gray-200" />
+                                        <span className="text-sm font-medium">No records found matching criteria.</span>
+                                    </div>
+                                </TableCell>
                             </TableRow>
                         ) : (
-                            invoices.map((inv) => (
-                                <TableRow key={inv.id}>
-                                    <TableCell className="font-medium">
-                                        <div className="flex items-center gap-2">
-                                            <Receipt className="h-4 w-4 text-muted-foreground" />
-                                            {inv.invoice_number}
+                            filteredInvoices.map((inv) => (
+                                <TableRow 
+                                    key={inv.id} 
+                                    className="group cursor-pointer hover:bg-gray-50/50 transition-colors border-gray-50 last:border-0"
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    onClick={() => navigate(`/admin/invoices/${inv.id}`)}
+                                >
+                                    <TableCell className="pl-6">
+                                        <span className="font-mono text-[11px] font-bold text-gray-400 bg-gray-50 border border-gray-100 px-1.5 py-0.5 rounded group-hover:border-gray-200 group-hover:text-gray-500 transition-colors">
+                                            {inv.invoice_number || `#${inv.id.slice(0,8)}`}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col">
+                                            <span className="text-[13px] font-bold text-gray-900 tracking-tight">{inv.clients?.company_name}</span>
+                                            <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tighter">
+                                                {inv.contracts?.talents?.first_name} {inv.contracts?.talents?.last_name?.[0]}.
+                                            </span>
                                         </div>
                                     </TableCell>
-                                    <TableCell>{inv.clients?.company_name || "Unknown"}</TableCell>
                                     <TableCell>
-                                        {inv.contracts?.talents?.first_name} {inv.contracts?.talents?.last_name}
+                                        <Badge variant="outline" className="text-[10px] px-2 py-0 h-5 border-gray-100 text-gray-500 bg-gray-50/30 shadow-none font-mono capitalize">
+                                            {inv.contracts?.service_type || "N/A"}
+                                        </Badge>
                                     </TableCell>
-                                    <TableCell>${inv.total_amount.toLocaleString()}</TableCell>
-                                    <TableCell>{new Date(inv.due_date).toLocaleDateString()}</TableCell>
-                                    <TableCell>{getStatusBadge(inv.status)}</TableCell>
                                     <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            {/* Mock Download */}
-                                            <Button variant="ghost" size="icon">
-                                                <Download className="h-4 w-4" />
-                                            </Button>
-                                            {inv.status !== 'paid' && (
-                                                <Button size="sm" variant="outline" onClick={() => setSelectedInvoice(inv)}>
-                                                    Action
-                                                </Button>
+                                        <span className="text-[13px] font-bold text-gray-900 font-mono">${(inv.total_amount || 0).toLocaleString()}</span>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        {getStatusBadge(inv.status)}
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col">
+                                            <span className="text-[12px] font-medium text-gray-600">{format(new Date(inv.due_date), "MMM d, yyyy")}</span>
+                                            {new Date(inv.due_date) < new Date() && inv.status !== 'paid' && (
+                                                <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter leading-none mt-0.5">Overdue</span>
                                             )}
                                         </div>
+                                    </TableCell>
+                                    <TableCell className="pr-6 text-right">
+                                        <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-gray-900 transition-colors inline-block" />
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -329,25 +521,6 @@ const AdminInvoices = () => {
                     </TableBody>
                 </Table>
             </div>
-
-            <Dialog open={!!selectedInvoice} onOpenChange={(open) => !open && setSelectedInvoice(null)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Update Invoice Status</DialogTitle>
-                        <DialogDescription>
-                            Mark invoice {selectedInvoice?.invoice_number} as paid? This will confirm payment receipt.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <p className="text-sm">Amount: <span className="font-bold">${selectedInvoice?.total_amount}</span></p>
-                        <p className="text-sm">Client: {selectedInvoice?.clients?.company_name}</p>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setSelectedInvoice(null)}>Cancel</Button>
-                        <Button onClick={handleMarkPaid}>Confirm Payment</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 };
