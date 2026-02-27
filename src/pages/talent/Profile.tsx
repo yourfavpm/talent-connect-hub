@@ -125,8 +125,9 @@ const TalentProfile = () => {
 
   const profileStatus: string = talent.profile_change_status || "clean";
   const vettingStatus: string = talent.vetting_status || "unvetted";
+  const onboardingStatus: string = talent.onboarding_status || "not_started";
   const changedSections: string[] = talent.changed_sections || [];
-  const isSubmitted = profileStatus === "submitted";
+  const isSubmitted = onboardingStatus === "submitted" || talent.profile_change_status === "submitted";
 
   // Parse draft_profile for extended fields
   const extendedData = useMemo(() => {
@@ -165,7 +166,7 @@ const TalentProfile = () => {
   const [newFunction, setNewFunction] = useState("");
 
   const startEditing = (section: SectionKey) => {
-    if (isSubmitted) {
+    if (isSubmitted || onboardingStatus === 'submitted') {
       toast.error("Profile is currently under review. Edits are locked.");
       return;
     }

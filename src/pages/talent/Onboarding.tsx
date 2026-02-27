@@ -346,7 +346,16 @@ const TalentOnboarding = () => {
     setLoading(true);
     try {
       if (talentId) {
-        await supabase.from("talents" as any).update({ vetting_status: "in_review" as any, onboarding_status: "submitted", current_step: STEPS.length } as any).eq("id", talentId);
+        await supabase
+          .from("talents")
+          .update({ 
+            vetting_status: "in_review", 
+            onboarding_status: "submitted", 
+            onboarding_completed: true,
+            current_step: STEPS.length 
+          } as any)
+          .eq("id", talentId);
+        
         localStorage.removeItem(`onboarding_step_${user?.id}`);
         const requestedSteps = vettingSteps.filter(s => s.status === 'changes_requested');
         for (const s of requestedSteps) {

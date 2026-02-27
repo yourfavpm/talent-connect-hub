@@ -34,7 +34,8 @@ interface TalentData {
   primary_role: string;
   vetting_status: string;
   onboarding_completed: boolean;
-  onboarding_step: number;
+  onboarding_status: string;
+  current_step: number;
 }
 
 interface DashboardStats {
@@ -82,7 +83,8 @@ const TalentDashboard = () => {
             last_name: lastName,
             email: user.email || "",
             onboarding_completed: false,
-            onboarding_step: 1,
+            onboarding_status: "not_started",
+            current_step: 1,
           })
           .select()
           .single();
@@ -98,7 +100,8 @@ const TalentDashboard = () => {
                 last_name: lastName,
                 email: user.email || "",
                 onboarding_completed: false,
-                onboarding_step: 1,
+                onboarding_status: "not_started",
+                current_step: 1,
               })
               .select()
               .single();
@@ -138,7 +141,11 @@ const TalentDashboard = () => {
       ]);
  
       return {
-        talent: talentData as TalentData,
+        talent: {
+          ...talentData,
+          onboarding_status: talentData.onboarding_status || "not_started",
+          current_step: talentData.current_step || 1
+        } as TalentData,
         stats: {
           applications: applicationsRes.count || 0,
           activeAssignments: contractsRes.count || 0,
@@ -232,7 +239,7 @@ const TalentDashboard = () => {
           });
           return null;
         })()}
-        {talent && !talent.onboarding_completed && !hideBanner && (
+        {talent && !talent.onboarding_completed && talent.onboarding_status !== 'submitted' && !hideBanner && (
           <div className="bg-[#EFF6FF] border border-gray-200 rounded-[12px] px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-4 animate-fade-in transition-all relative">
             <button 
               onClick={() => {
@@ -251,7 +258,7 @@ const TalentDashboard = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
                   <h3 className="text-sm font-medium text-gray-900">Complete your professional profile</h3>
                   <Badge variant="outline" className="w-fit text-[10px] uppercase font-semibold text-blue-700 border-blue-200 bg-blue-50/50">
-                    Step {Math.min(talent.onboarding_step || 1, 8)} of 8
+                    Step {Math.min(talent.current_step || 1, 8)} of 8
                   </Badge>
                 </div>
                 <p className="text-sm text-gray-600">Finish setting up your profile to get vetted and matched with opportunities.</p>
