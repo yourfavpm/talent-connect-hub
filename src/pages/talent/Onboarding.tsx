@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,22 +22,30 @@ import {
   Loader2,
   UploadCloud,
   MessageSquare,
-  Globe
+  Save,
+  Cloud,
+  LogOut,
+  Menu,
+  X,
 } from "lucide-react";
 import clsx from "clsx";
 import { RoleSelector } from "@/components/talent/onboarding/RoleSelector";
 import { TimezoneSelector } from "@/components/talent/onboarding/TimezoneSelector";
 
+// ── Constants ──────────────────────────────────────────────────────────────────
+
 const STEPS = [
-  { id: 1, title: "Basic Information" },
-  { id: 2, title: "Professional Details" },
-  { id: 3, title: "Work History" },
-  { id: 4, title: "Documents" },
-  { id: 5, title: "Education" },
-  { id: 6, title: "Certifications" },
-  { id: 7, title: "References" },
-  { id: 8, title: "Review & Submit" },
+  { id: 1, title: "Basic Information",    key: "basic_info" },
+  { id: 2, title: "Professional Details", key: "professional_details" },
+  { id: 3, title: "Work History",         key: "work_history" },
+  { id: 4, title: "Documents",            key: "documents" },
+  { id: 5, title: "Education",            key: "education" },
+  { id: 6, title: "Certifications",       key: "certifications" },
+  { id: 7, title: "References",           key: "references" },
+  { id: 8, title: "Review & Submit",      key: "review" },
 ];
+
+type SaveStatus = "idle" | "saving" | "saved" | "unsaved";
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 
@@ -47,7 +55,11 @@ const TalentOnboarding = () => {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [savingDraft, setSavingDraft] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [talentId, setTalentId] = useState<string | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -71,27 +83,30 @@ const TalentOnboarding = () => {
   const [workHistory, setWorkHistory] = useState([
     { id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false },
   ]);
-
   const [education, setEducation] = useState([
     { id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false },
   ]);
-
   const [certifications, setCertifications] = useState([
     { id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" },
   ]);
-
   const [references, setReferences] = useState([
     { id: Date.now().toString(), name: "", company: "", email: "", phone: "" },
   ]);
   const [vettingSteps, setVettingSteps] = useState<any[]>([]);
   const [changeRequests, setChangeRequests] = useState<any[]>([]);
-  const [talentId, setTalentId] = useState<string | null>(null);
+  const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
+
+  // ── Load from DB + localStorage ───────────────────────────────────────────
 
   useEffect(() => {
     let isMounted = true;
     const loadProfileData = async () => {
       if (!user) return;
-      
+
+      // Rehydrate step from localStorage first (fast)
+      const localStep = localStorage.getItem(`onboarding_step_${user.id}`);
+      if (localStep) setCurrentStep(parseInt(localStep, 10));
+
       try {
         const { data: talent } = await supabase
           .from("talents")
@@ -118,8 +133,16 @@ const TalentOnboarding = () => {
             cvUrl: talent.cv_url || "",
             proofOfAddressUrl: talent.proof_of_address_url || "",
           }));
-
           setTalentId(talent.id);
+
+          // Restore step from DB (authoritative)
+          const dbStep = (talent as any).current_step;
+          if (dbStep && dbStep > 1) setCurrentStep(Math.min(dbStep, STEPS.length));
+
+          const onbStatus = (talent as any).onboarding_status;
+          if (onbStatus === "submitted" || onbStatus === "under_review") {
+            setIsSubmitted(true);
+          }
 
           const [workRes, eduRes, certRes, refRes, vettingRes, requestsRes] = await Promise.all([
             supabase.from("talent_work_history").select("*").eq("talent_id", talent.id),
@@ -130,54 +153,14 @@ const TalentOnboarding = () => {
             supabase.from("step_change_requests" as any).select("*").eq("talent_id", talent.id).is("resolved_at", null)
           ]);
 
-          if (workRes.data?.length) {
-            setWorkHistory(workRes.data.map(w => ({
-              id: w.id,
-              companyName: w.company_name,
-              roleTitle: w.role_title,
-              roleDescription: w.role_description || "",
-              startDate: w.start_date || "",
-              endDate: w.end_date || "",
-              isCurrent: w.is_current
-            })));
-          }
-          if (eduRes.data?.length) {
-            setEducation(eduRes.data.map(e => ({
-              id: e.id,
-              institutionName: e.institution_name,
-              degree: e.education_level || "",
-              startYear: e.start_year?.toString() || "",
-              endYear: e.end_year?.toString() || "",
-              isCurrent: e.is_current
-            })));
-          }
-          if (certRes.data?.length) {
-            setCertifications(certRes.data.map(c => ({
-              id: c.id,
-              certificationName: c.certification_name,
-              issuer: c.issuing_organization || "",
-              yearObtained: c.year_obtained?.toString() || "",
-              fileUrl: c.credential_url || ""
-            })));
-          }
-          if (refRes.data?.length) {
-            setReferences(refRes.data.map(r => ({
-              id: r.id,
-              name: r.reference_name,
-              company: r.relationship || "",
-              email: r.email,
-              phone: r.phone || ""
-            })));
-          }
+          if (workRes.data?.length) setWorkHistory(workRes.data.map(w => ({ id: w.id, companyName: w.company_name, roleTitle: w.role_title, roleDescription: w.role_description || "", startDate: w.start_date || "", endDate: w.end_date || "", isCurrent: w.is_current })));
+          if (eduRes.data?.length) setEducation(eduRes.data.map(e => ({ id: e.id, institutionName: e.institution_name, degree: e.education_level || "", startYear: e.start_year?.toString() || "", endYear: e.end_year?.toString() || "", isCurrent: e.is_current })));
+          if (certRes.data?.length) setCertifications(certRes.data.map(c => ({ id: c.id, certificationName: c.certification_name, issuer: c.issuing_organization || "", yearObtained: c.year_obtained?.toString() || "", fileUrl: c.credential_url || "" })));
+          if (refRes.data?.length) setReferences(refRes.data.map(r => ({ id: r.id, name: r.reference_name, company: r.relationship || "", email: r.email, phone: r.phone || "" })));
           setVettingSteps(vettingRes.data || []);
           setChangeRequests(requestsRes.data || []);
         } else if (isMounted) {
-          setFormData(prev => ({
-            ...prev,
-            email: user.email || "",
-            firstName: user.user_metadata?.first_name || "",
-            lastName: user.user_metadata?.last_name || "",
-          }));
+          setFormData(prev => ({ ...prev, email: user.email || "", firstName: user.user_metadata?.first_name || "", lastName: user.user_metadata?.last_name || "" }));
         }
       } catch (error) {
         console.error("Error loading profile data:", error);
@@ -188,29 +171,59 @@ const TalentOnboarding = () => {
     return () => { isMounted = false; };
   }, [user]);
 
-  const handleInputChange = (field: string, value: string | string[]) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  // ── Auto-save Engine ──────────────────────────────────────────────────────
 
-  const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
+  const performAutosave = useCallback(async (data: typeof formData) => {
+    if (!user || !talentId) return;
+    setSaveStatus("saving");
+    try {
+      await supabase.from("talents").update({
+        phone: data.phone,
+        country: data.country,
+        timezone: data.timezone,
+        primary_role: data.primaryRole,
+        secondary_skills: data.secondarySkills,
+        years_of_experience: data.yearsOfExperience ? Number(data.yearsOfExperience) : null,
+        availability: data.availability,
+        tools_familiar_with: data.toolsFamiliarWith,
+        languages_spoken: data.languagesSpoken,
+        portfolio_url: data.portfolioUrl,
+      } as any).eq("id", talentId);
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    } catch {
+      setSaveStatus("unsaved");
+    }
+  }, [user, talentId]);
+
+  const handleInputChange = useCallback((field: string, value: string | string[]) => {
+    setFormData(prev => {
+      const next = { ...prev, [field]: value };
+      setSaveStatus("unsaved");
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => performAutosave(next), 1000);
+      return next;
+    });
+  }, [performAutosave]);
+
+  const persistStep = useCallback(async (step: number) => {
+    if (!user || !talentId) return;
+    localStorage.setItem(`onboarding_step_${user.id}`, String(step));
+    await supabase.from("talents").update({ current_step: step } as any).eq("id", talentId);
+  }, [user, talentId]);
+
+  // ── File Upload ───────────────────────────────────────────────────────────
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, field: string) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
-    
     setUploadingFields(prev => ({ ...prev, [field]: true }));
-    
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${user.id}/${field}/${fileName}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('talent_documents')
-        .upload(filePath, file);
-        
+      const { error: uploadError } = await supabase.storage.from('talent_documents').upload(filePath, file);
       if (uploadError) throw uploadError;
-      
       handleInputChange(field, filePath);
       toast({ title: "Upload successful", description: "File uploaded successfully." });
     } catch (err: Error | unknown) {
@@ -220,17 +233,7 @@ const TalentOnboarding = () => {
     }
   };
 
-  const autoSaveDraft = async () => {
-    if (!user) return;
-    setSavingDraft(true);
-    try {
-      // Background save logic here if desired.
-      // E.g., upsert to a 'talent_drafts' table or directly to the 'talents' table if part of onboarding.
-      await new Promise(r => setTimeout(r, 500)); 
-    } finally {
-      setSavingDraft(false);
-    }
-  };
+  // ── Validation ────────────────────────────────────────────────────────────
 
   const validateStep = (step: number) => {
     const missing: string[] = [];
@@ -245,29 +248,33 @@ const TalentOnboarding = () => {
       const validRefs = references.filter(r => r.name.trim() && r.email.trim());
       if (validRefs.length === 0) missing.push("At least one valid reference (Name and Email)");
     }
-    
     if (missing.length > 0) {
-      toast({
-        title: "Required Fields Missing",
-        description: `Please fill out: ${missing.join(", ")}`,
-        variant: "destructive"
-      });
+      toast({ title: "Required Fields Missing", description: `Please fill out: ${missing.join(", ")}`, variant: "destructive" });
       return false;
     }
     return true;
   };
 
-  const nextStep = () => {
-    if (validateStep(currentStep)) {
-      autoSaveDraft();
-      setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
-      window.scrollTo(0, 0);
-    }
+  const nextStep = async () => {
+    if (!validateStep(currentStep)) return;
+    await performAutosave(formData);
+    const next = Math.min(currentStep + 1, STEPS.length);
+    setCurrentStep(next);
+    await persistStep(next);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const prevStep = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
-    window.scrollTo(0, 0);
+  const prevStep = async () => {
+    await performAutosave(formData);
+    const prev = Math.max(currentStep - 1, 1);
+    setCurrentStep(prev);
+    await persistStep(prev);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleSaveAndExit = async () => {
+    await performAutosave(formData);
+    navigate("/talent/dashboard");
   };
 
   const handleSubmit = async () => {
@@ -275,29 +282,15 @@ const TalentOnboarding = () => {
     setLoading(true);
     try {
       if (talentId) {
-        // Update vetting status back to in_review
-        const { error: updateError } = await supabase
-          .from("talents" as any)
-          .update({ vetting_status: "in_review" as any } as any)
-          .eq("id", talentId);
-        
-        if (updateError) throw updateError;
-
-        // Mark requested steps as in_review
+        await supabase.from("talents" as any).update({ vetting_status: "in_review" as any, onboarding_status: "submitted", current_step: STEPS.length } as any).eq("id", talentId);
+        localStorage.removeItem(`onboarding_step_${user?.id}`);
         const requestedSteps = vettingSteps.filter(s => s.status === 'changes_requested');
         for (const s of requestedSteps) {
-          await supabase
-            .from("talent_profile_steps" as any)
-            .update({ status: "in_review" as any } as any)
-            .eq("id", s.id);
+          await supabase.from("talent_profile_steps" as any).update({ status: "in_review" as any } as any).eq("id", s.id);
         }
       }
-
-      toast({
-        title: "Profile Submitted",
-        description: "Your profile is now pending review by our team.",
-      });
-      navigate("/talent/dashboard");
+      setIsSubmitted(true);
+      toast({ title: "Profile Submitted", description: "Your profile is now pending review by our team." });
     } catch (error: Error | unknown) {
       toast({ title: "Submission Failed", description: error instanceof Error ? error.message : "An unknown error occurred", variant: "destructive" });
     } finally {
@@ -305,34 +298,24 @@ const TalentOnboarding = () => {
     }
   };
 
+  // ── Feedback Banner ───────────────────────────────────────────────────────
+
   const renderFeedback = (stepKey: string) => {
     const step = vettingSteps.find(s => s.step_key === stepKey);
     const requests = changeRequests.filter(r => r.step_key === stepKey);
-    
     if (!step || step.status !== 'changes_requested') return null;
-
     return (
-      <div className="mb-6 p-4 rounded-xl bg-orange-50 border border-orange-100 space-y-3 animate-in fade-in slide-in-from-top-4 duration-500">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center">
-              <AlertCircle className="h-3.5 w-3.5 text-orange-600" />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-orange-700">Changes Required</span>
-          </div>
-          <Badge variant="outline" className="text-[9px] font-black uppercase border-orange-200 text-orange-600 bg-white">
-            Action Needed
-          </Badge>
+      <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-3">
+        <div className="flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <span className="text-xs font-bold uppercase tracking-widest text-amber-700">Changes Required by Vetting Team</span>
         </div>
-        
         {requests.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-2 pl-6">
             {requests.map((req, idx) => (
-              <div key={idx} className="flex gap-3">
-                <MessageSquare className="h-4 w-4 text-orange-400 shrink-0 mt-0.5" />
-                <p className="text-sm font-medium text-orange-800 leading-relaxed italic">
-                  "{req.message}"
-                </p>
+              <div key={idx} className="flex gap-2 text-sm text-amber-800">
+                <MessageSquare className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+                <p className="italic">"{req.message}"</p>
               </div>
             ))}
           </div>
@@ -341,395 +324,347 @@ const TalentOnboarding = () => {
     );
   };
 
+  // ── Field Components ──────────────────────────────────────────────────────
+
+  const FieldGroup = ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
+    <div className="space-y-1.5">
+      <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+        {label}{required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
+      {children}
+    </div>
+  );
+
+  const inputClass = "h-12 rounded-lg border border-slate-200 bg-white focus:border-slate-800 focus:ring-1 focus:ring-slate-800 text-sm placeholder:text-slate-400";
+
+  const CardBlock = ({ children, onDelete }: { children: React.ReactNode; onDelete?: () => void }) => (
+    <div className="relative p-6 bg-white border border-slate-100 rounded-xl group">
+      {onDelete && (
+        <button onClick={onDelete} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+          <Trash2 className="h-4 w-4" />
+        </button>
+      )}
+      {children}
+    </div>
+  );
+
+  const AddButton = ({ label, onClick }: { label: string; onClick: () => void }) => (
+    <button onClick={onClick} className="w-full h-14 border border-dashed border-slate-200 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-700 hover:border-slate-400 transition-colors flex items-center justify-center gap-2">
+      <Plus className="h-4 w-4" /> {label}
+    </button>
+  );
+
+  const FileUploadRow = ({ field, label, hint, accept }: { field: string; label: string; hint: string; accept: string }) => {
+    const uploaded = formData[field as keyof typeof formData] as string;
+    return (
+      <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+        <div>
+          <p className="text-sm font-semibold text-slate-800">{label}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{hint}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {uploaded && (
+            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
+              <CheckCircle2 className="h-3 w-3" /> Uploaded
+            </Badge>
+          )}
+          <div className="relative">
+            <Input type="file" accept={accept} onChange={(e) => handleFileUpload(e, field)} className="absolute inset-0 opacity-0 cursor-pointer w-28 h-9" disabled={uploadingFields[field]} />
+            <Button type="button" variant="outline" size="sm" className="w-28 h-9 rounded-lg border-slate-200" disabled={uploadingFields[field]}>
+              {uploadingFields[field] ? <Loader2 className="h-4 w-4 animate-spin" /> : <><UploadCloud className="h-3.5 w-3.5 mr-1.5" />{uploaded ? 'Replace' : 'Upload'}</>}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Step Content ──────────────────────────────────────────────────────────
+
   const renderStepContent = () => {
+    if (isSubmitted && currentStep === STEPS.length) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 gap-6 text-center">
+          <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center">
+            <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">Submitted for Vetting</h2>
+            <p className="text-slate-500 mt-2 max-w-sm">Your professional profile is now under review by our vetting team. We'll notify you once the review is complete.</p>
+          </div>
+          <Button onClick={() => navigate("/talent/dashboard")} className="h-11 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-lg">
+            Go to Dashboard
+          </Button>
+        </div>
+      );
+    }
+
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6 animate-fade-in py-2">
+          <div className="space-y-6">
             {renderFeedback('basic_info')}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Basic Information</h2>
-              <p className="text-sm text-gray-500 mt-1">Let's start with your contact details and location.</p>
+            <div className="grid sm:grid-cols-2 gap-5">
+              <FieldGroup label="First Name" required>
+                <Input className={inputClass} value={formData.firstName} onChange={(e) => handleInputChange("firstName", e.target.value)} placeholder="Jane" />
+              </FieldGroup>
+              <FieldGroup label="Last Name" required>
+                <Input className={inputClass} value={formData.lastName} onChange={(e) => handleInputChange("lastName", e.target.value)} placeholder="Smith" />
+              </FieldGroup>
             </div>
-            <div className="space-y-4">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>First Name <span className="text-red-500">*</span></Label>
-                  <Input value={formData.firstName} onChange={(e) => handleInputChange("firstName", e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Last Name <span className="text-red-500">*</span></Label>
-                  <Input value={formData.lastName} onChange={(e) => handleInputChange("lastName", e.target.value)} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Email <span className="text-gray-400 font-normal text-xs ml-2">(Read-only)</span></Label>
-                <Input value={formData.email} disabled className="bg-gray-50 text-gray-500" />
-              </div>
-              <div className="space-y-2">
-                <Label>Phone Number</Label>
-                <Input value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} placeholder="+1 (555) 000-0000" />
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Country / Location</Label>
-                  <Input value={formData.country} onChange={(e) => handleInputChange("country", e.target.value)} placeholder="e.g. United States" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Timezone</Label>
-                  <TimezoneSelector 
-                    value={formData.timezone} 
-                    onChange={(v) => handleInputChange("timezone", v)} 
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Languages Spoken</Label>
-                <Input value={formData.languagesSpoken.join(", ")} onChange={(e) => handleInputChange("languagesSpoken", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. English, Spanish" />
-                <p className="text-xs text-gray-500">Separate multiple languages with commas.</p>
-              </div>
+            <FieldGroup label="Email Address">
+              <Input className={clsx(inputClass, "opacity-60 cursor-not-allowed")} value={formData.email} disabled />
+            </FieldGroup>
+            <FieldGroup label="Phone Number">
+              <Input className={inputClass} value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} placeholder="+1 (555) 000-0000" />
+            </FieldGroup>
+            <div className="grid sm:grid-cols-2 gap-5">
+              <FieldGroup label="Country / Location">
+                <Input className={inputClass} value={formData.country} onChange={(e) => handleInputChange("country", e.target.value)} placeholder="e.g. United Kingdom" />
+              </FieldGroup>
+              <FieldGroup label="Timezone">
+                <TimezoneSelector value={formData.timezone} onChange={(v) => handleInputChange("timezone", v)} />
+              </FieldGroup>
             </div>
+            <FieldGroup label="Languages Spoken">
+              <Input className={inputClass} value={formData.languagesSpoken.join(", ")} onChange={(e) => handleInputChange("languagesSpoken", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. English, French, Spanish" />
+              <p className="text-[11px] text-slate-400 mt-1">Separate multiple languages with commas.</p>
+            </FieldGroup>
           </div>
         );
 
       case 2:
         return (
-          <div className="space-y-6 animate-fade-in py-2">
+          <div className="space-y-6">
             {renderFeedback('professional_details')}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Professional Details</h2>
-              <p className="text-sm text-gray-500 mt-1">Define your core expertise and work preferences.</p>
+            <RoleSelector value={formData.primaryRole} onChange={(v) => handleInputChange("primaryRole", v)} />
+            <div className="grid sm:grid-cols-2 gap-5">
+              <FieldGroup label="Years of Experience" required>
+                <Input className={inputClass} type="number" min="0" value={formData.yearsOfExperience} onChange={(e) => handleInputChange("yearsOfExperience", e.target.value)} placeholder="e.g. 7" />
+              </FieldGroup>
+              <FieldGroup label="Availability" required>
+                <Select value={formData.availability} onValueChange={(v) => handleInputChange("availability", v)}>
+                  <SelectTrigger className="h-12 rounded-lg border-slate-200">
+                    <SelectValue placeholder="Select availability" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="full_time">Full-Time (40 hrs/wk)</SelectItem>
+                    <SelectItem value="part_time">Part-Time (20 hrs/wk)</SelectItem>
+                    <SelectItem value="contract">Hourly / Contract</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FieldGroup>
             </div>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <RoleSelector 
-                  value={formData.primaryRole} 
-                  onChange={(v) => handleInputChange("primaryRole", v)} 
-                />
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Years of Experience <span className="text-red-500">*</span></Label>
-                  <Input type="number" min="0" value={formData.yearsOfExperience} onChange={(e) => handleInputChange("yearsOfExperience", e.target.value)} placeholder="e.g. 5" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Preferred Availability <span className="text-red-500">*</span></Label>
-                  <Select value={formData.availability} onValueChange={(v) => handleInputChange("availability", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select availability" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="full_time">Full-Time (40 hrs/wk)</SelectItem>
-                      <SelectItem value="part_time">Part-Time (20 hrs/wk)</SelectItem>
-                      <SelectItem value="contract">Hourly / Contract</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Core Skills (comma-separated)</Label>
-                <Textarea value={formData.secondarySkills.join(", ")} onChange={(e) => handleInputChange("secondarySkills", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. Data Entry, Email Management, Scheduling" className="min-h-[80px]" />
-              </div>
-              <div className="space-y-2">
-                <Label>Tools & Software (comma-separated)</Label>
-                <Textarea value={formData.toolsFamiliarWith.join(", ")} onChange={(e) => handleInputChange("toolsFamiliarWith", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. Asana, Slack, Notion, Zendesk" className="min-h-[80px]" />
-              </div>
-            </div>
+            <FieldGroup label="Core Skills">
+              <Textarea className="rounded-lg border-slate-200 text-sm min-h-[80px] resize-none" value={formData.secondarySkills.join(", ")} onChange={(e) => handleInputChange("secondarySkills", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. Data Entry, Email Management, Scheduling" />
+              <p className="text-[11px] text-slate-400 mt-1">Separate with commas.</p>
+            </FieldGroup>
+            <FieldGroup label="Tools & Software">
+              <Textarea className="rounded-lg border-slate-200 text-sm min-h-[80px] resize-none" value={formData.toolsFamiliarWith.join(", ")} onChange={(e) => handleInputChange("toolsFamiliarWith", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. Asana, Slack, Notion, Salesforce" />
+              <p className="text-[11px] text-slate-400 mt-1">Separate with commas.</p>
+            </FieldGroup>
           </div>
         );
 
       case 3:
         return (
-          <div className="space-y-6 animate-fade-in py-2">
+          <div className="space-y-5">
             {renderFeedback('work_history')}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Work History</h2>
-              <p className="text-sm text-gray-500 mt-1">Add your relevant past experiences. Most recent first.</p>
-            </div>
-            <div className="space-y-6">
-              {workHistory.map((work, idx) => (
-                <Card key={work.id} className="relative bg-white shadow-sm border-gray-200">
-                  <CardContent className="p-5 space-y-4">
-                    {workHistory.length > 1 && (
-                      <button onClick={() => setWorkHistory(prev => prev.filter(w => w.id !== work.id))} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                    <div className="grid sm:grid-cols-2 gap-4 pr-6">
-                      <div className="space-y-2">
-                        <Label>Company</Label>
-                        <Input value={work.companyName} onChange={e => { const updated = [...workHistory]; updated[idx].companyName = e.target.value; setWorkHistory(updated); }} placeholder="e.g. Acme Corp" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Role / Title</Label>
-                        <Input value={work.roleTitle} onChange={e => { const updated = [...workHistory]; updated[idx].roleTitle = e.target.value; setWorkHistory(updated); }} placeholder="e.g. Operations Manager" />
-                      </div>
-                    </div>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Start Date</Label>
-                        <Input type="month" value={work.startDate} onChange={e => { const updated = [...workHistory]; updated[idx].startDate = e.target.value; setWorkHistory(updated); }} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>End Date</Label>
-                        <Input type="month" disabled={work.isCurrent} value={work.endDate} onChange={e => { const updated = [...workHistory]; updated[idx].endDate = e.target.value; setWorkHistory(updated); }} />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox id={`current-${work.id}`} checked={work.isCurrent} onCheckedChange={c => { const updated = [...workHistory]; updated[idx].isCurrent = !!c; if(c) updated[idx].endDate = ''; setWorkHistory(updated); }} />
-                      <Label htmlFor={`current-${work.id}`} className="font-normal text-sm cursor-pointer">I currently work here</Label>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Description</Label>
-                      <Textarea placeholder="Briefly describe your responsibilities and achievements..." value={work.roleDescription} onChange={e => { const updated = [...workHistory]; updated[idx].roleDescription = e.target.value; setWorkHistory(updated); }} className="min-h-[100px]" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              <Button variant="outline" type="button" onClick={() => setWorkHistory([...workHistory, { id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false }])} className="w-full border-dashed border-2 py-8 text-brand-primary bg-brand-primary/5 hover:bg-brand-primary/10">
-                <Plus className="h-4 w-4 mr-2" /> Add Experience
-              </Button>
-            </div>
+            {workHistory.map((work, idx) => (
+              <CardBlock key={work.id} onDelete={workHistory.length > 1 ? () => setWorkHistory(prev => prev.filter(w => w.id !== work.id)) : undefined}>
+                <div className="grid sm:grid-cols-2 gap-4 pr-6">
+                  <FieldGroup label="Company">
+                    <Input className={inputClass} value={work.companyName} onChange={e => { const u = [...workHistory]; u[idx].companyName = e.target.value; setWorkHistory(u); }} placeholder="e.g. Acme Corp" />
+                  </FieldGroup>
+                  <FieldGroup label="Role / Title">
+                    <Input className={inputClass} value={work.roleTitle} onChange={e => { const u = [...workHistory]; u[idx].roleTitle = e.target.value; setWorkHistory(u); }} placeholder="e.g. Operations Manager" />
+                  </FieldGroup>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                  <FieldGroup label="Start Date">
+                    <Input className={inputClass} type="month" value={work.startDate} onChange={e => { const u = [...workHistory]; u[idx].startDate = e.target.value; setWorkHistory(u); }} />
+                  </FieldGroup>
+                  <FieldGroup label="End Date">
+                    <Input className={clsx(inputClass, work.isCurrent && "opacity-40")} type="month" disabled={work.isCurrent} value={work.endDate} onChange={e => { const u = [...workHistory]; u[idx].endDate = e.target.value; setWorkHistory(u); }} />
+                  </FieldGroup>
+                </div>
+                <div className="flex items-center gap-2 mt-4">
+                  <Checkbox id={`current-${work.id}`} checked={work.isCurrent} onCheckedChange={c => { const u = [...workHistory]; u[idx].isCurrent = !!c; if (c) u[idx].endDate = ''; setWorkHistory(u); }} />
+                  <Label htmlFor={`current-${work.id}`} className="text-sm font-normal text-slate-600 cursor-pointer">I currently work here</Label>
+                </div>
+                <div className="mt-4">
+                  <FieldGroup label="Description">
+                    <Textarea className="rounded-lg border-slate-200 text-sm min-h-[90px] resize-none" placeholder="Key responsibilities and achievements..." value={work.roleDescription} onChange={e => { const u = [...workHistory]; u[idx].roleDescription = e.target.value; setWorkHistory(u); }} />
+                  </FieldGroup>
+                </div>
+              </CardBlock>
+            ))}
+            <AddButton label="Add Experience" onClick={() => setWorkHistory([...workHistory, { id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false }])} />
           </div>
         );
 
       case 4:
         return (
-          <div className="space-y-6 animate-fade-in py-2">
+          <div className="space-y-5">
             {renderFeedback('documents')}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Documents</h2>
-              <p className="text-sm text-gray-500 mt-1">Upload necessary files for identity verification and vetting.</p>
+            <div className="flex gap-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+              <AlertCircle className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-800">Your documents are securely encrypted and stored privately for vetting purposes only.</p>
             </div>
-            
-            <div className="p-4 rounded-lg bg-blue-50 border border-blue-100 flex gap-3 text-blue-900">
-              <AlertCircle className="h-5 w-5 shrink-0 text-blue-600 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-semibold mb-1">Secure Uploads</p>
-                <p>Your documents are securely encrypted and stored privately for vetting purposes only.</p>
-              </div>
+            <div className="space-y-3">
+              <FileUploadRow field="cvUrl" label="CV / Resume" hint="PDF or Word format" accept=".pdf,.doc,.docx" />
+              <FileUploadRow field="governmentIdUrl" label="Government ID" hint="Clear photo of Passport or National ID" accept="image/*,.pdf" />
+              <FileUploadRow field="proofOfAddressUrl" label="Proof of Address" hint="Utility bill, bank statement, or rental agreement" accept="image/*,.pdf" />
             </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                   <Label className="flex items-center gap-2 text-gray-900 font-semibold"><FileText className="h-4 w-4 text-gray-500"/> CV / Resume <span className="text-red-500">*</span></Label>
-                   <p className="text-xs text-gray-500 mt-1">PDF or Word format</p>
-                </div>
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                   {formData.cvUrl && <Badge className="bg-green-50 text-green-700 border-green-200"><CheckCircle2 className="h-3 w-3 mr-1"/> Uploaded</Badge>}
-                   <div className="relative">
-                     <Input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleFileUpload(e, "cvUrl")} className="absolute inset-0 opacity-0 cursor-pointer w-[120px] h-[36px]" disabled={uploadingFields["cvUrl"]} />
-                     <Button type="button" variant="outline" size="sm" className="w-[120px]" disabled={uploadingFields["cvUrl"]}>
-                       {uploadingFields["cvUrl"] ? <Loader2 className="h-4 w-4 animate-spin" /> : <><UploadCloud className="h-4 w-4 mr-2" /> {formData.cvUrl ? 'Replace' : 'Upload'}</>}
-                     </Button>
-                   </div>
-                </div>
-              </div>
-              <div className="space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                   <Label className="flex items-center gap-2 text-gray-900 font-semibold"><FileText className="h-4 w-4 text-gray-500"/> Government ID <span className="text-red-500">*</span></Label>
-                   <p className="text-xs text-gray-500 mt-1">Clear photo of Passport or ID card</p>
-                </div>
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                   {formData.governmentIdUrl && <Badge className="bg-green-50 text-green-700 border-green-200"><CheckCircle2 className="h-3 w-3 mr-1"/> Uploaded</Badge>}
-                   <div className="relative">
-                     <Input type="file" accept="image/*,.pdf" onChange={(e) => handleFileUpload(e, "governmentIdUrl")} className="absolute inset-0 opacity-0 cursor-pointer w-[120px] h-[36px]" disabled={uploadingFields["governmentIdUrl"]} />
-                     <Button type="button" variant="outline" size="sm" className="w-[120px]" disabled={uploadingFields["governmentIdUrl"]}>
-                       {uploadingFields["governmentIdUrl"] ? <Loader2 className="h-4 w-4 animate-spin" /> : <><UploadCloud className="h-4 w-4 mr-2" /> {formData.governmentIdUrl ? 'Replace' : 'Upload'}</>}
-                     </Button>
-                   </div>
-                </div>
-              </div>
-              <div className="space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                <Label className="flex items-center gap-2 text-gray-900 font-semibold"><FileText className="h-4 w-4 text-gray-500"/> Portfolio Link (Optional)</Label>
-                <div className="mt-2 text-sm text-gray-500 mb-2">If you have an online portfolio (Behance, Dribbble, GitHub, personal website), provide the tracking link here instead of uploading files.</div>
-                <Input value={formData.portfolioUrl} onChange={e => handleInputChange("portfolioUrl", e.target.value)} placeholder="https://..." className="bg-white" />
-              </div>
+            <div className="space-y-3">
+              <FieldGroup label="Portfolio Link (Optional)">
+                <Input className={inputClass} value={formData.portfolioUrl} onChange={e => handleInputChange("portfolioUrl", e.target.value)} placeholder="https://..." />
+              </FieldGroup>
             </div>
           </div>
         );
 
       case 5:
         return (
-          <div className="space-y-6 animate-fade-in py-2">
+          <div className="space-y-5">
             {renderFeedback('education')}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Education</h2>
-              <p className="text-sm text-gray-500 mt-1">List your academic background.</p>
-            </div>
-            <div className="space-y-6">
-              {education.map((edu, idx) => (
-                <Card key={edu.id} className="relative bg-white shadow-sm border-gray-200">
-                  <CardContent className="p-5 space-y-4">
-                    {education.length > 1 && (
-                      <button onClick={() => setEducation(prev => prev.filter(e => e.id !== edu.id))} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                    <div className="grid sm:grid-cols-2 gap-4 pr-6">
-                      <div className="space-y-2">
-                        <Label>Institution</Label>
-                        <Input value={edu.institutionName} onChange={e => { const updated = [...education]; updated[idx].institutionName = e.target.value; setEducation(updated); }} placeholder="e.g. University of Example" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Degree & Field of Study</Label>
-                        <Input value={edu.degree} onChange={e => { const updated = [...education]; updated[idx].degree = e.target.value; setEducation(updated); }} placeholder="e.g. B.S. Computer Science" />
-                      </div>
-                    </div>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Start Year</Label>
-                        <Input type="number" value={edu.startYear} onChange={e => { const updated = [...education]; updated[idx].startYear = e.target.value; setEducation(updated); }} placeholder="YYYY" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>End Year</Label>
-                        <Input type="number" disabled={edu.isCurrent} value={edu.endYear} onChange={e => { const updated = [...education]; updated[idx].endYear = e.target.value; setEducation(updated); }} placeholder="YYYY" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              <Button variant="outline" type="button" onClick={() => setEducation([...education, { id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false }])} className="w-full border-dashed border-2 py-8 text-brand-primary bg-brand-primary/5 hover:bg-brand-primary/10">
-                <Plus className="h-4 w-4 mr-2" /> Add Education
-              </Button>
-            </div>
+            {education.map((edu, idx) => (
+              <CardBlock key={edu.id} onDelete={education.length > 1 ? () => setEducation(prev => prev.filter(e => e.id !== edu.id)) : undefined}>
+                <div className="grid sm:grid-cols-2 gap-4 pr-6">
+                  <FieldGroup label="Institution">
+                    <Input className={inputClass} value={edu.institutionName} onChange={e => { const u = [...education]; u[idx].institutionName = e.target.value; setEducation(u); }} placeholder="e.g. University of Lagos" />
+                  </FieldGroup>
+                  <FieldGroup label="Degree & Field of Study">
+                    <Input className={inputClass} value={edu.degree} onChange={e => { const u = [...education]; u[idx].degree = e.target.value; setEducation(u); }} placeholder="e.g. B.Sc. Business Administration" />
+                  </FieldGroup>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                  <FieldGroup label="Start Year">
+                    <Input className={inputClass} type="number" value={edu.startYear} onChange={e => { const u = [...education]; u[idx].startYear = e.target.value; setEducation(u); }} placeholder="YYYY" />
+                  </FieldGroup>
+                  <FieldGroup label="End Year">
+                    <Input className={inputClass} type="number" value={edu.endYear} onChange={e => { const u = [...education]; u[idx].endYear = e.target.value; setEducation(u); }} placeholder="YYYY" />
+                  </FieldGroup>
+                </div>
+              </CardBlock>
+            ))}
+            <AddButton label="Add Education" onClick={() => setEducation([...education, { id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false }])} />
           </div>
         );
 
       case 6:
         return (
-          <div className="space-y-6 animate-fade-in py-2">
+          <div className="space-y-5">
             {renderFeedback('certifications')}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Certifications</h2>
-              <p className="text-sm text-gray-500 mt-1">Highlight relevant certifications to stand out.</p>
-            </div>
-            <div className="space-y-6">
-              {certifications.map((cert, idx) => (
-                <Card key={cert.id} className="relative bg-white shadow-sm border-gray-200">
-                  <CardContent className="p-5 space-y-4">
-                    {certifications.length > 1 && (
-                      <button onClick={() => setCertifications(prev => prev.filter(c => c.id !== cert.id))} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                    <div className="grid sm:grid-cols-2 gap-4 pr-6">
-                      <div className="space-y-2">
-                        <Label>Certification Name</Label>
-                        <Input value={cert.certificationName} onChange={e => { const updated = [...certifications]; updated[idx].certificationName = e.target.value; setCertifications(updated); }} placeholder="e.g. AWS Cloud Practitioner" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Issuing Organization</Label>
-                        <Input value={cert.issuer} onChange={e => { const updated = [...certifications]; updated[idx].issuer = e.target.value; setCertifications(updated); }} placeholder="e.g. Amazon Web Services" />
-                      </div>
-                    </div>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Year Obtained</Label>
-                        <Input type="number" value={cert.yearObtained} onChange={e => { const updated = [...certifications]; updated[idx].yearObtained = e.target.value; setCertifications(updated); }} placeholder="YYYY" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Credential Link (Optional)</Label>
-                        <Input value={cert.fileUrl} onChange={e => { const updated = [...certifications]; updated[idx].fileUrl = e.target.value; setCertifications(updated); }} placeholder="https://..." />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              <Button variant="outline" type="button" onClick={() => setCertifications([...certifications, { id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" }])} className="w-full border-dashed border-2 py-8 text-brand-primary bg-brand-primary/5 hover:bg-brand-primary/10">
-                <Plus className="h-4 w-4 mr-2" /> Add Certification
-              </Button>
-            </div>
+            {certifications.map((cert, idx) => (
+              <CardBlock key={cert.id} onDelete={certifications.length > 1 ? () => setCertifications(prev => prev.filter(c => c.id !== cert.id)) : undefined}>
+                <div className="grid sm:grid-cols-2 gap-4 pr-6">
+                  <FieldGroup label="Certification Name">
+                    <Input className={inputClass} value={cert.certificationName} onChange={e => { const u = [...certifications]; u[idx].certificationName = e.target.value; setCertifications(u); }} placeholder="e.g. PMP Certification" />
+                  </FieldGroup>
+                  <FieldGroup label="Issuing Organization">
+                    <Input className={inputClass} value={cert.issuer} onChange={e => { const u = [...certifications]; u[idx].issuer = e.target.value; setCertifications(u); }} placeholder="e.g. Project Management Institute" />
+                  </FieldGroup>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                  <FieldGroup label="Year Obtained">
+                    <Input className={inputClass} type="number" value={cert.yearObtained} onChange={e => { const u = [...certifications]; u[idx].yearObtained = e.target.value; setCertifications(u); }} placeholder="YYYY" />
+                  </FieldGroup>
+                  <FieldGroup label="Credential Link (Optional)">
+                    <Input className={inputClass} value={cert.fileUrl} onChange={e => { const u = [...certifications]; u[idx].fileUrl = e.target.value; setCertifications(u); }} placeholder="https://..." />
+                  </FieldGroup>
+                </div>
+              </CardBlock>
+            ))}
+            <AddButton label="Add Certification" onClick={() => setCertifications([...certifications, { id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" }])} />
           </div>
         );
 
       case 7:
         return (
-          <div className="space-y-6 animate-fade-in py-2">
+          <div className="space-y-5">
             {renderFeedback('references')}
-             <div>
-              <h2 className="text-xl font-semibold text-gray-900">References</h2>
-              <p className="text-sm text-gray-500 mt-1">Provide contact info for professional references. (Minimum 1 valid reference required)</p>
-            </div>
-            <div className="space-y-6">
-              {references.map((ref, idx) => (
-                <Card key={ref.id} className="relative bg-white shadow-sm border-gray-200">
-                  <CardContent className="p-5 space-y-4">
-                    {references.length > 1 && (
-                      <button onClick={() => setReferences(prev => prev.filter(r => r.id !== ref.id))} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                    <div className="grid sm:grid-cols-2 gap-4 pr-6">
-                      <div className="space-y-2">
-                        <Label>Reference Name</Label>
-                        <Input value={ref.name} onChange={e => { const updated = [...references]; updated[idx].name = e.target.value; setReferences(updated); }} placeholder="e.g. Jane Smith" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Company & Role</Label>
-                        <Input value={ref.company} onChange={e => { const updated = [...references]; updated[idx].company = e.target.value; setReferences(updated); }} placeholder="e.g. Director at TechCo" />
-                      </div>
-                    </div>
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Email</Label>
-                        <Input type="email" value={ref.email} onChange={e => { const updated = [...references]; updated[idx].email = e.target.value; setReferences(updated); }} placeholder="jane@example.com" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Phone Number (Optional)</Label>
-                        <Input value={ref.phone} onChange={e => { const updated = [...references]; updated[idx].phone = e.target.value; setReferences(updated); }} placeholder="+1 (555) 000-0000" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              <Button variant="outline" type="button" onClick={() => setReferences([...references, { id: Date.now().toString(), name: "", company: "", email: "", phone: "" }])} className="w-full border-dashed border-2 py-8 text-brand-primary bg-brand-primary/5 hover:bg-brand-primary/10">
-                <Plus className="h-4 w-4 mr-2" /> Add Reference
-              </Button>
-            </div>
+            {references.map((ref, idx) => (
+              <CardBlock key={ref.id} onDelete={references.length > 1 ? () => setReferences(prev => prev.filter(r => r.id !== ref.id)) : undefined}>
+                <div className="grid sm:grid-cols-2 gap-4 pr-6">
+                  <FieldGroup label="Reference Name" required>
+                    <Input className={inputClass} value={ref.name} onChange={e => { const u = [...references]; u[idx].name = e.target.value; setReferences(u); }} placeholder="e.g. Jane Smith" />
+                  </FieldGroup>
+                  <FieldGroup label="Company & Role">
+                    <Input className={inputClass} value={ref.company} onChange={e => { const u = [...references]; u[idx].company = e.target.value; setReferences(u); }} placeholder="e.g. Director at TechCo" />
+                  </FieldGroup>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                  <FieldGroup label="Email Address" required>
+                    <Input className={inputClass} type="email" value={ref.email} onChange={e => { const u = [...references]; u[idx].email = e.target.value; setReferences(u); }} placeholder="jane@example.com" />
+                  </FieldGroup>
+                  <FieldGroup label="Phone (Optional)">
+                    <Input className={inputClass} value={ref.phone} onChange={e => { const u = [...references]; u[idx].phone = e.target.value; setReferences(u); }} placeholder="+1 (555) 000-0000" />
+                  </FieldGroup>
+                </div>
+              </CardBlock>
+            ))}
+            <AddButton label="Add Reference" onClick={() => setReferences([...references, { id: Date.now().toString(), name: "", company: "", email: "", phone: "" }])} />
           </div>
         );
 
       case 8:
         return (
-          <div className="space-y-8 animate-fade-in py-2">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Review & Submit</h2>
-              <p className="text-sm text-gray-500 mt-1">Please review your information before submitting for vetting.</p>
-            </div>
+          <div className="space-y-6">
+            <p className="text-sm text-slate-500">Review all information before submitting. Click <span className="font-semibold text-slate-700">Edit</span> on any section to make changes.</p>
 
-            <div className="space-y-6">
-              <section className="space-y-2">
-                <div className="flex items-center justify-between border-b pb-2">
-                  <h3 className="font-semibold text-gray-800">Basic Information</h3>
-                  <button onClick={() => setCurrentStep(1)} className="text-sm text-brand-primary hover:underline font-medium">Edit</button>
+            {[
+              { title: "Basic Information", step: 1, rows: [
+                ["Full Name", `${formData.firstName} ${formData.lastName}`.trim() || "—"],
+                ["Email", formData.email || "—"],
+                ["Phone", formData.phone || "—"],
+                ["Country", formData.country || "—"],
+                ["Timezone", formData.timezone || "—"],
+                ["Languages", formData.languagesSpoken.join(", ") || "—"],
+              ]},
+              { title: "Professional Details", step: 2, rows: [
+                ["Primary Role", formData.primaryRole || "—"],
+                ["Experience", formData.yearsOfExperience ? `${formData.yearsOfExperience} years` : "—"],
+                ["Availability", formData.availability?.replace(/_/g, " ") || "—"],
+                ["Skills", formData.secondarySkills.join(", ") || "—"],
+                ["Tools", formData.toolsFamiliarWith.join(", ") || "—"],
+              ]},
+              { title: "Work History", step: 3, rows: workHistory.filter(w => w.companyName).map(w => [w.companyName, `${w.roleTitle}${w.isCurrent ? " (Current)" : ""}`]) },
+              { title: "Documents", step: 4, rows: [
+                ["CV / Resume", formData.cvUrl ? "✓ Uploaded" : "Not uploaded"],
+                ["Government ID", formData.governmentIdUrl ? "✓ Uploaded" : "Not uploaded"],
+                ["Proof of Address", formData.proofOfAddressUrl ? "✓ Uploaded" : "Not uploaded"],
+                ["Portfolio", formData.portfolioUrl || "—"],
+              ]},
+              { title: "Education", step: 5, rows: education.filter(e => e.institutionName).map(e => [e.institutionName, e.degree || "—"]) },
+              { title: "Certifications", step: 6, rows: certifications.filter(c => c.certificationName).map(c => [c.certificationName, c.issuer || "—"]) },
+              { title: "References", step: 7, rows: references.filter(r => r.name).map(r => [r.name, r.email]) },
+            ].map(({ title, step, rows }) => (
+              <div key={title} className="border border-slate-100 rounded-xl overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-100">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">{title}</h4>
+                  <button onClick={() => { setCurrentStep(step); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+                    Edit →
+                  </button>
                 </div>
-                <div className="grid grid-cols-2 text-sm gap-y-2">
-                  <span className="text-gray-500">Name:</span> <span>{formData.firstName} {formData.lastName}</span>
-                  <span className="text-gray-500">Email:</span> <span>{formData.email}</span>
-                  <span className="text-gray-500">Location:</span> <span>{formData.country || 'Not provided'} ({formData.timezone || 'No timezone'})</span>
+                <div className="divide-y divide-slate-50">
+                  {rows.length === 0 ? (
+                    <p className="px-5 py-3 text-xs text-slate-400 italic">No entries.</p>
+                  ) : rows.map(([label, value], i) => (
+                    <div key={i} className="flex items-start gap-4 px-5 py-3">
+                      <span className="text-xs font-medium text-slate-400 w-32 shrink-0 pt-0.5">{label}</span>
+                      <span className="text-xs text-slate-700 flex-1">{value}</span>
+                    </div>
+                  ))}
                 </div>
-              </section>
+              </div>
+            ))}
 
-              <section className="space-y-2">
-                <div className="flex items-center justify-between border-b pb-2">
-                  <h3 className="font-semibold text-gray-800">Professional Details</h3>
-                  <button onClick={() => setCurrentStep(2)} className="text-sm text-brand-primary hover:underline font-medium">Edit</button>
-                </div>
-                <div className="grid grid-cols-2 text-sm gap-y-2">
-                  <span className="text-gray-500">Primary Role:</span> <span className="capitalize">{formData.primaryRole.replace('_', ' ')}</span>
-                  <span className="text-gray-500">Experience:</span> <span>{formData.yearsOfExperience} years</span>
-                  <span className="text-gray-500">Availability:</span> <span className="capitalize">{formData.availability.replace('_', ' ')}</span>
-                </div>
-              </section>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-               <div className="flex items-start gap-3">
-                  <Checkbox id="confirm-accuracy" className="mt-1" defaultChecked />
-                  <Label htmlFor="confirm-accuracy" className="text-sm font-medium leading-relaxed cursor-pointer">
-                    I confirm this information is accurate and authorize Taskive Connect to verify my professional background.
-                  </Label>
-               </div>
+            <div className="flex items-start gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+              <Checkbox id="confirm-accuracy" className="mt-0.5" defaultChecked />
+              <Label htmlFor="confirm-accuracy" className="text-sm text-slate-600 font-normal cursor-pointer leading-relaxed">
+                I confirm this information is accurate and I authorize Taskive Connect to verify my professional background.
+              </Label>
             </div>
           </div>
         );
@@ -739,80 +674,217 @@ const TalentOnboarding = () => {
     }
   };
 
+  // ── Save Status Indicator ────────────────────────────────────────────────
+
+  const SaveIndicator = () => {
+    if (saveStatus === "idle") return null;
+    return (
+      <div className={clsx(
+        "flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full border",
+        saveStatus === "saving" && "text-blue-600 bg-blue-50 border-blue-100",
+        saveStatus === "saved" && "text-emerald-600 bg-emerald-50 border-emerald-100",
+        saveStatus === "unsaved" && "text-amber-600 bg-amber-50 border-amber-100",
+      )}>
+        {saveStatus === "saving" && <Loader2 className="h-3 w-3 animate-spin" />}
+        {saveStatus === "saved" && <Cloud className="h-3 w-3" />}
+        {saveStatus === "unsaved" && <Save className="h-3 w-3" />}
+        {saveStatus === "saving" ? "Saving…" : saveStatus === "saved" ? "Saved" : "Unsaved changes"}
+      </div>
+    );
+  };
+
+  // ── Progress Bar ─────────────────────────────────────────────────────────
+
+  const progressPct = Math.round(((currentStep - 1) / (STEPS.length - 1)) * 100);
+
+  // ── Main Render ──────────────────────────────────────────────────────────
+
   return (
-    <div className="max-w-5xl mx-auto pb-20 pt-6">
-      
-      {/* Small Header */}
-      <div className="mb-10 text-center md:text-left">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Professional Profile Setup</h1>
-        <div className="flex items-center justify-center md:justify-start gap-3 mt-2">
-           <span className="text-sm font-medium text-brand-primary">Step {currentStep} of {STEPS.length}</span>
-           <span className="text-sm text-gray-400">&bull;</span>
-           <span className="text-sm text-gray-500">{STEPS[currentStep - 1].title}</span>
+    <div className="min-h-screen bg-slate-50 font-inter">
+
+      {/* ── Top Bar ─────────────────────────────────────────────────────── */}
+      <div className="sticky top-0 z-30 bg-white border-b border-slate-100">
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-bold text-slate-900">Taskive</span>
+            <span className="hidden sm:block text-slate-200">|</span>
+            <span className="hidden sm:block text-xs font-medium text-slate-500">Professional Profile Setup</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <SaveIndicator />
+            <Button variant="ghost" size="sm" onClick={handleSaveAndExit} className="gap-1.5 text-slate-500 hover:text-slate-900 text-xs hidden sm:flex">
+              <LogOut className="h-3.5 w-3.5" /> Save & Exit
+            </Button>
+            {/* Mobile menu toggle */}
+            <button className="sm:hidden p-1.5" onClick={() => setMobileNavOpen(!mobileNavOpen)}>
+              {mobileNavOpen ? <X className="h-5 w-5 text-slate-600" /> : <Menu className="h-5 w-5 text-slate-600" />}
+            </button>
+          </div>
+        </div>
+        {/* Progress fill */}
+        <div className="h-0.5 bg-slate-100">
+          <div className="h-full bg-slate-800 transition-all duration-500" style={{ width: `${progressPct}%` }} />
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 lg:gap-12 relative">
-        {/* Left: Vertical Stepper */}
-        <div className="w-full md:w-56 shrink-0 relative">
-          <div className="flex md:flex-col overflow-x-auto md:overflow-visible gap-2 md:gap-0 md:sticky md:top-6 pb-4 md:pb-0 scrollbar-none snap-x">
-             {/* Vertical line connector (desktop only) */}
-             <div className="hidden md:block absolute left-4 top-4 bottom-8 w-0.5 bg-gray-100 -z-10" />
-
-             {STEPS.map((step, index) => {
-               const isCompleted = currentStep > step.id;
-               const isActive = currentStep === step.id;
-               return (
-                 <div key={step.id} className={clsx("flex items-center md:items-start gap-4 snap-start shrink-0", index !== STEPS.length - 1 && "md:pb-8")}>
-                   <div className={clsx(
-                     "h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors z-10",
-                     isCompleted ? "bg-brand-primary border-brand-primary text-white" :
-                     isActive ? "bg-white border-brand-primary text-brand-primary" :
-                     "bg-white border-gray-200 text-gray-400"
-                   )}>
-                     {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : step.id}
-                   </div>
-                   <div className="hidden md:block pt-1.5">
-                     <p className={clsx("text-sm font-medium transition-colors", isActive ? "text-gray-900" : isCompleted ? "text-gray-700" : "text-gray-400")}>
-                       {step.title}
-                     </p>
-                   </div>
-                   {/* Mobile step label */}
-                   <div className="md:hidden pr-4 pt-1">
-                      <p className={clsx("text-sm font-medium whitespace-nowrap", isActive ? "text-gray-900" : isCompleted ? "text-gray-700" : "text-gray-400")}>
-                         {step.title}
-                      </p>
-                   </div>
-                 </div>
-               );
-             })}
+      {/* ── Mobile Step Nav (drawer) ─────────────────────────────────────── */}
+      {mobileNavOpen && (
+        <div className="sm:hidden fixed inset-0 z-20 bg-white pt-14 px-4 pb-6 overflow-y-auto">
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">Steps</p>
+          <div className="space-y-1">
+            {STEPS.map((step) => {
+              const isCompleted = currentStep > step.id;
+              const isActive = currentStep === step.id;
+              return (
+                <button key={step.id} onClick={() => { setCurrentStep(step.id); setMobileNavOpen(false); }}
+                  className={clsx("w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-colors",
+                    isActive ? "bg-slate-900 text-white" : isCompleted ? "text-slate-600 hover:bg-slate-50" : "text-slate-400 hover:bg-slate-50"
+                  )}>
+                  <div className={clsx("h-6 w-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0",
+                    isActive ? "bg-white text-slate-900" : isCompleted ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-400"
+                  )}>
+                    {isCompleted ? <CheckCircle2 className="h-3.5 w-3.5" /> : step.id}
+                  </div>
+                  <span className="text-sm font-medium">{step.title}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
+      )}
 
-        {/* Right: Active Step Form */}
-        <div className="flex-1 min-w-0">
-          <div className="bg-white md:border md:border-gray-200 md:rounded-xl md:shadow-sm md:p-8">
-             {renderStepContent()}
-          </div>
+      {/* ── Main 3-panel layout ──────────────────────────────────────────── */}
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8">
+        <div className="flex gap-8 lg:gap-12">
 
-          {/* Footer Navigation */}
-          <div className="mt-8 flex items-center justify-between border-t border-gray-100 pt-6">
-            <Button variant="ghost" onClick={prevStep} disabled={currentStep === 1} className="text-gray-500 hover:text-gray-900">
-               <ChevronLeft className="h-4 w-4 mr-2" /> Back
-            </Button>
-            <div className="flex items-center gap-4">
-              {savingDraft && <span className="text-xs text-gray-400 animate-pulse">Saving draft...</span>}
-              {currentStep < STEPS.length ? (
-                <Button onClick={nextStep} className="shadow-sm">
-                  Save & Continue <ChevronRight className="h-4 w-4 ml-2" />
-                </Button>
-              ) : (
-                <Button onClick={handleSubmit} disabled={loading} className="bg-green-600 hover:bg-green-700 text-white shadow-sm">
-                  {loading ? "Submitting..." : "Submit for Vetting"}
-                </Button>
-              )}
+          {/* ── Left Stepper (desktop) ────────────────────────────────── */}
+          <aside className="hidden sm:flex flex-col w-[220px] shrink-0">
+            <div className="sticky top-24">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-5">
+                Step {currentStep} of {STEPS.length}
+              </p>
+              <div className="relative">
+                {/* Connector line */}
+                <div className="absolute left-[11px] top-6 bottom-6 w-px bg-slate-100" />
+                <div className="space-y-1">
+                  {STEPS.map((step) => {
+                    const isCompleted = currentStep > step.id;
+                    const isActive = currentStep === step.id;
+                    const isLocked = currentStep < step.id;
+                    return (
+                      <div key={step.id} className={clsx(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors relative",
+                        isActive && "bg-slate-900 text-white",
+                        !isActive && "hover:bg-slate-100"
+                      )} onClick={() => setCurrentStep(step.id)}>
+                        <div className={clsx(
+                          "h-[22px] w-[22px] rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 z-10",
+                          isActive ? "bg-white text-slate-900" :
+                          isCompleted ? "bg-emerald-100 text-emerald-700" :
+                          "bg-slate-100 text-slate-400"
+                        )}>
+                          {isCompleted ? <CheckCircle2 className="h-3.5 w-3.5" /> : step.id}
+                        </div>
+                        <span className={clsx(
+                          "text-[13px] font-medium leading-tight",
+                          isActive ? "text-white" :
+                          isCompleted ? "text-slate-700" :
+                          isLocked ? "text-slate-400" : "text-slate-600"
+                        )}>
+                          {step.title}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-          </div>
+          </aside>
+
+          {/* ── Form Panel ────────────────────────────────────────────── */}
+          <main className="flex-1 min-w-0 max-w-[680px]">
+
+            {/* Step Header */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                {STEPS[currentStep - 1].title}
+              </h1>
+              <p className="text-sm text-slate-500 mt-1">
+                {[
+                  "Start with your personal contact details and location.",
+                  "Define your core expertise, role, and work preferences.",
+                  "List your relevant professional experience.",
+                  "Upload required documents for vetting and verification.",
+                  "Provide your academic background and qualifications.",
+                  "Highlight relevant certifications and credentials.",
+                  "Provide contact information for professional references.",
+                  "Review your profile information before submitting.",
+                ][currentStep - 1]}
+              </p>
+            </div>
+
+            {/* Form Card */}
+            <div className="bg-white rounded-xl border border-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-6 sm:p-8">
+              {renderStepContent()}
+            </div>
+
+            {/* ── Action Bar ─────────────────────────────────────────── */}
+            {!isSubmitted && (
+              <>
+                {/* Desktop action bar */}
+                <div className="hidden sm:flex items-center justify-between mt-6">
+                  <Button variant="ghost" onClick={handleSaveAndExit} className="text-slate-400 hover:text-slate-700 text-sm gap-1.5">
+                    <Save className="h-3.5 w-3.5" /> Save & Exit
+                  </Button>
+                  <div className="flex items-center gap-3">
+                    {currentStep > 1 && (
+                      <Button variant="outline" onClick={prevStep} className="h-11 px-5 rounded-lg border-slate-200 text-slate-600 hover:text-slate-900">
+                        <ChevronLeft className="h-4 w-4 mr-1" /> Back
+                      </Button>
+                    )}
+                    {currentStep < STEPS.length ? (
+                      <Button onClick={nextStep} className="h-11 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-lg">
+                        Continue <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    ) : (
+                      <Button onClick={handleSubmit} disabled={loading} className="h-11 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-lg">
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        Submit for Vetting →
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Mobile sticky action bar */}
+                <div className="sm:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-slate-100 px-4 py-3 flex items-center gap-3">
+                  {currentStep > 1 ? (
+                    <Button variant="outline" onClick={prevStep} className="h-12 flex-1 rounded-xl border-slate-200">
+                      <ChevronLeft className="h-4 w-4 mr-1" /> Back
+                    </Button>
+                  ) : (
+                    <Button variant="outline" onClick={handleSaveAndExit} className="h-12 flex-1 rounded-xl border-slate-200 text-slate-500">
+                      <Save className="h-4 w-4 mr-1" /> Save
+                    </Button>
+                  )}
+                  <Button variant="ghost" onClick={handleSaveAndExit} className="h-12 w-12 shrink-0 rounded-xl border border-slate-100 text-slate-400 p-0">
+                    <Save className="h-4 w-4" />
+                  </Button>
+                  {currentStep < STEPS.length ? (
+                    <Button onClick={nextStep} className="h-12 flex-1 bg-slate-900 hover:bg-slate-800 text-white rounded-xl">
+                      Next <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  ) : (
+                    <Button onClick={handleSubmit} disabled={loading} className="h-12 flex-1 bg-slate-900 hover:bg-slate-800 text-white rounded-xl">
+                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit →"}
+                    </Button>
+                  )}
+                </div>
+                {/* Mobile bottom padding */}
+                <div className="sm:hidden h-24" />
+              </>
+            )}
+          </main>
+
         </div>
       </div>
     </div>
