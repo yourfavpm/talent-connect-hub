@@ -47,8 +47,8 @@ const ServiceModels = () => {
         <div className="bg-background min-h-screen text-foreground selection:bg-primary selection:text-white pb-0">
 
             {/* 1. HERO (REDESIGNED ENTERPRISE SaaS STYLE) */}
-            <section className="relative pt-32 pb-16 md:pt-32 md:pb-24 px-6 bg-white border-b border-slate-100 font-inter overflow-hidden">
-                <div className="container max-w-[1200px] mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center justify-items-center relative z-10">
+            <section className="relative pt-40 pb-16 md:pt-40 md:pb-24 px-6 bg-white border-b border-slate-100 font-inter overflow-hidden">
+                <div className="container max-w-[1200px] mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}

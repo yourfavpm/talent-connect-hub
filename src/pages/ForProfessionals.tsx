@@ -8,7 +8,7 @@ const ForProfessionals = () => {
         <div className="bg-white min-h-screen text-slate-900 selection:bg-blue-600 selection:text-white font-inter">
 
             {/* Header / Hero - Enterprise SaaS Style */}
-            <section className="relative pt-32 pb-12 md:pt-32 md:pb-16 flex flex-col justify-center px-6 bg-slate-50/50 overflow-hidden">
+            <section className="relative pt-40 pb-12 md:pt-40 md:pb-16 flex flex-col justify-center px-6 bg-slate-50/50 overflow-hidden">
                 <div className="container max-w-[1200px] mx-auto relative z-20 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                     <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">

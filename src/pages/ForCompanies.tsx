@@ -28,8 +28,8 @@ const ForCompanies = () => {
     return (
         <div className="bg-white min-h-screen text-foreground selection:bg-primary selection:text-white pb-0 overflow-hidden">
             {/* 1. PAGE HERO (REDESIGNED FOR OPERATIONS) */}
-            <section className="relative pt-32 pb-16 md:pt-32 md:pb-16 px-6 bg-[#F8F9FA] font-inter overflow-hidden">
-                <div className="container max-w-[1200px] mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center justify-items-center relative z-10">
+            <section className="relative pt-40 pb-16 md:pt-40 md:pb-16 px-6 bg-[#F8F9FA] font-inter overflow-hidden">
+                <div className="container max-w-[1200px] mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
