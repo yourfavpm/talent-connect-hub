@@ -275,7 +275,7 @@ const Invoices = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>Close</Button>
-            <Button onClick={() => window.open('mailto:accounts@taskive.com')}>Contact Accounts</Button>
+            <Button onClick={() => window.open('mailto:hire@taskive.ca')}>Contact Accounts</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

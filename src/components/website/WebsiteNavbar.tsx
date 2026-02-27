@@ -1,88 +1,378 @@
-
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Menu, X, ChevronDown, ArrowRight, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const WebsiteNavbar = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isResourcesOpen, setIsResourcesOpen] = useState(false);
+    const [isSolutionsOpen, setIsSolutionsOpen] = useState(false);
+    
+    // Mobile submenu states
+    const [mobileSolutionsOpen, setMobileSolutionsOpen] = useState(false);
+    const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
+    
+    const location = useLocation();
 
-    const toggleMenu = () => setIsOpen(!isOpen);
+    const toggleMenu = () => {
+        setIsOpen(!isOpen);
+        if (!isOpen) {
+            // Reset mobile submenus when opening
+            setMobileSolutionsOpen(false);
+            setMobileResourcesOpen(false);
+        }
+    };
 
     const NavLinks = [
         { name: "For Companies", path: "/for-companies" },
         { name: "For Professionals", path: "/for-professionals" },
         { name: "Service Models", path: "/service-models" },
-        { name: "Pricing", path: "/pricing" },
-        { name: "Insights", path: "/insights" },
     ];
 
+    const SolutionLinks = [
+        { name: "Direct Hire", path: "/direct-hire" },
+        { name: "Trial-to-Hire", path: "/trial-to-hire" },
+        { name: "Project Engagement", path: "/project-engagement" },
+        { name: "Offshore Hiring", path: "/offshore-hiring" },
+    ];
+
+    const ResourceLinks = [
+        { name: "Insights", path: "/insights" },
+        { name: "FAQs", path: "/service-models" },
+        { name: "Vetting Process", path: "/vetting-process" },
+    ];
+
+    // Close mobile menu on route change
+    useEffect(() => {
+        setIsOpen(false);
+        setMobileSolutionsOpen(false);
+        setMobileResourcesOpen(false);
+    }, [location.pathname]);
+
+    // Prevent body scroll when menu is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [isOpen]);
+
     return (
-        <nav className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md supports-[backdrop-filter]:bg-white/60">
-            <div className="container flex h-20 items-center justify-between">
-                {/* Logo */}
-                <Link to="/" className="flex items-center">
-                    <img src="/wordmark.png" alt="Taskive" className="h-8" />
+        <nav className="fixed top-0 z-[100] w-full bg-white border-b border-slate-100 font-inter">
+            <div className="max-w-[1440px] mx-auto px-6 md:px-10 h-[72px] flex items-center justify-between">
+                
+                {/* Left: Logo */}
+                <Link to="/" className="flex items-center shrink-0">
+                    <img src="/wordmark.png" alt="Taskive" className="h-7" />
                 </Link>
 
-                {/* Desktop Nav */}
-                <div className="hidden md:flex md:items-center md:gap-8">
+                {/* Center: Desktop Nav */}
+                <div className="hidden lg:flex items-center gap-8">
                     {NavLinks.map((link) => (
                         <Link
                             key={link.name}
                             to={link.path}
-                            className="text-sm font-medium text-slate-600 transition-colors hover:text-primary"
+                            className="text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900 relative group py-2"
                         >
                             {link.name}
+                            <span className="absolute bottom-0 left-0 w-full h-[1.5px] bg-blue-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
                         </Link>
                     ))}
+
+                    {/* Solutions Dropdown */}
+                    <div className="relative group/menu">
+                        <button 
+                            onMouseEnter={() => setIsSolutionsOpen(true)}
+                            onMouseLeave={() => setIsSolutionsOpen(false)}
+                            className="flex items-center gap-1 text-[13px] font-medium text-slate-600 hover:text-slate-900 transition-colors py-2"
+                        >
+                            Solutions <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isSolutionsOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        <AnimatePresence>
+                            {isSolutionsOpen && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    onMouseEnter={() => setIsSolutionsOpen(true)}
+                                    onMouseLeave={() => setIsSolutionsOpen(false)}
+                                    className="absolute top-full left-0 w-52 bg-white border border-slate-100 shadow-xl shadow-slate-200/50 rounded-xl mt-1 py-3 z-50 overflow-hidden"
+                                >
+                                    {SolutionLinks.map((link) => (
+                                        <Link
+                                            key={link.name}
+                                            to={link.path}
+                                            className="block px-5 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                                        >
+                                            {link.name}
+                                        </Link>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    <Link
+                        to="/pricing"
+                        className="text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900 relative group py-2"
+                    >
+                        Pricing
+                        <span className="absolute bottom-0 left-0 w-full h-[1.5px] bg-blue-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                    </Link>
+                    
+                    {/* Resources Dropdown */}
+                    <div className="relative group/menu">
+                        <button 
+                            onMouseEnter={() => setIsResourcesOpen(true)}
+                            onMouseLeave={() => setIsResourcesOpen(false)}
+                            className="flex items-center gap-1 text-[13px] font-medium text-slate-600 hover:text-slate-900 transition-colors py-2"
+                        >
+                            Resources <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isResourcesOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        <AnimatePresence>
+                            {isResourcesOpen && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    onMouseEnter={() => setIsResourcesOpen(true)}
+                                    onMouseLeave={() => setIsResourcesOpen(false)}
+                                    className="absolute top-full left-0 w-48 bg-white border border-slate-100 shadow-xl shadow-slate-200/50 rounded-xl mt-1 py-3 z-50 overflow-hidden"
+                                >
+                                    {ResourceLinks.map((link) => (
+                                        <Link
+                                            key={link.name}
+                                            to={link.path}
+                                            className="block px-5 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                                        >
+                                            {link.name}
+                                        </Link>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
 
-                {/* Desktop CTAs */}
-                <div className="hidden md:flex md:items-center md:gap-4">
-                    <Button variant="ghost" asChild className="hidden lg:inline-flex text-slate-600 hover:text-primary hover:bg-slate-100">
-                        <Link to="/auth/signup">Apply as Talent</Link>
-                    </Button>
-                    <Button asChild className="bg-primary text-white hover:bg-primary/90 shadow-md hover:shadow-lg transition-all">
-                        <Link to="/book-consultation">Book Consultation</Link>
-                    </Button>
+                {/* Right: CTAs */}
+                <div className="hidden lg:flex items-center gap-6">
+                    <Link 
+                        to="/auth/signup?portal=talent"
+                        className="text-[13px] font-semibold text-slate-500 hover:text-slate-900 transition-colors"
+                    >
+                        Apply as Talent
+                    </Link>
+                    <Link 
+                        to="/auth/login?portal=client"
+                        className="px-5 py-2.5 border border-slate-200 text-slate-900 text-[13px] font-semibold rounded-lg hover:border-slate-900 transition-all font-inter"
+                    >
+                        Login
+                    </Link>
+                    <Link 
+                        to="/auth/signup?portal=client"
+                        className="px-6 py-2.5 bg-slate-900 text-white text-[13px] font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-sm font-inter"
+                    >
+                        Request Talent
+                    </Link>
                 </div>
 
                 {/* Mobile Menu Button */}
                 <button
-                    className="flex items-center justify-center p-2 text-muted-foreground md:hidden"
+                    className="lg:hidden flex items-center justify-center p-2 text-slate-600"
                     onClick={toggleMenu}
                     aria-label="Toggle menu"
                 >
-                    {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                    <Menu className="h-6 w-6" />
                 </button>
             </div>
 
-            {/* Mobile Menu */}
-            {isOpen && (
-                <div className="container md:hidden py-4 pb-8 border-t border-border/40 bg-background animate-fade-in">
-                    <div className="flex flex-col space-y-4">
-                        {NavLinks.map((link) => (
-                            <Link
-                                key={link.name}
-                                to={link.path}
-                                className="text-base font-medium text-foreground py-2 border-b border-border/10"
-                                onClick={() => setIsOpen(false)}
-                            >
-                                {link.name}
-                            </Link>
-                        ))}
-                        <div className="flex flex-col gap-3 mt-4">
-                            <Button asChild className="w-full bg-primary text-primary-foreground">
-                                <Link to="/book-consultation">Book Consultation</Link>
-                            </Button>
-                            <Button variant="outline" asChild className="w-full">
-                                <Link to="/auth/signup?type=talent">Apply as Talent</Link>
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Mobile Drawer */}
+            <AnimatePresence>
+                {isOpen && (
+                    <>
+                        {/* Overlay */}
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={toggleMenu}
+                            className="fixed inset-0 bg-black/15 z-[110] lg:hidden backdrop-blur-[1px]"
+                        />
+
+                        {/* Drawer */}
+                        <motion.div 
+                            initial={{ x: "100%" }}
+                            animate={{ x: 0 }}
+                            exit={{ x: "100%" }}
+                            transition={{ type: "tween", duration: 0.25, ease: "easeOut" }}
+                            className="fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white z-[120] lg:hidden shadow-2xl flex flex-col"
+                        >
+                            {/* Header */}
+                            <div className="h-[72px] px-6 flex items-center justify-between border-b border-slate-100">
+                                <img src="/wordmark.png" alt="Taskive" className="h-6" />
+                                <button onClick={toggleMenu} className="p-2 text-slate-500 hover:text-slate-900">
+                                    <X className="h-6 w-6" />
+                                </button>
+                            </div>
+
+                            {/* Scrollable Content */}
+                            <div className="flex-grow overflow-y-auto px-6 py-8 custom-scrollbar">
+                                <div className="space-y-10">
+                                    {/* Primary Navigation */}
+                                    <div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-1">Navigation</div>
+                                        <div className="space-y-1">
+                                            {NavLinks.map((link) => (
+                                                <Link
+                                                    key={link.name}
+                                                    to={link.path}
+                                                    className="flex items-center justify-between py-3 text-[17px] font-medium text-slate-900 hover:bg-slate-50 px-3 rounded-lg transition-colors"
+                                                >
+                                                    {link.name}
+                                                </Link>
+                                            ))}
+
+                                            {/* Expandable Solutions */}
+                                            <div className="space-y-1">
+                                                <button 
+                                                    onClick={() => setMobileSolutionsOpen(!mobileSolutionsOpen)}
+                                                    className="flex items-center justify-between w-full py-3 text-[17px] font-medium text-slate-900 hover:bg-slate-50 px-3 rounded-lg transition-colors"
+                                                >
+                                                    Solutions
+                                                    <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${mobileSolutionsOpen ? 'rotate-90' : ''}`} />
+                                                </button>
+                                                <AnimatePresence>
+                                                    {mobileSolutionsOpen && (
+                                                        <motion.div 
+                                                            initial={{ height: 0, opacity: 0 }}
+                                                            animate={{ height: "auto", opacity: 1 }}
+                                                            exit={{ height: 0, opacity: 0 }}
+                                                            className="overflow-hidden pl-4 space-y-1"
+                                                        >
+                                                            {SolutionLinks.map((link) => (
+                                                                <Link
+                                                                    key={link.name}
+                                                                    to={link.path}
+                                                                    className="block py-2.5 px-4 text-sm font-medium text-slate-600 hover:text-blue-600 rounded-lg transition-colors"
+                                                                >
+                                                                    {link.name}
+                                                                </Link>
+                                                            ))}
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
+
+                                            <Link
+                                                to="/pricing"
+                                                className="flex items-center justify-between py-3 text-[17px] font-medium text-slate-900 hover:bg-slate-50 px-3 rounded-lg transition-colors"
+                                            >
+                                                Pricing
+                                            </Link>
+
+                                            {/* Expandable Resources */}
+                                            <div className="space-y-1">
+                                                <button 
+                                                    onClick={() => setMobileResourcesOpen(!mobileResourcesOpen)}
+                                                    className="flex items-center justify-between w-full py-3 text-[17px] font-medium text-slate-900 hover:bg-slate-50 px-3 rounded-lg transition-colors"
+                                                >
+                                                    Resources
+                                                    <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${mobileResourcesOpen ? 'rotate-90' : ''}`} />
+                                                </button>
+                                                <AnimatePresence>
+                                                    {mobileResourcesOpen && (
+                                                        <motion.div 
+                                                            initial={{ height: 0, opacity: 0 }}
+                                                            animate={{ height: "auto", opacity: 1 }}
+                                                            exit={{ height: 0, opacity: 0 }}
+                                                            className="overflow-hidden pl-4 space-y-1"
+                                                        >
+                                                            {ResourceLinks.map((link) => (
+                                                                <Link
+                                                                    key={link.name}
+                                                                    to={link.path}
+                                                                    className="block py-2.5 px-4 text-sm font-medium text-slate-600 hover:text-blue-600 rounded-lg transition-colors"
+                                                                >
+                                                                    {link.name}
+                                                                </Link>
+                                                            ))}
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
+
+                                            <Link
+                                                to="/about"
+                                                className="flex items-center justify-between py-3 text-[17px] font-medium text-slate-900 hover:bg-slate-50 px-3 rounded-lg transition-colors"
+                                            >
+                                                About
+                                            </Link>
+                                            <Link
+                                                to="/careers"
+                                                className="flex items-center justify-between py-3 text-[17px] font-medium text-slate-900 hover:bg-slate-50 px-3 rounded-lg transition-colors"
+                                            >
+                                                Careers
+                                            </Link>
+                                        </div>
+                                    </div>
+
+                                    <div className="h-[1px] bg-slate-100" />
+
+                                    {/* Services Section */}
+                                    <div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-1">Services</div>
+                                        <div className="space-y-1">
+                                            {SolutionLinks.map((link) => (
+                                                <Link
+                                                    key={link.name}
+                                                    to={link.path}
+                                                    className="block py-2.5 px-4 text-[14px] font-medium text-slate-500 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
+                                                >
+                                                    {link.name}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Sticky Action Section */}
+                            <div className="mt-auto px-6 py-8 border-t border-slate-100 bg-white">
+                                <div className="space-y-4">
+                                    <Link 
+                                        to="/auth/signup?portal=client"
+                                        className="flex items-center justify-center w-full py-3.5 bg-slate-900 text-white font-bold rounded-xl text-sm shadow-sm hover:bg-blue-700 transition-all"
+                                    >
+                                        Request Talent →
+                                    </Link>
+                                    <Link 
+                                        to="/auth/signup?portal=talent"
+                                        className="flex items-center justify-center w-full py-3.5 border border-slate-200 text-slate-900 font-bold rounded-xl text-sm hover:border-slate-900 transition-all"
+                                    >
+                                        Apply as Talent →
+                                    </Link>
+                                    <Link 
+                                        to="/auth/login?portal=client"
+                                        className="block w-full py-2 text-slate-500 font-bold text-center text-[13px] hover:text-slate-900 transition-colors"
+                                    >
+                                        Login
+                                    </Link>
+                                </div>
+                                <div className="mt-6 flex flex-col items-center gap-1">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
+                                        Structured engagements. Transparent pricing.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </nav>
     );
 };

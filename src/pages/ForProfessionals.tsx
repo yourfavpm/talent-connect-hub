@@ -1,65 +1,141 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, DollarSign, ShieldCheck, Briefcase, Zap, Globe, Lock, ArrowRight, UserCheck, Star } from "lucide-react";
+import { Check, DollarSign, ShieldCheck, Briefcase, Zap, Globe, Lock, ArrowRight, UserCheck, Star, TrendingUp, Shield, Users } from "lucide-react";
+import { motion } from "framer-motion";
 
 const ForProfessionals = () => {
     return (
-        <div className="bg-white min-h-screen text-slate-900 selection:bg-black selection:text-white font-serif">
+        <div className="bg-white min-h-screen text-slate-900 selection:bg-blue-600 selection:text-white font-inter">
 
-            {/* Header / Hero - Soft Editorial Style */}
-            <section className="relative min-h-[90vh] flex flex-col justify-center px-6 bg-[#FDFCF8] overflow-hidden">
-                <div className="container max-w-6xl mx-auto relative z-20 grid md:grid-cols-2 gap-16 items-center">
-                    <div className="order-2 md:order-1">
-                        <div className="inline-block px-3 py-1 mb-8 border-l-2 border-stone-900 pl-4">
-                            <span className="text-xs font-bold uppercase tracking-widest text-stone-500">Talent Network</span>
+            {/* Header / Hero - Enterprise SaaS Style */}
+            <section className="relative pt-32 pb-12 md:pt-32 md:pb-16 flex flex-col justify-center px-6 bg-slate-50/50 overflow-hidden">
+                <div className="container max-w-[1200px] mx-auto relative z-20 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                    <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
+                            For Operations Professionals
                         </div>
-                        <h1 className="text-6xl md:text-8xl font-serif font-medium mb-8 text-stone-900 leading-[0.95] tracking-tight">
-                            Your next <br />
-                            <span className="italic text-stone-400">chapter.</span>
+                        <h1 className="text-3xl md:text-7xl font-semibold mb-6 md:mb-8 text-slate-900 leading-[1.2] md:leading-[1.1] tracking-tight">
+                            Join a Curated <br className="hidden md:block" />
+                            Network of <span className="text-blue-600">High-Impact</span> Operators
                         </h1>
-                        <p className="text-xl md:text-2xl text-stone-600 mb-12 font-sans font-light leading-relaxed max-w-lg">
-                            Access a curated network of high-impact roles at ambitious companies. No noise. Just great work.
+                        <p className="text-base md:text-xl text-slate-600 mb-10 md:mb-12 leading-relaxed max-w-xl font-medium mx-auto lg:mx-0">
+                            Work with ambitious companies through structured, vetted engagements — with contracts, compliance, and payments handled centrally.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-6">
-                            <Button size="lg" className="h-16 px-10 text-lg bg-stone-900 text-white hover:bg-stone-800 rounded-full shadow-xl shadow-stone-200 font-medium" asChild>
-                                <Link to="/auth/signup?type=talent">Apply as Talent</Link>
+                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 w-full sm:w-auto">
+                            <Button 
+                                size="lg" 
+                                variant="outline"
+                                className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold transition-all duration-300 shadow-none w-full sm:w-auto" 
+                                asChild
+                            >
+                                <Link to="/auth/signup?portal=talent">Apply as Talent</Link>
                             </Button>
+                            
+                            <Link 
+                                to="#"
+                                className="inline-flex items-center text-slate-900 font-semibold hover:text-blue-600 transition-colors justify-center lg:justify-start"
+                            >
+                                View Open Roles <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
                         </div>
                     </div>
 
-                    {/* Soft Visual */}
-                    <div className="order-1 md:order-2 relative h-[600px] w-full">
-                        <div className="absolute top-10 right-10 w-full h-full bg-stone-100 rounded-t-[10rem] rounded-b-[2rem] -z-10"></div>
-                        <div className="w-full h-full rounded-t-[10rem] rounded-b-[2rem] overflow-hidden shadow-2xl shadow-stone-200">
-                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Professional Woman" />
+                    {/* Visual Panel - Redesigned Dashboard Style */}
+                    <div className="relative hidden lg:block">
+                        <div className="relative z-10 bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 md:p-8 overflow-hidden min-h-[380px] md:min-h-[480px] flex flex-col">
+                            {/* Profile Header */}
+                            <div className="flex items-center gap-6 mb-8 pb-6 border-b border-slate-100">
+                                <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center overflow-hidden">
+                                    <img 
+                                        src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80" 
+                                        className="w-full h-full object-cover" 
+                                        alt="Professional Operator" 
+                                    />
+                                </div>
+                                <div className="flex-grow">
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <div className="text-xl font-bold text-slate-900 tracking-tight">Vetted Operator</div>
+                                        <div className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold rounded-md border border-green-100 flex items-center gap-1">
+                                            <Check className="w-2.5 h-2.5" />
+                                            ACTIVE
+                                        </div>
+                                    </div>
+                                    <div className="text-sm text-slate-500 font-medium">Product Operations Manager</div>
+                                </div>
+                            </div>
+
+                            {/* Skills & Metrics */}
+                            <div className="grid grid-cols-2 gap-4 mb-8">
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Focus Area</div>
+                                    <div className="text-sm font-bold text-slate-800">Fintech Scaleups</div>
+                                </div>
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Experience</div>
+                                    <div className="text-sm font-bold text-slate-800">8+ Years</div>
+                                </div>
+                            </div>
+
+                            {/* Execution Timeline Mockup */}
+                            <div className="mt-auto space-y-4">
+                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Engagement Progress</div>
+                                <div className="space-y-3">
+                                    {[
+                                        { label: "Requirements Definition", status: "completed" },
+                                        { label: "Technical Vetting", status: "completed" },
+                                        { label: "Matching & Interview", status: "active" },
+                                        { label: "Managed Activation", status: "pending" }
+                                    ].map((step, i) => (
+                                        <div key={i} className="flex items-center gap-4">
+                                            <div className={`w-2 h-2 rounded-full ${step.status === 'completed' ? 'bg-blue-600' : step.status === 'active' ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-slate-200'}`} />
+                                            <div className={`text-xs font-semibold ${step.status === 'pending' ? 'text-slate-400' : 'text-slate-700'}`}>{step.label}</div>
+                                            {step.status === 'completed' && <Check className="w-3 h-3 text-blue-600 ml-auto" />}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Floating Metadata Tag */}
+                            <motion.div 
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.8 }}
+                                className="absolute top-8 right-8 bg-blue-600 text-white rounded-xl shadow-xl p-4 flex flex-col items-center gap-1 border border-blue-500/20"
+                            >
+                                <Users className="h-5 w-5 mb-1" />
+                                <span className="text-[10px] font-bold">TOP 1%</span>
+                            </motion.div>
                         </div>
+                        
+                        {/* Decorative background element */}
+                        <div className="absolute -top-10 -right-10 w-64 h-64 bg-blue-100/50 rounded-full blur-3xl -z-10 opacity-40"></div>
+                        <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-slate-200/50 rounded-full blur-3xl -z-10 opacity-40"></div>
                     </div>
                 </div>
             </section>
 
             {/* THE DEAL: Minimalist Grid */}
-            <section className="py-32 px-6">
-                <div className="container max-w-6xl mx-auto">
-                    <div className="grid md:grid-cols-3 gap-12 lg:gap-20">
-                        <div className="border-t border-black pt-6">
-                            <div className="font-sans text-xs font-bold uppercase tracking-widest mb-4 text-slate-400">01 — The Work</div>
-                            <h3 className="text-3xl font-medium mb-4">Build, Don't Maintain.</h3>
-                            <p className="font-sans text-slate-600 leading-relaxed">
+            <section className="py-16 md:py-24 px-6">
+                <div className="container max-w-[1200px] mx-auto">
+                    <div className="grid md:grid-cols-3 gap-12 lg:gap-16">
+                        <div className="pt-8 border-t border-slate-200">
+                            <div className="text-[10px] font-bold uppercase tracking-widest mb-6 text-slate-400">01 — The Work</div>
+                            <h3 className="text-2xl font-bold text-slate-900 mb-6 tracking-tight">Build, Don't Maintain.</h3>
+                            <p className="text-slate-600 leading-relaxed font-medium">
                                 We partner with companies in transformation. You're here to launch, fix, or scale. High impact roles only.
                             </p>
                         </div>
-                        <div className="border-t border-black pt-6">
-                            <div className="font-sans text-xs font-bold uppercase tracking-widest mb-4 text-slate-400">02 — The Pay</div>
-                            <h3 className="text-3xl font-medium mb-4">Top of Market.</h3>
-                            <p className="font-sans text-slate-600 leading-relaxed">
+                        <div className="pt-8 border-t border-slate-200">
+                            <div className="text-[10px] font-bold uppercase tracking-widest mb-6 text-slate-400">02 — The Pay</div>
+                            <h3 className="text-2xl font-bold text-slate-900 mb-6 tracking-tight">Top of Market.</h3>
+                            <p className="text-slate-600 leading-relaxed font-medium">
                                 Transparent, weekly payouts. We handle invoicing and collections so you can focus on the craft.
                             </p>
                         </div>
-                        <div className="border-t border-black pt-6">
-                            <div className="font-sans text-xs font-bold uppercase tracking-widest mb-4 text-slate-400">03 — The Life</div>
-                            <h3 className="text-3xl font-medium mb-4">Total Freedom.</h3>
-                            <p className="font-sans text-slate-600 leading-relaxed">
+                        <div className="pt-8 border-t border-slate-200">
+                            <div className="text-[10px] font-bold uppercase tracking-widest mb-6 text-slate-400">03 — The Life</div>
+                            <h3 className="text-2xl font-bold text-slate-900 mb-6 tracking-tight">Total Freedom.</h3>
+                            <p className="text-slate-600 leading-relaxed font-medium">
                                 Remote-first. Asynchronous. You define how you work best. We just handle the compliance.
                             </p>
                         </div>
@@ -67,59 +143,66 @@ const ForProfessionals = () => {
                 </div>
             </section>
 
-            {/* FEATURED ROLES: Magazine Layout */}
-            <section className="py-24 bg-slate-50 border-y border-black/5">
-                <div className="container max-w-6xl mx-auto flex flex-col md:flex-row gap-16 items-start">
-                    <div className="md:w-1/3 sticky top-32">
-                        <h2 className="text-5xl md:text-6xl font-medium mb-6 leading-none">Recent<br />Placements.</h2>
-                        <p className="font-sans text-slate-500 mb-8">
-                            A curated look at where our talent is making an impact.
+            {/* RECENT OPERATOR DEPLOYMENTS: Board Layout */}
+            <section className="py-24 px-6 bg-slate-50 border-y border-slate-100 font-inter">
+                <div className="container max-w-[1200px] mx-auto grid lg:grid-cols-[1fr_2fr] gap-20 items-start">
+                    <div className="animate-slide-up">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">Recent Operator Deployments</div>
+                        <h2 className="text-4xl md:text-5xl font-bold mb-8 text-slate-900 leading-tight tracking-tight">Where Our Talent Is Making Impact</h2>
+                        <p className="text-lg text-slate-600 mb-10 font-medium leading-relaxed max-w-md">
+                            A snapshot of recent engagements across product and operations — from logistics unicorns to AI research labs.
                         </p>
-                        <Button variant="link" className="font-sans p-0 text-black underline underline-offset-4 hover:opacity-70" asChild>
-                            <Link to="/auth/signup?type=talent">View Open Roles &rarr;</Link>
-                        </Button>
                     </div>
 
-                    <div className="md:w-2/3 grid gap-0 border border-slate-200 bg-white">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                         {[
-                            { role: "Fractional CPO", company: "Fintech Scaleup", rate: "$3,500/week", icon: Briefcase },
-                            { role: "Chief of Staff", company: "AI Research Lab", rate: "$180k + Equity", icon: Zap },
-                            { role: "Head of Growth", company: "SaaS Platform", rate: "$220k Base", icon: Briefcase },
-                            { role: "Ops Architect", company: "Logistics Unicorn", rate: "$250/hour", icon: Globe }
-                        ].map((job, i) => (
-                            <div key={i} className="p-8 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors group flex items-center justify-between font-sans">
-                                <div>
-                                    <h4 className="text-xl font-bold mb-1 group-hover:text-blue-600 transition-colors">{job.role}</h4>
-                                    <div className="text-slate-500 text-sm">{job.company}</div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="font-mono text-sm bg-slate-100 px-3 py-1 rounded-full">{job.rate}</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* VETTING PROCESS: Step by Step */}
-            <section className="py-32 px-6 bg-black text-white">
-                <div className="container max-w-4xl mx-auto">
-                    <div className="text-center mb-20">
-                        <div className="inline-block border border-white/20 px-4 py-1 rounded-full text-xs font-sans tracking-widest mb-6">THE STANDARD</div>
-                        <h2 className="text-4xl md:text-6xl font-medium">Quality over quantity.</h2>
-                    </div>
-
-                    <div className="space-y-12">
-                        {[
-                            { step: "01", title: "Apply as Talent", desc: "Submit your profile and portfolio of work." },
-                            { step: "02", title: "Skill Verification", desc: "We review your expertise and past impact." },
-                            { step: "03", title: "Join the Network", desc: "Get matched with top-tier opportunities." }
+                            { 
+                                role: "Fractional CPO", 
+                                industry: "Fintech Scaleup", 
+                                type: "Fractional Trial", 
+                                comp: "$3,500 / week", 
+                                status: "Active" 
+                            },
+                            { 
+                                role: "Chief of Staff", 
+                                industry: "AI Research Lab", 
+                                type: "Direct Hire", 
+                                comp: "$180k + Equity", 
+                                status: "Converted" 
+                            },
+                            { 
+                                role: "Head of Growth", 
+                                industry: "SaaS Platform", 
+                                type: "Direct Hire", 
+                                comp: "$220k Base", 
+                                status: "Ongoing" 
+                            },
+                            { 
+                                role: "Ops Architect", 
+                                industry: "Logistics Unicorn", 
+                                type: "Project", 
+                                comp: "$250 / hour", 
+                                status: "Active" 
+                            }
                         ].map((item, i) => (
-                            <div key={i} className="flex gap-8 group">
-                                <div className="font-mono text-3xl text-slate-700 group-hover:text-white transition-colors">{item.step}</div>
-                                <div className="border-b border-white/10 pb-12 w-full group-last:border-0">
-                                    <h3 className="text-3xl font-medium mb-3">{item.title}</h3>
-                                    <p className="font-sans text-slate-400 text-lg">{item.desc}</p>
+                            <div key={i} className="px-8 py-6 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <div className="text-lg font-bold text-slate-900">{item.role}</div>
+                                    <div className="flex items-center gap-3 text-sm font-medium text-slate-500">
+                                        <span>{item.industry}</span>
+                                        <div className="w-1 h-1 rounded-full bg-slate-300" />
+                                        <span className="text-slate-400">Engagement: {item.type}</span>
+                                    </div>
+                                </div>
+                                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
+                                    <div className="text-sm font-bold text-slate-900">{item.comp}</div>
+                                    <div className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest border ${
+                                        item.status === 'Active' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
+                                        item.status === 'Converted' ? 'bg-green-50 text-green-600 border-green-100' :
+                                        'bg-slate-50 text-slate-600 border-slate-100'
+                                    }`}>
+                                        {item.status}
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -127,18 +210,61 @@ const ForProfessionals = () => {
                 </div>
             </section>
 
-            {/* FOOTER CTA (REDESIGNED) */}
-            <section className="py-32 px-6 text-center bg-slate-50 border-t border-slate-200">
-                <div className="container max-w-3xl mx-auto">
-                    <h2 className="text-5xl md:text-6xl font-bold mb-8 text-slate-900 font-display">Ready for your next challenge?</h2>
-                    <p className="font-sans text-xl text-slate-600 mb-12 max-w-xl mx-auto">
-                        Join the network of top product and operations professionals.
-                    </p>
-                    <Button size="lg" className="h-16 px-12 rounded-full bg-slate-900 text-white hover:bg-slate-800 transition-all text-lg font-bold shadow-xl" asChild>
-                        <Link to="/auth/signup?type=talent">Apply as Talent</Link>
-                    </Button>
+            {/* OUR VETTING STANDARD: Process Flow */}
+            <section className="py-16 md:py-24 px-6 bg-white font-inter">
+                <div className="container max-w-[1200px] mx-auto">
+                    <div className="text-center mb-16 md:mb-24">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">Our Vetting Standard</div>
+                        <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">A Structured Path Into the Network</h2>
+                        <p className="text-base md:text-lg text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto mb-4">
+                            We curate operators based on documented execution — not keywords.
+                        </p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            Selective admission. Outcome-driven evaluation.
+                        </p>
+                    </div>
+
+                    <div className="relative">
+                        {/* Connecting Line (Desktop) */}
+                        <div className="absolute top-[32px] left-[15%] right-[15%] h-[1px] border-t border-dashed border-slate-200 hidden md:block" />
+                        
+                        <div className="grid md:grid-cols-3 gap-16 relative z-10">
+                            {[
+                                { 
+                                    step: "01", 
+                                    title: "Apply as Talent", 
+                                    desc: "Submit your profile, documented outcomes, and operational track record.",
+                                    icon: UserCheck
+                                },
+                                { 
+                                    step: "02", 
+                                    title: "Skill & Impact Review", 
+                                    desc: "Our team evaluates execution history, decision-making depth, and functional expertise.",
+                                    icon: Shield
+                                },
+                                { 
+                                    step: "03", 
+                                    title: "Structured Matching", 
+                                    desc: "Qualified operators are matched with curated engagements aligned to their strengths.",
+                                    icon: Briefcase
+                                }
+                            ].map((item, i) => (
+                                <div key={i} className="flex flex-col items-center text-center group">
+                                    <div className="w-16 h-16 rounded-full bg-white border border-slate-200 flex items-center justify-center mb-8 shadow-sm group-hover:border-blue-600 group-hover:text-blue-600 transition-all duration-300 relative">
+                                        <div className="text-sm font-bold">{item.step}</div>
+                                    </div>
+                                    <div className="mb-6">
+                                        <item.icon className="h-6 w-6 text-slate-400 mx-auto" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-900 mb-4 tracking-tight">{item.title}</h3>
+                                    <p className="text-slate-500 font-medium leading-relaxed text-sm max-w-[280px]">{item.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </section>
+
         </div>
     );
 };

@@ -1,208 +1,524 @@
-
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, Clock, Globe, Shield, Zap, Search, UserCheck, Layout, CreditCard, Award, TrendingUp, Users, ArrowRight, Star } from "lucide-react";
+import { Check, Clock, Globe, Shield, Zap, Search, UserCheck, Layout, CreditCard, Award, TrendingUp, Users, ArrowRight, Star, Target, ChevronDown, ChevronUp } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ForCompanies = () => {
+    const [showComparison, setShowComparison] = useState(false);
+    
+    const fadeIn = {
+        initial: { opacity: 0, y: 20 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true },
+        transition: { duration: 0.6 }
+    };
+
+    const staggerContainer = {
+        initial: { opacity: 0 },
+        whileInView: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        },
+        viewport: { once: true }
+    };
+
     return (
-        <div className="bg-background min-h-screen text-foreground selection:bg-primary selection:text-white pb-0">
-
-            {/* 1. PAGE HERO (UNIQUE) */}
-            <section className="relative pt-32 pb-20 px-6 border-b border-slate-200 bg-white overflow-hidden">
-                <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-                    <div className="relative z-10 animate-slide-up">
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-display tracking-tight text-primary leading-[1.1]">
-                            Hire Product & Operations Talent  <span className="text-blue-950">Without the Headache.</span>
+        <div className="bg-white min-h-screen text-foreground selection:bg-primary selection:text-white pb-0 overflow-hidden">
+            {/* 1. PAGE HERO (REDESIGNED FOR OPERATIONS) */}
+            <section className="relative pt-32 pb-16 md:pt-32 md:pb-16 px-6 bg-[#F8F9FA] font-inter overflow-hidden">
+                <div className="container max-w-[1200px] mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center justify-items-center relative z-10">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="flex flex-col items-center text-center lg:items-start lg:text-left"
+                    >
+                        <h1 className="text-3xl md:text-5xl lg:text-[52px] font-semibold mb-6 md:mb-6 tracking-tight text-slate-900 leading-[1.2] md:leading-[1.1]">
+                            Operations Talent, <span className="text-slate-900/40 block">Structured for Scale</span>
                         </h1>
-                        <p className="text-xl text-slate-600 mb-10 max-w-lg font-serif leading-relaxed">
-                            Connect with vetted professionals matched to your needs and focus on growing your business while we handle talent engagement, compliance, and workflow.
+                        <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium mx-auto lg:mx-0">
+                            Access rigorously vetted operations professionals — matched, contracted, and managed through a structured platform designed for scale.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <Button size="lg" className="h-14 px-8 text-lg bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg" asChild>
-                                <Link to="/book-consultation">Book a Consultation</Link>
+                        <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-12 w-full">
+                            <Button size="lg" className="h-14 px-8 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-none w-full sm:w-auto" asChild>
+                                <Link to="/book-consultation">Book an Operations Consultation</Link>
                             </Button>
-                            <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-slate-300 text-slate-700 hover:text-primary rounded-full" asChild>
-                                <Link to="/service-models">View Service Models</Link>
+                            <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-600 hover:text-slate-900 rounded-full font-bold flex items-center justify-center lg:justify-start gap-2 w-full sm:w-auto" asChild>
+                                <Link to="/service-models">View Engagement Models <ArrowRight className="w-4 h-4" /></Link>
                             </Button>
                         </div>
-                    </div>
-
-                    {/* Unique Hero Visual */}
-                    <div className="relative h-[550px] hidden lg:block animate-fade-in">
-                        <div className="absolute right-0 top-6 w-[95%] h-full bg-slate-50 rounded-tl-[3rem] rounded-bl-[2rem] overflow-hidden border border-slate-200 shadow-2xl">
-                            <div className="p-8">
-                                {/* Simplified UI Mockup */}
-                                <div className="flex items-center justify-between mb-8 border-b border-slate-200 pb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-600"><Users className="h-5 w-5" /></div>
-                                        <div>
-                                            <div className="font-bold text-primary">Senior Product Manager</div>
-                                            <div className="text-sm text-slate-500">Shortlist Ready • 3 Candidates</div>
-                                        </div>
-                                    </div>
-                                    <div className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">ACTION REQUIRED</div>
+                        
+                        {/* System Status Indicators */}
+                        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 pt-6 border-t border-slate-200/60">
+                            {[
+                                { label: "Vetting Completed", icon: UserCheck },
+                                { label: "Contract Model Selected", icon: Shield },
+                                { label: "Ops Manager Assigned", icon: Target }
+                            ].map((item, i) => (
+                                <div key={i} className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                                    <item.icon className="h-3.5 w-3.5 text-blue-600" />
+                                    {item.label}
                                 </div>
-                                <div className="space-y-4">
-                                    {/* Candidate 1 */}
-                                    <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition-colors group cursor-pointer">
-                                        <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100">
-                                            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80" className="w-full h-full object-cover" alt="Alex" />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <div className="font-bold text-slate-900 group-hover:text-blue-950 transition-colors">Alex M.</div>
-                                            <div className="text-sm text-slate-500">Ex-Spotify • 7 Yrs Exp</div>
-                                        </div>
-                                        <Button size="sm" variant="ghost" className="text-blue-950 font-medium">View Profile</Button>
-                                    </div>
+                            ))}
+                        </div>
+                    </motion.div>
 
-                                    {/* Candidate 2 */}
-                                    <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition-colors group cursor-pointer">
-                                        <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100">
-                                            <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80" className="w-full h-full object-cover" alt="Sarah" />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <div className="font-bold text-slate-900 group-hover:text-blue-950 transition-colors">Sarah K.</div>
-                                            <div className="text-sm text-slate-500">Ex-Uber • Product Ops</div>
-                                        </div>
-                                        <Button size="sm" variant="ghost" className="text-blue-950 font-medium">View Profile</Button>
+                    {/* Right Side Visual: Active Operations Shortlist */}
+                    <motion.div 
+                        initial={{ opacity: 0, x: 30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                        className="relative hidden lg:block"
+                    >
+                        <div className="bg-white rounded-[24px] border border-slate-200 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] p-8">
+                            <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                                        <Users className="h-6 w-6" />
                                     </div>
-
-                                    {/* Candidate 3 */}
-                                    <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition-colors group cursor-pointer">
-                                        <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100">
-                                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80" className="w-full h-full object-cover" alt="David" />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <div className="font-bold text-slate-900 group-hover:text-blue-950 transition-colors">David L.</div>
-                                            <div className="text-sm text-slate-500">Ex-Stripe • Growth Lead</div>
-                                        </div>
-                                        <Button size="sm" variant="ghost" className="text-blue-950 font-medium">View Profile</Button>
+                                    <div>
+                                        <div className="font-bold text-slate-900 text-base">Active Shortlist</div>
+                                        <div className="text-sm text-slate-500 font-medium">Operations Manager · 4 Candidates</div>
                                     </div>
+                                </div>
+                                <div className="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-bold tracking-widest rounded-full uppercase border border-amber-100">
+                                    In Review
+                                </div>
+                            </div>
 
+                            <div className="space-y-4">
+                                {[
+                                    { name: "S. Bennett", role: "Product Operations Manager", focus: "SaaS & Enterprise" },
+                                    { name: "M. Chen", role: "Revenue Operations Lead", focus: "Fintech & Pay-ops" },
+                                    { name: "J. Walters", role: "Business Operations Manager", focus: "Growth & Marketplace" },
+                                    { name: "A. Ibrahim", role: "Program Operations Lead", focus: "Scalable Infrastructure" }
+                                ].map((row, i) => (
+                                    <motion.div 
+                                        key={i}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.4 + (i * 0.1) }}
+                                        className="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-sm transition-all group"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center text-slate-400 font-bold text-xs">
+                                                {row.name.split(' ').map(n => n[0]).join('')}
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{row.name}</div>
+                                                <div className="text-[12px] text-slate-500 font-medium">{row.role}</div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Focus</div>
+                                            <div className="text-[11px] font-semibold text-slate-700">{row.focus}</div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+
+                            <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+                                <div className="flex -space-x-2">
+                                    {[1, 2, 3].map((_, i) => (
+                                        <div key={i} className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white" />
+                                    ))}
+                                    <div className="w-8 h-8 rounded-full bg-blue-50 border-2 border-white flex items-center justify-center text-[10px] font-bold text-blue-600">
+                                        +4
+                                    </div>
+                                </div>
+                                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                    <Clock className="w-3 h-3 text-blue-400" />
+                                    Update: 2h ago
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </section>
 
-            {/* 2. BUSINESS PROBLEM (IMPACT STATEMENT) */}
-            <section className="py-24 px-6 bg-slate-50 border-b border-slate-200">
-                <div className="container max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-                    <div>
-                        <h2 className="text-3xl md:text-5xl font-bold mb-6 font-display text-primary">The Challenge of Hiring Skilled Professionals</h2>
-                        <p className="text-lg text-slate-600 font-serif leading-relaxed mb-8">
-                            Traditional hiring is slow, fragmented, and unpredictable. Taskive offers an integrated solution that matches talent quickly and manages the end-to-end engagement.
+            {/* 2. OPERATIONAL GAP SECTION (REDESIGNED) */}
+            <section className="py-24 px-6 relative bg-white border-y border-slate-100 font-inter">
+                <div className="container max-w-[1200px] mx-auto grid lg:grid-cols-2 gap-20 items-center">
+                    <motion.div {...fadeIn}>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">The Operational Gap</div>
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold mb-8 text-slate-900 leading-[1.15] tracking-tight">Hiring Without Structure <br/>Slows Growth.</h2>
+                        <p className="text-lg text-slate-600 leading-relaxed mb-6 max-w-lg">
+                            When hiring lacks structure, leadership time shifts from strategy to screening, compliance, and coordination.
                         </p>
-                    </div>
-                    <div className="space-y-6">
+                        <p className="text-base text-slate-500 leading-relaxed max-w-lg">
+                            Taskive replaces fragmented workflows with a unified operational model designed for scale.
+                        </p>
+                    </motion.div>
+
+                    <div className="grid sm:grid-cols-2 gap-6">
                         {[
-                            { icon: Clock, text: "Time lost on screening endless applications" },
-                            { icon: TrendingUp, text: "High recruitment costs with low guarantee" },
-                            { icon: Shield, text: "Compliance risk with international contractors" },
-                            { icon: Layout, text: "Disjointed payroll and tracking systems" }
+                            { 
+                                title: "Leadership Time Diverted", 
+                                desc: "Founders and ops leads spend weeks screening instead of building systems.", 
+                                stat: "Average internal screening cycle: 3–5 weeks." 
+                            },
+                            { 
+                                title: "Unpredictable Recruitment Costs", 
+                                desc: "Agency retainers and internal hiring overhead compound quickly.", 
+                                stat: "20–30% agency fees common." 
+                            },
+                            { 
+                                title: "Cross-Border Payroll Complexity", 
+                                desc: "Global hiring introduces legal and tax exposure.", 
+                                stat: "Multiple regulatory layers per market." 
+                            },
+                            { 
+                                title: "Disconnected Hiring Tools", 
+                                desc: "ATS, payroll, contracts, onboarding rarely unified.", 
+                                stat: "4+ systems typically required." 
+                            }
                         ].map((item, i) => (
-                            <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
-                                <item.icon className="h-6 w-6 text-red-400 flex-shrink-0" />
-                                <span className="text-slate-700 font-medium">{item.text}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* 3. HOW TASKIVE HELPS (CLEAR VALUE) */}
-            <section className="py-24 px-6 bg-white">
-                <div className="container max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold mb-4 font-display text-primary">What Taskive Does for Your Business</h2>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {[
-                            { title: "Match Fast", desc: "Taskive pairs you with professionals based on need and skill fit.", icon: Zap },
-                            { title: "Managed Engagements", desc: "Contracts, compliance, and coordination handled centrally.", icon: Check },
-                            { title: "Transparent Payments", desc: "Clear billing and payment terms that scale with your growth.", icon: CreditCard },
-                            { title: "Ongoing Support", desc: "Account support to keep placements aligned with goals.", icon: Users }
-                        ].map((card, i) => (
-                            <div key={i} className="group p-8 bg-white border border-slate-200 rounded-3xl hover:shadow-xl hover:border-slate-300 transition-all duration-300">
-                                <div className="w-14 h-14 bg-slate-50 group-hover:bg-blue-600 rounded-2xl flex items-center justify-center mb-6 transition-colors duration-300">
-                                    <card.icon className="h-7 w-7 text-primary group-hover:text-white transition-colors" />
+                            <motion.div 
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                                className="p-8 bg-white rounded-[16px] border border-slate-200 shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
+                            >
+                                <div className="absolute left-0 top-8 bottom-8 w-[1px] bg-slate-200 group-hover:bg-blue-600 transition-colors" />
+                                <h3 className="text-base font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">{item.title}</h3>
+                                <p className="text-sm text-slate-500 leading-relaxed mb-6">
+                                    {item.desc}
+                                </p>
+                                <div className="mt-auto">
+                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                        <TrendingUp className="w-3 h-3 text-slate-300" />
+                                        Performance Hit
+                                    </div>
+                                    <div className="text-xs font-semibold text-slate-700">{item.stat}</div>
                                 </div>
-                                <h3 className="text-xl font-bold mb-3 text-primary">{card.title}</h3>
-                                <p className="text-slate-600 leading-relaxed text-sm">{card.desc}</p>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* 4. SERVICE MODELS (RE-DESIGNED) */}
-            <section className="py-24 px-6 bg-slate-900 text-white">
-                <div className="container max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold mb-4 font-display">Engagement Options</h2>
-                        <p className="text-slate-400 text-lg max-w-2xl mx-auto">Choose the model that aligns with your team’s tempo and budget.</p>
+            {/* 3. OUR OPERATIONAL MODEL (REDESIGNED) */}
+            <section className="py-24 px-6 bg-white font-inter relative overflow-hidden">
+                <div className="container max-w-[1200px] mx-auto">
+                    <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-20 gap-8">
+                        <div className="max-w-2xl">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Our Operational Model</div>
+                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-slate-900 mb-6 leading-[1.1] tracking-tight">
+                                Operational Infrastructure, <br/>Not Just Hiring.
+                            </h2>
+                            <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
+                                Taskive centralizes vetting, contracting, billing, and engagement management — reducing leadership overhead and operational risk.
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="grid lg:grid-cols-3 gap-0 border border-slate-200 bg-white rounded-none">
-                        {/* Simple Text-Based Models */}
+                    <div className="grid lg:grid-cols-12 gap-12 items-start">
+                        {/* Left Column: Core Differentiators */}
+                        <div className="lg:col-span-7 space-y-8">
+                            {[
+                                {
+                                    number: "01",
+                                    title: "Structured Matching",
+                                    desc: "We match based on operational scope, execution depth, and team maturity — not just keywords.",
+                                    note: "Skill-level tiering + manager oversight"
+                                },
+                                {
+                                    number: "02",
+                                    title: "Centralized Engagement Management",
+                                    desc: "Contracts, compliance, coordination, and performance tracking handled within a unified system.",
+                                    note: "No fragmented tools"
+                                }
+                            ].map((item, i) => (
+                                <motion.div 
+                                    key={i}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: i * 0.1 }}
+                                    className="p-10 bg-slate-50/50 rounded-[16px] border border-slate-100 relative group hover:bg-white hover:border-blue-100 hover:shadow-sm transition-all"
+                                >
+                                    <div className="text-4xl font-bold text-slate-200 mb-6 group-hover:text-blue-600/20 transition-colors">{item.number}</div>
+                                    <h3 className="text-2xl font-bold text-slate-900 mb-4">{item.title}</h3>
+                                    <p className="text-slate-600 text-lg leading-relaxed mb-6">{item.desc}</p>
+                                    <div className="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-widest">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                                        {item.note}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* Right Column: Supporting Capabilities */}
+                        <div className="lg:col-span-5 grid sm:grid-cols-2 lg:grid-cols-1 gap-6">
+                            {[
+                                { title: "Transparent Billing", desc: "Clear invoicing aligned to service model." },
+                                { title: "Dedicated Ops Manager", desc: "Every engagement includes operational oversight." },
+                                { title: "Service-Model Flexibility", desc: "Direct hire, trial-to-hire, or project-based." },
+                                { title: "Automated Contracts", desc: "Service-type driven agreement generation." }
+                            ].map((item, i) => (
+                                <motion.div 
+                                    key={i}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: 0.2 + (i * 0.1) }}
+                                    className="p-6 bg-white rounded-[14px] border border-slate-200 hover:border-slate-300 transition-all"
+                                >
+                                    <h4 className="text-base font-bold text-slate-900 mb-2">{item.title}</h4>
+                                    <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            {/* 4. ENGAGEMENT STRUCTURE (REDESIGNED) */}
+            <section className="py-24 px-6 bg-slate-50/50 border-t border-slate-100 font-inter">
+                <div className="container max-w-[1200px] mx-auto">
+                    <div className="text-center max-w-3xl mx-auto mb-20">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Engagement Structure</div>
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-slate-900 mb-6 leading-[1.15] tracking-tight">
+                            Three Structured Models. <br/>Clear Operational Tradeoffs.
+                        </h2>
+                        <p className="text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto font-medium">
+                            Each model aligns risk, control, and cost with your team’s growth stage.
+                        </p>
+                    </div>
+
+                    <div className="grid lg:grid-cols-3 gap-8 mb-16 px-4">
                         {[
                             {
-                                title: "Full-Time Hire",
-                                desc: "Permanent placement with equity & benefits.",
-                                details: ["Verified Employers", "Salary Negotiation Support", "Long-term Growth"]
+                                title: "Direct Hire",
+                                desc: "Permanent placement with structured employment transfer.",
+                                attributes: [
+                                    "15% annual salary buyout",
+                                    "Direct employment relationship",
+                                    "One-time fee",
+                                    "No ongoing platform margin"
+                                ],
+                                ideal: "Long-term leadership roles.",
+                                cta: "Explore Direct Hire"
                             },
                             {
                                 title: "Trial-to-Hire",
-                                desc: "3-month contract to prove fit before signing.",
-                                details: ["Paid Trial Period", "Cultural Fit Check", "Seamless Conversion"]
+                                desc: "Start managed. Convert when ready.",
+                                attributes: [
+                                    "20% platform margin",
+                                    "Talent paid via Taskive",
+                                    "Monthly or hourly billing",
+                                    "Conversion flexibility"
+                                ],
+                                ideal: "Reducing hiring risk.",
+                                cta: "Start a Trial",
+                                recommended: true
                             },
                             {
                                 title: "One-Time Project",
-                                desc: "High-value consulting for defined scopes.",
-                                details: ["Clear Milestones", "Guaranteed Payment", "Flexible Schedule"]
+                                desc: "Defined scope engagement.",
+                                attributes: [
+                                    "30% margin built into pricing",
+                                    "Milestone-based billing",
+                                    "No long-term obligation",
+                                    "Rapid deployment"
+                                ],
+                                ideal: "High-impact defined initiatives.",
+                                cta: "Launch a Project"
                             }
                         ].map((model, i) => (
-                            <div key={i} className="p-12 border-b lg:border-b-0 lg:border-r last:border-0 border-slate-200 hover:bg-slate-50 transition-colors">
-                                <h3 className="text-2xl font-bold mb-4 font-display text-slate-900">{model.title}</h3>
-                                <p className="text-slate-700 mb-8 leading-relaxed h-16">{model.desc}</p>
-                                <ul className="space-y-4">
-                                    {model.details.map((d, j) => (
-                                        <li key={j} className="flex items-center gap-3 text-sm font-bold text-primary">
-                                            <div className="w-1.5 h-1.5 bg-primary rounded-full"></div> {d}
+                            <motion.div 
+                                key={i}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                                className={`bg-white p-10 rounded-[20px] border relative group flex flex-col items-start ${model.recommended ? 'border-blue-200 shadow-md ring-1 ring-blue-50' : 'border-slate-200 shadow-sm'}`}
+                            >
+                                {model.recommended && (
+                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.15em] px-4 py-1.5 rounded-full shadow-lg">
+                                        Recommended
+                                    </div>
+                                )}
+                                <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100 rounded-t-[20px] overflow-hidden">
+                                    <div className={`h-full w-20 transition-all group-hover:w-full duration-700 ${model.recommended ? 'bg-blue-600' : 'bg-slate-200'}`} />
+                                </div>
+                                <h3 className="text-2xl font-bold text-slate-900 mb-4">{model.title}</h3>
+                                <p className="text-sm text-slate-500 leading-relaxed font-medium mb-8 min-h-[40px]">{model.desc}</p>
+                                
+                                <ul className="space-y-4 mb-8 w-full">
+                                    {model.attributes.map((attr, j) => (
+                                        <li key={j} className="flex items-start gap-3 text-sm text-slate-600 font-medium">
+                                            <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-blue-600 transition-colors shrink-0" />
+                                            {attr}
                                         </li>
                                     ))}
                                 </ul>
-                            </div>
+
+                                <div className="mt-auto pt-8 border-t border-slate-50 w-full mb-8">
+                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Ideal For</div>
+                                    <div className="text-sm font-semibold text-slate-800">{model.ideal}</div>
+                                </div>
+
+                                <Button 
+                                    className={`w-full py-6 rounded-full font-bold text-sm shadow-none border ${model.recommended ? 'bg-blue-600 hover:bg-blue-700 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
+                                    asChild
+                                >
+                                    <Link to="/auth/signup?portal=client">
+                                        {model.cta}
+                                    </Link>
+                                </Button>
+                            </motion.div>
                         ))}
                     </div>
+
+                    {/* Comparison Toggle Button */}
+                    <div className="flex justify-center">
+                        <button 
+                            onClick={() => setShowComparison(!showComparison)}
+                            className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] hover:text-blue-600 transition-colors group px-6 py-4 rounded-full border border-slate-100 bg-white"
+                        >
+                            {showComparison ? 'Hide' : 'Full'} Comparison Table
+                            {showComparison ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />}
+                        </button>
+                    </div>
+
+                    <AnimatePresence>
+                        {showComparison && (
+                            <motion.div 
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.4 }}
+                                className="overflow-hidden"
+                            >
+                                <div className="mt-12 overflow-x-auto rounded-[16px] border border-slate-200 bg-white shadow-sm overflow-hidden">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-50/50 border-b border-slate-100">
+                                                <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Parameter</th>
+                                                <th className="px-8 py-6 text-sm font-bold text-slate-900">Direct Hire</th>
+                                                <th className="px-8 py-6 text-sm font-bold text-slate-900">Trial-to-Hire</th>
+                                                <th className="px-8 py-6 text-sm font-bold text-slate-900">One-Time Project</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            {[
+                                                { p: "Margin", v1: "15% flat fee", v2: "20% platform margin", v3: "30% built-in" },
+                                                { p: "Billing Type", v1: "Single payment", v2: "Monthly/Hourly", v3: "Milestone-based" },
+                                                { p: "Timesheets", v1: "N/A", v2: "Required", v3: "N/A" },
+                                                { p: "Conversion", v1: "Instant", v2: "Flexible", v3: "Project Based" },
+                                                { p: "Commitment", v1: "Permanent", v2: "Rolling Monthly", v3: "Project Scope" }
+                                            ].map((row, i) => (
+                                                <tr key={i} className="hover:bg-slate-50/30 transition-colors">
+                                                    <td className="px-8 py-5 text-sm font-bold text-slate-500">{row.p}</td>
+                                                    <td className="px-8 py-5 text-sm text-slate-700 font-medium">{row.v1}</td>
+                                                    <td className="px-8 py-5 text-sm text-slate-700 font-medium">{row.v2}</td>
+                                                    <td className="px-8 py-5 text-sm text-slate-700 font-medium">{row.v3}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </section>
 
-            {/* 5. PROCESS (STEP-BY-STEP) */}
-            <section className="py-24 px-6 bg-white">
-                <div className="container max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold mb-4 font-display text-primary">How It Works</h2>
+            {/* 5. OUR PROCESS (REDESIGNED) */}
+            <section className="py-24 px-6 bg-white font-inter relative overflow-hidden">
+                <div className="container max-w-[1200px] mx-auto">
+                    <div className="text-center max-w-3xl mx-auto mb-24">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Our Process</div>
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-slate-900 mb-6 leading-[1.15] tracking-tight">
+                            A Structured Path from <br/>Need to Execution
+                        </h2>
+                        <p className="text-lg text-slate-600 leading-relaxed font-medium">
+                            Designed for speed, clarity, and operational control.
+                        </p>
                     </div>
 
-                    <div className="relative">
-                        <div className="hidden lg:block absolute top-12 left-0 w-full h-0.5 bg-slate-100"></div>
-                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    <div className="relative pt-12 pb-24">
+                        {/* Horizontal Timeline Line */}
+                        <div className="absolute top-[60px] left-0 right-0 h-[2px] border-t-2 border-dashed border-slate-100 hidden lg:block" />
+                        
+                        {/* Animated Progress Line */}
+                        <motion.div 
+                            className="absolute top-[60px] left-0 h-[2px] bg-blue-600 hidden lg:block"
+                            initial={{ width: "0%" }}
+                            whileInView={{ width: "100%" }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            transition={{ duration: 1.5, ease: "easeInOut" }}
+                        />
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-12 lg:gap-4 relative z-10">
                             {[
-                                { title: "Define Your Need", desc: "Share project or role details with our team.", icon: Search },
-                                { title: "Get Matched", desc: "Receive curated talent recommendations.", icon: UserCheck },
-                                { title: "Interview & Select", desc: "Choose with confidence from pre-vetted profiles.", icon: Check },
-                                { title: "Engage & Manage", desc: "Work, track progress, and collaborate seamlessly.", icon: Layout },
-                                { title: "Pay & Optimize", desc: "Simplified billing aligned with your chosen model.", icon: CreditCard }
+                                {
+                                    num: "01",
+                                    title: "Define Requirements",
+                                    desc: "Align on scope, outcomes, and success metrics.",
+                                    expanded: "Work with our strategy team to map technical needs to operational goals before sourcing begins."
+                                },
+                                {
+                                    num: "02",
+                                    title: "Curated Matching",
+                                    desc: "Receive 2–3 vetted operations professionals within 48 hours.",
+                                    expanded: "Skip the generic marketplace. We present only the top 1% matched for your specific stack and scale."
+                                },
+                                {
+                                    num: "03",
+                                    title: "Interview & Select",
+                                    desc: "Conduct structured interviews with platform guidance.",
+                                    expanded: "Use our built-in scheduling and evaluation tools to ensure a consistent assessment across candidates."
+                                },
+                                {
+                                    num: "04",
+                                    title: "Engage & Activate",
+                                    desc: "Contracts, compliance, and onboarding handled centrally.",
+                                    expanded: "Automated EOR/Trial-to-Hire contracts generated instantly with secure digital signing."
+                                },
+                                {
+                                    num: "05",
+                                    title: "Optimize & Scale",
+                                    desc: "Track performance, adjust scope, and scale confidently.",
+                                    expanded: "Ongoing operational support and easy conversion or extension options as your needs evolve."
+                                }
                             ].map((step, i) => (
-                                <div key={i} className="relative z-10 bg-white pt-4 text-center lg:text-left">
-                                    <div className="w-16 h-16 bg-white border-2 border-slate-100 rounded-full flex items-center justify-center mb-6 mx-auto lg:mx-0 text-primary font-bold shadow-sm">
-                                        <step.icon className="h-6 w-6 text-blue-600" />
+                                <div key={i} className="flex flex-col items-center lg:items-start text-center lg:text-left group relative">
+                                    {/* Step Marker */}
+                                    <motion.div 
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        whileInView={{ opacity: 1, scale: 1 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: i * 0.1 }}
+                                        className="w-12 h-12 rounded-full border border-slate-200 bg-white shadow-sm mb-8 flex items-center justify-center text-xs font-bold text-slate-500 group-hover:bg-blue-600 group-hover:border-blue-600 group-hover:text-white group-hover:shadow-lg group-hover:shadow-blue-200 transition-all duration-300 relative z-20"
+                                    >
+                                        {step.num}
+                                    </motion.div>
+
+                                    {/* Content */}
+                                    <div className="px-4 lg:px-0">
+                                        <h4 className="text-base font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+                                            {step.title}
+                                        </h4>
+                                        <p className="text-xs text-slate-500 font-medium leading-relaxed max-w-[200px] lg:max-w-none">
+                                            {step.desc}
+                                        </p>
                                     </div>
-                                    <h3 className="text-xl font-bold mb-2 text-primary">{i + 1}. {step.title}</h3>
-                                    <p className="text-slate-600 text-sm">{step.desc}</p>
+
+                                    {/* Hover Reveal Card (Desktop Only) */}
+                                    <div className="absolute top-24 left-1/2 -translate-x-1/2 w-64 p-6 bg-white rounded-xl border border-blue-100 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-2 transition-all duration-300 z-30 pointer-events-none hidden lg:block">
+                                        <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2">Deep Dive</div>
+                                        <p className="text-[12px] text-slate-600 leading-relaxed font-medium">
+                                            {step.expanded}
+                                        </p>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -210,92 +526,188 @@ const ForCompanies = () => {
                 </div>
             </section>
 
-            {/* 6. FEATURE HIGHLIGHTS (RE-DESIGNED) */}
-            <section className="py-24 px-6 bg-slate-50 border-y border-slate-200">
-                <div className="container max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold mb-4 font-display text-primary">Built for Operational Simplicity</h2>
-                        <p className="text-slate-600 font-serif">Everything you need to manage your distributed team, in one place.</p>
+            {/* 7. CLIENT RESULTS (REDESIGNED) */}
+            <section className="py-24 px-6 bg-white font-inter">
+                <div className="container max-w-[1200px] mx-auto">
+                    <div className="text-center mb-20">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Client Results</div>
+                        <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 tracking-tight">
+                            Trusted by Growing and <br/>Enterprise Teams
+                        </h2>
                     </div>
 
-                    <div className="grid md:grid-cols-4 gap-8">
-                        {[
-                            { title: "Invoice & Payment", desc: "Consolidated billing view.", icon: CreditCard },
-                            { title: "Contract Management", desc: "Secure digital signatures.", icon: Shield },
-                            { title: "Time Tracking", desc: "Hourly & project logs.", icon: Clock },
-                            { title: "Dedicated Support", desc: "24/7 Ops assistance.", icon: Users }
-                        ].map((feat, i) => (
-                            <div key={i} className="text-center group p-6 rounded-xl hover:bg-white hover:shadow-md transition-all">
-                                <div className="w-20 h-20 mx-auto bg-white border border-slate-100 rounded-full flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 group-hover:border-blue-200 transition-all">
-                                    <feat.icon className="h-8 w-8 text-blue-600" />
+                    <div className="grid lg:grid-cols-12 gap-12 items-center mb-20">
+                        {/* Left Column: Testimonial */}
+                        <div className="lg:col-span-7">
+                            <div className="relative">
+                                <span className="absolute -top-10 -left-6 text-[120px] text-slate-100 font-serif leading-none pointer-events-none">“</span>
+                                <blockquote className="text-2xl md:text-3xl lg:text-4xl font-medium text-slate-900 leading-[1.3] relative z-10">
+                                    Taskive transformed how we build our operations team. We moved from fragmented hiring to a <span className="text-blue-600">structured, world-class talent pipeline</span> in weeks.
+                                </blockquote>
+                                <div className="mt-12 flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-900 border border-slate-200">
+                                        O
+                                    </div>
+                                    <div>
+                                        <div className="text-lg font-bold text-slate-900">Ola Oluwadara</div>
+                                        <div className="text-sm font-semibold text-slate-500">CEO, Kemuko Technologies</div>
+                                    </div>
                                 </div>
-                                <h3 className="text-lg font-bold mb-2 text-primary">{feat.title}</h3>
-                                <p className="text-slate-600 text-sm">{feat.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* 7. SOCIAL PROOF */}
-            <section className="py-24 px-6 bg-white">
-                <div className="container max-w-4xl mx-auto">
-                    <h2 className="text-3xl font-bold mb-12 text-center text-primary font-display">What Our Clients Say</h2>
-                    <div className="bg-slate-900 text-white p-12 rounded-3xl relative overflow-hidden">
-                        <Star className="text-yellow-400 h-8 w-8 mb-6" />
-                        <blockquote className="text-2xl md:text-3xl font-serif leading-relaxed mb-8 relative z-10">
-                            “We hired 4 talents through Taskive and they remain exceptional. The team has worked closely with us to ensure ongoing effectiveness.”
-                        </blockquote>
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-white/20 rounded-full"></div>
-                            <div>
-                                <div className="font-bold">Ola Oluwadara</div>
-                                <div className="text-slate-400 text-sm">CEO, Kemuko Technologies</div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </section>
 
-            {/* 8. COMPARISON MATRIX */}
-            <section className="py-24 px-6 bg-slate-50 border-t border-slate-200">
-                <div className="container max-w-5xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold mb-4 font-display text-primary">How Taskive Stands Apart</h2>
-                    </div>
+                        {/* Right Column: Company Proof Panel */}
+                        <div className="lg:col-span-5">
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="bg-slate-50/50 rounded-2xl border border-slate-200 p-8 shadow-sm"
+                            >
+                                <div className="flex justify-between items-start mb-8">
+                                    <div>
+                                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Partner Organization</h4>
+                                        <div className="text-xl font-bold text-slate-900 uppercase tracking-tight">Kemuko Technologies</div>
+                                    </div>
+                                    <div className="px-3 py-1 bg-white border border-slate-200 rounded-full text-[10px] font-bold text-slate-600">
+                                        Client since 2024
+                                    </div>
+                                </div>
 
-                    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="grid grid-cols-2 bg-slate-50 border-b border-slate-200">
-                            <div className="p-6 text-center font-bold text-slate-500 uppercase tracking-widest text-sm">Traditional Hiring</div>
-                            <div className="p-6 text-center font-bold text-slate-900 bg-slate-100 uppercase tracking-widest text-sm">Taskive Approach</div>
+                                <div className="space-y-6">
+                                    <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Engagement Structure</div>
+                                        <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
+                                            Trial-to-Hire
+                                            <ArrowRight className="h-4 w-4 text-blue-600" />
+                                            Direct Conversion
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {[
+                                            { label: "Shortlist Turnaround", value: "48-hour", icon: Clock },
+                                            { label: "Faster Time-to-Hire", value: "40%", icon: TrendingUp },
+                                            { label: "Successful Conversions", value: "2", icon: UserCheck }
+                                        ].map((metric, i) => (
+                                            <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+                                                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                                                    <metric.icon className="h-5 w-5 text-blue-600" />
+                                                </div>
+                                                <div>
+                                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{metric.label}</div>
+                                                    <div className="text-lg font-bold text-slate-900">{metric.value}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </motion.div>
                         </div>
+                    </div>
+
+                    {/* Trust Metric Strip */}
+                    <div className="border-t border-slate-100 pt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
                         {[
-                            { label: "Screening", trad: "DIY Screening (Hours)", task: "Pre-Vetted Matches (Minutes)" },
-                            { label: "Tools", trad: "Multiple Fragmented Tools", task: "Unified Engagement Platform" },
-                            { label: "Billing", trad: "Manual Invoicing & Chasing", task: "Consolidated, Clear Billing" },
-                            { label: "Compliance", trad: "Headache & Legal Risk", task: "Centralized & EOR Handled" },
-                        ].map((row, i) => (
-                            <div key={i} className="grid grid-cols-2 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-                                <div className="p-6 text-center text-slate-600 border-r border-slate-100">{row.trad}</div>
-                                <div className="p-6 text-center font-bold text-primary">{row.task}</div>
+                            { label: "Placement Success", value: "98%" },
+                            { label: "Shortlist Average", value: "48hr" },
+                            { label: "Client Satisfaction", value: "94%" }
+                        ].map((stat, i) => (
+                            <div key={i} className="text-center md:text-left">
+                                <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1">{stat.value}</div>
+                                <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">{stat.label}</div>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* 9. CTA BANNER (RE-DESIGNED) */}
-            <section className="py-32 px-6 bg-slate-900 text-center text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80')] opacity-10 mix-blend-overlay bg-cover bg-center"></div>
-                <div className="container max-w-3xl mx-auto relative z-10">
-                    <h2 className="text-4xl md:text-6xl font-bold mb-6 font-display">Stop hiring the hard way.</h2>
-                    <p className="text-xl text-slate-300 mb-10 max-w-xl mx-auto">
-                        Join forward-thinking companies building faster with Taskive.
-                    </p>
-                    <div className="flex flex-col sm:flex-row justify-center gap-4">
-                        <Button size="lg" className="h-16 px-12 text-lg rounded-full bg-white text-slate-900 hover:bg-slate-100 font-bold shadow-xl" asChild>
-                            <Link to="/book-consultation">Start Building Now</Link>
-                        </Button>
+            {/* 8. WHY TASKIVE (REDESIGNED) */}
+            <section className="py-24 px-6 bg-slate-50/50 font-inter">
+                <div className="container max-w-[1200px] mx-auto">
+                    <div className="grid lg:grid-cols-2 gap-20 items-start">
+                        {/* Left Column: Differentiators */}
+                        <div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8">Why Taskive</div>
+                            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 leading-tight tracking-tight">
+                                Execution Infrastructure, <br/>Not Resume Volume.
+                            </h2>
+                            <p className="text-lg text-slate-600 mb-12 leading-relaxed font-medium">
+                                We replace fragmented recruitment workflows with structured, measurable hiring systems.
+                            </p>
+
+                            <div className="space-y-0">
+                                {[
+                                    {
+                                        title: "Instant Curated Matches",
+                                        desc: "Pre-vetted operations talent delivered within minutes — not weeks.",
+                                        icon: Search
+                                    },
+                                    {
+                                        title: "Compliance Built In",
+                                        desc: "EOR, contracts, payroll, and legal structured from day one.",
+                                        icon: Shield
+                                    },
+                                    {
+                                        title: "Managed Execution",
+                                        desc: "Dedicated ops oversight to ensure delivery, not just placement.",
+                                        icon: Target
+                                    },
+                                    {
+                                        title: "Performance Visibility",
+                                        desc: "Track engagement health, timesheets, and output in one system.",
+                                        icon: TrendingUp
+                                    }
+                                ].map((item, i) => (
+                                    <div key={i} className="py-8 border-b border-slate-200/60 flex gap-6 items-start group">
+                                        <div className="w-10 h-10 rounded-lg bg-white border border-slate-100 shadow-sm flex items-center justify-center group-hover:bg-blue-600 transition-colors duration-300">
+                                            <item.icon className="h-5 w-5 text-slate-400 group-hover:text-white transition-colors" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-lg font-bold text-slate-900 mb-1">{item.title}</h4>
+                                            <p className="text-sm text-slate-500 font-medium">{item.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Right Column: Dashboard Panel */}
+                        <div className="lg:sticky lg:top-32">
+                            <motion.div 
+                                initial={{ opacity: 0, x: 20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                className="bg-white rounded-[20px] border border-slate-200 shadow-xl overflow-hidden"
+                            >
+                                <div className="p-8 border-b border-slate-100 bg-slate-50/50">
+                                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Enterprise Performance Metrics</h3>
+                                </div>
+                                <div className="divide-y divide-slate-100">
+                                    {[
+                                        { label: "Time to Shortlist", value: "48", unit: "Hours", color: "text-blue-600" },
+                                        { label: "Placement Success Rate", value: "98", unit: "%", color: "text-green-600" },
+                                        { label: "Retention Improvement", value: "+40", unit: "%", color: "text-blue-600" },
+                                        { label: "Client Satisfaction", value: "94", unit: "%", color: "text-slate-900" }
+                                    ].map((stat, i) => (
+                                        <div key={i} className="p-8 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                                            <div>
+                                                <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</div>
+                                                <div className="text-sm font-semibold text-slate-600">Operational Standard</div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className={`text-4xl font-bold ${stat.color} tracking-tighter mb-1`}>
+                                                    {stat.value}<span className="text-xl ml-0.5">{stat.unit}</span>
+                                                </div>
+                                                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-[10px] font-bold text-blue-600 rounded-md">
+                                                    Verified
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -303,8 +715,5 @@ const ForCompanies = () => {
         </div>
     );
 };
-
-// Needs Icon import import { Target } from "lucide-react";
-import { Target } from "lucide-react";
 
 export default ForCompanies;

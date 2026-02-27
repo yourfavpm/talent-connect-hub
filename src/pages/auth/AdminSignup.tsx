@@ -124,7 +124,7 @@ const AdminSignup = () => {
             <Input
               id="email"
               type="email"
-              placeholder="admin@taskive.com"
+              placeholder="hire@taskive.ca"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

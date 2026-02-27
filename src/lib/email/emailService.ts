@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 // Initialize Resend
 const RESEND_API_KEY = import.meta.env.VITE_RESEND_API_KEY;
-const FROM_EMAIL = import.meta.env.VITE_EMAIL_FROM || 'noreply@taskive.com';
+const FROM_EMAIL = import.meta.env.VITE_EMAIL_FROM || 'hire@taskive.ca';
 const FROM_NAME = import.meta.env.VITE_EMAIL_FROM_NAME || 'Taskive';
 
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;

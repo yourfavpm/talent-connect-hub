@@ -3,86 +3,146 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle, Clock, Globe, Shield, Users, Zap, Briefcase, Layout, CreditCard, Search, UserCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
 
 const Index = () => {
   return (
     <div className="bg-background min-h-screen text-foreground overflow-x-hidden selection:bg-primary selection:text-white font-sans">
 
-      {/* 2. HERO SECTION */}
-      <section className="relative py-32 lg:py-32 px-6 overflow-hidden bg-white border-b border-blue-100">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white to-white pointer-events-none"></div>
-        <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
-          {/* Left-aligned headline and subtext */}
-          <div className="text-left animate-slide-up">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1] font-display text-blue-950">
-              Power Your Growth with <span className="text-blue-950">Expert Product & Operations</span> Talent
+      {/* 2. ENTERPRISE HERO SECTION (REDESIGNED) */}
+      <section className="relative pt-44 pb-16 md:pt-32 md:pb-32 px-6 overflow-hidden bg-slate-50 font-inter">
+        {/* Subtle background decoration */}
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-white/50 to-transparent pointer-events-none"></div>
+        
+        <div className="container max-w-[1200px] mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
+          {/* Left Side: Content & Trust Indicators */}
+          <div className="animate-slide-up flex flex-col items-center text-center lg:items-start lg:text-left">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
+              Build With Proven Product & <br className="hidden md:block" /> Operations Leaders
             </h1>
 
-            <p className="text-xl text-blue-900/70 mb-10 max-w-lg font-serif leading-relaxed">
-              Match with rigorously vetted professionals — then collaborate, contract, and scale with confidence.
+            <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium mx-auto lg:mx-0">
+              Access rigorously vetted professionals across EMEA — matched, contracted, and managed through a structured platform.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/book-consultation">
-                <Button size="lg" className="h-14 px-8 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg shadow-blue-200 transition-all">
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-14 w-full">
+              <Link to="/book-consultation" className="w-full sm:w-auto">
+                <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/10 transition-all font-semibold w-full">
                   Book a Consultation
                 </Button>
               </Link>
-              <Link to="/auth/signup?type=talent">
-                <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-slate-200 text-slate-700 hover:text-white hover:bg-blue-950 rounded-full bg-white">
-                  Apply as Talent
+              <Link to="/service-models" className="w-full sm:w-auto">
+                <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-700 hover:bg-slate-100/80 rounded-full font-semibold flex items-center justify-center lg:justify-start gap-2 w-full">
+                  Explore Talent <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
+
+            {/* Trust Indicators */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-200">
+              {[
+                "48h Average Shortlist",
+                "98% Placement Rate",
+                "EMEA Coverage"
+              ].map((indicator, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="w-1 h-1 rounded-full bg-blue-500" />
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{indicator}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Right-aligned Talent Profile Cards */}
-          <div className="relative animate-fade-in hidden lg:block h-[500px]">
-            {/* Card 1: Product Leader */}
-            <div className="absolute top-10 right-10 z-20 w-[340px] bg-white rounded-2xl p-5 shadow-2xl shadow-blue-900/10 border border-blue-50 rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
-              <div className="flex items-center gap-4 mb-4 border-b border-blue-50 pb-4">
-                <div className="w-14 h-14 rounded-full bg-blue-100 overflow-hidden">
-                  <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80" alt="Sarah" className="w-full h-full object-cover" />
+          {/* Right Side: Layered Profile Cards */}
+          <div className="relative animate-fade-in hidden lg:block h-[540px]">
+            {[
+              {
+                name: "Sarah J.",
+                role: "Head of Product",
+                level: 5,
+                image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80",
+                tags: ["Growth", "Fintech", "B2B SaaS"],
+                tz: "GMT+1",
+                exp: "12 Yrs",
+                offset: "rotate-[-4deg] translate-y-4 z-10"
+              },
+              {
+                name: "Michael T.",
+                role: "Dir. of Operations",
+                level: 5,
+                image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80",
+                tags: ["Logistics", "Scaleup", "EOR"],
+                tz: "GMT+2",
+                exp: "14 Yrs",
+                offset: "rotate-[2deg] translate-x-12 -translate-y-8 z-20"
+              },
+              {
+                name: "David K.",
+                role: "Senior Engineering PM",
+                level: 4,
+                image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80",
+                tags: ["Python", "Infrastructure", "AI"],
+                tz: "GMT+1",
+                exp: "9 Yrs",
+                offset: "rotate-[-2deg] -translate-x-4 translate-y-24 z-30 shadow-xl"
+              }
+            ].map((talent, i) => (
+              <motion.div 
+                key={i}
+                whileHover={{ y: -8, rotate: 0, scale: 1.02 }}
+                className={`absolute top-0 right-0 w-[360px] bg-white rounded-[16px] p-6 shadow-2xl shadow-slate-950/5 border border-slate-100 transition-all duration-500 ${talent.offset}`}
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 rounded-full bg-slate-100 overflow-hidden border border-slate-50">
+                    <img src={talent.image} alt={talent.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-grow">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <div className="font-bold text-slate-900 text-lg">{talent.name}</div>
+                      <div className="w-2 h-2 rounded-full bg-green-500" title="Available" />
+                    </div>
+                    <div className="text-slate-500 text-sm font-semibold">{talent.role}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-bold text-blue-950 text-lg">Sarah J.</div>
-                  <div className="text-slate-500 text-sm font-medium">Head of Product</div>
-                </div>
-                <div className="ml-auto">
-                  <div className="bg-green-50 text-green-700 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">Available</div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex gap-2 flex-wrap">
-                  <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-xs font-semibold">Fintech</span>
-                  <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-xs font-semibold">Growth</span>
-                  <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-xs font-semibold">B2B SaaS</span>
-                </div>
-              </div>
-            </div>
 
-            {/* Card 2: Operations Expert (Behind) */}
-            <div className="absolute top-48 right-40 z-10 w-[340px] bg-white/60 backdrop-blur-sm rounded-2xl p-5 shadow-xl shadow-blue-900/5 border border-blue-50 rotate-[4deg]">
-              <div className="flex items-center gap-4 mb-4 border-b border-blue-50 pb-4 opacity-50">
-                <div className="w-14 h-14 rounded-full bg-blue-100 overflow-hidden">
-                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80" alt="Michael" className="w-full h-full object-cover" />
+                <div className="space-y-4 mb-6">
+                  <div className="flex justify-between items-center text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                    <span>Vetted Skill Level</span>
+                    <span className="text-blue-600">Level {talent.level}/5</span>
+                  </div>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <div key={star} className={`h-1 flex-grow rounded-full ${star <= talent.level ? 'bg-blue-600' : 'bg-slate-100'}`} />
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <div className="font-bold text-blue-950 text-lg">Michael T.</div>
-                  <div className="text-slate-500 text-sm font-medium">Dir. of Operations</div>
+
+                <div className="flex gap-2 flex-wrap mb-6">
+                  {talent.tags.map(tag => (
+                    <span key={tag} className="bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg text-[11px] font-bold border border-slate-100">
+                      {tag}
+                    </span>
+                  ))}
                 </div>
-              </div>
-              <div className="space-y-2 opacity-50">
-                <div className="h-2 w-full bg-blue-100 rounded"></div>
-                <div className="h-2 w-2/3 bg-blue-100 rounded"></div>
-              </div>
-            </div>
+
+                <div className="flex justify-between items-center pt-5 border-t border-slate-50">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Timezone</span>
+                    <span className="text-xs font-bold text-slate-700">{talent.tz}</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Experience</span>
+                    <span className="text-xs font-bold text-slate-700">{talent.exp}</span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* 3. TRUST & CREDIBILITY */}
-      <section className="py-12 border-b border-slate-200 bg-white">
+      <section className="py-12 md:py-16 border-b border-slate-200 bg-white">
         <div className="container max-w-7xl mx-auto text-center">
           <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-2">Trusted by Global Teams and Growing Enterprises</p>
           <p className="text-slate-500 mb-8 max-w-lg mx-auto">Streamlining hiring and operations across industries</p>
@@ -107,343 +167,668 @@ const Index = () => {
         </div>
       </section>
 
-      {/* 4. WHAT WE OFFER — SERVICE MODEL PREVIEW */}
-      {/* 4. WHAT WE OFFER — SERVICE MODEL PREVIEW (Redesigned: Dark, Creative, Modern) */}
-      <section className="py-32 px-6 bg-blue-950 relative overflow-hidden">
-        {/* Background Accents */}
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-blue-900/20 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2"></div>
-
-        <div className="container max-w-7xl mx-auto relative z-10">
-          <div className="mb-20 max-w-2xl">
-            <h2 className="text-4xl md:text-6xl font-bold mb-6 font-display text-white leading-tight">
-              Tailored Models.<br />
-              <span className="text-blue-400">Total Flexibility.</span>
+      {/* 4. SERVICE MODELS — REDESIGNED COMPARISON SECTION */}
+      <section className="py-24 px-6 bg-white font-inter">
+        <div className="container max-w-[1200px] mx-auto">
+          {/* Header */}
+          <div className="text-center max-w-2xl mx-auto mb-20 animate-slide-up">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Service Models</div>
+            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 leading-tight tracking-tight">
+              Choose the Right Engagement Model
             </h2>
-            <p className="text-blue-200 text-lg md:text-xl font-light leading-relaxed">
-              We don't do cookie-cutter. Choose the engagement structure that fits your speed, budget, and long-term goals.
+            <p className="text-base text-slate-600 leading-relaxed">
+              Each model is structured around operational control, cost clarity, and flexibility.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-            {/* 1. Trial-to-Hire */}
-            <div className="group relative p-8 rounded-[2rem] bg-blue-900/20 border border-white/5 hover:bg-blue-900/40 hover:border-white/20 transition-all duration-500 overflow-hidden flex flex-col min-h-[400px]">
-              <div className="absolute top-4 right-6 text-9xl font-bold text-white/[0.03] group-hover:text-white/[0.08] transition-colors font-display select-none">01</div>
-
-              <div className="mb-auto relative z-10">
-                <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center mb-8 bg-blue-950/50 group-hover:scale-110 transition-transform duration-500">
-                  <Clock className="w-5 h-5 text-blue-300" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Trial-to-Hire</h3>
-                <p className="text-blue-200/80 leading-relaxed text-sm">
-                  The "try before you buy" approach. Evaluate candidates on the job for 90 days before making a full-time offer.
-                </p>
-              </div>
-
-              <div className="mt-8 pt-8 border-t border-white/5 relative z-10">
-                <Link to="/service-models" className="flex items-center gap-2 text-white font-medium group-hover:translate-x-2 transition-transform">
-                  Start a Trial <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-
-            {/* 2. Direct Placement */}
-            <div className="group relative p-8 rounded-[2rem] bg-blue-900/20 border border-white/5 hover:bg-blue-900/40 hover:border-white/20 transition-all duration-500 overflow-hidden flex flex-col min-h-[400px]">
-              <div className="absolute top-4 right-6 text-9xl font-bold text-white/[0.03] group-hover:text-white/[0.08] transition-colors font-display select-none">02</div>
-
-              <div className="mb-auto relative z-10">
-                <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center mb-8 bg-blue-950/50 group-hover:scale-110 transition-transform duration-500">
-                  <Users className="w-5 h-5 text-emerald-300" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Direct Placement</h3>
-                <p className="text-blue-200/80 leading-relaxed text-sm">
-                  Traditional executive search, modernized. We find your permanent leaders with speed and precision. 1-year guarantee.
-                </p>
-              </div>
-
-              <div className="mt-8 pt-8 border-t border-white/5 relative z-10">
-                <Link to="/service-models" className="flex items-center gap-2 text-white font-medium group-hover:translate-x-2 transition-transform">
-                  Find Leaders <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-
-            {/* 3. Managed Teams */}
-            <div className="group relative p-8 rounded-[2rem] bg-blue-900/20 border border-white/5 hover:bg-blue-900/40 hover:border-white/20 transition-all duration-500 overflow-hidden flex flex-col min-h-[400px]">
-              <div className="absolute top-4 right-6 text-9xl font-bold text-white/[0.03] group-hover:text-white/[0.08] transition-colors font-display select-none">03</div>
-
-              <div className="mb-auto relative z-10">
-                <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center mb-8 bg-blue-950/50 group-hover:scale-110 transition-transform duration-500">
-                  <Shield className="w-5 h-5 text-purple-300" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Managed Teams</h3>
-                <p className="text-blue-200/80 leading-relaxed text-sm">
-                  We act as the Employer of Record (EOR). Build a global team without the headache of international payroll or compliance.
-                </p>
-              </div>
-
-              <div className="mt-8 pt-8 border-t border-white/5 relative z-10">
-                <Link to="/service-models" className="flex items-center gap-2 text-white font-medium group-hover:translate-x-2 transition-transform">
-                  Explore EOR <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-
-            {/* 4. Project Gigs */}
-            <div className="group relative p-8 rounded-[2rem] bg-blue-900/20 border border-white/5 hover:bg-blue-900/40 hover:border-white/20 transition-all duration-500 overflow-hidden flex flex-col min-h-[400px]">
-              <div className="absolute top-4 right-6 text-9xl font-bold text-white/[0.03] group-hover:text-white/[0.08] transition-colors font-display select-none">04</div>
-
-              <div className="mb-auto relative z-10">
-                <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center mb-8 bg-blue-950/50 group-hover:scale-110 transition-transform duration-500">
-                  <Zap className="w-5 h-5 text-amber-300" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Project Gigs</h3>
-                <p className="text-blue-200/80 leading-relaxed text-sm">
-                  Surgical strikes. Hire experts for specific audits, migrations, or product launches. Deploy in 48 hours.
-                </p>
-              </div>
-
-              <div className="mt-8 pt-8 border-t border-white/5 relative z-10">
-                <Link to="/service-models" className="flex items-center gap-2 text-white font-medium group-hover:translate-x-2 transition-transform">
-                  Find Experts <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* 4.5. IMPACT SECTION - Clean, High Performance, No "AI" look */}
-      <section className="py-24 px-6 border-y border-slate-200">
-        <div className="container max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-bold font-display mb-6 leading-tight text-primary">
-                Precision hiring.<br />
-                <span className="text-blue-600">Quantifiable results.</span>
-              </h2>
-              <p className="text-lg text-slate-600 mb-8 max-w-md">
-                We replace guesswork with rigor. Our vetted network allows you to skip the noise and focus on building.
-              </p>
-
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Zap className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-primary mb-1">48h</div>
-                    <div className="text-sm text-slate-500 font-medium uppercase tracking-wide">Average Time to Shortlist</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center flex-shrink-0">
-                    <CheckCircle className="h-6 w-6 text-emerald-600" />
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-primary mb-1">98%</div>
-                    <div className="text-sm text-slate-500 font-medium uppercase tracking-wide">Successful Placement Rate</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative">
-              {/* Abstract Visual - Clean Geometry, No Blurs */}
-              <div className="aspect-square relative md:w-[500px] mx-auto">
-                <div className="absolute inset-0 bg-slate-50 rounded-full"></div>
-                <div className="absolute inset-4 border border-slate-100 rounded-full animate-[spin_60s_linear_infinite]"></div>
-                <div className="absolute inset-1/4 bg-white shadow-xl rounded-2xl flex items-center justify-center p-8 border border-slate-100">
-                  <div className="text-center">
-                    <div className="text-5xl font-bold text-primary mb-2">3.5x</div>
-                    <div className="text-slate-500 text-sm">Faster than internal hiring</div>
-                  </div>
-                </div>
-                {/* Floating Cards */}
-                <div className="absolute top-10 -right-4 bg-white p-4 rounded-xl shadow-lg border border-slate-100 flex items-center gap-3 animate-bounce-slow">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                  <div className="text-sm font-bold text-slate-700">Role Filled</div>
-                </div>
-                <div className="absolute bottom-20 -left-4 bg-white p-4 rounded-xl shadow-lg border border-slate-100 flex items-center gap-3 animate-bounce-slow delay-700">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
-                  <div className="text-sm font-bold text-slate-700">Candidate Verified</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. HOW IT WORKS — PROCESS BREAKDOWN */}
-      <section className="py-24 px-6 bg-white border-y border-slate-200">
-        <div className="container max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 font-display text-primary">How Taskive Works for You</h2>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-8 relative">
-            {/* Connector Line (Desktop) */}
-            <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-slate-100 -z-10"></div>
-
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { title: "Tell Us Your Needs", desc: "Share your objectives and requirements.", icon: Briefcase },
-              { title: "Match with Vetted Experts", desc: "Get paired with pre-screened professionals.", icon: UserCheck },
-              { title: "Collaborate & Contract", desc: "Flexible engagement models tailored to your goals.", icon: Layout },
-              { title: "Focus on Growth", desc: "We handle compliance, payments, and support.", icon: TrendingUp }
-            ].map((step, i) => (
-              <div key={i} className="text-center bg-white p-4">
-                <div className="w-24 h-24 mx-auto bg-white border border-slate-200 rounded-full flex items-center justify-center mb-6 shadow-sm">
-                  <step.icon className="h-8 w-8 text-blue-600" />
+              {
+                title: "Direct Hire",
+                desc: "Permanent placement with a one-time 15% annual salary buyout.",
+                traits: [
+                  "Direct employment relationship",
+                  "No ongoing platform margin",
+                  "Structured contract transfer",
+                  "Best for long-term hires"
+                ],
+                recommended: false,
+                accent: "border-t-slate-400"
+              },
+              {
+                title: "Trial-to-Hire",
+                desc: "Start managed, convert anytime. The most flexible path to permanent scale.",
+                traits: [
+                  "20% platform margin",
+                  "Payroll managed by Taskive",
+                  "Monthly or hourly billing",
+                  "Conversion flexibility"
+                ],
+                recommended: true,
+                accent: "border-t-blue-600"
+              },
+              {
+                title: "One-Time Project",
+                desc: "Defined scope, fast deployment. Surgical strikes for specific needs.",
+                traits: [
+                  "30% margin built into project pricing",
+                  "No long-term commitment",
+                  "Clear deliverables",
+                  "Rapid start"
+                ],
+                recommended: false,
+                accent: "border-t-amber-400"
+              }
+            ].map((model, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className={`relative bg-white rounded-[12px] border-l border-r border-b border-slate-200 border-t-2 ${model.accent} p-8 flex flex-col h-full hover:shadow-md transition-shadow duration-300`}
+              >
+                {model.recommended && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    Recommended
+                  </div>
+                )}
+                
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-slate-900 mb-4">{model.title}</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed font-medium">
+                    {model.desc}
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold mb-2 text-primary">{step.title}</h3>
-                <p className="text-slate-600 text-sm">{step.desc}</p>
-              </div>
+
+                <div className="space-y-4 mb-10 flex-grow">
+                  {model.traits.map((trait, j) => (
+                    <div key={j} className="flex items-start gap-3">
+                      <div className="w-1 h-1 rounded-full bg-slate-300 mt-2 flex-shrink-0" />
+                      <span className="text-sm text-slate-600 font-medium">{trait}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-6 border-t border-slate-50">
+                  <Link 
+                    to="/book-consultation"
+                    className="group inline-flex items-center gap-2 text-sm font-bold text-slate-950 hover:text-blue-600 transition-colors"
+                  >
+                    Learn more and get started
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 6. WHY CHOOSE TASKIVE */}
-      <section className="py-24 px-6 bg-slate-900 text-white">
-        <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-          <div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 font-display">Built for Business,<br />Backed by Results</h2>
-            <div className="space-y-8 mt-12">
-              {[
-                { title: "Pre-Vetted Talent Pool", desc: "Access specialists in product and operations." },
-                { title: "Speed & Reliability", desc: "Average placement time faster than traditional hiring." },
-                { title: "Operational Support", desc: "Dedicated process and platform support." },
-                { title: "Global Reach, Local Expertise", desc: "Connect with talent locally and globally." }
-              ].map((feat, i) => (
-                <div key={i} className="flex gap-4">
-                  <CheckCircle className="h-6 w-6 text-blue-400 flex-shrink-0" />
-                  <div>
-                    <h4 className="text-lg font-bold mb-1">{feat.title}</h4>
-                    <p className="text-slate-400">{feat.desc}</p>
+      {/* 4.5. OPERATIONAL PERFORMANCE — REDESIGNED DATA-DRIVEN SECTION */}
+      <section className="py-24 px-6 bg-white font-inter">
+        <div className="container max-w-[1200px] mx-auto">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+            {/* Left Column: Metrics Grid */}
+            <div className="animate-slide-up">
+              <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 leading-tight tracking-tight">
+                Operational Performance, Measured.
+              </h2>
+              <p className="text-base text-slate-600 mb-12 leading-relaxed max-w-lg">
+                Taskive replaces guesswork with structured vetting, automated contracts, and transparent billing.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { 
+                    val: "48 Hours", 
+                    label: "Average Time to Shortlist", 
+                    sub: "From approved job to curated candidates." 
+                  },
+                  { 
+                    val: "98%", 
+                    label: "Successful Placement Rate", 
+                    sub: "Trial-to-hire conversion success." 
+                  },
+                  { 
+                    val: "3.5x Faster", 
+                    label: "Efficiency Multiplier", 
+                    sub: "Compared to internal hiring cycles." 
+                  },
+                  { 
+                    val: "EMEA Coverage", 
+                    label: "20+ countries represented", 
+                    sub: "Dedicated regional expertise." 
+                  },
+                  { 
+                    val: "15–30% Margin", 
+                    label: "Margin Control", 
+                    sub: "Transparent structured pricing." 
+                  },
+                  { 
+                    val: "Automated", 
+                    label: "Agreement Generation", 
+                    sub: "Service-type driven contract automation." 
+                  }
+                ].map((stat, i) => (
+                  <motion.div 
+                    key={i}
+                    whileHover={{ y: -2 }}
+                    className="p-5 bg-slate-50/50 rounded-[12px] border border-slate-200 border-l-2 border-l-blue-600/20 hover:border-l-blue-600 transition-all duration-300"
+                  >
+                    <div className="text-lg font-bold text-slate-950 mb-1">{stat.val}</div>
+                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">{stat.label}</div>
+                    <p className="text-[12px] text-slate-500 leading-snug font-medium">{stat.sub}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column: Enterprise Dashboard Visual */}
+            <div className="relative">
+              <div className="aspect-[4/3] relative">
+                {/* Layered Content Cards */}
+                <div className="absolute inset-0 bg-slate-50/50 rounded-[24px] border border-slate-100 flex items-center justify-center">
+                  <div className="w-4/5 h-3/5 bg-white rounded-[16px] shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+                    <div className="flex justify-between items-center mb-6">
+                      <div className="flex gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full bg-slate-100" />
+                        <div className="w-8 h-2.5 rounded-full bg-slate-100" />
+                      </div>
+                      <div className="w-10 h-4 rounded-full bg-blue-50 border border-blue-100" />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="h-3 w-3/4 bg-slate-50 rounded-full" />
+                      <div className="h-3 w-1/2 bg-slate-50 rounded-full" />
+                      <div className="grid grid-cols-3 gap-2 pt-2">
+                        {[1,2,3].map(i => <div key={i} className="h-12 bg-slate-50 rounded-lg" />)}
+                      </div>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600/0 via-blue-600/40 to-blue-600/0" />
                   </div>
                 </div>
+
+                {/* Floating Labels */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="absolute top-10 right-4 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 flex items-center gap-2"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                  <span className="text-[11px] font-bold text-slate-700 tracking-tight">Role Filled</span>
+                </motion.div>
+
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="absolute bottom-20 left-4 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 flex items-center gap-2"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  <span className="text-[11px] font-bold text-slate-700 tracking-tight">Candidate Verified</span>
+                </motion.div>
+
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="absolute top-1/2 -translate-y-1/2 -right-10 bg-white px-4 py-3 rounded-xl shadow-sm border border-slate-200 flex flex-col items-start gap-1"
+                >
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Compliance</span>
+                  <span className="text-[11px] font-bold text-slate-900">Contract Generated</span>
+                </motion.div>
+
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="absolute bottom-5 right-10 bg-white px-4 py-3 rounded-xl shadow-sm border border-emerald-100 flex flex-col items-start gap-1"
+                >
+                  <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Billing</span>
+                  <span className="text-[11px] font-bold text-slate-900">Invoice Issued</span>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. HOW IT WORKS — REDESIGNED VERTICAL TIMELINE */}
+      <section className="py-24 px-6 bg-slate-50 font-inter">
+        <div className="container max-w-[1200px] mx-auto">
+          {/* Header */}
+          <div className="max-w-3xl mb-24 animate-slide-up">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">How It Works</div>
+            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 leading-tight tracking-tight">
+              Structured Hiring, Step by Step
+            </h2>
+            <p className="text-base text-slate-600 leading-relaxed">
+              From role definition to payment processing, Taskive manages the entire talent lifecycle.
+            </p>
+          </div>
+
+          <div className="relative pl-12 md:pl-20">
+            {/* Vertical Dotted Line */}
+            <div className="absolute left-4 md:left-6 top-0 bottom-0 w-px border-l-[1.5px] border-dotted border-slate-300"></div>
+
+            <div className="space-y-16">
+              {[
+                { 
+                  num: "01", 
+                  title: "Define Your Hiring Model", 
+                  desc: "Choose Direct Hire, Trial-to-Hire, or One-Time Project.", 
+                  note: "Service-level transparency ensured."
+                },
+                { 
+                  num: "02", 
+                  title: "Access Pre-Vetted Talent", 
+                  desc: "Browse skill-assessed professionals categorized by role and level.", 
+                  note: "EMEA-specialized vetting framework."
+                },
+                { 
+                  num: "03", 
+                  title: "Interview & Select", 
+                  desc: "Schedule and track interviews directly in your dashboard.", 
+                  note: "Integrated scheduling & feedback."
+                },
+                { 
+                  num: "04", 
+                  title: "Contracts Generated Automatically", 
+                  desc: "Agreements selected and populated based on service type.", 
+                  note: "Compliance-first documentation."
+                },
+                { 
+                  num: "05", 
+                  title: "Manage Work & Approvals", 
+                  desc: "Track assignments and approve timesheets where applicable.", 
+                  note: "Real-time engagement visibility."
+                },
+                { 
+                  num: "06", 
+                  title: "Billing & Payout", 
+                  desc: "Invoices generated, margin breakdown visible, payouts processed seamlessly.", 
+                  note: "Secure global payment infrastructure."
+                }
+              ].map((step, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="relative group"
+                >
+                  {/* Dot Marker */}
+                  <div className="absolute -left-[37px] md:-left-[59px] top-6 w-3 h-3 rounded-full bg-slate-300 border-2 border-slate-50 z-10 group-hover:bg-primary transition-colors duration-300"></div>
+                  
+                  {/* Content Card */}
+                  <div className="bg-white p-6 md:p-8 rounded-[12px] border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-300 cursor-default">
+                    <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-8">
+                      <div className="text-xl font-semibold text-slate-300 group-hover:text-primary transition-colors duration-300 font-display">
+                        {step.num}
+                      </div>
+                      <div className="flex-grow">
+                        <h3 className="text-lg font-semibold text-slate-900 mb-2">{step.title}</h3>
+                        <p className="text-sm text-slate-500 leading-relaxed font-medium mb-4">{step.desc}</p>
+                        <div className="inline-flex py-1 px-3 bg-slate-50 rounded-full text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          {step.note}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               ))}
             </div>
           </div>
-          <div className="relative h-[500px] bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 group">
-            <div className="absolute inset-0 bg-blue-950/20 z-0"></div>
-            <img
-              src="/images/vetted.png"
-              alt="Taskive Talent Pipeline"
-              className="w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-700"
-            />
-            <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-slate-900 to-transparent">
-              <div className="text-white font-bold text-lg">Intelligent Matching Engine</div>
-              <div className="text-slate-300 text-sm">Real-time candidate tracking</div>
+        </div>
+      </section>
+
+      {/* 6. TALENT INFRASTRUCTURE SECTION (REDESIGNED) */}
+      <section className="py-24 px-6 bg-white font-inter">
+        <div className="container max-w-[1200px] mx-auto">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+            {/* Left Column: Content */}
+            <div className="animate-slide-up">
+              <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 leading-tight tracking-tight">
+                Talent Infrastructure for Modern Companies
+              </h2>
+              <p className="text-base text-slate-600 mb-12 leading-relaxed max-w-lg">
+                From sourcing and vetting to contracts, payroll, and compliance — Taskive manages the full talent lifecycle with precision.
+              </p>
+
+              <div className="grid gap-8">
+                {[
+                  { 
+                    title: "Structured Vetting Framework", 
+                    desc: "Every professional is skill-assessed, verified, and categorized before client visibility." 
+                  },
+                  { 
+                    title: "Multi-Model Hiring Engine", 
+                    desc: "Direct hire, managed trial, or project-based aligned to operational needs." 
+                  },
+                  { 
+                    title: "Contract & Compliance Automation", 
+                    desc: "Service-model-based agreements generated and tracked in-platform." 
+                  },
+                  { 
+                    title: "Integrated Billing & Payout Controls", 
+                    desc: "Timesheet approvals, invoice generation, and transparent margin breakdown in one system." 
+                  }
+                ].map((feat, i) => (
+                  <div key={i} className="flex gap-4 group">
+                    <div className="mt-1 w-5 h-5 rounded-full border border-blue-200 flex items-center justify-center flex-shrink-0 group-hover:border-blue-900 transition-colors">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-900 opacity-40 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <div>
+                      <h4 className="text-base font-semibold text-slate-900 mb-1">{feat.title}</h4>
+                      <p className="text-sm text-slate-500 leading-relaxed font-medium">{feat.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column: Dashboard Preview */}
+            <div className="relative">
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                className="bg-slate-900 rounded-[14px] p-8 shadow-sm border border-slate-800 text-slate-300"
+              >
+                <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+                      <Layout className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold text-white">Talent Operations</span>
+                  </div>
+                  <div className="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-400">LIVE VIEW</div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Active Contracts</div>
+                      <div className="text-xl font-bold text-white tracking-tight">24</div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Invoice Status</div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <span className="text-sm font-semibold text-white">All Clear</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-5 rounded-xl bg-slate-800/50 border border-slate-700/50 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-slate-400">Pending Timesheets</span>
+                      <span className="text-xs font-bold text-white">3 Review Required</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-700 rounded-full overflow-hidden">
+                      <div className="h-full w-2/3 bg-blue-600" />
+                    </div>
+                  </div>
+
+                  <div className="p-5 rounded-xl bg-white/5 border border-white/5 space-y-4">
+                    {[
+                      { l: 'Service Model', v: 'Managed Trial', c: 'text-blue-400' },
+                      { l: 'Talent Level', v: 'Senior Engineering', c: 'text-white' },
+                      { l: 'Profit Margin', v: '22.4%', c: 'text-green-400' }
+                    ].map((row, i) => (
+                      <div key={i} className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{row.l}</span>
+                        <span className={`text-[11px] font-bold ${row.c}`}>{row.v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+              
+              {/* Subtle Decorative Elements */}
+              <div className="absolute -z-10 -bottom-10 -right-10 w-40 h-40 bg-blue-600/5 rounded-full blur-3xl" />
+              <div className="absolute -z-10 -top-10 -left-10 w-40 h-40 bg-slate-900/10 rounded-full blur-2xl" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* 7. VALUE PROPOSITION BLOCK / PRODUCT FEATURES */}
-      <section className="py-24 px-6 bg-white overflow-hidden">
-        <div className="container max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-16 font-display text-primary">Empower Your Team From Hire to Success</h2>
+      {/* 7. TALENT OPERATIONS FEATURE SECTION (PREMIUM REPLACEMENT) */}
+      <section className="py-24 px-6 bg-slate-50/80 font-inter">
+        <div className="container max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto mb-20 animate-slide-up">
+            <h2 className="text-3xl md:text-[40px] font-semibold text-slate-900 mb-6 leading-tight">
+              We handle the talent operations complexity
+            </h2>
+            <p className="text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
+              From sourcing and vetting to contracts, timesheets, payroll, and compliance — Taskive manages the details so you can focus on building.
+            </p>
+          </div>
 
-          <div className="grid md:grid-cols-4 gap-6">
-            {[
-              { title: "Find", desc: "Access a curated pool of qualified professionals.", icon: Search },
-              { title: "Hire", desc: "Select with confidence; we support contracts and compliance.", icon: UserCheck },
-              { title: "Manage", desc: "Track engagement progress and collaboration seamlessly.", icon: Layout },
-              { title: "Pay", desc: "Secure and transparent payment workflows.", icon: CreditCard }
-            ].map((item, i) => (
-              <div key={i} className="group relative p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:shadow-xl transition-all duration-300">
-                <div className="w-16 h-16 mx-auto bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <item.icon className="h-8 w-8 text-primary" />
+          {/* Feature Grid */}
+          <div className="grid lg:grid-cols-12 gap-8 items-stretch mb-20 font-inter">
+            {/* LEFT COLUMN */}
+            <div className="lg:col-span-3 flex flex-col gap-6">
+              {/* Card 1: Vetted EMEA Talent */}
+              <motion.div 
+                whileHover={{ y: -4 }}
+                className="bg-white p-6 rounded-[14px] border border-slate-200 shadow-sm flex flex-col h-full"
+              >
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">Vetted EMEA Talent</h3>
+                <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                  Every professional is screened, skill-assessed, and verified before appearing in your dashboard.
+                </p>
+                <div className="mt-auto bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100" />
+                  <div className="flex-grow">
+                    <div className="h-2 w-20 bg-slate-200 rounded-full mb-2" />
+                    <div className="flex gap-1.5">
+                      <div className="px-2 py-0.5 bg-blue-50 text-[10px] text-blue-600 font-semibold rounded-md border border-blue-100/50">Verified</div>
+                      <div className="px-2 py-0.5 bg-slate-100 text-[10px] text-slate-500 font-semibold rounded-md">Senior</div>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-primary">{item.title}</h3>
-                <p className="text-slate-600 text-sm">{item.desc}</p>
-              </div>
+              </motion.div>
+
+              {/* Card 2: Flexible Hiring Models */}
+              <motion.div 
+                whileHover={{ y: -4 }}
+                className="bg-white p-6 rounded-[14px] border border-slate-200 shadow-sm flex flex-col h-full"
+              >
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">Flexible Hiring Models</h3>
+                <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                  Hire directly, trial talent with managed payroll, or launch a one-time project — all from one platform.
+                </p>
+                <div className="mt-auto flex flex-col gap-2">
+                  {['Direct Hire', 'Trial-to-Hire', 'One-Time Project'].map((tab, i) => (
+                    <div key={i} className={`px-3 py-2 text-[11px] font-medium rounded-lg border ${i === 1 ? 'bg-primary/5 border-primary/20 text-primary' : 'bg-white border-slate-100 text-slate-400'}`}>
+                      {tab}
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+
+            {/* CENTER COLUMN: PRODUCT MOCKUP */}
+            <div className="lg:col-span-6 flex flex-col">
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="bg-white rounded-[24px] border border-slate-200 shadow-md p-2 flex-grow flex flex-col"
+              >
+                <div className="bg-slate-50 rounded-[20px] p-8 border border-slate-100 flex-grow">
+                  <div className="flex justify-between items-start mb-10">
+                    <div>
+                      <div className="h-4 w-32 bg-slate-200 rounded-full mb-3" />
+                      <div className="h-3 w-48 bg-slate-100 rounded-full" />
+                    </div>
+                    <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center border border-slate-100">
+                      <Layout className="h-6 w-6 text-slate-400" />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Contracts</span>
+                      </div>
+                      <div className="text-2xl font-bold text-slate-900">12</div>
+                    </div>
+                    <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Timesheets</span>
+                      </div>
+                      <div className="text-2xl font-bold text-slate-900">4 Pending</div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-500">Recently Invoiced</span>
+                      <div className="px-2 py-1 bg-green-50 text-green-600 text-[10px] font-bold rounded-full">PAID</div>
+                    </div>
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <div className="text-lg font-bold text-slate-900">$4,250.00</div>
+                        <div className="text-[10px] text-slate-400 font-medium">Invoice #TK-4412 • Mar 2026</div>
+                      </div>
+                      <div className="flex -space-x-2">
+                        {[1,2,3].map(i => <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-200" />)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-8 text-center bg-white rounded-b-[24px]">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2 font-inter">All-in-one Talent Operations Dashboard</h3>
+                  <p className="text-sm text-slate-500 max-w-sm mx-auto font-inter">
+                    Manage contracts, timesheets, payroll, and communication in one place.
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* RIGHT COLUMN */}
+            <div className="lg:col-span-3 flex flex-col gap-6">
+              {/* Card 3: Contracts & Compliance */}
+              <motion.div 
+                whileHover={{ y: -4 }}
+                className="bg-white p-6 rounded-[14px] border border-slate-200 shadow-sm flex flex-col h-full"
+              >
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">Contracts & Compliance</h3>
+                <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                  Automated agreements per service model with secure digital signing and global compliance.
+                </p>
+                <div className="mt-auto space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                    <span className="text-[10px] font-bold text-slate-400 tracking-wider">STATUS</span>
+                    <span className="text-[10px] font-bold text-green-600">SIGNED</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+                    <span className="text-[10px] font-bold text-slate-400 tracking-wider">TYPE</span>
+                    <span className="text-[10px] font-bold text-slate-900">Trial-to-Hire</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Card 4: Managed Payroll & Payments */}
+              <motion.div 
+                whileHover={{ y: -4 }}
+                className="bg-white p-6 rounded-[14px] border border-slate-200 shadow-sm flex flex-col h-full"
+              >
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">Managed Payroll</h3>
+                <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                  Approve timesheets, generate invoices, and process payouts with transparent breakdowns.
+                </p>
+                <div className="mt-auto bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
+                  {[
+                    { l: 'Client Paid', v: '$4,000', b: false },
+                    { l: 'Talent Payout', v: '$3,200', b: false },
+                    { l: 'Taskive Margin', v: '$800', b: true }
+                  ].map((row, i) => (
+                    <div key={i} className="flex justify-between items-center">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{row.l}</span>
+                      <span className={`text-[11px] font-bold ${row.b ? 'text-primary' : 'text-slate-600'}`}>{row.v}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* 9. CLIENT RESULTS — REDESIGNED TESTIMONIAL SECTION */}
+      <section className="py-24 px-6 bg-white font-inter">
+        <div className="container max-w-[1200px] mx-auto">
+          {/* Header */}
+          <div className="text-center max-w-2xl mx-auto mb-20 animate-slide-up">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Client Results</div>
+            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 leading-tight tracking-tight">
+              Trusted by Growth-Focused Teams
+            </h2>
+            <p className="text-base text-slate-600 leading-relaxed">
+              Companies across SaaS and fintech rely on Taskive for structured talent engagement.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                quote: "“We reduced hiring cycles by 60% and onboarded two senior operators within three weeks.”",
+                badge: "48h Shortlist Average",
+                name: "Jason R.",
+                role: "Director of Ops",
+                company: "Scaleup Inc."
+              },
+              {
+                quote: "“The trial-to-hire model gave us flexibility without long-term risk. Exceptional talent quality.”",
+                badge: "98% Conversion Rate",
+                name: "Elena M.",
+                role: "VP Product",
+                company: "Fintech Grid"
+              },
+              {
+                quote: "“Contracts and payroll were handled seamlessly — no compliance headaches. A true partner.”",
+                badge: "20+ EMEA Markets",
+                name: "Marcus L.",
+                role: "Head of Talent",
+                company: "NexGen Labs"
+              }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -4 }}
+                className="bg-white p-10 rounded-[16px] border border-slate-200 shadow-sm hover:border-blue-200 transition-all duration-300 flex flex-col h-full"
+              >
+                <div className="mb-10 flex-grow">
+                  <p className="text-lg text-slate-700 leading-relaxed font-medium italic">
+                    {item.quote}
+                  </p>
+                </div>
+                
+                <div className="space-y-6 pt-8 border-t border-slate-50">
+                  <div className="inline-flex py-1 px-3 bg-blue-50 text-[10px] font-bold text-blue-600 uppercase tracking-wider rounded-md">
+                    {item.badge}
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-slate-950">{item.name}</div>
+                    <div className="text-[12px] text-slate-500 font-medium">
+                      {item.role}, {item.company}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* 8. PORTAL PROMOTIONS */}
-      <section className="py-24 px-6 bg-slate-50 border-t border-slate-200">
-        <div className="container max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Talent Portal */}
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col items-start text-left hover:border-blue-950 transition-colors overflow-hidden group">
-              <div className="p-12 pb-0 relative z-10">
-                <div className="px-4 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full mb-6 inline-block">TALENT PORTAL</div>
-                <h3 className="text-3xl font-bold mb-4 text-primary">Do your work, hassle-free</h3>
-                <p className="text-slate-600 mb-8 max-w-md text-lg">Connect with companies that value your expertise. Manage work and opportunities with ease.</p>
-                <Button variant="outline" size="lg" className="border-slate-200 text-slate-700 hover:text-white hover:bg-blue-950 mb-12" asChild>
-                  <Link to="/auth/signup?type=talent">Apply as Talent</Link>
-                </Button>
-              </div>
-              <div className="mt-auto w-full px-12 pb-12">
-                <div className="rounded-t-xl overflow-hidden shadow-2xl border border-slate-200 translate-y-6 group-hover:translate-y-2 transition-transform duration-500">
-                  <img src="/images/talent.png" alt="Talent Dashboard" className="w-full h-auto object-cover" />
-                </div>
-              </div>
-            </div>
-
-            {/* Client Portal */}
-            <div className="bg-blue-950 text-white rounded-3xl shadow-xl flex flex-col items-start text-left relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-32 bg-blue-500/10 rounded-full"></div>
-              <div className="p-12 pb-0 relative z-10 w-full flex flex-col items-start">
-                <div className="px-4 py-1 bg-white/10 text-white text-xs font-bold rounded-full mb-6 inline-block">CLIENT PORTAL</div>
-                <h3 className="text-3xl font-bold mb-4">Build your team, simplified</h3>
-                <p className="text-blue-100 mb-8 max-w-md text-lg">Find, manage, and collaborate with elite talent — all in one place.</p>
-                <Button size="lg" className="bg-white text-blue-950 hover:bg-slate-100 border-none mb-12" asChild>
-                  <Link to="/book-consultation">Book Consultation</Link>
-                </Button>
-              </div>
-              <div className="mt-auto w-full px-12 pb-12 relative z-10">
-                <div className="rounded-t-xl overflow-hidden shadow-2xl border border-blue-800/50 translate-y-6 group-hover:translate-y-2 transition-transform duration-500">
-                  <img src="/images/client.png" alt="Client Dashboard" className="w-full h-auto object-cover" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 9. TESTIMONIALS */}
-      <section className="py-24 px-6 bg-white">
-        <div className="container max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-12 text-primary font-display">What Our Clients Say</h2>
-          <div className="relative bg-slate-50 p-12 rounded-3xl border border-slate-100">
-            <div className="text-6xl text-blue-200 font-serif absolute top-8 left-8">"</div>
-            <p className="text-2xl md:text-3xl font-serif text-slate-700 leading-relaxed mb-8 relative z-10">
-              We hired multiple professionals through Taskive — exceptional talent and continued support every step of the way.
-            </p>
-            <div>
-              <div className="font-bold text-primary">CEO</div>
-              <div className="text-slate-500 text-sm">Kemuko Technologies</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 10. NEWSLETTER */}
-      <section className="py-24 px-6 bg-slate-900 text-white text-center">
-        <div className="container max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 font-display">Join Our Talent Network</h2>
-          <p className="text-slate-400 mb-10 text-xl">Be the first to access exclusive opportunities and insights.</p>
-
-          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto mb-8">
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              className="h-14 bg-white/10 border-white/10 text-white placeholder:text-slate-500 rounded-full px-6 focus:ring-blue-500"
-            />
-            <Button size="lg" className="h-14 px-8 rounded-full bg-blue-600 hover:bg-blue-500 text-white">
-              Subscribe
-            </Button>
-          </div>
-          <Link to="/auth/signup?type=talent" className="text-slate-400 hover:text-white underline underline-offset-4 text-sm">
-            Or apply directly as talent &rarr;
-          </Link>
         </div>
       </section>
 

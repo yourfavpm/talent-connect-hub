@@ -13,6 +13,13 @@ import ServiceModels from "./pages/ServiceModels";
 import Pricing from "./pages/Pricing";
 import BookConsultation from "./pages/BookConsultation";
 import Insights from "./pages/Insights";
+import About from "./pages/About";
+import DirectHire from "./pages/DirectHire";
+import TrialToHire from "./pages/TrialToHire";
+import ProjectEngagement from "./pages/ProjectEngagement";
+import OffshoreHiring from "./pages/OffshoreHiring";
+import VettingProcess from "./pages/VettingProcess";
+import Careers from "./pages/Careers";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import AdminSignup from "./pages/auth/AdminSignup";
@@ -117,6 +124,13 @@ const App = () => (
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/book-consultation" element={<BookConsultation />} />
               <Route path="/insights" element={<Insights />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/careers" element={<Careers />} />
+              <Route path="/direct-hire" element={<DirectHire />} />
+              <Route path="/trial-to-hire" element={<TrialToHire />} />
+              <Route path="/project-engagement" element={<ProjectEngagement />} />
+              <Route path="/offshore-hiring" element={<OffshoreHiring />} />
+              <Route path="/vetting-process" element={<VettingProcess />} />
             </Route>
 
             {/* Public Jobs Page (no auth required) */}

@@ -1,94 +1,154 @@
-
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Linkedin, Instagram, Mail, MapPin } from "lucide-react";
 
 const WebsiteFooter = () => {
-    return (
-        <footer className="bg-slate-50 border-t border-slate-200 pt-16 pb-12">
-            <div className="container px-6 mx-auto">
-                <div className="grid grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
-
-                    {/* Services */}
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-primary">Services</h4>
-                        <ul className="space-y-2 text-sm text-slate-600">
-                            <li><Link to="/service-models" className="hover:text-blue-600 transition-colors">Executive Search</Link></li>
-                            <li><Link to="/service-models" className="hover:text-blue-600 transition-colors">Full-Time Hire</Link></li>
-                            <li><Link to="/service-models" className="hover:text-blue-600 transition-colors">Trial-to-Hire</Link></li>
-                            <li><Link to="/service-models" className="hover:text-blue-600 transition-colors">Managed Teams</Link></li>
-                            <li><Link to="/service-models" className="hover:text-blue-600 transition-colors">Project Staffing</Link></li>
-                        </ul>
-                    </div>
-
-                    {/* Products (Portals) */}
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-primary">Products</h4>
-                        <ul className="space-y-2 text-sm text-slate-600">
-                            <li><Link to="/auth/login" className="hover:text-blue-600 transition-colors">Client Platform</Link></li>
-                            <li><Link to="/auth/login" className="hover:text-blue-600 transition-colors">Talent Dashboard</Link></li>
-                            <li><Link to="/for-companies" className="hover:text-blue-600 transition-colors">Vetting Engine</Link></li>
-                            <li><Link to="/for-professionals" className="hover:text-blue-600 transition-colors">Payroll & Compliance</Link></li>
-                        </ul>
-                    </div>
-
-                    {/* Company */}
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-primary">Company</h4>
-                        <ul className="space-y-2 text-sm text-slate-600">
-                            <li><Link to="/about" className="hover:text-blue-600 transition-colors">About Us</Link></li>
-                            <li><Link to="/careers" className="hover:text-blue-600 transition-colors">Internal Careers</Link></li>
-                            <li><Link to="/contact" className="hover:text-blue-600 transition-colors">Contact</Link></li>
-                            <li><Link to="/partners" className="hover:text-blue-600 transition-colors">Partners</Link></li>
-                        </ul>
-                    </div>
-
-                    {/* Resources */}
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-primary">Resources</h4>
-                        <ul className="space-y-2 text-sm text-slate-600">
-                            <li><Link to="/insights" className="hover:text-blue-600 transition-colors">Blog & Insights</Link></li>
-                            <li><Link to="/salary-guide" className="hover:text-blue-600 transition-colors">Salary Guide</Link></li>
-                            <li><Link to="/case-studies" className="hover:text-blue-600 transition-colors">Case Studies</Link></li>
-                            <li><Link to="/community" className="hover:text-blue-600 transition-colors">Community</Link></li>
-                        </ul>
-                    </div>
-
-                    {/* Legal */}
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-primary">Legal</h4>
-                        <ul className="space-y-2 text-sm text-slate-600">
-                            <li><Link to="/terms" className="hover:text-blue-600 transition-colors">Terms of Service</Link></li>
-                            <li><Link to="/privacy" className="hover:text-blue-600 transition-colors">Privacy Policy</Link></li>
-                            <li><Link to="/cookies" className="hover:text-blue-600 transition-colors">Cookie Policy</Link></li>
-                        </ul>
-                    </div>
-
-                    {/* Contact / Social */}
-                    <div className="space-y-4">
-                        <h4 className="font-bold text-primary">Contact</h4>
-                        <ul className="space-y-2 text-sm text-slate-600">
-                            <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-blue-600" /> hello@taskive.com</li>
-                            <li className="flex items-start gap-2"><MapPin className="h-4 w-4 text-blue-600 mt-0.5" /> 123 Business Park<br />NY, NY 10001</li>
-                        </ul>
-                        <div className="flex gap-4 pt-2">
-                            <a href="#" className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 hover:bg-blue-600 hover:text-white transition-all"><Twitter className="h-4 w-4" /></a>
-                            <a href="#" className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 hover:bg-blue-600 hover:text-white transition-all"><Linkedin className="h-4 w-4" /></a>
-                            <a href="#" className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 hover:bg-blue-600 hover:text-white transition-all"><Instagram className="h-4 w-4" /></a>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div className="border-t border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-sm text-slate-500">© {new Date().getFullYear()} Taskive HR Solutions. All rights reserved.</p>
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                        <span className="text-xs font-semibold text-slate-500">Systems Operational</span>
-                    </div>
-                </div>
+  return (
+    <footer className="bg-slate-50 border-t border-slate-200 pt-24 pb-12 font-inter">
+      <div className="container px-6 mx-auto max-w-[1200px]">
+        <div className="grid lg:grid-cols-12 gap-16 mb-20">
+          
+          {/* Brand & Mission Block */}
+          <div className="lg:col-span-4 space-y-8">
+            <Link to="/" className="inline-block">
+              <span className="text-2xl font-bold text-slate-900 tracking-tight">Taskive</span>
+            </Link>
+            <p className="text-base text-slate-500 leading-relaxed font-medium max-w-sm">
+              Taskive connects vetted product and operations professionals across EMEA with growth-focused companies globally.
+            </p>
+            <div className="flex gap-4">
+              {[
+                { icon: Twitter, href: "#" },
+                { icon: Linkedin, href: "#" },
+                { icon: Instagram, href: "#" },
+                { icon: Facebook, href: "#" }
+              ].map((social, i) => (
+                <a 
+                  key={i} 
+                  href={social.href} 
+                  className="h-10 w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-200 hover:shadow-sm transition-all"
+                >
+                  <social.icon className="h-4 w-4" />
+                </a>
+              ))}
             </div>
-        </footer>
-    );
+          </div>
+
+          {/* Navigation Links Grid */}
+          <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+            {/* For Companies */}
+            <div className="space-y-6">
+              <h4 className="text-[11px] font-bold text-slate-950 uppercase tracking-widest">For Companies</h4>
+              <ul className="space-y-3">
+                {[
+                  { label: "Direct Hire", to: "/direct-hire" },
+                  { label: "Trial-to-Hire", to: "/trial-to-hire" },
+                  { label: "One-Time Projects", to: "/project-engagement" },
+                  { label: "Offshore Hiring", to: "/offshore-hiring" },
+                  { label: "Book Consultation", to: "/book-consultation" }
+                ].map((link, i) => (
+                  <li key={i}>
+                    <Link to={link.to} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* For Professionals */}
+            <div className="space-y-6">
+              <h4 className="text-[11px] font-bold text-slate-950 uppercase tracking-widest">For Professionals</h4>
+              <ul className="space-y-3">
+                {[
+                  { label: "Apply as Talent", to: "/auth/signup?portal=talent" },
+                  { label: "Vetting Process", to: "/vetting-process" },
+                  { label: "Talent Dashboard", to: "/auth/login?portal=talent" },
+                  { label: "Opportunities", to: "/auth/signup?portal=talent" },
+                  { label: "Support", to: "/contact" }
+                ].map((link, i) => (
+                  <li key={i}>
+                    <Link to={link.to} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div className="space-y-6">
+              <h4 className="text-[11px] font-bold text-slate-950 uppercase tracking-widest">Company</h4>
+              <ul className="space-y-3">
+                {[
+                  { label: "About", to: "/about" },
+                  { label: "Careers", to: "/careers" },
+                  { label: "Partners", to: "/partners" },
+                  { label: "Insights", to: "/insights" },
+                  { label: "Case Studies", to: "/case-studies" }
+                ].map((link, i) => (
+                  <li key={i}>
+                    <Link to={link.to} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div className="space-y-6">
+              <h4 className="text-[11px] font-bold text-slate-950 uppercase tracking-widest">Legal</h4>
+              <ul className="space-y-3">
+                {[
+                  { label: "Terms", to: "/terms" },
+                  { label: "Privacy", to: "/privacy" },
+                  { label: "Cookie Policy", to: "/cookies" },
+                  { label: "Compliance", to: "/compliance" }
+                ].map((link, i) => (
+                  <li key={i}>
+                    <Link to={link.to} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Strip */}
+        <div className="pt-12 border-t border-slate-200 grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          <div className="flex items-center gap-3">
+            <Mail className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-semibold text-slate-700">hire@taskive.ca</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <MapPin className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+            <span className="text-xs font-semibold text-slate-500 leading-relaxed">
+              167 Lombard Ave, Winnipeg, MB R3B 0V3, Canada
+            </span>
+          </div>
+          <div className="flex items-start gap-3">
+            <MapPin className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+            <span className="text-xs font-semibold text-slate-500 leading-relaxed">
+              44, Commercial Avenue, Yaba, Lagos, Nigeria
+            </span>
+          </div>
+        </div>
+
+        {/* Copyright & Status */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 border-t border-slate-100">
+          <p className="text-[13px] text-slate-400 font-medium">
+            © {new Date().getFullYear()} Taskive HR Solutions. All rights reserved.
+          </p>
+          <div className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-100 rounded-full shadow-sm">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Systems Operational</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
 };
 
 export default WebsiteFooter;

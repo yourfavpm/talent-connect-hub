@@ -34,7 +34,7 @@ const BookConsultation = () => {
         setLoading(true);
 
         try {
-            const { error } = await supabase.from("consultations" as any).insert({
+            const { error } = await supabase.from("consultations").insert({
                 first_name: formData.firstName,
                 last_name: formData.lastName,
                 email: formData.email,
@@ -48,8 +48,9 @@ const BookConsultation = () => {
             if (error) throw error;
 
             setSubmitted(true);
-        } catch (error: any) {
-            console.error("Error submitting consultation:", error);
+        } catch (error: unknown) {
+            const err = error as { message?: string };
+            console.error("Error submitting consultation:", err);
             toast({
                 title: "Error",
                 description: "Failed to submit request. Please try again.",
@@ -80,82 +81,135 @@ const BookConsultation = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#FDFCF8] selection:bg-stone-200 selection:text-stone-900 font-sans">
-            <div className="w-full h-full absolute top-0 left-0 overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-slate-100/50 rounded-full blur-[100px] opacity-60"></div>
-                <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-stone-100/80 rounded-full blur-[100px] opacity-60"></div>
-            </div>
+        <div className="min-h-screen bg-white selection:bg-slate-100 selection:text-slate-900 font-inter relative">
+            {/* Faint Dotted Grid Pattern */}
+            <div className="absolute inset-0 pointer-events-none z-0 opacity-[0.02]" 
+                 style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-            <div className="relative z-10 container max-w-6xl mx-auto py-12 md:py-20 px-6">
-                <Link to="/" className="inline-flex items-center text-sm font-medium text-stone-500 hover:text-stone-900 mb-12 transition-colors group">
-                    <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back
-                </Link>
+            <div className="relative z-10 container max-w-7xl mx-auto py-12 md:py-20 px-6">
+                {/* Top Nav / Breadcrumbs */}
+                <div className="flex items-center gap-2 text-[12px] font-medium text-slate-400 mb-8 md:mb-12">
+                    <Link to="/" className="hover:text-slate-900 transition-colors">Home</Link>
+                    <span className="text-slate-300">/</span>
+                    <span className="text-slate-600">Request Talent</span>
+                </div>
 
-                <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
-                    {/* LEFT: Context & "Alive" Elements */}
-                    <div className="lg:sticky lg:top-24">
-                        <h1 className="text-5xl md:text-6xl font-serif text-stone-900 mb-6 leading-[1.1]">
-                            Let's find your <br /> <span className="italic text-stone-500">ideal match.</span>
-                        </h1>
-                        <p className="text-xl text-stone-600 mb-12 leading-relaxed max-w-md">
-                            Tell us about the role, the culture, and the goals. We'll handle the vetting and the search.
-                        </p>
-
-                        <div className="bg-white p-8 rounded-3xl shadow-xl shadow-stone-200/50 border border-stone-100 relative">
-                            <div className="absolute -top-4 -right-4 bg-stone-900 text-white px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase">Trusted</div>
-                            <div className="flex gap-1 text-yellow-500 mb-4">
-                                <Star className="w-4 h-4 fill-current" />
-                                <Star className="w-4 h-4 fill-current" />
-                                <Star className="w-4 h-4 fill-current" />
-                                <Star className="w-4 h-4 fill-current" />
-                                <Star className="w-4 h-4 fill-current" />
+                <div className="grid lg:grid-cols-[45%_1fr] gap-16 lg:gap-32 items-start">
+                    {/* LEFT COLUMN: Context Panel */}
+                    <div className="lg:sticky lg:top-24 space-y-12">
+                        <div>
+                            <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200 uppercase tracking-[0.15em] mb-6">
+                                Consultation Request
                             </div>
-                            <p className="text-stone-800 text-lg mb-6 leading-relaxed font-serif italic">
-                                "Taskive found us a Head of Ops in 4 days. The quality of talent was unlike anything we'd seen from traditional recruiters."
+                            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight leading-[1.15]">
+                                Define the Role. <br className="hidden md:block" />
+                                We Structure the Match.
+                            </h1>
+                            <p className="text-lg text-slate-500 leading-relaxed max-w-lg">
+                                Share your objectives and timeline. Our team will coordinate vetting, matching, and engagement setup.
                             </p>
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-stone-200 rounded-full overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1554151228-14d9def656ec?auto=format&fit=crop&q=80" alt="Client" className="w-full h-full object-cover" />
-                                </div>
-                                <div>
-                                    <div className="font-bold text-stone-900 text-sm">Sarah Jenks</div>
-                                    <div className="text-stone-500 text-xs uppercase tracking-wide">Founder, Articulate</div>
-                                </div>
+                        </div>
+
+                        {/* Feature Blocks */}
+                        <div className="space-y-8 max-w-md">
+                            <div className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">
+                                What Happens Next
+                            </div>
+                            
+                            <div className="space-y-0">
+                                {[
+                                    "Role alignment call",
+                                    "Curated shortlist within 48 hours",
+                                    "Structured engagement proposal",
+                                    "Centralized billing & compliance"
+                                ].map((item, idx) => (
+                                    <div key={idx} className={`py-5 flex items-center gap-4 ${idx !== 0 ? 'border-t border-slate-100' : ''}`}>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0" />
+                                        <span className="text-sm font-semibold text-slate-700 tracking-tight">{item}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Trust Indicator */}
+                        <div className="pt-8 border-t border-slate-100">
+                            <p className="text-[12px] font-medium text-slate-400 mb-6">
+                                Trusted by growth-stage and enterprise teams globally.
+                            </p>
+                            <div className="flex flex-wrap items-center gap-8 opacity-40 grayscale">
+                                {/* Muted logos placeholder - using stylized text for enterprise feel */}
+                                <div className="text-lg font-bold tracking-tighter text-slate-900">FORTH</div>
+                                <div className="text-lg font-bold tracking-tight text-slate-900 underline decoration-2">VELO</div>
+                                <div className="text-lg font-bold tracking-widest text-slate-900 uppercase">Aspect</div>
                             </div>
                         </div>
                     </div>
 
-                    {/* RIGHT: Form */}
-                    <div className="bg-white/80 backdrop-blur-xl p-8 md:p-10 rounded-[2rem] shadow-2xl shadow-stone-200/40 border border-white">
-                        <form onSubmit={handleSubmit} className="space-y-8">
+                    {/* RIGHT COLUMN: Form Panel */}
+                    <div className="bg-white border border-slate-200 rounded-xl p-8 md:p-12 shadow-sm max-w-[600px] w-full">
+                        <div className="mb-10">
+                            <h2 className="text-2xl font-bold text-slate-900 mb-2">Request Structured Matching</h2>
+                            <p className="text-sm text-slate-500">All fields required unless marked optional.</p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-3">
-                                    <Label htmlFor="firstName" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">First Name</Label>
-                                    <Input id="firstName" value={formData.firstName} onChange={(e) => handleChange("firstName", e.target.value)} placeholder="Jane" className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl" required />
+                                <div className="space-y-2">
+                                    <Label htmlFor="firstName" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">First Name</Label>
+                                    <Input 
+                                        id="firstName" 
+                                        value={formData.firstName} 
+                                        onChange={(e) => handleChange("firstName", e.target.value)} 
+                                        placeholder="Jane" 
+                                        className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900" 
+                                        required 
+                                    />
                                 </div>
-                                <div className="space-y-3">
-                                    <Label htmlFor="lastName" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Last Name</Label>
-                                    <Input id="lastName" value={formData.lastName} onChange={(e) => handleChange("lastName", e.target.value)} placeholder="Doe" className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl" required />
+                                <div className="space-y-2">
+                                    <Label htmlFor="lastName" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Last Name</Label>
+                                    <Input 
+                                        id="lastName" 
+                                        value={formData.lastName} 
+                                        onChange={(e) => handleChange("lastName", e.target.value)} 
+                                        placeholder="Doe" 
+                                        className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900" 
+                                        required 
+                                    />
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
-                                <Label htmlFor="email" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Work Email</Label>
-                                <Input id="email" type="email" value={formData.email} onChange={(e) => handleChange("email", e.target.value)} placeholder="jane@company.com" className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl" required />
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Work Email</Label>
+                                <Input 
+                                    id="email" 
+                                    type="email" 
+                                    value={formData.email} 
+                                    onChange={(e) => handleChange("email", e.target.value)} 
+                                    placeholder="jane@company.com" 
+                                    className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900" 
+                                    required 
+                                />
                             </div>
 
-                            <div className="space-y-3">
-                                <Label htmlFor="company" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Company</Label>
-                                <Input id="company" value={formData.company} onChange={(e) => handleChange("company", e.target.value)} placeholder="Acme Inc." className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl" required />
+                            <div className="space-y-2">
+                                <Label htmlFor="company" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Company</Label>
+                                <Input 
+                                    id="company" 
+                                    value={formData.company} 
+                                    onChange={(e) => handleChange("company", e.target.value)} 
+                                    placeholder="Acme Inc." 
+                                    className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900" 
+                                    required 
+                                />
                             </div>
 
-                            <div className="space-y-3">
-                                <Label htmlFor="goal" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Primary Objective</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="goal" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Primary Objective</Label>
                                 <Select value={formData.objective} onValueChange={(val) => handleChange("objective", val)}>
-                                    <SelectTrigger className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl">
+                                    <SelectTrigger className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900 text-sm">
                                         <SelectValue placeholder="What are you looking to solve?" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="rounded-lg shadow-xl border-slate-200">
                                         <SelectItem value="hire-full-time">Hire Full-Time Leadership</SelectItem>
                                         <SelectItem value="hire-contractor">Hire Specialized Contractor</SelectItem>
                                         <SelectItem value="project-support">One-Time Project Delivery</SelectItem>
@@ -165,23 +219,23 @@ const BookConsultation = () => {
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-3">
-                                    <Label htmlFor="preferredDate" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Preferred Date</Label>
+                                <div className="space-y-2">
+                                    <Label htmlFor="preferredDate" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Preferred Date</Label>
                                     <Input
                                         id="preferredDate"
                                         type="date"
                                         value={formData.preferredDate}
                                         onChange={(e) => handleChange("preferredDate", e.target.value)}
-                                        className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl"
+                                        className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900"
                                     />
                                 </div>
-                                <div className="space-y-3">
-                                    <Label htmlFor="preferredTime" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Preferred Time</Label>
+                                <div className="space-y-2">
+                                    <Label htmlFor="preferredTime" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Preferred Time</Label>
                                     <Select value={formData.preferredTime} onValueChange={(val) => handleChange("preferredTime", val)}>
-                                        <SelectTrigger className="h-14 bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl">
+                                        <SelectTrigger className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900 text-sm">
                                             <SelectValue placeholder="Select time" />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="rounded-lg shadow-xl border-slate-200">
                                             <SelectItem value="morning">Morning (9AM - 12PM)</SelectItem>
                                             <SelectItem value="afternoon">Afternoon (12PM - 4PM)</SelectItem>
                                             <SelectItem value="evening">Evening (4PM - 6PM)</SelectItem>
@@ -190,20 +244,25 @@ const BookConsultation = () => {
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
-                                <Label htmlFor="message" className="text-stone-600 text-xs font-bold uppercase tracking-widest pl-1">Details (Optional)</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="message" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Details (Optional)</Label>
                                 <Textarea
                                     id="message"
                                     value={formData.details}
                                     onChange={(e) => handleChange("details", e.target.value)}
                                     placeholder="Tell us a bit about the role or the challenge..."
-                                    className="min-h-[140px] bg-stone-50 border-transparent focus:bg-white focus:border-stone-200 rounded-xl resize-none p-4 leading-relaxed"
+                                    className="min-h-[120px] border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900 resize-none p-4 leading-relaxed placeholder:text-slate-400"
                                 />
                             </div>
 
-                            <Button type="submit" size="lg" disabled={loading} className="w-full h-16 text-lg font-bold rounded-xl bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/10">
-                                {loading ? "Submitting..." : "Request Consultation"}
-                            </Button>
+                            <div className="pt-2">
+                                <Button type="submit" disabled={loading} className="w-full h-12 bg-slate-950 hover:bg-blue-700 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2">
+                                    {loading ? "Processing..." : "Request Consultation →"}
+                                </Button>
+                                <p className="text-[11px] text-slate-400 font-medium text-center mt-4">
+                                    We’ll respond within one business day.
+                                </p>
+                            </div>
                         </form>
                     </div>
                 </div>
