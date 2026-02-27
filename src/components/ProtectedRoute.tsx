@@ -19,14 +19,14 @@ const ProtectedRoute = ({ children, allowedRoles, portalType }: ProtectedRoutePr
   const { user, loading, userRole, roleLoading } = useAuth();
   const location = useLocation();
 
-  // Show loading while auth/role is being fetched
-  if (loading || (user && roleLoading)) {
+  // Only block on auth loading (fast — reads from localStorage/memory)
+  // Never block on roleLoading for client/talent portals — role resolves in background
+  const needsRoleForAccess = portalType === "admin";
+  
+  if (loading || (needsRoleForAccess && roleLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Authenticating...</p>
-        </div>
+        <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" />
       </div>
     );
   }

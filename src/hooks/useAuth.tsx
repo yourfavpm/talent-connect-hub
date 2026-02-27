@@ -1,6 +1,9 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from "react";
+import { useState, useEffect, createContext, useContext, ReactNode, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+
+// Module-level cache: role/permissions are fetched ONCE per user per session
+const roleCache = new Map<string, { role: string | null; permissions: string[] }>();
 
 interface AuthContextType {
   user: User | null;
@@ -22,11 +25,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [roleLoading, setRoleLoading] = useState(false);
+  const fetchingForUser = useRef<string | null>(null);
 
   const fetchUserRole = async (userId: string) => {
+    // Return from cache instantly if already fetched for this user
+    if (roleCache.has(userId)) {
+      const cached = roleCache.get(userId)!;
+      setUserRole(cached.role);
+      setPermissions(cached.permissions);
+      return;
+    }
+    // Prevent duplicate concurrent fetches for same user
+    if (fetchingForUser.current === userId) return;
+    fetchingForUser.current = userId;
     setRoleLoading(true);
     try {
-      // 1. Fetch Legacy Role
       const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
@@ -39,23 +52,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserRole(roleData?.role ?? null);
       }
 
-      // 2. Fetch RBAC Permissions if Admin
+      let perms: string[] = [];
       if (roleData?.role && ['super_admin', 'operations_admin', 'vetting_admin', 'finance_admin', 'support_admin'].includes(roleData.role)) {
-          // Join through admin_roles -> role_permissions -> permissions
-          // Also include overrides
           const { data: permData, error: permError } = await supabase
             .rpc('get_admin_permissions' as any, { p_admin_id: userId });
 
           if (permError) {
             console.error("Error fetching RBAC permissions:", permError);
           } else {
-            setPermissions((permData as string[]) || []);
+            perms = (permData as string[]) || [];
+            setPermissions(perms);
           }
       }
+
+      // Cache the result for this session
+      roleCache.set(userId, { role: roleData?.role ?? null, permissions: perms });
     } catch (error) {
       console.error("Error in fetchUserRole:", error);
     } finally {
       setRoleLoading(false);
+      fetchingForUser.current = null;
     }
   };
 

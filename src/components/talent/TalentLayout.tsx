@@ -18,16 +18,10 @@ const TalentLayout = () => {
     const checkOnboarding = async () => {
       if (!user?.id) return;
       const { data } = await supabase.from("talents").select("onboarding_completed").eq("user_id", user.id).maybeSingle();
-      if (!data) {
-         setNeedsOnboarding(true);
-      } else if (!data.onboarding_completed) {
-        setNeedsOnboarding(true);
-      } else {
-        setNeedsOnboarding(false);
-      }
+      setNeedsOnboarding(!data || !data.onboarding_completed);
     };
     checkOnboarding();
-  }, [user, location.pathname]); // Re-check occasionally or when route changes
+  }, [user?.id]); // Only re-check when user changes, NOT on every navigation
 
   const isOnboardingPage = location.pathname.includes('/talent/onboarding');
 
