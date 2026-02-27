@@ -10,7 +10,7 @@ const Index = () => {
     <div className="bg-background min-h-screen text-foreground overflow-x-hidden selection:bg-primary selection:text-white font-sans">
 
       {/* 2. ENTERPRISE HERO SECTION (REDESIGNED) */}
-      <section className="relative pt-48 pb-16 md:pt-40 md:pb-32 px-6 overflow-hidden bg-slate-50 font-inter">
+      <section className="relative pt-36 pb-16 md:pt-36 md:pb-32 px-6 overflow-hidden bg-slate-50 font-inter">
         {/* Subtle background decoration */}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-white/50 to-transparent pointer-events-none"></div>
         
