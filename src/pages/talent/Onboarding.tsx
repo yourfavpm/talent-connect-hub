@@ -21,9 +21,12 @@ import {
   FileText,
   Loader2,
   UploadCloud,
-  MessageSquare
+  MessageSquare,
+  Globe
 } from "lucide-react";
 import clsx from "clsx";
+import { RoleSelector } from "@/components/talent/onboarding/RoleSelector";
+import { TimezoneSelector } from "@/components/talent/onboarding/TimezoneSelector";
 
 const STEPS = [
   { id: 1, title: "Basic Information" },
@@ -36,18 +39,7 @@ const STEPS = [
   { id: 8, title: "Review & Submit" },
 ];
 
-const timezones = [
-  { value: "UTC", label: "UTC (Coordinated Universal Time)" },
-  { value: "America/New_York", label: "Eastern Time (ET)" },
-  { value: "America/Chicago", label: "Central Time (CT)" },
-  { value: "America/Denver", label: "Mountain Time (MT)" },
-  { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
-  { value: "Europe/London", label: "GMT/BST - London" },
-  { value: "Europe/Paris", label: "CET - Europe" },
-  { value: "Asia/Dubai", label: "Gulf Standard Time" },
-  { value: "Asia/Singapore", label: "Singapore Time" },
-  { value: "Australia/Sydney", label: "Australian Eastern Time" },
-];
+// ── Main Component ─────────────────────────────────────────────────────────────
 
 const TalentOnboarding = () => {
   const { user } = useAuth();
@@ -385,12 +377,10 @@ const TalentOnboarding = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Timezone</Label>
-                  <Select value={formData.timezone} onValueChange={(v) => handleInputChange("timezone", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select timezone" /></SelectTrigger>
-                    <SelectContent>
-                      {timezones.map(tz => <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <TimezoneSelector 
+                    value={formData.timezone} 
+                    onChange={(v) => handleInputChange("timezone", v)} 
+                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -412,17 +402,10 @@ const TalentOnboarding = () => {
             </div>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Primary Role <span className="text-red-500">*</span></Label>
-                <Select value={formData.primaryRole} onValueChange={(v) => handleInputChange("primaryRole", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select your main profession" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="virtual_assistant">Virtual Assistant</SelectItem>
-                    <SelectItem value="customer_support">Customer Support Specialist</SelectItem>
-                    <SelectItem value="project_manager">Project Manager</SelectItem>
-                    <SelectItem value="executive_assistant">Executive Assistant</SelectItem>
-                    <SelectItem value="software_engineer">Software Engineer</SelectItem>
-                  </SelectContent>
-                </Select>
+                <RoleSelector 
+                  value={formData.primaryRole} 
+                  onChange={(v) => handleInputChange("primaryRole", v)} 
+                />
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">

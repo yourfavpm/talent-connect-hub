@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { RoleSelector } from "@/components/talent/onboarding/RoleSelector";
+import { TimezoneSelector } from "@/components/talent/onboarding/TimezoneSelector";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -570,8 +572,10 @@ const TalentProfile = () => {
                 <div className="space-y-4">
                    <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Primary Professional Role</Label>
-                        <Input value={proForm.primary_role} onChange={(e) => setProForm({ ...proForm, primary_role: e.target.value })} className="h-10" />
+                        <RoleSelector
+                          value={proForm.primary_role}
+                          onChange={(v) => setProForm({ ...proForm, primary_role: v })}
+                        />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Professional Headline</Label>
@@ -837,7 +841,10 @@ const TalentProfile = () => {
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-[11px] font-bold text-slate-500">Primary Timezone</Label>
-                        <Input value={basicForm.timezone} onChange={(e) => setBasicForm({ ...basicForm, timezone: e.target.value })} className="h-10" />
+                        <TimezoneSelector
+                          value={basicForm.timezone}
+                          onChange={(v) => setBasicForm({ ...basicForm, timezone: v })}
+                        />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-[11px] font-bold text-slate-500">Working Hours Override</Label>
