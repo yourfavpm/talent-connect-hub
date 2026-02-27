@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm, FormProvider, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -111,53 +114,149 @@ const STEPS = [
 
 type SaveStatus = "idle" | "saving" | "saved" | "unsaved";
 
+// ── Validation Schemas ──────────────────────────────────────────────────────────
+
+const onboardSchema = z.object({
+  firstName: z.string().min(2, "First name is required"),
+  lastName: z.string().min(2, "Last name is required"),
+  email: z.string().email("Invalid email"),
+  phone: z.string().min(5, "Phone number is required"),
+  country: z.string().min(2, "Country is required"),
+  timezone: z.string().min(1, "Timezone is required"),
+  primaryRole: z.string().min(1, "Primary role is required"),
+  headline: z.string().min(10, "Headline must be at least 10 characters"),
+  shortBio: z.string().min(20, "Bio must be at least 20 characters"),
+  yearsOfExperience: z.string().min(1, "Experience is required"),
+  availability: z.string().min(1, "Availability is required"),
+  roleCategory: z.string().min(1, "Role category is required"),
+  secondarySkills: z.array(z.string()).default([]),
+  toolsFamiliarWith: z.array(z.string()).default([]),
+  languagesSpoken: z.array(z.string()).default([]),
+  governmentIdUrl: z.string().optional(),
+  cvUrl: z.string().optional(),
+  proofOfAddressUrl: z.string().optional(),
+  portfolioUrl: z.string().optional(),
+  workHistory: z.array(z.object({
+    id: z.string(),
+    companyName: z.string().min(2, "Company name required"),
+    roleTitle: z.string().min(2, "Role title required"),
+    roleDescription: z.string().optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    isCurrent: z.boolean().default(false),
+  })).default([]),
+  education: z.array(z.object({
+    id: z.string(),
+    institutionName: z.string().min(2, "Institution required"),
+    degree: z.string().min(2, "Degree required"),
+    startYear: z.string().optional(),
+    endYear: z.string().optional(),
+    isCurrent: z.boolean().default(false),
+  })).default([]),
+  certifications: z.array(z.object({
+    id: z.string(),
+    certificationName: z.string().min(2, "Certification name required"),
+    issuer: z.string().optional(),
+    yearObtained: z.string().optional(),
+    fileUrl: z.string().optional(),
+  })).default([]),
+  references: z.array(z.object({
+    id: z.string(),
+    name: z.string().min(2, "Name required"),
+    company: z.string().optional(),
+    email: z.string().email("Invalid email").optional().or(z.literal("")),
+    phone: z.string().optional(),
+  })).default([]),
+});
+
+type OnboardFormValues = z.infer<typeof onboardSchema>;
+
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 const TalentOnboarding = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  interface Talent {
+    id: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    phone?: string;
+    primary_role?: string;
+    role_category?: string;
+    years_of_experience?: number;
+    availability?: string;
+    country?: string;
+    timezone?: string;
+    preferred_working_hours?: string;
+    secondary_skills?: string[];
+    tools_familiar_with?: string[];
+    languages_spoken?: string[];
+    cv_url?: string;
+    government_id_url?: string;
+    proof_of_address_url?: string;
+    portfolio_url?: string;
+    headline?: string;
+    short_bio?: string;
+    profile_completion?: number;
+    current_step?: number;
+    onboarding_status?: string;
+    onboarding_completed?: boolean;
+    vetting_status?: string;
+    draft_profile?: any;
+    assigned_manager?: string;
+  }
+
+
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [talentId, setTalentId] = useState<string | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const isLoaded = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    country: "",
-    timezone: "",
-    primaryRole: "",
-    secondarySkills: [] as string[],
-    yearsOfExperience: "",
-    availability: "",
-    toolsFamiliarWith: [] as string[],
-    languagesSpoken: [] as string[],
-    governmentIdUrl: "",
-    cvUrl: "",
-    proofOfAddressUrl: "",
-    portfolioUrl: "",
+  const methods = useForm<OnboardFormValues>({
+    resolver: zodResolver(onboardSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      country: "",
+      timezone: "",
+      primaryRole: "",
+      secondarySkills: [],
+      yearsOfExperience: "",
+      availability: "",
+      roleCategory: "",
+      toolsFamiliarWith: [],
+      languagesSpoken: [],
+      governmentIdUrl: "",
+      cvUrl: "",
+      proofOfAddressUrl: "",
+      portfolioUrl: "",
+      headline: "",
+      shortBio: "",
+      workHistory: [{ id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false }],
+      education: [{ id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false }],
+      certifications: [{ id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" }],
+      references: [{ id: Date.now().toString(), name: "", company: "", email: "", phone: "" }],
+    }
   });
 
-  const [workHistory, setWorkHistory] = useState([
-    { id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false },
-  ]);
-  const [education, setEducation] = useState([
-    { id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false },
-  ]);
-  const [certifications, setCertifications] = useState([
-    { id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" },
-  ]);
-  const [references, setReferences] = useState([
-    { id: Date.now().toString(), name: "", company: "", email: "", phone: "" },
-  ]);
-  const [vettingSteps, setVettingSteps] = useState<any[]>([]);
-  const [changeRequests, setChangeRequests] = useState<any[]>([]);
+  const { control, handleSubmit: hookFormSubmit, reset, watch, setValue, formState: { errors, isDirty } } = methods;
+
+  const { fields: workFields, append: appendWork, remove: removeWork } = useFieldArray({ control, name: "workHistory" });
+  const { fields: eduFields, append: appendEdu, remove: removeEdu } = useFieldArray({ control, name: "education" });
+  const { fields: certFields, append: appendCert, remove: removeCert } = useFieldArray({ control, name: "certifications" });
+  const { fields: refFields, append: appendRef, remove: removeRef } = useFieldArray({ control, name: "references" });
+
+  const formData = watch();
+  const vettingSteps = useRef<any[]>([]);
+  const changeRequests = useRef<any[]>([]);
   const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
 
   // ── Load from DB + localStorage ───────────────────────────────────────────
@@ -167,69 +266,96 @@ const TalentOnboarding = () => {
     const loadProfileData = async () => {
       if (!user) return;
 
-      // Rehydrate step from localStorage first (fast)
-      const localStep = localStorage.getItem(`onboarding_step_${user.id}`);
-      if (localStep) setCurrentStep(parseInt(localStep, 10));
-
       try {
-        const { data: talent } = await supabase
+        const { data: talentData, error: fetchError } = await supabase
           .from("talents")
           .select("*")
           .eq("user_id", user.id)
           .maybeSingle();
 
-        if (talent && isMounted) {
-          setFormData(prev => ({
-            ...prev,
-            firstName: talent.first_name || user.user_metadata?.first_name || "",
-            lastName: talent.last_name || user.user_metadata?.last_name || "",
-            email: talent.email || user.email || "",
-            phone: talent.phone || "",
-            country: talent.country || "",
-            timezone: talent.timezone || "",
-            primaryRole: talent.primary_role || "",
-            secondarySkills: talent.secondary_skills || [],
-            yearsOfExperience: talent.years_of_experience?.toString() || "",
-            availability: talent.availability || "",
-            toolsFamiliarWith: talent.tools_familiar_with || [],
-            languagesSpoken: talent.languages_spoken || [],
-            governmentIdUrl: talent.government_id_url || "",
-            cvUrl: talent.cv_url || "",
-            proofOfAddressUrl: talent.proof_of_address_url || "",
-          }));
-          setTalentId(talent.id);
+        let talent: Talent | null = talentData as Talent | null;
 
-          // Restore step from DB (authoritative)
-          const dbStep = (talent as any).current_step;
+        if (!talent && !fetchError) {
+          const { data: newTalent, error: createError } = await supabase
+            .from("talents")
+            .insert({
+              user_id: user.id,
+              talent_id: `TAS-VA-${Math.floor(Math.random() * 9000) + 1000}`,
+              email: user.email,
+              first_name: user.user_metadata?.first_name || "",
+              last_name: user.user_metadata?.last_name || "",
+              onboarding_completed: false,
+              current_step: 1
+            })
+            .select()
+            .single();
+          
+          if (!createError) {
+            talent = newTalent;
+          }
+        }
+
+        if (talent && isMounted) {
+          const t = talent;
+          setTalentId(t.id);
+
+          const [workRes, eduRes, certRes, refRes, vettingRes, requestsRes] = await Promise.all([
+            supabase.from("talent_work_history").select("*").eq("talent_id", t.id),
+            supabase.from("talent_education").select("*").eq("talent_id", t.id),
+            supabase.from("talent_certifications").select("*").eq("talent_id", t.id),
+            supabase.from("talent_references").select("*").eq("talent_id", t.id),
+            supabase.from("talent_profile_steps" as any).select("*").eq("talent_id", t.id),
+            supabase.from("step_change_requests" as any).select("*").eq("talent_id", t.id).is("resolved_at", null)
+          ]);
+          
+          if (isLoaded.current) return;
+          isLoaded.current = true;
+
+          const initialValues: OnboardFormValues = {
+            firstName: t.first_name || user.user_metadata?.first_name || "",
+            lastName: t.last_name || user.user_metadata?.last_name || "",
+            email: t.email || user.email || "",
+            phone: t.phone || "",
+            country: t.country || "",
+            timezone: t.timezone || "",
+            primaryRole: t.primary_role || "",
+            secondarySkills: t.secondary_skills || [],
+            yearsOfExperience: t.years_of_experience?.toString() || "",
+            availability: t.availability || "",
+            roleCategory: t.role_category || "",
+            toolsFamiliarWith: t.tools_familiar_with || [],
+            languagesSpoken: t.languages_spoken || [],
+            governmentIdUrl: t.government_id_url || "",
+            cvUrl: t.cv_url || "",
+            proofOfAddressUrl: t.proof_of_address_url || "",
+            portfolioUrl: t.draft_profile?.portfolio_url || t.portfolio_url || "",
+            headline: t.draft_profile?.headline || t.headline || "",
+            shortBio: t.draft_profile?.short_bio || t.short_bio || "",
+            workHistory: workRes.data?.length ? workRes.data.map(w => ({ id: w.id, companyName: w.company_name, roleTitle: w.role_title, roleDescription: w.role_description || "", startDate: w.start_date || "", endDate: w.end_date || "", isCurrent: w.is_current })) : [{ id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false }],
+            education: eduRes.data?.length ? eduRes.data.map(e => ({ id: e.id, institutionName: e.institution_name, degree: e.education_level || "", startYear: e.start_year?.toString() || "", endYear: e.end_year?.toString() || "", isCurrent: e.is_current })) : [{ id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false }],
+            certifications: certRes.data?.length ? certRes.data.map(c => ({ id: c.id, certificationName: c.certification_name, issuer: c.issuing_organization || "", yearObtained: c.year_obtained?.toString() || "", fileUrl: c.credential_url || "" })) : [{ id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" }],
+            references: refRes.data?.length ? refRes.data.map(r => ({ id: r.id, name: r.reference_name, company: r.relationship || "", email: r.email, phone: r.phone || "" })) : [{ id: Date.now().toString(), name: "", company: "", email: "", phone: "" }],
+          };
+
+          reset(initialValues);
+          
+          const dbStep = (t as any).current_step || (t as any).onboarding_step;
           if (dbStep && dbStep > 1) setCurrentStep(Math.min(dbStep, STEPS.length));
 
-          const onbStatus = (talent as any).onboarding_status;
-          if (onbStatus === "submitted" || onbStatus === "under_review") {
+          if (t.onboarding_status === "submitted" || t.onboarding_status === "under_review") {
             setIsSubmitted(true);
           }
 
-          const [workRes, eduRes, certRes, refRes, vettingRes, requestsRes] = await Promise.all([
-            supabase.from("talent_work_history").select("*").eq("talent_id", talent.id),
-            supabase.from("talent_education").select("*").eq("talent_id", talent.id),
-            supabase.from("talent_certifications").select("*").eq("talent_id", talent.id),
-            supabase.from("talent_references").select("*").eq("talent_id", talent.id),
-            supabase.from("talent_profile_steps" as any).select("*").eq("talent_id", talent.id),
-            supabase.from("step_change_requests" as any).select("*").eq("talent_id", talent.id).is("resolved_at", null)
-          ]);
-
-          if (workRes.data?.length) setWorkHistory(workRes.data.map(w => ({ id: w.id, companyName: w.company_name, roleTitle: w.role_title, roleDescription: w.role_description || "", startDate: w.start_date || "", endDate: w.end_date || "", isCurrent: w.is_current })));
-          if (eduRes.data?.length) setEducation(eduRes.data.map(e => ({ id: e.id, institutionName: e.institution_name, degree: e.education_level || "", startYear: e.start_year?.toString() || "", endYear: e.end_year?.toString() || "", isCurrent: e.is_current })));
-          if (certRes.data?.length) setCertifications(certRes.data.map(c => ({ id: c.id, certificationName: c.certification_name, issuer: c.issuing_organization || "", yearObtained: c.year_obtained?.toString() || "", fileUrl: c.credential_url || "" })));
-          if (refRes.data?.length) setReferences(refRes.data.map(r => ({ id: r.id, name: r.reference_name, company: r.relationship || "", email: r.email, phone: r.phone || "" })));
-          setVettingSteps(vettingRes.data || []);
-          setChangeRequests(requestsRes.data || []);
+          vettingSteps.current = vettingRes.data || [];
+          changeRequests.current = requestsRes.data || [];
         } else if (isMounted) {
-          setFormData(prev => ({ ...prev, email: user.email || "", firstName: user.user_metadata?.first_name || "", lastName: user.user_metadata?.last_name || "" }));
+          reset(prev => ({ ...prev, email: user.email || "", firstName: user.user_metadata?.first_name || "", lastName: user.user_metadata?.last_name || "" }));
         }
       } catch (error) {
         console.error("Error loading profile data:", error);
       }
     };
+
 
     loadProfileData();
     return () => { isMounted = false; };
@@ -237,48 +363,149 @@ const TalentOnboarding = () => {
 
   // ── Auto-save Engine ──────────────────────────────────────────────────────
 
-  const performAutosave = useCallback(async (data: typeof formData) => {
+  // ── Auto-save & Completion Engine ──────────────────────────────────────────
+  
+  const calculateCompletion = useCallback((values: OnboardFormValues) => {
+    let score = 0;
+    const weights = {
+      basic: 15, role: 15, bio: 10, work: 15, docs: 20, edu: 10, certs: 5, refs: 10
+    };
+
+    if (values.firstName && values.lastName && values.phone && values.country) score += weights.basic;
+    if (values.primaryRole && values.yearsOfExperience && values.availability) score += weights.role;
+    if (values.shortBio && values.headline) score += weights.bio;
+    if (values.workHistory?.some(w => w.companyName && w.roleTitle)) score += weights.work;
+    if (values.cvUrl && values.governmentIdUrl) score += weights.docs;
+    if (values.education?.some(e => e.institutionName && e.degree)) score += weights.edu;
+    if (values.certifications?.some(c => c.certificationName)) score += weights.certs;
+    if (values.references?.some(r => r.name && r.email)) score += weights.refs;
+
+    return Math.min(score, 100);
+  }, []);
+
+
+  const syncAllToDB = useCallback(async (values: OnboardFormValues = watch()) => {
     if (!user || !talentId) return;
     setSaveStatus("saving");
     try {
-      await supabase.from("talents").update({
-        phone: data.phone,
-        country: data.country,
-        timezone: data.timezone,
-        primary_role: data.primaryRole,
-        secondary_skills: data.secondarySkills,
-        years_of_experience: data.yearsOfExperience ? Number(data.yearsOfExperience) : null,
-        availability: data.availability,
-        tools_familiar_with: data.toolsFamiliarWith,
-        languages_spoken: data.languagesSpoken,
-        portfolio_url: data.portfolioUrl,
+      const completionPct = calculateCompletion(values);
+      
+      const validAvailability = ["full_time", "part_time", "contract", "hourly"].includes(values.availability) 
+        ? values.availability 
+        : "full_time";
+
+      // 1. Sync main talent record
+      const { error: talentError } = await supabase.from("talents").update({
+        phone: values.phone,
+        country: values.country,
+        timezone: values.timezone,
+        primary_role: values.primaryRole,
+        secondary_skills: values.secondarySkills,
+        years_of_experience: values.yearsOfExperience ? Number(values.yearsOfExperience) : null,
+        availability: validAvailability,
+        role_category: values.roleCategory,
+        tools_familiar_with: values.toolsFamiliarWith,
+        languages_spoken: values.languagesSpoken,
+        portfolio_url: values.portfolioUrl,
+        cv_url: values.cvUrl,
+        government_id_url: values.governmentIdUrl,
+        proof_of_address_url: values.proofOfAddressUrl,
+        first_name: values.firstName,
+        last_name: values.lastName,
+        profile_completion: completionPct,
+        draft_profile: {
+          headline: values.headline,
+          short_bio: values.shortBio,
+          portfolio_url: values.portfolioUrl,
+        }
       } as any).eq("id", talentId);
+
+      if (talentError) throw talentError;
+
+      // 2. Sync History Tables (PATCH style - clear and re-insert for simplicity/consistency in onboarding)
+      const workData = (values.workHistory || []).filter(w => w.companyName.trim()).map(w => ({
+        talent_id: talentId,
+        company_name: w.companyName,
+        role_title: w.roleTitle,
+        role_description: w.roleDescription,
+        start_date: w.startDate || null,
+        end_date: w.endDate || null,
+        is_current: w.isCurrent
+      }));
+      await supabase.from("talent_work_history").delete().eq("talent_id", talentId);
+      if (workData.length > 0) await supabase.from("talent_work_history").insert(workData);
+
+      const eduData = (values.education || []).filter(e => e.institutionName.trim()).map(e => ({
+        talent_id: talentId,
+        institution_name: e.institutionName,
+        education_level: e.degree as any,
+        start_year: e.startYear ? parseInt(e.startYear) : null,
+        end_year: e.endYear ? parseInt(e.endYear) : null,
+        is_current: e.isCurrent
+      }));
+      await supabase.from("talent_education").delete().eq("talent_id", talentId);
+      if (eduData.length > 0) await supabase.from("talent_education").insert(eduData);
+
+      const certData = (values.certifications || []).filter(c => c.certificationName.trim()).map(c => ({
+        talent_id: talentId,
+        certification_name: c.certificationName,
+        issuing_organization: c.issuer,
+        year_obtained: c.yearObtained ? parseInt(c.yearObtained) : null,
+        credential_url: c.fileUrl
+      }));
+      await supabase.from("talent_certifications").delete().eq("talent_id", talentId);
+      if (certData.length > 0) await supabase.from("talent_certifications").insert(certData);
+
+      const refData = (values.references || []).filter(r => r.name.trim()).map(r => ({
+        talent_id: talentId,
+        reference_name: r.name,
+        relationship: r.company,
+        email: r.email,
+        phone: r.phone || null
+      }));
+      await supabase.from("talent_references").delete().eq("talent_id", talentId);
+      if (refData.length > 0) await supabase.from("talent_references").insert(refData);
+
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 3000);
-    } catch {
+    } catch (err) {
+      console.error("Critical Sync Failure:", err);
       setSaveStatus("unsaved");
     }
-  }, [user, talentId]);
+  }, [user, talentId, calculateCompletion, watch]);
 
-  const handleInputChange = useCallback((field: string, value: string | string[]) => {
-    setFormData(prev => {
-      const next = { ...prev, [field]: value };
-      setSaveStatus("unsaved");
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => performAutosave(next), 1000);
-      return next;
-    });
-  }, [performAutosave]);
+
+
+  const triggerDebouncedSync = useCallback(() => {
+    setSaveStatus("unsaved");
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      syncAllToDB(methods.getValues());
+    }, 1500);
+  }, [syncAllToDB, methods]);
+
+
+  const handleInputChange = useCallback((field: any, value: any) => {
+    methods.setValue(field, value, { shouldDirty: true, shouldTouch: true });
+    triggerDebouncedSync();
+  }, [methods, triggerDebouncedSync]);
+
+
 
   const persistStep = useCallback(async (step: number) => {
     if (!user || !talentId) return;
-    localStorage.setItem(`onboarding_step_${user.id}`, String(step));
-    await supabase.from("talents").update({ current_step: step } as any).eq("id", talentId);
+    await supabase.from("talents").update({ 
+      current_step: step,
+      last_saved_step: step
+    } as any).eq("id", talentId);
   }, [user, talentId]);
+
+
+
 
   // ── File Upload ───────────────────────────────────────────────────────────
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, field: string) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, field: keyof OnboardFormValues) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
     setUploadingFields(prev => ({ ...prev, [field]: true }));
@@ -288,7 +515,11 @@ const TalentOnboarding = () => {
       const filePath = `${user.id}/${field}/${fileName}`;
       const { error: uploadError } = await supabase.storage.from('talent_documents').upload(filePath, file);
       if (uploadError) throw uploadError;
-      handleInputChange(field, filePath);
+      
+      // Update form data and trigger sync immediately
+      setValue(field, filePath, { shouldDirty: true });
+      await syncAllToDB({ ...formData, [field]: filePath });
+
       toast({ title: "Upload successful", description: "File uploaded successfully." });
     } catch (err: Error | unknown) {
       toast({ title: "Upload failed", description: err instanceof Error ? err.message : "An error occurred", variant: "destructive" });
@@ -297,71 +528,99 @@ const TalentOnboarding = () => {
     }
   };
 
+
+
   // ── Validation ────────────────────────────────────────────────────────────
 
-  const validateStep = (step: number) => {
-    const missing: string[] = [];
-    if (step === 1) {
-      if (!formData.firstName.trim()) missing.push("First Name");
-      if (!formData.lastName.trim()) missing.push("Last Name");
-    } else if (step === 2) {
-      if (!formData.primaryRole) missing.push("Primary Role");
-      if (!formData.yearsOfExperience) missing.push("Years of Experience");
-      if (!formData.availability) missing.push("Availability");
-    } else if (step === 7) {
-      const validRefs = references.filter(r => r.name.trim() && r.email.trim());
-      if (validRefs.length === 0) missing.push("At least one valid reference (Name and Email)");
-    }
-    if (missing.length > 0) {
-      toast({ title: "Required Fields Missing", description: `Please fill out: ${missing.join(", ")}`, variant: "destructive" });
-      return false;
-    }
-    return true;
-  };
+  // Validation is handled via zod schema and methods.trigger()
+
 
   const nextStep = async () => {
-    if (!validateStep(currentStep)) return;
-    await performAutosave(formData);
+    const isValid = await methods.trigger(STEPS[currentStep-1].key as any);
+    if (!isValid) {
+      toast({ title: "Validation Error", description: "Please fix the highlighted fields to continue.", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+    await syncAllToDB(methods.getValues());
     const next = Math.min(currentStep + 1, STEPS.length);
     setCurrentStep(next);
     await persistStep(next);
+    setLoading(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const prevStep = async () => {
-    await performAutosave(formData);
+    setLoading(true);
+    await syncAllToDB(methods.getValues());
     const prev = Math.max(currentStep - 1, 1);
     setCurrentStep(prev);
     await persistStep(prev);
+    setLoading(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSaveAndExit = async () => {
-    await performAutosave(formData);
+    setLoading(true);
+    await syncAllToDB(methods.getValues());
+    setLoading(false);
     navigate("/talent/dashboard");
   };
 
+  const handleStepClick = async (stepId: number) => {
+    if (stepId === currentStep) return;
+    
+    // Attempt silent save
+    if (isDirty) {
+      const isValid = await methods.trigger(); 
+      if (!isValid) {
+        toast({ title: "Incomplete Data", description: "This step has invalid fields. Changes might not be fully saved.", variant: "destructive" });
+      }
+      await syncAllToDB(methods.getValues());
+    }
+
+    
+    setCurrentStep(stepId);
+    await persistStep(stepId);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+
+
   const handleSubmit = async () => {
-    if (!validateStep(8)) return;
+    const isValid = await methods.trigger();
+    if (!isValid) {
+      toast({ title: "Incomplete Data", description: "Please complete all required fields before submitting.", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
     try {
       if (talentId) {
-        await supabase
+        // Final sync of all data
+        await syncAllToDB(methods.getValues());
+
+        const { error: updateError } = await supabase
           .from("talents")
           .update({ 
             vetting_status: "in_review", 
             onboarding_status: "submitted", 
-            onboarding_completed: true,
-            current_step: STEPS.length 
+            profile_completion: 100,
+            last_saved_step: 8,
+            current_step: 8
           } as any)
           .eq("id", talentId);
         
-        localStorage.removeItem(`onboarding_step_${user?.id}`);
-        const requestedSteps = vettingSteps.filter(s => s.status === 'changes_requested');
+        if (updateError) throw updateError;
+
+        // Update vetting status for individual steps if they were in changes_requested
+        const requestedSteps = vettingSteps.current.filter(s => s.status === 'changes_requested');
         for (const s of requestedSteps) {
           await supabase.from("talent_profile_steps" as any).update({ status: "in_review" as any } as any).eq("id", s.id);
         }
       }
+
       setIsSubmitted(true);
       toast({ title: "Profile Submitted", description: "Your profile is now pending review by our team." });
     } catch (error: Error | unknown) {
@@ -371,11 +630,14 @@ const TalentOnboarding = () => {
     }
   };
 
+
+
   // ── Feedback Banner ───────────────────────────────────────────────────────
 
   const renderFeedback = (stepKey: string) => {
-    const step = vettingSteps.find(s => s.step_key === stepKey);
-    const requests = changeRequests.filter(r => r.step_key === stepKey);
+    const step = vettingSteps.current.find(s => s.step_key === stepKey);
+    const requests = changeRequests.current.filter(r => r.step_key === stepKey);
+
     if (!step || step.status !== 'changes_requested') return null;
     return (
       <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-3">
@@ -425,38 +687,52 @@ const TalentOnboarding = () => {
             {/* Locked identity fields (prefilled from sign-up) */}
             <div className="grid sm:grid-cols-2 gap-5">
               <FieldGroup label="First Name">
-                <Input className={clsx(OB_INPUT_CLASS, "opacity-60 cursor-not-allowed bg-slate-50")} value={formData.firstName} disabled />
+                <Input className={clsx(OB_INPUT_CLASS, "opacity-60 cursor-not-allowed bg-slate-50")} value={formData.firstName} readOnly />
               </FieldGroup>
               <FieldGroup label="Last Name">
-                <Input className={clsx(OB_INPUT_CLASS, "opacity-60 cursor-not-allowed bg-slate-50")} value={formData.lastName} disabled />
+                <Input className={clsx(OB_INPUT_CLASS, "opacity-60 cursor-not-allowed bg-slate-50")} value={formData.lastName} readOnly />
               </FieldGroup>
             </div>
             <FieldGroup label="Email Address">
-              <Input className={clsx(OB_INPUT_CLASS, "opacity-60 cursor-not-allowed bg-slate-50")} value={formData.email} disabled />
+              <Input className={clsx(OB_INPUT_CLASS, "opacity-60 cursor-not-allowed bg-slate-50")} value={formData.email} readOnly />
             </FieldGroup>
-            <FieldGroup label="Phone Number">
+            <FieldGroup label="Phone Number" required>
               <Input className={OB_INPUT_CLASS} value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} placeholder="+1 (555) 000-0000" />
             </FieldGroup>
             <div className="grid sm:grid-cols-2 gap-5">
-              <FieldGroup label="Country / Location">
+              <FieldGroup label="Country / Location" required>
                 <Input className={OB_INPUT_CLASS} value={formData.country} onChange={(e) => handleInputChange("country", e.target.value)} placeholder="e.g. United Kingdom" />
               </FieldGroup>
-              <FieldGroup label="Timezone">
+              <FieldGroup label="Timezone" required>
                 <TimezoneSelector value={formData.timezone} onChange={(v) => handleInputChange("timezone", v)} />
               </FieldGroup>
             </div>
-            <FieldGroup label="Languages Spoken">
+            <FieldGroup label="Languages Spoken" required>
               <Input className={OB_INPUT_CLASS} value={formData.languagesSpoken.join(", ")} onChange={(e) => handleInputChange("languagesSpoken", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. English, French, Spanish" />
               <p className="text-[11px] text-slate-400 mt-1">Separate multiple languages with commas.</p>
             </FieldGroup>
           </div>
         );
 
+
       case 2:
         return (
           <div className="space-y-6">
             {renderFeedback('professional_details')}
-            <RoleSelector value={formData.primaryRole} onChange={(v) => handleInputChange("primaryRole", v)} />
+            <RoleSelector 
+              category={formData.roleCategory}
+              onCategoryChange={(v) => handleInputChange("roleCategory", v)}
+              value={formData.primaryRole} 
+              onChange={(v) => handleInputChange("primaryRole", v)} 
+            />
+            <FieldGroup label="Professional Headline" required>
+              <Input className={OB_INPUT_CLASS} value={formData.headline} onChange={(e) => handleInputChange("headline", e.target.value)} placeholder="e.g. Senior Operations Architect with 8+ Years Experience" />
+              <p className="text-[11px] text-slate-400 mt-1">A concise summary of your professional expertise.</p>
+            </FieldGroup>
+            <FieldGroup label="Short Bio / Executive Summary" required>
+              <Textarea className="rounded-lg border-slate-200 text-sm min-h-[120px] resize-none" value={formData.shortBio} onChange={(e) => handleInputChange("shortBio", e.target.value)} placeholder="Describe your career trajectory and key professional achievements..." />
+              <p className="text-[11px] text-slate-400 mt-1">Provide a brief overview of your background and value proposition.</p>
+            </FieldGroup>
             <div className="grid sm:grid-cols-2 gap-5">
               <FieldGroup label="Years of Experience" required>
                 <Input className={OB_INPUT_CLASS} type="number" min="0" value={formData.yearsOfExperience} onChange={(e) => handleInputChange("yearsOfExperience", e.target.value)} placeholder="e.g. 7" />
@@ -485,42 +761,47 @@ const TalentOnboarding = () => {
           </div>
         );
 
+
       case 3:
         return (
           <div className="space-y-5">
             {renderFeedback('work_history')}
-            {workHistory.map((work, idx) => (
-              <CardBlock key={work.id} onDelete={workHistory.length > 1 ? () => setWorkHistory(prev => prev.filter(w => w.id !== work.id)) : undefined}>
+            {workFields.map((field, idx) => (
+              <CardBlock key={field.id} onDelete={workFields.length > 1 ? () => removeWork(idx) : undefined}>
                 <div className="grid sm:grid-cols-2 gap-4 pr-6">
-                  <FieldGroup label="Company">
-                    <Input className={OB_INPUT_CLASS} value={work.companyName} onChange={e => { const u = [...workHistory]; u[idx].companyName = e.target.value; setWorkHistory(u); }} placeholder="e.g. Acme Corp" />
+                  <FieldGroup label="Company" required>
+                    <Input className={OB_INPUT_CLASS} value={formData.workHistory?.[idx]?.companyName} onChange={e => handleInputChange(`workHistory.${idx}.companyName`, e.target.value)} placeholder="e.g. Acme Corp" />
                   </FieldGroup>
-                  <FieldGroup label="Role / Title">
-                    <Input className={OB_INPUT_CLASS} value={work.roleTitle} onChange={e => { const u = [...workHistory]; u[idx].roleTitle = e.target.value; setWorkHistory(u); }} placeholder="e.g. Operations Manager" />
+                  <FieldGroup label="Role / Title" required>
+                    <Input className={OB_INPUT_CLASS} value={formData.workHistory?.[idx]?.roleTitle} onChange={e => handleInputChange(`workHistory.${idx}.roleTitle`, e.target.value)} placeholder="e.g. Operations Manager" />
                   </FieldGroup>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4 mt-4">
                   <FieldGroup label="Start Date">
-                    <Input className={OB_INPUT_CLASS} type="month" value={work.startDate} onChange={e => { const u = [...workHistory]; u[idx].startDate = e.target.value; setWorkHistory(u); }} />
+                    <Input className={OB_INPUT_CLASS} type="month" value={formData.workHistory?.[idx]?.startDate} onChange={e => handleInputChange(`workHistory.${idx}.startDate`, e.target.value)} />
                   </FieldGroup>
                   <FieldGroup label="End Date">
-                    <Input className={clsx(OB_INPUT_CLASS, work.isCurrent && "opacity-40")} type="month" disabled={work.isCurrent} value={work.endDate} onChange={e => { const u = [...workHistory]; u[idx].endDate = e.target.value; setWorkHistory(u); }} />
+                    <Input className={clsx(OB_INPUT_CLASS, formData.workHistory?.[idx]?.isCurrent && "opacity-40")} type="month" disabled={formData.workHistory?.[idx]?.isCurrent} value={formData.workHistory?.[idx]?.endDate} onChange={e => handleInputChange(`workHistory.${idx}.endDate`, e.target.value)} />
                   </FieldGroup>
                 </div>
                 <div className="flex items-center gap-2 mt-4">
-                  <Checkbox id={`current-${work.id}`} checked={work.isCurrent} onCheckedChange={c => { const u = [...workHistory]; u[idx].isCurrent = !!c; if (c) u[idx].endDate = ''; setWorkHistory(u); }} />
-                  <Label htmlFor={`current-${work.id}`} className="text-sm font-normal text-slate-600 cursor-pointer">I currently work here</Label>
+                  <Checkbox id={`current-${field.id}`} checked={formData.workHistory?.[idx]?.isCurrent} onCheckedChange={c => { 
+                    handleInputChange(`workHistory.${idx}.isCurrent`, !!c);
+                    if (c) handleInputChange(`workHistory.${idx}.endDate`, '');
+                  }} />
+                  <Label htmlFor={`current-${field.id}`} className="text-sm font-normal text-slate-600 cursor-pointer">I currently work here</Label>
                 </div>
                 <div className="mt-4">
                   <FieldGroup label="Description">
-                    <Textarea className="rounded-lg border-slate-200 text-sm min-h-[90px] resize-none" placeholder="Key responsibilities and achievements..." value={work.roleDescription} onChange={e => { const u = [...workHistory]; u[idx].roleDescription = e.target.value; setWorkHistory(u); }} />
+                    <Textarea className="rounded-lg border-slate-200 text-sm min-h-[90px] resize-none" placeholder="Key responsibilities and achievements..." value={formData.workHistory?.[idx]?.roleDescription} onChange={e => handleInputChange(`workHistory.${idx}.roleDescription`, e.target.value)} />
                   </FieldGroup>
                 </div>
               </CardBlock>
             ))}
-            <AddButton label="Add Experience" onClick={() => setWorkHistory([...workHistory, { id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false }])} />
+            <AddButton label="Add Experience" onClick={() => appendWork({ id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false })} />
           </div>
         );
+
 
       case 4:
         return (
@@ -547,85 +828,88 @@ const TalentOnboarding = () => {
         return (
           <div className="space-y-5">
             {renderFeedback('education')}
-            {education.map((edu, idx) => (
-              <CardBlock key={edu.id} onDelete={education.length > 1 ? () => setEducation(prev => prev.filter(e => e.id !== edu.id)) : undefined}>
+            {eduFields.map((field, idx) => (
+              <CardBlock key={field.id} onDelete={eduFields.length > 1 ? () => removeEdu(idx) : undefined}>
                 <div className="grid sm:grid-cols-2 gap-4 pr-6">
-                  <FieldGroup label="Institution">
-                    <Input className={OB_INPUT_CLASS} value={edu.institutionName} onChange={e => { const u = [...education]; u[idx].institutionName = e.target.value; setEducation(u); }} placeholder="e.g. University of Lagos" />
+                  <FieldGroup label="Institution" required>
+                    <Input className={OB_INPUT_CLASS} value={formData.education?.[idx]?.institutionName} onChange={e => handleInputChange(`education.${idx}.institutionName`, e.target.value)} placeholder="e.g. University of Lagos" />
                   </FieldGroup>
-                  <FieldGroup label="Degree & Field of Study">
-                    <Input className={OB_INPUT_CLASS} value={edu.degree} onChange={e => { const u = [...education]; u[idx].degree = e.target.value; setEducation(u); }} placeholder="e.g. B.Sc. Business Administration" />
+                  <FieldGroup label="Degree & Field of Study" required>
+                    <Input className={OB_INPUT_CLASS} value={formData.education?.[idx]?.degree} onChange={e => handleInputChange(`education.${idx}.degree`, e.target.value)} placeholder="e.g. B.Sc. Business Administration" />
                   </FieldGroup>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4 mt-4">
                   <FieldGroup label="Start Year">
-                    <Input className={OB_INPUT_CLASS} type="number" value={edu.startYear} onChange={e => { const u = [...education]; u[idx].startYear = e.target.value; setEducation(u); }} placeholder="YYYY" />
+                    <Input className={OB_INPUT_CLASS} type="number" value={formData.education?.[idx]?.startYear} onChange={e => handleInputChange(`education.${idx}.startYear`, e.target.value)} placeholder="YYYY" />
                   </FieldGroup>
                   <FieldGroup label="End Year">
-                    <Input className={OB_INPUT_CLASS} type="number" value={edu.endYear} onChange={e => { const u = [...education]; u[idx].endYear = e.target.value; setEducation(u); }} placeholder="YYYY" />
+                    <Input className={OB_INPUT_CLASS} type="number" value={formData.education?.[idx]?.endYear} onChange={e => handleInputChange(`education.${idx}.endYear`, e.target.value)} placeholder="YYYY" />
                   </FieldGroup>
                 </div>
               </CardBlock>
             ))}
-            <AddButton label="Add Education" onClick={() => setEducation([...education, { id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false }])} />
+            <AddButton label="Add Education" onClick={() => appendEdu({ id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false })} />
           </div>
         );
+
 
       case 6:
         return (
           <div className="space-y-5">
             {renderFeedback('certifications')}
-            {certifications.map((cert, idx) => (
-              <CardBlock key={cert.id} onDelete={certifications.length > 1 ? () => setCertifications(prev => prev.filter(c => c.id !== cert.id)) : undefined}>
+            {certFields.map((field, idx) => (
+              <CardBlock key={field.id} onDelete={certFields.length > 1 ? () => removeCert(idx) : undefined}>
                 <div className="grid sm:grid-cols-2 gap-4 pr-6">
-                  <FieldGroup label="Certification Name">
-                    <Input className={OB_INPUT_CLASS} value={cert.certificationName} onChange={e => { const u = [...certifications]; u[idx].certificationName = e.target.value; setCertifications(u); }} placeholder="e.g. PMP Certification" />
+                  <FieldGroup label="Certification Name" required>
+                    <Input className={OB_INPUT_CLASS} value={formData.certifications?.[idx]?.certificationName} onChange={e => handleInputChange(`certifications.${idx}.certificationName`, e.target.value)} placeholder="e.g. PMP Certification" />
                   </FieldGroup>
                   <FieldGroup label="Issuing Organization">
-                    <Input className={OB_INPUT_CLASS} value={cert.issuer} onChange={e => { const u = [...certifications]; u[idx].issuer = e.target.value; setCertifications(u); }} placeholder="e.g. Project Management Institute" />
+                    <Input className={OB_INPUT_CLASS} value={formData.certifications?.[idx]?.issuer} onChange={e => handleInputChange(`certifications.${idx}.issuer`, e.target.value)} placeholder="e.g. Project Management Institute" />
                   </FieldGroup>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4 mt-4">
                   <FieldGroup label="Year Obtained">
-                    <Input className={OB_INPUT_CLASS} type="number" value={cert.yearObtained} onChange={e => { const u = [...certifications]; u[idx].yearObtained = e.target.value; setCertifications(u); }} placeholder="YYYY" />
+                    <Input className={OB_INPUT_CLASS} type="number" value={formData.certifications?.[idx]?.yearObtained} onChange={e => handleInputChange(`certifications.${idx}.yearObtained`, e.target.value)} placeholder="YYYY" />
                   </FieldGroup>
                   <FieldGroup label="Credential Link (Optional)">
-                    <Input className={OB_INPUT_CLASS} value={cert.fileUrl} onChange={e => { const u = [...certifications]; u[idx].fileUrl = e.target.value; setCertifications(u); }} placeholder="https://..." />
+                    <Input className={OB_INPUT_CLASS} value={formData.certifications?.[idx]?.fileUrl} onChange={e => handleInputChange(`certifications.${idx}.fileUrl`, e.target.value)} placeholder="https://..." />
                   </FieldGroup>
                 </div>
               </CardBlock>
             ))}
-            <AddButton label="Add Certification" onClick={() => setCertifications([...certifications, { id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" }])} />
+            <AddButton label="Add Certification" onClick={() => appendCert({ id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" })} />
           </div>
         );
+
 
       case 7:
         return (
           <div className="space-y-5">
             {renderFeedback('references')}
-            {references.map((ref, idx) => (
-              <CardBlock key={ref.id} onDelete={references.length > 1 ? () => setReferences(prev => prev.filter(r => r.id !== ref.id)) : undefined}>
+            {refFields.map((field, idx) => (
+              <CardBlock key={field.id} onDelete={refFields.length > 1 ? () => removeRef(idx) : undefined}>
                 <div className="grid sm:grid-cols-2 gap-4 pr-6">
                   <FieldGroup label="Reference Name" required>
-                    <Input className={OB_INPUT_CLASS} value={ref.name} onChange={e => { const u = [...references]; u[idx].name = e.target.value; setReferences(u); }} placeholder="e.g. Jane Smith" />
+                    <Input className={OB_INPUT_CLASS} value={formData.references?.[idx]?.name} onChange={e => handleInputChange(`references.${idx}.name`, e.target.value)} placeholder="e.g. Jane Smith" />
                   </FieldGroup>
                   <FieldGroup label="Company & Role">
-                    <Input className={OB_INPUT_CLASS} value={ref.company} onChange={e => { const u = [...references]; u[idx].company = e.target.value; setReferences(u); }} placeholder="e.g. Director at TechCo" />
+                    <Input className={OB_INPUT_CLASS} value={formData.references?.[idx]?.company} onChange={e => handleInputChange(`references.${idx}.company`, e.target.value)} placeholder="e.g. Director at TechCo" />
                   </FieldGroup>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4 mt-4">
                   <FieldGroup label="Email Address" required>
-                    <Input className={OB_INPUT_CLASS} type="email" value={ref.email} onChange={e => { const u = [...references]; u[idx].email = e.target.value; setReferences(u); }} placeholder="jane@example.com" />
+                    <Input className={OB_INPUT_CLASS} type="email" value={formData.references?.[idx]?.email} onChange={e => handleInputChange(`references.${idx}.email`, e.target.value)} placeholder="jane@example.com" />
                   </FieldGroup>
                   <FieldGroup label="Phone (Optional)">
-                    <Input className={OB_INPUT_CLASS} value={ref.phone} onChange={e => { const u = [...references]; u[idx].phone = e.target.value; setReferences(u); }} placeholder="+1 (555) 000-0000" />
+                    <Input className={OB_INPUT_CLASS} value={formData.references?.[idx]?.phone} onChange={e => handleInputChange(`references.${idx}.phone`, e.target.value)} placeholder="+1 (555) 000-0000" />
                   </FieldGroup>
                 </div>
               </CardBlock>
             ))}
-            <AddButton label="Add Reference" onClick={() => setReferences([...references, { id: Date.now().toString(), name: "", company: "", email: "", phone: "" }])} />
+            <AddButton label="Add Reference" onClick={() => appendRef({ id: Date.now().toString(), name: "", company: "", email: "", phone: "" })} />
           </div>
         );
+
 
       case 8:
         return (
@@ -639,25 +923,29 @@ const TalentOnboarding = () => {
                 ["Phone", formData.phone || "—"],
                 ["Country", formData.country || "—"],
                 ["Timezone", formData.timezone || "—"],
-                ["Languages", formData.languagesSpoken.join(", ") || "—"],
+                ["Languages", (formData.languagesSpoken || []).join(", ") || "—"],
               ]},
               { title: "Professional Details", step: 2, rows: [
+                ["Role Category", formData.roleCategory || "—"],
                 ["Primary Role", formData.primaryRole || "—"],
+                ["Headline", formData.headline || "—"],
+                ["Short Bio", formData.shortBio || "—"],
                 ["Experience", formData.yearsOfExperience ? `${formData.yearsOfExperience} years` : "—"],
                 ["Availability", formData.availability?.replace(/_/g, " ") || "—"],
-                ["Skills", formData.secondarySkills.join(", ") || "—"],
-                ["Tools", formData.toolsFamiliarWith.join(", ") || "—"],
+                ["Skills", (formData.secondarySkills || []).join(", ") || "—"],
+                ["Tools", (formData.toolsFamiliarWith || []).join(", ") || "—"],
               ]},
-              { title: "Work History", step: 3, rows: workHistory.filter(w => w.companyName).map(w => [w.companyName, `${w.roleTitle}${w.isCurrent ? " (Current)" : ""}`]) },
+              { title: "Work History", step: 3, rows: (formData.workHistory || []).filter(w => w.companyName).map(w => [w.companyName, `${w.roleTitle}${w.isCurrent ? " (Current)" : ""}`]) },
               { title: "Documents", step: 4, rows: [
                 ["CV / Resume", formData.cvUrl ? "✓ Uploaded" : "Not uploaded"],
                 ["Government ID", formData.governmentIdUrl ? "✓ Uploaded" : "Not uploaded"],
                 ["Proof of Address", formData.proofOfAddressUrl ? "✓ Uploaded" : "Not uploaded"],
                 ["Portfolio", formData.portfolioUrl || "—"],
               ]},
-              { title: "Education", step: 5, rows: education.filter(e => e.institutionName).map(e => [e.institutionName, e.degree || "—"]) },
-              { title: "Certifications", step: 6, rows: certifications.filter(c => c.certificationName).map(c => [c.certificationName, c.issuer || "—"]) },
-              { title: "References", step: 7, rows: references.filter(r => r.name).map(r => [r.name, r.email]) },
+              { title: "Education", step: 5, rows: (formData.education || []).filter(e => e.institutionName).map(e => [e.institutionName, e.degree || "—"]) },
+              { title: "Certifications", step: 6, rows: (formData.certifications || []).filter(c => c.certificationName).map(c => [c.certificationName, c.issuer || "—"]) },
+              { title: "References", step: 7, rows: (formData.references || []).filter(r => r.name).map(r => [r.name, r.email]) },
+
             ].map(({ title, step, rows }) => (
               <div key={title} className="border border-slate-100 rounded-xl overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-100">
@@ -719,7 +1007,10 @@ const TalentOnboarding = () => {
   // ── Main Render ──────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-slate-50 font-inter">
+    <FormProvider {...methods}>
+      <div className="min-h-screen bg-slate-50 font-inter">
+        {/* ... existing render content ... */}
+
 
       {/* ── Top Bar ─────────────────────────────────────────────────────── */}
       <div className="sticky top-0 z-30 bg-white border-b border-slate-100">
@@ -907,7 +1198,9 @@ const TalentOnboarding = () => {
         </div>
       </div>
     </div>
+    </FormProvider>
   );
 };
+
 
 export default TalentOnboarding;

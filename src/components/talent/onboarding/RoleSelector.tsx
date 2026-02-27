@@ -20,44 +20,30 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface RoleSelectorProps {
+  category: string;
+  onCategoryChange: (value: string) => void;
   value: string;
   onChange: (value: string) => void;
   className?: string;
 }
 
-export function RoleSelector({ value, onChange, className }: RoleSelectorProps) {
+export function RoleSelector({ category, onCategoryChange, value, onChange, className }: RoleSelectorProps) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   
-  // Find category for the current value if it exists in the list
-  const initialCategory = React.useMemo(() => {
-    for (const cat of ROLE_CATEGORIES) {
-      if (cat.roles.includes(value)) return cat.primary_category;
-    }
-    return "";
-  }, [value]);
-
-  const [selectedCategory, setSelectedCategory] = React.useState(initialCategory);
-
   const roles = React.useMemo(() => {
-    if (!selectedCategory) return [];
-    const cat = ROLE_CATEGORIES.find(c => c.primary_category === selectedCategory);
+    if (!category) return [];
+    const cat = ROLE_CATEGORIES.find(c => c.primary_category === category);
     return cat ? cat.roles : [];
-  }, [selectedCategory]);
+  }, [category]);
 
   return (
     <div className={cn("space-y-4", className)}>
       <div className="space-y-2">
         <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Role Category</Label>
         <Select 
-          value={selectedCategory} 
-          onValueChange={(val) => {
-            setSelectedCategory(val);
-            if (val !== initialCategory) {
-              // Reset role if category changes, unless it's a custom role that might belong to the new category?
-              // Actually, better to just let user select the role.
-            }
-          }}
+          value={category} 
+          onValueChange={onCategoryChange}
         >
           <SelectTrigger className="w-full bg-white border-slate-200">
             <SelectValue placeholder="Select specialized category" />
@@ -80,7 +66,7 @@ export function RoleSelector({ value, onChange, className }: RoleSelectorProps) 
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              disabled={!selectedCategory}
+              disabled={!category}
               className="w-full justify-between bg-white border-slate-200 font-normal"
             >
               {value ? value : "Select or search role..."}
@@ -114,7 +100,7 @@ export function RoleSelector({ value, onChange, className }: RoleSelectorProps) 
                     )}
                   </div>
                 </CommandEmpty>
-                <CommandGroup heading={selectedCategory}>
+                <CommandGroup heading={category}>
                   {roles.map((role) => (
                     <CommandItem
                       key={role}

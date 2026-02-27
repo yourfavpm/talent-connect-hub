@@ -62,12 +62,6 @@ const TalentTimesheets = () => {
   const [selectedTimesheet, setSelectedTimesheet] = useState<Timesheet | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      fetchTimesheets();
-    }
-  }, [user]);
-
   const fetchTimesheets = async () => {
     try {
       const { data: talent } = await supabase
@@ -98,6 +92,13 @@ const TalentTimesheets = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      fetchTimesheets();
+    }
+  }, [user]);
+
 
   // derived stats
   const now = new Date();

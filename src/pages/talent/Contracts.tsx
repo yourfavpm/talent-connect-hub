@@ -129,10 +129,6 @@ const TalentContracts = () => {
         documentTitle: `Contract_${selectedContract?.contract_number || "Document"}`,
     });
 
-    useEffect(() => {
-        if (user) fetchContracts();
-    }, [user]);
-
     const fetchContracts = async () => {
         try {
             const { data: talent } = await supabase
@@ -182,6 +178,11 @@ const TalentContracts = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (user) fetchContracts();
+    }, [user]);
+
 
     const handleSign = async (contractId: string) => {
         if (!signature.trim()) {

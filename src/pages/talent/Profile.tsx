@@ -9,6 +9,7 @@ type Certification = Database["public"]["Tables"]["talent_certifications"]["Row"
 type Reference = Database["public"]["Tables"]["talent_references"]["Row"];
 type Vetting = Database["public"]["Tables"]["talent_vetting"]["Row"];
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
+type TalentRow = Database["public"]["Tables"]["talents"]["Row"];
 
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -71,7 +72,7 @@ const TalentProfile = () => {
     queryFn: async () => {
       if (!user?.id) return null;
 
-      const { data: talent, error } = await supabase
+      const { data: talentData, error } = await supabase
         .from("talents")
         .select("*")
         .eq("user_id", user.id)
@@ -86,22 +87,46 @@ const TalentProfile = () => {
       let vettingRes = { data: [] as Vetting[] };
       let managerRes = { data: null as ProfileRow | null };
 
-      if (talent) {
+      if (talentData) {
         [workRes, eduRes, certRes, refRes, vettingRes] = await Promise.all([
-          supabase.from("talent_work_history").select("*").eq("talent_id", talent.id).order("start_date", { ascending: false }),
-          supabase.from("talent_education").select("*").eq("talent_id", talent.id).order("start_year", { ascending: false }),
-          supabase.from("talent_certifications").select("*").eq("talent_id", talent.id),
-          supabase.from("talent_references").select("*").eq("talent_id", talent.id),
-          supabase.from("talent_vetting").select("*").eq("talent_id", talent.id).order("created_at", { ascending: false }).limit(1),
+          supabase.from("talent_work_history").select("*").eq("talent_id", talentData.id).order("start_date", { ascending: false }),
+          supabase.from("talent_education").select("*").eq("talent_id", talentData.id).order("start_year", { ascending: false }),
+          supabase.from("talent_certifications").select("*").eq("talent_id", talentData.id),
+          supabase.from("talent_references").select("*").eq("talent_id", talentData.id),
+          supabase.from("talent_vetting").select("*").eq("talent_id", talentData.id).order("created_at", { ascending: false }).limit(1),
         ]);
 
-        if (talent.assigned_manager) {
-          managerRes = await supabase.from("profiles").select("*").eq("user_id", talent.assigned_manager).maybeSingle();
+        if (talentData.assigned_manager) {
+          managerRes = await supabase.from("profiles").select("*").eq("user_id", talentData.assigned_manager).maybeSingle();
         }
       }
 
+      const [applicationsRes, contractsRes, timesheetsRes, messagesRes, ticketsRes, notificationsRes, stepsRes] = await Promise.all([
+        supabase.from("job_applications").select("*", { count: "exact", head: true }).eq("talent_id", talentData?.id || ''),
+        supabase.from("contracts").select("*", { count: "exact", head: true }).eq("talent_id", talentData?.id || '').eq("status", "active"),
+        supabase.from("timesheets").select("*", { count: "exact", head: true }).eq("talent_id", talentData?.id || '').eq("status", "draft"),
+        supabase.from("messages").select("*", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
+        supabase.from("support_tickets").select("*", { count: "exact", head: true }).eq("user_id", user.id).in("status", ["open", "in_progress"]),
+        supabase.from("notifications").select("*").eq("user_id", user.id).order('created_at', { ascending: false }).limit(5),
+        supabase.from("talent_profile_steps" as any).select("*").eq("talent_id", talentData?.id || '')
+      ]);
+  
       return {
-        talent,
+        talent: {
+          ...talentData,
+          onboarding_status: (talentData as any)?.onboarding_status || "not_started",
+          current_step: (talentData as any)?.current_step || 1,
+          profile_completion: (talentData as any)?.profile_completion || 0
+        } as TalentRow,
+        stats: {
+          applications: applicationsRes.count || 0,
+          activeAssignments: contractsRes.count || 0,
+          pendingTimesheets: timesheetsRes.count || 0,
+          unreadMessages: messagesRes.count || 0,
+          openTickets: ticketsRes.count || 0,
+        },
+        notifications: notificationsRes?.data || [],
+        steps: (stepsRes?.data as any[]) || [],
         workHistory: workRes.data || [],
         education: eduRes.data || [],
         certifications: certRes.data || [],
@@ -110,8 +135,20 @@ const TalentProfile = () => {
         manager: managerRes.data || null,
       };
     },
+
     enabled: !!user?.id,
   });
+
+  // ── Render Helpers & Loading Check ──────────────────────────────────────────
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <Loader2 className="h-6 w-6 text-slate-200 animate-spin" />
+        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Initialising Environment…</span>
+      </div>
+    );
+  }
 
   // ── Derived Data ───────────────────────────────────────────────────────────
 
@@ -141,8 +178,11 @@ const TalentProfile = () => {
     };
   }, [talent.draft_profile]);
 
-  // Completion calculation
+  // Completion calculation (Source of Truth: talent.profile_completion from the DB)
   const completionPercentage = useMemo(() => {
+    if (typeof talent.profile_completion === 'number') return talent.profile_completion;
+    
+    // Fallback local calculation if DB value isn't loaded yet
     const fields = [
       talent.primary_role, talent.country, talent.availability,
       extendedData.headline, extendedData.short_bio,
@@ -151,7 +191,8 @@ const TalentProfile = () => {
     ];
     const filled = fields.filter(f => !!f).length;
     return Math.round((filled / fields.length) * 100);
-  }, [talent, extendedData, workHistory, education]);
+  }, [talent.profile_completion, talent.primary_role, talent.country, talent.availability, extendedData, workHistory.length, education.length, talent.cv_url, talent.government_id_url]);
+
 
   // ── Section Editing Forms ──────────────────────────────────────────────────
 
@@ -380,15 +421,6 @@ const TalentProfile = () => {
   };
 
   // ── Render Helpers ──────────────────────────────────────────────────────────
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 className="h-6 w-6 text-slate-200 animate-spin" />
-        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Initialising Environment…</span>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-[1400px] mx-auto pb-20 pt-6 px-4 md:px-6 font-inter">
