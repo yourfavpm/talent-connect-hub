@@ -37,6 +37,40 @@ const Index = () => {
                 </Button>
               </Link>
             </div>
+            
+            {/* MOBILE ONLY: FEATURED TALENT CARD */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="lg:hidden w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl shadow-slate-200/60 border border-slate-100 mb-12"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100">
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80" alt="Featured Talent" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-900 text-sm">Michael T.</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium">Dir. of Operations</p>
+                </div>
+                <div className="ml-auto flex flex-col items-end">
+                  <span className="text-[9px] font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded tracking-tighter">VETTED L5</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50">
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Relavent EXP</span>
+                  <span className="text-xs font-bold text-slate-700">14 Years</span>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Active Region</span>
+                  <span className="text-xs font-bold text-slate-700">EMEA / GMT+2</span>
+                </div>
+              </div>
+            </motion.div>
 
             {/* Trust Indicators */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-200">
