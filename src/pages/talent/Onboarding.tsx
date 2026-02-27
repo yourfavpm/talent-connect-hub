@@ -34,6 +34,70 @@ import { TimezoneSelector } from "@/components/talent/onboarding/TimezoneSelecto
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
+export const OB_INPUT_CLASS = "h-12 rounded-lg border border-slate-200 bg-white focus:border-slate-800 focus:ring-1 focus:ring-slate-800 text-sm placeholder:text-slate-400";
+
+// ── Primitive field components (defined OUTSIDE the main component to prevent
+//    React remounting them on every render, which would lose input focus) ────────
+
+export const FieldGroup = ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
+  <div className="space-y-1.5">
+    <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+      {label}{required && <span className="text-red-500 ml-1">*</span>}
+    </Label>
+    {children}
+  </div>
+);
+
+export const CardBlock = ({ children, onDelete }: { children: React.ReactNode; onDelete?: () => void }) => (
+  <div className="relative p-6 bg-white border border-slate-100 rounded-xl group">
+    {onDelete && (
+      <button onClick={onDelete} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+        <Trash2 className="h-4 w-4" />
+      </button>
+    )}
+    {children}
+  </div>
+);
+
+export const AddButton = ({ label, onClick }: { label: string; onClick: () => void }) => (
+  <button onClick={onClick} className="w-full h-14 border border-dashed border-slate-200 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-700 hover:border-slate-400 transition-colors flex items-center justify-center gap-2">
+    <Plus className="h-4 w-4" /> {label}
+  </button>
+);
+
+interface FileUploadRowProps {
+  label: string;
+  hint: string;
+  accept: string;
+  uploaded: boolean;
+  uploading: boolean;
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export const FileUploadRow = ({ label, hint, accept, uploaded, uploading, onUpload }: FileUploadRowProps) => (
+  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+    <div>
+      <p className="text-sm font-semibold text-slate-800">{label}</p>
+      <p className="text-xs text-slate-400 mt-0.5">{hint}</p>
+    </div>
+    <div className="flex items-center gap-3">
+      {uploaded && (
+        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
+          <CheckCircle2 className="h-3 w-3" /> Uploaded
+        </Badge>
+      )}
+      <div className="relative">
+        <Input type="file" accept={accept} onChange={onUpload} className="absolute inset-0 opacity-0 cursor-pointer w-28 h-9" disabled={uploading} />
+        <Button type="button" variant="outline" size="sm" className="w-28 h-9 rounded-lg border-slate-200" disabled={uploading}>
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><UploadCloud className="h-3.5 w-3.5 mr-1.5" />{uploaded ? 'Replace' : 'Upload'}</>}
+        </Button>
+      </div>
+    </div>
+  </div>
+);
+
+// ── Constants ──────────────────────────────────────────────────────────────────
+
 const STEPS = [
   { id: 1, title: "Basic Information",    key: "basic_info" },
   { id: 2, title: "Professional Details", key: "professional_details" },
@@ -324,61 +388,6 @@ const TalentOnboarding = () => {
     );
   };
 
-  // ── Field Components ──────────────────────────────────────────────────────
-
-  const FieldGroup = ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
-    <div className="space-y-1.5">
-      <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-        {label}{required && <span className="text-red-500 ml-1">*</span>}
-      </Label>
-      {children}
-    </div>
-  );
-
-  const inputClass = "h-12 rounded-lg border border-slate-200 bg-white focus:border-slate-800 focus:ring-1 focus:ring-slate-800 text-sm placeholder:text-slate-400";
-
-  const CardBlock = ({ children, onDelete }: { children: React.ReactNode; onDelete?: () => void }) => (
-    <div className="relative p-6 bg-white border border-slate-100 rounded-xl group">
-      {onDelete && (
-        <button onClick={onDelete} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
-          <Trash2 className="h-4 w-4" />
-        </button>
-      )}
-      {children}
-    </div>
-  );
-
-  const AddButton = ({ label, onClick }: { label: string; onClick: () => void }) => (
-    <button onClick={onClick} className="w-full h-14 border border-dashed border-slate-200 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-700 hover:border-slate-400 transition-colors flex items-center justify-center gap-2">
-      <Plus className="h-4 w-4" /> {label}
-    </button>
-  );
-
-  const FileUploadRow = ({ field, label, hint, accept }: { field: string; label: string; hint: string; accept: string }) => {
-    const uploaded = formData[field as keyof typeof formData] as string;
-    return (
-      <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-        <div>
-          <p className="text-sm font-semibold text-slate-800">{label}</p>
-          <p className="text-xs text-slate-400 mt-0.5">{hint}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {uploaded && (
-            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
-              <CheckCircle2 className="h-3 w-3" /> Uploaded
-            </Badge>
-          )}
-          <div className="relative">
-            <Input type="file" accept={accept} onChange={(e) => handleFileUpload(e, field)} className="absolute inset-0 opacity-0 cursor-pointer w-28 h-9" disabled={uploadingFields[field]} />
-            <Button type="button" variant="outline" size="sm" className="w-28 h-9 rounded-lg border-slate-200" disabled={uploadingFields[field]}>
-              {uploadingFields[field] ? <Loader2 className="h-4 w-4 animate-spin" /> : <><UploadCloud className="h-3.5 w-3.5 mr-1.5" />{uploaded ? 'Replace' : 'Upload'}</>}
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   // ── Step Content ──────────────────────────────────────────────────────────
 
   const renderStepContent = () => {
@@ -404,30 +413,31 @@ const TalentOnboarding = () => {
         return (
           <div className="space-y-6">
             {renderFeedback('basic_info')}
+            {/* Locked identity fields (prefilled from sign-up) */}
             <div className="grid sm:grid-cols-2 gap-5">
-              <FieldGroup label="First Name" required>
-                <Input className={inputClass} value={formData.firstName} onChange={(e) => handleInputChange("firstName", e.target.value)} placeholder="Jane" />
+              <FieldGroup label="First Name">
+                <Input className={clsx(OB_INPUT_CLASS, "opacity-60 cursor-not-allowed bg-slate-50")} value={formData.firstName} disabled />
               </FieldGroup>
-              <FieldGroup label="Last Name" required>
-                <Input className={inputClass} value={formData.lastName} onChange={(e) => handleInputChange("lastName", e.target.value)} placeholder="Smith" />
+              <FieldGroup label="Last Name">
+                <Input className={clsx(OB_INPUT_CLASS, "opacity-60 cursor-not-allowed bg-slate-50")} value={formData.lastName} disabled />
               </FieldGroup>
             </div>
             <FieldGroup label="Email Address">
-              <Input className={clsx(inputClass, "opacity-60 cursor-not-allowed")} value={formData.email} disabled />
+              <Input className={clsx(OB_INPUT_CLASS, "opacity-60 cursor-not-allowed bg-slate-50")} value={formData.email} disabled />
             </FieldGroup>
             <FieldGroup label="Phone Number">
-              <Input className={inputClass} value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} placeholder="+1 (555) 000-0000" />
+              <Input className={OB_INPUT_CLASS} value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} placeholder="+1 (555) 000-0000" />
             </FieldGroup>
             <div className="grid sm:grid-cols-2 gap-5">
               <FieldGroup label="Country / Location">
-                <Input className={inputClass} value={formData.country} onChange={(e) => handleInputChange("country", e.target.value)} placeholder="e.g. United Kingdom" />
+                <Input className={OB_INPUT_CLASS} value={formData.country} onChange={(e) => handleInputChange("country", e.target.value)} placeholder="e.g. United Kingdom" />
               </FieldGroup>
               <FieldGroup label="Timezone">
                 <TimezoneSelector value={formData.timezone} onChange={(v) => handleInputChange("timezone", v)} />
               </FieldGroup>
             </div>
             <FieldGroup label="Languages Spoken">
-              <Input className={inputClass} value={formData.languagesSpoken.join(", ")} onChange={(e) => handleInputChange("languagesSpoken", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. English, French, Spanish" />
+              <Input className={OB_INPUT_CLASS} value={formData.languagesSpoken.join(", ")} onChange={(e) => handleInputChange("languagesSpoken", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. English, French, Spanish" />
               <p className="text-[11px] text-slate-400 mt-1">Separate multiple languages with commas.</p>
             </FieldGroup>
           </div>
@@ -440,7 +450,7 @@ const TalentOnboarding = () => {
             <RoleSelector value={formData.primaryRole} onChange={(v) => handleInputChange("primaryRole", v)} />
             <div className="grid sm:grid-cols-2 gap-5">
               <FieldGroup label="Years of Experience" required>
-                <Input className={inputClass} type="number" min="0" value={formData.yearsOfExperience} onChange={(e) => handleInputChange("yearsOfExperience", e.target.value)} placeholder="e.g. 7" />
+                <Input className={OB_INPUT_CLASS} type="number" min="0" value={formData.yearsOfExperience} onChange={(e) => handleInputChange("yearsOfExperience", e.target.value)} placeholder="e.g. 7" />
               </FieldGroup>
               <FieldGroup label="Availability" required>
                 <Select value={formData.availability} onValueChange={(v) => handleInputChange("availability", v)}>
@@ -474,18 +484,18 @@ const TalentOnboarding = () => {
               <CardBlock key={work.id} onDelete={workHistory.length > 1 ? () => setWorkHistory(prev => prev.filter(w => w.id !== work.id)) : undefined}>
                 <div className="grid sm:grid-cols-2 gap-4 pr-6">
                   <FieldGroup label="Company">
-                    <Input className={inputClass} value={work.companyName} onChange={e => { const u = [...workHistory]; u[idx].companyName = e.target.value; setWorkHistory(u); }} placeholder="e.g. Acme Corp" />
+                    <Input className={OB_INPUT_CLASS} value={work.companyName} onChange={e => { const u = [...workHistory]; u[idx].companyName = e.target.value; setWorkHistory(u); }} placeholder="e.g. Acme Corp" />
                   </FieldGroup>
                   <FieldGroup label="Role / Title">
-                    <Input className={inputClass} value={work.roleTitle} onChange={e => { const u = [...workHistory]; u[idx].roleTitle = e.target.value; setWorkHistory(u); }} placeholder="e.g. Operations Manager" />
+                    <Input className={OB_INPUT_CLASS} value={work.roleTitle} onChange={e => { const u = [...workHistory]; u[idx].roleTitle = e.target.value; setWorkHistory(u); }} placeholder="e.g. Operations Manager" />
                   </FieldGroup>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4 mt-4">
                   <FieldGroup label="Start Date">
-                    <Input className={inputClass} type="month" value={work.startDate} onChange={e => { const u = [...workHistory]; u[idx].startDate = e.target.value; setWorkHistory(u); }} />
+                    <Input className={OB_INPUT_CLASS} type="month" value={work.startDate} onChange={e => { const u = [...workHistory]; u[idx].startDate = e.target.value; setWorkHistory(u); }} />
                   </FieldGroup>
                   <FieldGroup label="End Date">
-                    <Input className={clsx(inputClass, work.isCurrent && "opacity-40")} type="month" disabled={work.isCurrent} value={work.endDate} onChange={e => { const u = [...workHistory]; u[idx].endDate = e.target.value; setWorkHistory(u); }} />
+                    <Input className={clsx(OB_INPUT_CLASS, work.isCurrent && "opacity-40")} type="month" disabled={work.isCurrent} value={work.endDate} onChange={e => { const u = [...workHistory]; u[idx].endDate = e.target.value; setWorkHistory(u); }} />
                   </FieldGroup>
                 </div>
                 <div className="flex items-center gap-2 mt-4">
@@ -512,13 +522,13 @@ const TalentOnboarding = () => {
               <p className="text-sm text-blue-800">Your documents are securely encrypted and stored privately for vetting purposes only.</p>
             </div>
             <div className="space-y-3">
-              <FileUploadRow field="cvUrl" label="CV / Resume" hint="PDF or Word format" accept=".pdf,.doc,.docx" />
-              <FileUploadRow field="governmentIdUrl" label="Government ID" hint="Clear photo of Passport or National ID" accept="image/*,.pdf" />
-              <FileUploadRow field="proofOfAddressUrl" label="Proof of Address" hint="Utility bill, bank statement, or rental agreement" accept="image/*,.pdf" />
+              <FileUploadRow label="CV / Resume" hint="PDF or Word format" accept=".pdf,.doc,.docx" uploaded={!!formData.cvUrl} uploading={!!uploadingFields["cvUrl"]} onUpload={(e) => handleFileUpload(e, "cvUrl")} />
+              <FileUploadRow label="Government ID" hint="Clear photo of Passport or National ID" accept="image/*,.pdf" uploaded={!!formData.governmentIdUrl} uploading={!!uploadingFields["governmentIdUrl"]} onUpload={(e) => handleFileUpload(e, "governmentIdUrl")} />
+              <FileUploadRow label="Proof of Address" hint="Utility bill, bank statement, or rental agreement" accept="image/*,.pdf" uploaded={!!formData.proofOfAddressUrl} uploading={!!uploadingFields["proofOfAddressUrl"]} onUpload={(e) => handleFileUpload(e, "proofOfAddressUrl")} />
             </div>
             <div className="space-y-3">
               <FieldGroup label="Portfolio Link (Optional)">
-                <Input className={inputClass} value={formData.portfolioUrl} onChange={e => handleInputChange("portfolioUrl", e.target.value)} placeholder="https://..." />
+                <Input className={OB_INPUT_CLASS} value={formData.portfolioUrl} onChange={e => handleInputChange("portfolioUrl", e.target.value)} placeholder="https://..." />
               </FieldGroup>
             </div>
           </div>
@@ -532,18 +542,18 @@ const TalentOnboarding = () => {
               <CardBlock key={edu.id} onDelete={education.length > 1 ? () => setEducation(prev => prev.filter(e => e.id !== edu.id)) : undefined}>
                 <div className="grid sm:grid-cols-2 gap-4 pr-6">
                   <FieldGroup label="Institution">
-                    <Input className={inputClass} value={edu.institutionName} onChange={e => { const u = [...education]; u[idx].institutionName = e.target.value; setEducation(u); }} placeholder="e.g. University of Lagos" />
+                    <Input className={OB_INPUT_CLASS} value={edu.institutionName} onChange={e => { const u = [...education]; u[idx].institutionName = e.target.value; setEducation(u); }} placeholder="e.g. University of Lagos" />
                   </FieldGroup>
                   <FieldGroup label="Degree & Field of Study">
-                    <Input className={inputClass} value={edu.degree} onChange={e => { const u = [...education]; u[idx].degree = e.target.value; setEducation(u); }} placeholder="e.g. B.Sc. Business Administration" />
+                    <Input className={OB_INPUT_CLASS} value={edu.degree} onChange={e => { const u = [...education]; u[idx].degree = e.target.value; setEducation(u); }} placeholder="e.g. B.Sc. Business Administration" />
                   </FieldGroup>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4 mt-4">
                   <FieldGroup label="Start Year">
-                    <Input className={inputClass} type="number" value={edu.startYear} onChange={e => { const u = [...education]; u[idx].startYear = e.target.value; setEducation(u); }} placeholder="YYYY" />
+                    <Input className={OB_INPUT_CLASS} type="number" value={edu.startYear} onChange={e => { const u = [...education]; u[idx].startYear = e.target.value; setEducation(u); }} placeholder="YYYY" />
                   </FieldGroup>
                   <FieldGroup label="End Year">
-                    <Input className={inputClass} type="number" value={edu.endYear} onChange={e => { const u = [...education]; u[idx].endYear = e.target.value; setEducation(u); }} placeholder="YYYY" />
+                    <Input className={OB_INPUT_CLASS} type="number" value={edu.endYear} onChange={e => { const u = [...education]; u[idx].endYear = e.target.value; setEducation(u); }} placeholder="YYYY" />
                   </FieldGroup>
                 </div>
               </CardBlock>
@@ -560,18 +570,18 @@ const TalentOnboarding = () => {
               <CardBlock key={cert.id} onDelete={certifications.length > 1 ? () => setCertifications(prev => prev.filter(c => c.id !== cert.id)) : undefined}>
                 <div className="grid sm:grid-cols-2 gap-4 pr-6">
                   <FieldGroup label="Certification Name">
-                    <Input className={inputClass} value={cert.certificationName} onChange={e => { const u = [...certifications]; u[idx].certificationName = e.target.value; setCertifications(u); }} placeholder="e.g. PMP Certification" />
+                    <Input className={OB_INPUT_CLASS} value={cert.certificationName} onChange={e => { const u = [...certifications]; u[idx].certificationName = e.target.value; setCertifications(u); }} placeholder="e.g. PMP Certification" />
                   </FieldGroup>
                   <FieldGroup label="Issuing Organization">
-                    <Input className={inputClass} value={cert.issuer} onChange={e => { const u = [...certifications]; u[idx].issuer = e.target.value; setCertifications(u); }} placeholder="e.g. Project Management Institute" />
+                    <Input className={OB_INPUT_CLASS} value={cert.issuer} onChange={e => { const u = [...certifications]; u[idx].issuer = e.target.value; setCertifications(u); }} placeholder="e.g. Project Management Institute" />
                   </FieldGroup>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4 mt-4">
                   <FieldGroup label="Year Obtained">
-                    <Input className={inputClass} type="number" value={cert.yearObtained} onChange={e => { const u = [...certifications]; u[idx].yearObtained = e.target.value; setCertifications(u); }} placeholder="YYYY" />
+                    <Input className={OB_INPUT_CLASS} type="number" value={cert.yearObtained} onChange={e => { const u = [...certifications]; u[idx].yearObtained = e.target.value; setCertifications(u); }} placeholder="YYYY" />
                   </FieldGroup>
                   <FieldGroup label="Credential Link (Optional)">
-                    <Input className={inputClass} value={cert.fileUrl} onChange={e => { const u = [...certifications]; u[idx].fileUrl = e.target.value; setCertifications(u); }} placeholder="https://..." />
+                    <Input className={OB_INPUT_CLASS} value={cert.fileUrl} onChange={e => { const u = [...certifications]; u[idx].fileUrl = e.target.value; setCertifications(u); }} placeholder="https://..." />
                   </FieldGroup>
                 </div>
               </CardBlock>
@@ -588,18 +598,18 @@ const TalentOnboarding = () => {
               <CardBlock key={ref.id} onDelete={references.length > 1 ? () => setReferences(prev => prev.filter(r => r.id !== ref.id)) : undefined}>
                 <div className="grid sm:grid-cols-2 gap-4 pr-6">
                   <FieldGroup label="Reference Name" required>
-                    <Input className={inputClass} value={ref.name} onChange={e => { const u = [...references]; u[idx].name = e.target.value; setReferences(u); }} placeholder="e.g. Jane Smith" />
+                    <Input className={OB_INPUT_CLASS} value={ref.name} onChange={e => { const u = [...references]; u[idx].name = e.target.value; setReferences(u); }} placeholder="e.g. Jane Smith" />
                   </FieldGroup>
                   <FieldGroup label="Company & Role">
-                    <Input className={inputClass} value={ref.company} onChange={e => { const u = [...references]; u[idx].company = e.target.value; setReferences(u); }} placeholder="e.g. Director at TechCo" />
+                    <Input className={OB_INPUT_CLASS} value={ref.company} onChange={e => { const u = [...references]; u[idx].company = e.target.value; setReferences(u); }} placeholder="e.g. Director at TechCo" />
                   </FieldGroup>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4 mt-4">
                   <FieldGroup label="Email Address" required>
-                    <Input className={inputClass} type="email" value={ref.email} onChange={e => { const u = [...references]; u[idx].email = e.target.value; setReferences(u); }} placeholder="jane@example.com" />
+                    <Input className={OB_INPUT_CLASS} type="email" value={ref.email} onChange={e => { const u = [...references]; u[idx].email = e.target.value; setReferences(u); }} placeholder="jane@example.com" />
                   </FieldGroup>
                   <FieldGroup label="Phone (Optional)">
-                    <Input className={inputClass} value={ref.phone} onChange={e => { const u = [...references]; u[idx].phone = e.target.value; setReferences(u); }} placeholder="+1 (555) 000-0000" />
+                    <Input className={OB_INPUT_CLASS} value={ref.phone} onChange={e => { const u = [...references]; u[idx].phone = e.target.value; setReferences(u); }} placeholder="+1 (555) 000-0000" />
                   </FieldGroup>
                 </div>
               </CardBlock>
