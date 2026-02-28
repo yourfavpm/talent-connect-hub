@@ -40,29 +40,55 @@ const VettingWorkspace = () => {
         try {
             setLoading(true);
             
-            // 1. Fetch Talent
-            const { data: talentData, error: talentError } = await supabase
-                .from("talents")
-                .select(`
-                    *,
-                    work_history:talent_work_history(*),
-                    education:talent_education(*),
-                    certifications:talent_certifications(*),
-                    references:talent_references(*)
-                `)
+            // 1. Fetch Talent Profile
+            const { data: profile, error: profileError } = await supabase.from("talent_profiles")
+                .select("*")
                 .eq("id", id)
-                .single();
+                .maybeSingle();
 
-            if (talentError) throw talentError;
-            setTalent(talentData);
+            if (profileError) throw profileError;
+            if (!profile) throw new Error("Profile not found");
+
+            // Auto-start review if submitted
+            if (profile.status === 'SUBMITTED') {
+                await supabase.rpc("admin_start_review", { p_talent_user_id: profile.user_id });
+                // Re-fetch to get updated status
+                return fetchVettingData();
+            }
+
+            // Fetch legacy talent data for supporting components that expect it
+            const { data: legacyTalent } = await supabase
+                .from("talents")
+                .select("*")
+                .eq("user_id", profile.user_id)
+                .maybeSingle();
+
+            // Fetch sections
+            const { data: sectionsData, error: sectionsError } = await supabase.from("talent_profile_sections")
+                .select("*")
+                .eq("user_id", profile.user_id);
+
+            if (sectionsError) throw sectionsError;
+
+            // Map data for UI
+            const mergedTalentData = {
+                ...legacyTalent,
+                ...profile,
+                id: profile.id, 
+                user_id: profile.user_id,
+                vetting_status: profile.status // Ensure naming consistency for components
+            };
+
+            setTalent(mergedTalentData);
             
-            // Fetch assigned manager from profiles table
-            if (talentData.assigned_manager) {
+            // Fetch assigned manager
+            if (profile.assigned_manager || (legacyTalent as any)?.assigned_manager) {
+                const managerId = profile.assigned_manager || (legacyTalent as any)?.assigned_manager;
                 const { data: managerData } = await supabase
                     .from("profiles")
                     .select("first_name, last_name, email")
-                    .eq("user_id", talentData.assigned_manager)
-                    .single();
+                    .eq("user_id", managerId)
+                    .maybeSingle();
                 if (managerData) {
                     setTalentManager({ 
                         full_name: `${managerData.first_name || ''} ${managerData.last_name || ''}`.trim() || 'Admin',
@@ -71,25 +97,24 @@ const VettingWorkspace = () => {
                 }
             }
 
-            // 2. Fetch Steps
-            const { data: stepsData, error: stepsError } = await supabase
-                .from("talent_profile_steps" as any)
+            // Map sections to the "steps" format expected by StepNavigator/StepViewer
+            const mappedSteps = (sectionsData || []).map(s => ({
+                id: s.id,
+                step_key: s.section_key,
+                status: s.status.toLowerCase(), // UI expects lowercase
+                data: s.data,
+                last_reviewed_at: s.updated_at // Use updated_at as last reviewed
+            }));
+
+            setSteps(mappedSteps as any);
+
+            // 3. Fetch Change Requests/Actions (Log)
+            const { data: actionData } = await supabase.from("vetting_actions")
                 .select("*")
-                .eq("talent_id", id)
-                .order("created_at", { ascending: true });
+                .eq("user_id", profile.user_id)
+                .order("created_at", { ascending: false });
 
-            if (stepsError) throw stepsError as any;
-            setSteps((stepsData as any) || []);
-
-            // 3. Fetch Change Requests
-            const { data: requestData, error: requestError } = await supabase
-                .from("step_change_requests" as any)
-                .select("*")
-                .eq("talent_id", id)
-                .is("resolved_at", null);
-
-            if (requestError) throw requestError as any;
-            setChangeRequests((requestData as any) || []);
+            setChangeRequests((actionData as any) || []);
 
         } catch (error: any) {
             toast.error("Failed to load vetting workspace: " + error.message);
@@ -100,7 +125,7 @@ const VettingWorkspace = () => {
 
     useEffect(() => {
         if (id) fetchVettingData();
-    }, [id, fetchVettingData]);
+    }, [id]);
 
     if (loading) return (
         <div className="h-screen flex items-center justify-center bg-[#F9FAFB]">

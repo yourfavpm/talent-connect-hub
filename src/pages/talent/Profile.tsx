@@ -3,13 +3,9 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
-type WorkHistory = Database["public"]["Tables"]["talent_work_history"]["Row"];
-type Education = Database["public"]["Tables"]["talent_education"]["Row"];
-type Certification = Database["public"]["Tables"]["talent_certifications"]["Row"];
-type Reference = Database["public"]["Tables"]["talent_references"]["Row"];
-type Vetting = Database["public"]["Tables"]["talent_vetting"]["Row"];
-type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
-type TalentRow = Database["public"]["Tables"]["talents"]["Row"];
+// Section data is stored as JSONB in talent_profile_sections, not separate tables
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SectionData = Record<string, any>;
 
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -72,52 +68,42 @@ const TalentProfile = () => {
     queryFn: async () => {
       if (!user?.id) return null;
 
-      const { data: talentData, error } = await supabase
-        .from("talents")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      let workRes = { data: [] as WorkHistory[] };
-      let eduRes = { data: [] as Education[] };
-      let certRes = { data: [] as Certification[] };
-      let refRes = { data: [] as Reference[] };
-      let vettingRes = { data: [] as Vetting[] };
-      let managerRes = { data: null as ProfileRow | null };
-
-      if (talentData) {
-        [workRes, eduRes, certRes, refRes, vettingRes] = await Promise.all([
-          supabase.from("talent_work_history").select("*").eq("talent_id", talentData.id).order("start_date", { ascending: false }),
-          supabase.from("talent_education").select("*").eq("talent_id", talentData.id).order("start_year", { ascending: false }),
-          supabase.from("talent_certifications").select("*").eq("talent_id", talentData.id),
-          supabase.from("talent_references").select("*").eq("talent_id", talentData.id),
-          supabase.from("talent_vetting").select("*").eq("talent_id", talentData.id).order("created_at", { ascending: false }).limit(1),
-        ]);
-
-        if (talentData.assigned_manager) {
-          managerRes = await supabase.from("profiles").select("*").eq("user_id", talentData.assigned_manager).maybeSingle();
-        }
+      const { data: profile } = await supabase.from("talent_profiles").select("*").eq("user_id", user.id).maybeSingle();
+      const { data: sections } = await supabase.from("talent_profile_sections").select("*").eq("user_id", user.id);
+      
+      const mergedData: any = {};
+      const sectionStatuses: Record<string, string> = {};
+      if (sections) {
+        sections.forEach(s => {
+          Object.assign(mergedData, s.data);
+          sectionStatuses[s.section_key] = s.status;
+        });
       }
 
-      const [applicationsRes, contractsRes, timesheetsRes, messagesRes, ticketsRes, notificationsRes, stepsRes] = await Promise.all([
-        supabase.from("job_applications").select("*", { count: "exact", head: true }).eq("talent_id", talentData?.id || ''),
-        supabase.from("contracts").select("*", { count: "exact", head: true }).eq("talent_id", talentData?.id || '').eq("status", "active"),
-        supabase.from("timesheets").select("*", { count: "exact", head: true }).eq("talent_id", talentData?.id || '').eq("status", "draft"),
+      // Legacy support for basic fields not yet in sections
+      const { data: legacyTalent } = await supabase.from("talents").select("*").eq("user_id", user.id).maybeSingle();
+
+      let managerRes = null;
+      if (profile?.assigned_admin_id) {
+        const { data } = await supabase.from("profiles").select("*").eq("user_id", profile.assigned_admin_id).maybeSingle();
+        managerRes = data;
+      }
+
+      const [applicationsRes, contractsRes, timesheetsRes, messagesRes, ticketsRes, notificationsRes] = await Promise.all([
+        supabase.from("job_applications").select("*", { count: "exact", head: true }).eq("talent_id", profile?.id || ''),
+        supabase.from("contracts").select("*", { count: "exact", head: true }).eq("talent_id", profile?.id || '').eq("status", "active"),
+        supabase.from("timesheets").select("*", { count: "exact", head: true }).eq("talent_id", profile?.id || '').eq("status", "draft"),
         supabase.from("messages").select("*", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
         supabase.from("support_tickets").select("*", { count: "exact", head: true }).eq("user_id", user.id).in("status", ["open", "in_progress"]),
         supabase.from("notifications").select("*").eq("user_id", user.id).order('created_at', { ascending: false }).limit(5),
-        supabase.from("talent_profile_steps" as any).select("*").eq("talent_id", talentData?.id || '')
       ]);
   
       return {
-        talent: {
-          ...talentData,
-          onboarding_status: (talentData as any)?.onboarding_status || "not_started",
-          current_step: (talentData as any)?.current_step || 1,
-          profile_completion: (talentData as any)?.profile_completion || 0
-        } as TalentRow,
+        profile,
+        legacyTalent,
+        mergedData,
+        sectionStatuses,
+        changedSections: sections?.filter(s => s.status === 'CHANGES_REQUESTED').map(s => s.section_key) || [],
         stats: {
           applications: applicationsRes.count || 0,
           activeAssignments: contractsRes.count || 0,
@@ -126,76 +112,37 @@ const TalentProfile = () => {
           openTickets: ticketsRes.count || 0,
         },
         notifications: notificationsRes?.data || [],
-        steps: (stepsRes?.data as any[]) || [],
-        workHistory: workRes.data || [],
-        education: eduRes.data || [],
-        certifications: certRes.data || [],
-        references: refRes.data || [],
-        vetting: vettingRes.data?.[0] || null,
-        manager: managerRes.data || null,
+        manager: managerRes,
       };
     },
-
     enabled: !!user?.id,
   });
 
-  // ── Render Helpers & Loading Check ──────────────────────────────────────────
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 className="h-6 w-6 text-slate-200 animate-spin" />
-        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Initialising Environment…</span>
-      </div>
-    );
-  }
-
   // ── Derived Data ───────────────────────────────────────────────────────────
+  // Note: Hooks must be at the top level
+  const talent: any = data?.profile || data?.legacyTalent || {};
+  const mergedData = data?.mergedData || {};
+  const sectionStatuses = data?.sectionStatuses || {};
+  const changedSections = data?.changedSections || [];
+  const manager = data?.manager;
+  const vetting = talent; 
+  const profileStatus = talent.status; 
+  const extendedData = mergedData; // Alias for legacy UI code
 
-  const talent: any = data?.talent || {};
-  const workHistory = data?.workHistory || [];
-  const education = data?.education || [];
-  const certifications = data?.certifications || [];
-  const references = data?.references || [];
-  const vetting = data?.vetting || null;
-  const manager = data?.manager || null;
+  const workHistory = mergedData.workHistory || [];
+  const education = mergedData.education || [];
+  const certifications = mergedData.certifications || [];
+  const references = mergedData.references || [];
+  const projects = mergedData.projects || [];
 
-  const profileStatus: string = talent.profile_change_status || "clean";
-  const vettingStatus: string = talent.vetting_status || "unvetted";
-  const onboardingStatus: string = talent.onboarding_status || "not_started";
-  const changedSections: string[] = talent.changed_sections || [];
-  const isSubmitted = onboardingStatus === "submitted" || talent.profile_change_status === "submitted";
+  const vettingStatus: string = talent.status || "DRAFT";
+  const onboardingLocked = talent.locked_onboarding || false;
+  
+  const isSubmitted = vettingStatus !== "DRAFT" || onboardingLocked;
 
-  // Parse draft_profile for extended fields
-  const extendedData = useMemo(() => {
-    const draft = talent.draft_profile || {};
-    return {
-      headline: draft.headline || "",
-      short_bio: draft.short_bio || "",
-      industry_focus: draft.industry_focus || [],
-      functional_areas: draft.functional_areas || [],
-      projects: draft.projects || [],
-    };
-  }, [talent.draft_profile]);
-
-  // Completion calculation (Source of Truth: talent.profile_completion from the DB)
-  const completionPercentage = useMemo(() => {
-    if (typeof talent.profile_completion === 'number') return talent.profile_completion;
-    
-    // Fallback local calculation if DB value isn't loaded yet
-    const fields = [
-      talent.primary_role, talent.country, talent.availability,
-      extendedData.headline, extendedData.short_bio,
-      workHistory.length > 0, education.length > 0,
-      talent.cv_url, talent.government_id_url
-    ];
-    const filled = fields.filter(f => !!f).length;
-    return Math.round((filled / fields.length) * 100);
-  }, [talent.profile_completion, talent.primary_role, talent.country, talent.availability, extendedData, workHistory.length, education.length, talent.cv_url, talent.government_id_url]);
-
+  const completionPercentage = talent.completion_percent || 0;
 
   // ── Section Editing Forms ──────────────────────────────────────────────────
-
   const [basicForm, setBasicForm] = useState<any>(null);
   const [proForm, setProForm] = useState<any>(null);
   const [skillsForm, setSkillsForm] = useState<any>(null);
@@ -207,31 +154,40 @@ const TalentProfile = () => {
   const [newFunction, setNewFunction] = useState("");
 
   const startEditing = (section: SectionKey) => {
-    if (isSubmitted || onboardingStatus === 'submitted') {
-      toast.error("Profile is currently under review. Edits are locked.");
+    // Only allow edit if DRAFT or changes requested for this specific section
+    const canEdit = vettingStatus === "DRAFT" || sectionStatuses[section] === "CHANGES_REQUESTED";
+    
+    if (!canEdit) {
+      toast.error("This section is locked for review.");
       return;
     }
+
     setEditingSection(section);
     if (section === "basic_info") {
-      setBasicForm({ country: talent.country || "", timezone: talent.timezone || "", preferred_working_hours: talent.preferred_working_hours || "" });
+      setBasicForm({ 
+        country: mergedData.country || talent.country || "", 
+        timezone: mergedData.timezone || talent.timezone || "", 
+        preferred_working_hours: mergedData.preferred_working_hours || talent.preferred_working_hours || "" 
+      });
     } else if (section === "professional") {
       setProForm({
-        primary_role: talent.primary_role || "",
-        availability: talent.availability || "",
-        years_of_experience: talent.years_of_experience || "",
-        headline: extendedData.headline,
-        short_bio: extendedData.short_bio,
-        industry_focus: [...extendedData.industry_focus],
-        functional_areas: [...extendedData.functional_areas],
+        primary_role: mergedData.primaryRole || talent.primary_role || "",
+        role_category: mergedData.roleCategory || talent.role_category || "",
+        availability: mergedData.availability || talent.availability || "",
+        years_of_experience: mergedData.yearsOfExperience || talent.years_of_experience || "",
+        headline: mergedData.headline || "",
+        short_bio: mergedData.shortBio || "",
+        industry_focus: mergedData.industry_focus || [],
+        functional_areas: mergedData.functional_areas || [],
       });
     } else if (section === "skills") {
       setSkillsForm({
-        secondary_skills: [...(talent.secondary_skills || [])],
-        tools_familiar_with: [...(talent.tools_familiar_with || [])],
-        languages_spoken: [...(talent.languages_spoken || [])],
+        secondary_skills: [...(mergedData.secondarySkills || talent.secondary_skills || [])],
+        tools_familiar_with: [...(mergedData.toolsFamiliarWith || talent.tools_familiar_with || [])],
+        languages_spoken: [...(mergedData.languagesSpoken || talent.languages_spoken || [])],
       });
     } else if (section === "projects") {
-      setProjectsForm([...extendedData.projects]);
+      setProjectsForm([...(mergedData.projects || [])]);
     }
   };
 
@@ -243,100 +199,30 @@ const TalentProfile = () => {
     setProjectsForm(null);
   };
 
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <Loader2 className="h-6 w-6 text-slate-200 animate-spin" />
+        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Initialising Environment…</span>
+      </div>
+    );
+  }
+
   // ── Save Logic ─────────────────────────────────────────────────────────────
 
-  const updateDraftProfile = async (updates: any) => {
-    const freshDraft = { ...(talent.draft_profile || {}), ...updates };
-    const { error } = await supabase
-      .from("talents")
-      .update({ draft_profile: freshDraft, profile_change_status: "draft" } as any)
-      .eq("id", talent.id);
-    if (error) throw error;
-  };
+  // ── Save Logic ─────────────────────────────────────────────────────────────
 
-  const markSectionChanged = async (section: SectionKey) => {
-    const current = talent.changed_sections || [];
-    if (!current.includes(section)) {
-      await supabase
-        .from("talents")
-        .update({
-          changed_sections: [...current, section],
-          profile_change_status: "draft",
-        } as any)
-        .eq("id", talent.id);
-    }
-  };
-
-  const saveBasicInfo = async () => {
+  const saveSectionData = async (sectionKey: string, data: any) => {
     try {
       setSavingSection(true);
-      const { error } = await supabase
-        .from("talents")
-        .update({
-          country: basicForm.country,
-          timezone: basicForm.timezone,
-          preferred_working_hours: basicForm.preferred_working_hours,
-        } as any)
-        .eq("id", talent.id);
-      if (error) throw error;
-      await markSectionChanged("basic_info");
-      toast.success("Basic info updated");
-      cancelEditing();
-      refetch();
-    } catch (e: any) {
-      toast.error("Failed to save: " + e.message);
-    } finally {
-      setSavingSection(false);
-    }
-  };
-
-  const saveProfessional = async () => {
-    try {
-      setSavingSection(true);
-      // Update core fields
-      const { error: coreError } = await supabase
-        .from("talents")
-        .update({
-          primary_role: proForm.primary_role,
-          availability: proForm.availability,
-          years_of_experience: proForm.years_of_experience ? Number(proForm.years_of_experience) : null,
-        } as any)
-        .eq("id", talent.id);
-      if (coreError) throw coreError;
-
-      // Update extended fields via JSONB
-      await updateDraftProfile({
-        headline: proForm.headline,
-        short_bio: proForm.short_bio,
-        industry_focus: proForm.industry_focus,
-        functional_areas: proForm.functional_areas,
+      const { error } = await (supabase.rpc as any)("update_section_data", {
+        p_section_key: sectionKey,
+        p_data: data,
+        p_completion_percent: completionPercentage // Keep current or re-calc
       });
-
-      await markSectionChanged("professional");
-      toast.success("Professional details updated");
-      cancelEditing();
-      refetch();
-    } catch (e: any) {
-      toast.error("Failed to save: " + e.message);
-    } finally {
-      setSavingSection(false);
-    }
-  };
-
-  const saveSkills = async () => {
-    try {
-      setSavingSection(true);
-      const { error } = await supabase
-        .from("talents")
-        .update({
-          secondary_skills: skillsForm.secondary_skills,
-          tools_familiar_with: skillsForm.tools_familiar_with,
-          languages_spoken: skillsForm.languages_spoken,
-        } as any)
-        .eq("id", talent.id);
       if (error) throw error;
-      await markSectionChanged("skills");
-      toast.success("Skills updated");
+      toast.success(`${SECTION_LABELS[sectionKey as SectionKey]} updated`);
       cancelEditing();
       refetch();
     } catch (e: any) {
@@ -346,45 +232,19 @@ const TalentProfile = () => {
     }
   };
 
-  const saveProjects = async () => {
-    try {
-      setSavingSection(true);
-      await updateDraftProfile({ projects: projectsForm });
-      await markSectionChanged("projects");
-      toast.success("Portfolio updated");
-      cancelEditing();
-      refetch();
-    } catch (e: any) {
-      toast.error("Failed to save: " + e.message);
-    } finally {
-      setSavingSection(false);
-    }
-  };
+  const saveBasicInfo = () => saveSectionData("basic_info", basicForm);
+  const saveProfessional = () => saveSectionData("professional", proForm);
+  const saveSkills = () => saveSectionData("skills", skillsForm);
+  const saveProjects = () => saveSectionData("projects", { projects: projectsForm });
 
   const submitForReview = async () => {
     try {
       setSubmittingReview(true);
-      const { error: reviewError } = await supabase
-        .from("talent_profile_reviews" as any)
-        .insert({
-          talent_id: talent.id,
-          changed_sections: changedSections,
-          talent_message: reviewMessage || null,
-        } as any);
-      if (reviewError) throw reviewError;
-
-      const { error: updateError } = await supabase
-        .from("talents")
-        .update({
-          profile_change_status: "submitted",
-          vetting_status: "in_review",
-        } as any)
-        .eq("id", talent.id);
-      if (updateError) throw updateError;
+      const { error } = await (supabase.rpc as any)("submit_talent_onboarding");
+      if (error) throw error;
 
       toast.success("Profile submitted for review");
       setReviewDrawerOpen(false);
-      setReviewMessage("");
       refetch();
     } catch (e: any) {
       toast.error("Failed to submit: " + e.message);
@@ -404,14 +264,16 @@ const TalentProfile = () => {
 
   const getVettingBadge = () => {
     const statusMap: Record<string, { label: string, color: string, icon: any }> = {
-      unvetted: { label: "Not Submitted", color: "bg-slate-100 text-slate-500 border-slate-200", icon: AlertCircle },
-      in_review: { label: "Under Review", color: "bg-blue-50 text-blue-700 border-blue-100", icon: Clock },
-      verified: { label: "Approved", color: "bg-emerald-50 text-emerald-700 border-emerald-100", icon: CheckCircle2 },
-      fully_vetted: { label: "Approved", color: "bg-emerald-50 text-emerald-700 border-emerald-100", icon: CheckCircle2 },
-      changes_requested: { label: "Action Required", color: "bg-amber-50 text-amber-700 border-amber-100", icon: AlertCircle },
-      needs_clarification: { label: "Action Required", color: "bg-amber-50 text-amber-700 border-amber-100", icon: AlertCircle },
+      DRAFT: { label: "Draft", color: "bg-slate-100 text-slate-500 border-slate-200", icon: Pencil },
+      SUBMITTED: { label: "Pending Review", color: "bg-blue-50 text-blue-700 border-blue-100", icon: Clock },
+      VETTING_IN_PROGRESS: { label: "Vetting in Progress", color: "bg-indigo-50 text-indigo-700 border-indigo-100", icon: Shield },
+      CHANGES_REQUESTED: { label: "Action Required", color: "bg-amber-50 text-amber-700 border-amber-100", icon: AlertCircle },
+      RESUBMITTED: { label: "Resubmitted", color: "bg-blue-50 text-blue-700 border-blue-100", icon: Clock },
+      VETTED: { label: "Vetted & Approved", color: "bg-emerald-50 text-emerald-700 border-emerald-100", icon: CheckCircle2 },
+      REJECTED: { label: "Application Rejected", color: "bg-red-50 text-red-700 border-red-100", icon: X },
+      SUSPENDED: { label: "Account Suspended", color: "bg-slate-900 text-white border-slate-800", icon: Lock },
     };
-    const config = statusMap[vettingStatus] || statusMap.unvetted;
+    const config = statusMap[vettingStatus] || { label: vettingStatus, color: "bg-slate-100 text-slate-500", icon: Info };
     const Icon = config.icon;
     return (
       <Badge className={cn("px-2 py-1 gap-1.5 border font-semibold", config.color)}>
@@ -512,11 +374,11 @@ const TalentProfile = () => {
 
               <div className="p-6 space-y-6">
                 <div className="space-y-4">
-                  <SidebarItem icon={<MapPin className="h-4 w-4" />} label="Location" value={talent.country} />
-                  <SidebarItem icon={<Clock className="h-4 w-4" />} label="Availability" value={talent.availability?.replace(/_/g, " ")} />
-                  <SidebarItem icon={<Globe className="h-4 w-4" />} label="Timezone" value={talent.timezone} />
-                  <SidebarItem icon={<Shield className="h-4 w-4" />} label="Vetting Level" value={vetting?.level_name || "L0 - Not Vetted"} />
-                  <SidebarItem icon={<AlertCircle className="h-4 w-4" />} label="Vetting Status" value={vetting?.status?.replace(/_/g, " ") || "Pending"} />
+                  <SidebarItem icon={<MapPin className="h-4 w-4" />} label="Location" value={talent.country || mergedData.country} />
+                  <SidebarItem icon={<Clock className="h-4 w-4" />} label="Availability" value={(talent.availability || mergedData.availability)?.replace(/_/g, " ")} />
+                  <SidebarItem icon={<Globe className="h-4 w-4" />} label="Timezone" value={talent.timezone || mergedData.timezone} />
+                  <SidebarItem icon={<Shield className="h-4 w-4" />} label="Vetting Level" value={talent.vetting_level || "L0 - Not Vetted"} />
+                  <SidebarItem icon={<AlertCircle className="h-4 w-4" />} label="Vetting Status" value={talent.status?.replace(/_/g, " ") || "Pending"} />
                 </div>
 
                 <div className="pt-6 border-t border-slate-100">
@@ -606,6 +468,8 @@ const TalentProfile = () => {
                    <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <RoleSelector
+                          category={proForm.role_category}
+                          onCategoryChange={(v) => setProForm({ ...proForm, role_category: v })}
                           value={proForm.primary_role}
                           onChange={(v) => setProForm({ ...proForm, primary_role: v })}
                         />
@@ -724,17 +588,17 @@ const TalentProfile = () => {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                      <div className="flex items-center gap-3">
                         <Building2 className="h-4 w-4 text-slate-400" />
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{work.company_name}</span>
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{work.companyName || work.company_name}</span>
                      </div>
                      <span className="text-[11px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">
-                        {work.start_date} – {work.is_current ? "PRESENT" : work.end_date}
+                        {work.startDate || work.start_date} – {work.isCurrent || work.is_current ? "PRESENT" : (work.endDate || work.end_date)}
                      </span>
                   </div>
                   
-                  <h4 className="text-lg font-bold text-slate-900 mb-3">{work.role_title}</h4>
-                  {work.role_description && (
+                  <h4 className="text-lg font-bold text-slate-900 mb-3">{work.roleTitle || work.role_title}</h4>
+                  {(work.roleDescription || work.role_description) && (
                     <p className="text-sm text-slate-600 leading-relaxed max-w-3xl whitespace-pre-line bg-slate-50/50 p-4 rounded-lg border border-slate-100">
-                       {work.role_description}
+                       {work.roleDescription || work.role_description}
                     </p>
                   )}
                 </div>
@@ -786,7 +650,7 @@ const TalentProfile = () => {
                </div>
              ) : (
                <div className="grid md:grid-cols-2 gap-6 py-2">
-                  {extendedData.projects.length > 0 ? extendedData.projects.map((p: any, i: number) => (
+                   {projects.length > 0 ? projects.map((p: any, i: number) => (
                     <div key={i} className="p-6 border border-slate-100 rounded-xl bg-white shadow-[0_2px_4px_rgba(0,0,0,0.01)] hover:border-slate-300 transition-colors">
                        <div className="flex items-center justify-between mb-3">
                           <h4 className="font-bold text-slate-900">{p.title || "Untitled Project"}</h4>
@@ -829,13 +693,13 @@ const TalentProfile = () => {
                               <GraduationCap className="h-5 w-5" />
                            </div>
                            <div>
-                              <h4 className="text-base font-bold text-slate-900 leading-tight">{edu.institution_name}</h4>
-                              <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">{edu.education_level}{edu.field_of_study ? ` / ${edu.field_of_study}` : ""}</p>
+                              <h4 className="text-base font-bold text-slate-900 leading-tight">{edu.institutionName || edu.institution_name}</h4>
+                              <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">{edu.degree || edu.education_level}{(edu.fieldOfStudy || edu.field_of_study) ? ` / ${edu.fieldOfStudy || edu.field_of_study}` : ""}</p>
                            </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <span className="text-[10px] font-black text-slate-400 bg-white px-2 py-1 rounded border border-slate-100 whitespace-nowrap tracking-widest">
-                            {edu.start_year} – {edu.is_current ? "PRESENT" : edu.end_year}
+                            {edu.startYear || edu.start_year} – { (edu.isCurrent || edu.is_current) ? "PRESENT" : (edu.endYear || edu.end_year) }
                           </span>
                         </div>
                       </div>

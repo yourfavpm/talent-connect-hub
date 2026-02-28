@@ -44,7 +44,7 @@ const VettingHeader = ({ talent, talentManager, onRefresh, onAssignManager }: Ve
       rejected: "bg-red-50 text-red-700 border-red-100",
     };
     return (
-      <Badge className={cn("shadow-none border h-6 px-2.5 font-bold uppercase text-[10px] tracking-wider", styles[status] || styles.draft)}>
+      <Badge className={cn("shadow-none border h-6 px-2.5 font-semibold uppercase text-[10px] tracking-wider", styles[status] || styles.draft)}>
         {status.replace("_", " ")}
       </Badge>
     );
@@ -58,7 +58,7 @@ const VettingHeader = ({ talent, talentManager, onRefresh, onAssignManager }: Ve
       lead: "bg-purple-50 text-purple-700 border-purple-100",
     };
     return (
-      <Badge variant="outline" className={cn("shadow-none h-6 px-2 text-[10px] font-bold uppercase", styles[level] || "bg-gray-50 text-gray-400 border-gray-200")}>
+      <Badge variant="outline" className={cn("shadow-none h-6 px-2 text-[10px] font-semibold uppercase", styles[level] || "bg-gray-50 text-gray-400 border-gray-200")}>
         {level || "Unrated"}
       </Badge>
     );
@@ -77,7 +77,7 @@ const VettingHeader = ({ talent, talentManager, onRefresh, onAssignManager }: Ve
         <div className="flex items-center gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-sm font-bold text-gray-900 tracking-tight">
+              <h1 className="text-sm font-semibold text-gray-900 tracking-tight">
                 {talent.first_name} {talent.last_name}
               </h1>
               <div className="flex items-center gap-1 group cursor-pointer" onClick={copyId}>
@@ -92,7 +92,7 @@ const VettingHeader = ({ talent, talentManager, onRefresh, onAssignManager }: Ve
           <div className="flex items-center gap-3">
             {getStatusBadge(talent.vetting_status)}
             <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Skill</span>
+                <span className="text-[10px] uppercase font-medium text-gray-400 tracking-widest">Skill</span>
                 {getSkillBadge(talent.overall_skill_level)}
             </div>
           </div>
@@ -106,12 +106,12 @@ const VettingHeader = ({ talent, talentManager, onRefresh, onAssignManager }: Ve
                     <ShieldCheck className="h-3 w-3 text-emerald-600" />
                 </div>
                 <div className="flex flex-col">
-                    <span className="text-[9px] uppercase font-bold text-gray-400 leading-none">Manager</span>
-                    <span className="text-[11px] font-bold text-gray-700 leading-tight">{talentManager.full_name}</span>
+                    <span className="text-[9px] uppercase font-medium text-gray-400 leading-none">Manager</span>
+                    <span className="text-[11px] font-semibold text-gray-700 leading-tight">{talentManager.full_name}</span>
                 </div>
             </div>
         ) : (
-            <Button variant="ghost" className="h-8 text-[11px] font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3" onClick={onAssignManager}>
+            <Button variant="ghost" className="h-8 text-[11px] font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3" onClick={onAssignManager}>
                 <UserPlus className="h-3.5 w-3.5 mr-2" />
                 Assign Manager
             </Button>
@@ -126,7 +126,7 @@ const VettingHeader = ({ talent, talentManager, onRefresh, onAssignManager }: Ve
             <Button variant="outline" className="h-8 w-8 p-0 border-gray-200" title="Assessment Details">
                 <BarChart className="h-4 w-4 text-gray-400" />
             </Button>
-            <Button variant="outline" className="h-8 text-[11px] font-bold border-gray-200 px-3">
+            <Button variant="outline" className="h-8 text-[11px] font-semibold border-gray-200 px-3">
                 <ExternalLink className="h-3.5 w-3.5 mr-2" />
                 Public Profile
             </Button>

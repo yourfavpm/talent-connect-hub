@@ -102,6 +102,37 @@ import DataSettings from "@/pages/admin/Settings/sections/Data";
 import SettingsAuditLog from "@/pages/admin/Settings/sections/AuditLogs";
 import PublicJobs from "./pages/PublicJobs";
 import NotFound from "./pages/NotFound";
+import { useVettingVersion } from "./hooks/useVettingVersion";
+import OnboardingV2 from "./pages/talent/OnboardingV2";
+import ProfileV2 from "./pages/talent/ProfileV2";
+import VettingQueueV2 from "./pages/admin/VettingQueueV2";
+import VettingWorkspaceV2 from "./pages/admin/VettingWorkspaceV2";
+import AdminTalentDirectory from "./pages/admin/TalentDirectory/AdminTalentDirectory";
+import AdminTalentProfileView from "./pages/admin/TalentDirectory/AdminTalentProfileView";
+
+const OnboardingRouter = () => {
+  const { version, isLoading } = useVettingVersion();
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center text-slate-400">Loading...</div>;
+  return version === "v2" ? <OnboardingV2 /> : <TalentOnboarding />;
+};
+
+const ProfileRouter = () => {
+  const { version, isLoading } = useVettingVersion();
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center text-slate-400">Loading...</div>;
+  return version === "v2" ? <ProfileV2 /> : <TalentProfile />;
+};
+
+const AdminVettingQueueRouter = () => {
+  const { version, isLoading } = useVettingVersion();
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center text-slate-400">Loading...</div>;
+  return version === "v2" ? <VettingQueueV2 /> : <AdminTalents />;
+};
+
+const AdminVettingWorkspaceRouter = () => {
+  const { version, isLoading } = useVettingVersion();
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center text-slate-400">Loading...</div>;
+  return version === "v2" ? <VettingWorkspaceV2 /> : <VettingWorkspace />;
+};
 
 
 const queryClient = new QueryClient({
@@ -171,10 +202,10 @@ const App = () => (
 
             {/* Talent Portal */}
             <Route path="/talent" element={<TalentLayout />}>
-              <Route path="onboarding" element={<TalentOnboarding />} />
+              <Route path="onboarding" element={<OnboardingRouter />} />
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<TalentDashboard />} />
-              <Route path="profile" element={<TalentProfile />} />
+              <Route path="profile" element={<ProfileRouter />} />
               <Route path="jobs" element={<TalentJobs />} />
               <Route path="jobs/:id" element={<TalentJobDetail />} />
               <Route path="offers" element={<TalentOffers />} />
@@ -199,9 +230,15 @@ const App = () => (
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="talents" element={<AdminTalents />} />
-              <Route path="talents/:id" element={<AdminTalentDetail />} />
-              <Route path="talents/:id/vetting" element={<VettingWorkspace />} />
+              
+              {/* Vetting Module */}
+              <Route path="vetting" element={<AdminVettingQueueRouter />} />
+              <Route path="vetting/:id" element={<AdminVettingWorkspaceRouter />} />
+              
+              {/* Talent Directory Module */}
+              <Route path="talents" element={<AdminTalentDirectory />} />
+              <Route path="talents/:id" element={<AdminTalentProfileView />} />
+              
               <Route path="clients" element={<AdminClients />} />
               <Route path="clients/:id" element={<AdminClientDetail />} />
               <Route path="jobs" element={<AdminJobs />} />

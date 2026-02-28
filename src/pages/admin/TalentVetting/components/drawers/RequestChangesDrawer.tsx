@@ -42,15 +42,14 @@ const RequestChangesDrawer = ({ open, onOpenChange, talentId, stepKey, onSuccess
   const fetchHistory = async () => {
     try {
       setLoadingHistory(true);
-      const { data, error } = await supabase
-        .from("step_change_requests" as any)
+      const { data, error } = await (supabase.from("vetting_actions" as any) as any)
         .select("*")
-        .eq("talent_id", talentId)
-        .eq("step_key", stepKey)
+        .eq("user_id", talentId) // Note: vetting_actions uses user_id generally, but let's check profile_id usage
+        .eq("section_key", stepKey)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setHistory(data || []);
+      setHistory((data as any) || []);
     } catch (error: any) {
       console.error("Failed to load history:", error);
     } finally {
@@ -64,36 +63,43 @@ const RequestChangesDrawer = ({ open, onOpenChange, talentId, stepKey, onSuccess
     try {
       setSaving(true);
       
-      // 1. Create Change Request
-      const { error: requestError } = await supabase
-        .from("step_change_requests" as any)
-        .insert({
-          talent_id: talentId,
-          step_key: stepKey,
-          message: message,
-          created_by: (await supabase.auth.getUser()).data.user?.id
-        } as any);
+      // 1. Fetch Profile to get user_id
+      const { data: profile } = await (supabase.from("talent_profiles") as any)
+        .select("user_id")
+        .eq("id", talentId)
+        .maybeSingle();
+      
+      if (!profile) throw new Error("Profile not found");
 
-      if (requestError) throw requestError;
-
-      // 2. Update Step Status
-      const { error: stepError } = await supabase
-        .from("talent_profile_steps" as any)
+      // 2. Update Section Status
+      const { error: sectionError } = await (supabase.from("talent_profile_sections") as any)
         .update({ 
-            status: "changes_requested",
-            last_reviewed_at: new Date().toISOString(),
-            reviewed_by: (await supabase.auth.getUser()).data.user?.id
+          status: "CHANGES_REQUESTED",
+          last_reviewed_at: new Date().toISOString(),
+          reviewed_by: (await supabase.auth.getUser()).data.user?.id
         } as any)
-        .eq("talent_id", talentId)
-        .eq("step_key", stepKey);
+        .eq("user_id", profile.user_id)
+        .eq("section_key", stepKey);
 
-      if (stepError) throw stepError;
+      if (sectionError) throw sectionError;
 
-      // 3. Update overall talent status
-      await supabase
-        .from("talents" as any)
-        .update({ vetting_status: "changes_requested" } as any)
+      // 3. Update overall talent profile status
+      const { error: profileError } = await (supabase.from("talent_profiles") as any)
+        .update({ status: "CHANGES_REQUESTED" } as any)
         .eq("id", talentId);
+      
+      if (profileError) throw profileError;
+
+      // 4. Log Vetting Action
+      await (supabase.from("vetting_actions") as any)
+        .insert({
+          user_id: profile.user_id,
+          talent_id: talentId,
+          admin_id: (await supabase.auth.getUser()).data.user?.id,
+          action_type: "REQUEST_CHANGES",
+          section_key: stepKey,
+          notes: message
+        });
       
       toast.success("Change request sent to talent");
       onSuccess();
@@ -111,7 +117,7 @@ const RequestChangesDrawer = ({ open, onOpenChange, talentId, stepKey, onSuccess
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-md flex flex-col h-full p-0">
         <SheetHeader className="p-6 border-b border-gray-100">
-          <SheetTitle className="text-lg font-black uppercase tracking-tight text-gray-900 flex items-center gap-2">
+          <SheetTitle className="text-lg font-bold uppercase tracking-tight text-gray-900 flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
             Request Changes
           </SheetTitle>
@@ -186,7 +192,7 @@ const RequestChangesDrawer = ({ open, onOpenChange, talentId, stepKey, onSuccess
 
         <SheetFooter className="p-6 border-t border-gray-100 bg-gray-50/50">
           <Button 
-            className="w-full h-12 font-black uppercase text-[11px] tracking-widest gap-2 bg-gray-900 group"
+            className="w-full h-12 font-bold uppercase text-[11px] tracking-widest gap-2 bg-gray-900 group"
             disabled={!message.trim() || saving}
             onClick={handleSend}
           >

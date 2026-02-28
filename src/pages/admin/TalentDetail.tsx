@@ -65,6 +65,17 @@ const TalentDetail = () => {
       if (error) throw error;
       setTalent(talentData);
 
+      // Fetch talent_profiles data for status
+      const { data: profileData } = await (supabase.from("talent_profiles" as any) as any)
+        .select("*")
+        .eq("user_id", talentData.user_id)
+        .single();
+
+      // Fetch sections data
+      const { data: sectionsData } = await (supabase.from("talent_profile_sections" as any) as any)
+        .select("*")
+        .eq("user_id", talentData.user_id);
+
       const getSignedUrl = async (path: string | null) => {
         if (!path) return null;
         if (path.startsWith('http')) return path;
@@ -80,25 +91,68 @@ const TalentDetail = () => {
       ]);
       setDocumentUrls({ cvUrl, governmentIdUrl: govIdUrl });
 
-      const [workData, eduData, certData, refData, vettingData] = await Promise.all([
-        supabase.from("talent_work_history").select("*").eq("talent_id", id).order("start_date", { ascending: false }),
-        supabase.from("talent_education").select("*").eq("talent_id", id).order("start_year", { ascending: false }),
-        supabase.from("talent_certifications").select("*").eq("talent_id", id),
-        supabase.from("talent_references").select("*").eq("talent_id", id),
-        supabase.from("talent_vetting").select("*").eq("talent_id", id).order("level", { ascending: true }),
-      ]);
+      // Map sections data to local state
+      if (sectionsData) {
+        const workSection = sectionsData.find((s: any) => s.section_key === "professional_details" || s.section_key === "work_history");
+        const eduSection = sectionsData.find((s: any) => s.section_key === "education");
+        
+        // If we have data in talent_profile_sections, use it. Otherwise fallback to legacy tables.
+        if (workSection?.data?.work_history) {
+           setWorkHistory(workSection.data.work_history);
+        } else {
+           const { data: legacyWork } = await supabase.from("talent_work_history").select("*").eq("talent_id", id).order("start_date", { ascending: false });
+           setWorkHistory(legacyWork || []);
+        }
 
-      setWorkHistory(workData.data || []);
-      setEducation(eduData.data || []);
-      setCertifications(certData.data || []);
-      setReferences(refData.data || []);
-      
-      const vettings = vettingData.data || [];
-      setVettingLevels(vettings);
+        if (eduSection?.data?.education) {
+           setEducation(eduSection.data.education);
+        } else {
+           const { data: legacyEdu } = await supabase.from("talent_education").select("*").eq("talent_id", id).order("start_year", { ascending: false });
+           setEducation(legacyEdu || []);
+        }
 
-      // Initialize admin notes from the first level if available
-      if (vettings.length > 0) {
-        setAdminNotes(vettings[0].admin_notes || "");
+        // Get certs and refs from professional_details if available
+        const profSection = sectionsData.find((s: any) => s.section_key === "professional_details");
+        if (profSection?.data?.certifications) {
+            setCertifications(profSection.data.certifications);
+        } else {
+            const { data: legacyCert } = await supabase.from("talent_certifications").select("*").eq("talent_id", id);
+            setCertifications(legacyCert || []);
+        }
+
+        if (profSection?.data?.references) {
+            setReferences(profSection.data.references);
+        } else {
+            const { data: legacyRef } = await supabase.from("talent_references").select("*").eq("talent_id", id);
+            setReferences(legacyRef || []);
+        }
+      } else {
+        // Fallback to legacy tables entirely if no sections
+        const [workData, eduData, certData, refData] = await Promise.all([
+            supabase.from("talent_work_history").select("*").eq("talent_id", id).order("start_date", { ascending: false }),
+            supabase.from("talent_education").select("*").eq("talent_id", id).order("start_year", { ascending: false }),
+            supabase.from("talent_certifications").select("*").eq("talent_id", id),
+            supabase.from("talent_references").select("*").eq("talent_id", id),
+        ]);
+        setWorkHistory(workData.data || []);
+        setEducation(eduData.data || []);
+        setCertifications(certData.data || []);
+        setReferences(refData.data || []);
+      }
+
+      // Fetch actions for notes
+      const { data: actionsData } = await (supabase.from("vetting_actions" as any) as any)
+        .select("*")
+        .eq("user_id", talentData.user_id)
+        .order("created_at", { ascending: false });
+
+      if (actionsData && actionsData.length > 0) {
+        const lastNoteAction = actionsData.find((a: any) => a.note);
+        setAdminNotes(lastNoteAction?.note || "");
+      }
+
+      if (profileData) {
+        setTalent((prev: any) => ({ ...prev, vetting_status: profileData.status }));
       }
     } catch (error) {
       console.error("Error fetching talent:", error);
@@ -109,40 +163,51 @@ const TalentDetail = () => {
 
   const computeUiStatus = () => {
     if (!talent) return "pending";
-    if (talent.vetting_status === "fully_vetted") return "approved";
-    if (vettingLevels.some(v => v.status === "rejected")) return "rejected";
-    if (vettingLevels.some(v => v.status === "needs_clarification")) return "changes";
+    const status = talent.vetting_status;
+    if (status === "VETTED" || status === "fully_vetted") return "approved";
+    if (status === "REJECTED") return "rejected";
+    if (status === "CHANGES_REQUESTED") return "changes";
     return "pending";
   };
 
   const handleAction = async (action: "approve" | "changes" | "reject", reason?: string) => {
     setActionLoading(true);
     try {
-      const finalNotes = reason ? (adminNotes ? `${adminNotes}\n\nUpdate: ${reason}` : reason) : adminNotes;
-
-      // 1. Update all vetting levels
-      let levelStatus = "pending";
-      if (action === "approve") levelStatus = "approved";
-      if (action === "changes") levelStatus = "needs_clarification";
-      if (action === "reject") levelStatus = "rejected";
-
-      for (const level of vettingLevels) {
-        await supabase.from("talent_vetting").update({
-          status: levelStatus,
-          admin_notes: finalNotes,
-          reviewed_at: new Date().toISOString()
-        }).eq("id", level.id);
-      }
-
-      // 2. Update talent main status if approved
+      // Use RPCs for consistency with Vetting Engine
       if (action === "approve") {
-        await supabase.from("talents").update({
-          vetting_status: "fully_vetted"
-        }).eq("id", id);
+        const { error } = await (supabase.rpc("admin_finalize_vetting", {
+          p_talent_user_id: talent.user_id,
+          p_vetting_level: "L1" // Default level
+        } as any) as any);
+        if (error) throw error;
       } else if (action === "changes") {
-        await supabase.from("talents").update({
-          vetting_status: "partially_vetted"
-        }).eq("id", id);
+         // This is a global request changes, ideally we should specify a section.
+         // For legacy compatibility, we'll just update the status directly on talent_profiles
+         const { error } = await (supabase.from("talent_profiles" as any) as any)
+           .update({ status: "CHANGES_REQUESTED", last_action_at: new Date().toISOString() } as any)
+           .eq("user_id", talent.user_id);
+         if (error) throw error;
+
+         // Log it
+         await (supabase.from("vetting_actions" as any) as any).insert({
+            user_id: talent.user_id,
+            admin_id: (await supabase.auth.getUser()).data.user?.id,
+            action_type: "REQUEST_CHANGES",
+            note: reason || "General profile changes requested"
+         } as any);
+      } else if (action === "reject") {
+        const { error } = await (supabase.from("talent_profiles" as any) as any)
+          .update({ status: "REJECTED", last_action_at: new Date().toISOString() } as any)
+          .eq("user_id", talent.user_id);
+        if (error) throw error;
+
+        // Log it
+        await (supabase.from("vetting_actions" as any) as any).insert({
+           user_id: talent.user_id,
+           admin_id: (await supabase.auth.getUser()).data.user?.id,
+           action_type: "REJECT_TALENT",
+           note: reason || "Talent rejected"
+        } as any);
       }
 
       toast({ title: "Success", description: `Talent status updated to ${action}.` });
@@ -162,14 +227,19 @@ const TalentDetail = () => {
   };
 
   const handleSaveNotes = async () => {
-    if (!vettingLevels.length) return;
     try {
-      await supabase.from("talent_vetting").update({
-        admin_notes: adminNotes
-      }).eq("id", vettingLevels[0].id);
+      setSaving(true);
+      await (supabase.from("vetting_actions" as any) as any).insert({
+        user_id: talent.user_id,
+        admin_id: (await supabase.auth.getUser()).data.user?.id,
+        action_type: "ADMIN_NOTE",
+        note: adminNotes
+      } as any);
       toast({ title: "Notes Saved", description: "Internal notes updated successfully." });
-    } catch (e) {
-      toast({ title: "Error", description: "Could not save notes.", variant: "destructive" });
+    } catch (e: any) {
+      toast({ title: "Error", description: "Could not save notes: " + e.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
     }
   };
 

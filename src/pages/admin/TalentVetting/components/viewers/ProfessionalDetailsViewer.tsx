@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Briefcase, Code, Wrench, Languages, Clock } from "lucide-react";
+import { Briefcase, Code, Wrench, Languages, Clock, Layout, UserCircle } from "lucide-react";
 
 interface ProfessionalDetailsViewerProps {
   talent: any;
@@ -29,11 +29,41 @@ const ProfessionalDetailsViewer = ({ talent }: ProfessionalDetailsViewerProps) =
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 grid grid-cols-2 gap-8">
+          <Field label="Role Category" value={talent.role_category} icon={Layout} />
           <Field label="Primary Role" value={talent.primary_role} icon={Briefcase} />
           <Field label="Years of Experience" value={talent.years_of_experience?.toString()} icon={Clock} />
           <Field label="Availability" value={talent.availability} icon={Clock} />
         </CardContent>
       </Card>
+
+      {(talent.headline || talent.draft_profile?.headline || talent.short_bio || talent.draft_profile?.short_bio) && (
+        <Card className="border-gray-100 shadow-sm overflow-hidden">
+          <CardHeader className="bg-gray-50/50 border-b border-gray-100 py-4">
+            <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-600 flex items-center gap-2">
+              <UserCircle className="h-4 w-4 text-gray-400" />
+              Professional Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4">
+            {(talent.headline || talent.draft_profile?.headline) && (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Professional Headline</span>
+                <span className="text-sm font-bold text-gray-900 leading-tight">
+                  {talent.headline || talent.draft_profile?.headline}
+                </span>
+              </div>
+            )}
+            {(talent.short_bio || talent.draft_profile?.short_bio) && (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Short Bio</span>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {talent.short_bio || talent.draft_profile?.short_bio}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="border-gray-100 shadow-sm overflow-hidden">
         <CardHeader className="bg-gray-50/50 border-b border-gray-100 py-4">

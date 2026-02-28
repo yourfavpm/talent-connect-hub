@@ -66,18 +66,18 @@ const SkillAssessmentDrawer = ({ open, onOpenChange, talent, onSuccess }: SkillA
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-md flex flex-col h-full p-0">
         <SheetHeader className="p-6 border-b border-gray-100">
-          <SheetTitle className="text-lg font-black uppercase tracking-tight text-gray-900 flex items-center gap-2">
+          <SheetTitle className="text-lg font-bold uppercase tracking-tight text-gray-900 flex items-center gap-2">
             <Award className="h-5 w-5" />
             Skill Assessment
           </SheetTitle>
-          <SheetDescription className="text-xs font-medium text-gray-400">
+          <SheetDescription className="text-xs font-semibold text-gray-400">
             Evaluate the candidate's proficiency and set their platform skill level.
           </SheetDescription>
         </SheetHeader>
 
         <div className="p-6 flex-1 overflow-y-auto space-y-8">
           <section className="space-y-3">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 pl-1">Proficiency Level</span>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 pl-1">Proficiency Level</span>
             <div className="grid grid-cols-1 gap-2">
               {levels.map((level) => (
                 <button
@@ -91,7 +91,7 @@ const SkillAssessmentDrawer = ({ open, onOpenChange, talent, onSuccess }: SkillA
                   )}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className={cn("text-xs font-black uppercase tracking-wider", skillLevel === level.value ? "text-blue-700" : "text-gray-900")}>
+                    <span className={cn("text-xs font-bold uppercase tracking-wider", skillLevel === level.value ? "text-blue-700" : "text-gray-900")}>
                       {level.label}
                     </span>
                     {skillLevel === level.value && <div className="h-1.5 w-1.5 rounded-full bg-blue-600" />}
@@ -103,7 +103,7 @@ const SkillAssessmentDrawer = ({ open, onOpenChange, talent, onSuccess }: SkillA
           </section>
 
           <section className="space-y-3">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 pl-1">Assessment Notes</span>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 pl-1">Assessment Notes</span>
             <Textarea 
               placeholder="Provide internal details on why this skill level was assigned..."
               className="min-h-[140px] resize-none border-gray-100 focus:border-gray-200 bg-gray-50/30 text-sm p-4"
@@ -118,7 +118,7 @@ const SkillAssessmentDrawer = ({ open, onOpenChange, talent, onSuccess }: SkillA
                     {visibleToClient ? <Eye className="h-4 w-4 text-emerald-600" /> : <EyeOff className="h-4 w-4 text-gray-400" />}
                 </div>
                 <div>
-                    <Label className="text-xs font-bold text-gray-900 block">Client Visibility</Label>
+                    <Label className="text-xs font-semibold text-gray-900 block">Client Visibility</Label>
                     <span className="text-[10px] text-gray-400 font-medium">Show assessment to potential clients</span>
                 </div>
             </div>
@@ -131,7 +131,7 @@ const SkillAssessmentDrawer = ({ open, onOpenChange, talent, onSuccess }: SkillA
 
         <SheetFooter className="p-6 border-t border-gray-100 bg-gray-50/50">
           <Button 
-            className="w-full h-12 font-black uppercase text-[11px] tracking-widest gap-2"
+            className="w-full h-12 font-bold uppercase text-[11px] tracking-widest gap-2"
             disabled={!skillLevel || saving}
             onClick={handleSave}
           >

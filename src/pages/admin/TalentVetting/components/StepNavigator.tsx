@@ -52,7 +52,7 @@ const StepNavigator = ({ steps, activeStep, onStepSelect }: StepNavigatorProps) 
       not_started: "bg-gray-50 text-gray-400 border-gray-100",
     };
     return (
-      <Badge variant="outline" className={cn("shadow-none h-4 px-1.5 text-[8px] font-bold uppercase tracking-tighter", styles[status] || styles.not_started)}>
+      <Badge variant="outline" className={cn("shadow-none h-4 px-1.5 text-[8px] font-semibold uppercase tracking-tighter", styles[status] || styles.not_started)}>
         {status.replace("_", " ")}
       </Badge>
     );
@@ -65,8 +65,8 @@ const StepNavigator = ({ steps, activeStep, onStepSelect }: StepNavigatorProps) 
     <aside className="w-64 border-r border-gray-100 flex flex-col shrink-0 bg-white">
       <div className="p-4 border-b border-gray-50">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Profile Steps</h2>
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-900 bg-gray-50 px-2 py-0.5 rounded">
+          <h2 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">Profile Steps</h2>
+          <div className="flex items-center gap-1.5 text-[10px] font-semibold text-gray-900 bg-gray-50 px-2 py-0.5 rounded">
             <span className="text-emerald-600">{approvedCount}</span>
             <span className="text-gray-300">/</span>
             <span>{stepConfig.length}</span>
@@ -98,7 +98,7 @@ const StepNavigator = ({ steps, activeStep, onStepSelect }: StepNavigatorProps) 
                     {getStepIcon(status)}
                 </div>
                 <span className={cn(
-                  "text-[12px] font-bold truncate transition-colors",
+                  "text-[12px] font-semibold truncate transition-colors",
                   isActive ? "text-white" : "text-gray-700"
                 )}>
                   {config.label}
@@ -118,7 +118,7 @@ const StepNavigator = ({ steps, activeStep, onStepSelect }: StepNavigatorProps) 
 
       <div className="p-3 border-t border-gray-50 mt-auto bg-gray-50/20">
         <div className="flex items-center justify-between gap-1">
-            <button className="flex-1 py-1.5 px-2 rounded bg-white border border-gray-200 text-[10px] font-bold text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-1.5 shadow-sm">
+            <button className="flex-1 py-1.5 px-2 rounded bg-white border border-gray-200 text-[10px] font-semibold text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-1.5 shadow-sm">
                 <Filter className="h-3 w-3" />
                 Filter Needs Review
             </button>

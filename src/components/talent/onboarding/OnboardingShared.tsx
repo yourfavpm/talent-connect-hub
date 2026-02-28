@@ -1,0 +1,409 @@
+import React from "react";
+import { useFormContext, useFieldArray } from "react-hook-form";
+import * as z from "zod";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Trash2, Plus, CheckCircle2, Loader2, UploadCloud } from "lucide-react";
+import clsx from "clsx";
+import { RoleSelector } from "./RoleSelector";
+import { TimezoneSelector } from "./TimezoneSelector";
+import { TagInput } from "@/components/ui/tag-input";
+
+// ── Reusable primitives ────────────────────────────────────────────────────
+
+export const OB_INPUT_CLASS = "h-12 rounded-lg border border-slate-200 bg-white focus:border-slate-800 focus:ring-1 focus:ring-slate-800 text-sm placeholder:text-slate-400 disabled:opacity-50 disabled:bg-slate-50";
+
+export const FieldGroup = ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
+  <div className="space-y-1.5">
+    <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+      {label}{required && <span className="text-red-500 ml-1">*</span>}
+    </Label>
+    {children}
+  </div>
+);
+
+export const CardBlock = ({ children, onDelete, disabled }: { children: React.ReactNode; onDelete?: () => void; disabled?: boolean }) => (
+  <div className="relative p-6 bg-white border border-slate-100 rounded-xl group">
+    {onDelete && !disabled && (
+      <button type="button" onClick={onDelete} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+        <Trash2 className="h-4 w-4" />
+      </button>
+    )}
+    {children}
+  </div>
+);
+
+export const AddButton = ({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) => {
+  if (disabled) return null;
+  return (
+    <button type="button" onClick={onClick} className="w-full h-14 border border-dashed border-slate-200 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-700 hover:border-slate-400 transition-colors flex items-center justify-center gap-2">
+      <Plus className="h-4 w-4" /> {label}
+    </button>
+  );
+};
+
+export interface FileUploadRowProps {
+  label: string; hint: string; accept: string;
+  uploaded: boolean; uploading: boolean; disabled?: boolean;
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export const FileUploadRow = ({ label, hint, accept, uploaded, uploading, disabled, onUpload }: FileUploadRowProps) => (
+  <div className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-xl">
+    <div>
+      <p className="text-sm font-semibold text-slate-800">{label}</p>
+      <p className="text-xs text-slate-400 mt-0.5">{hint}</p>
+    </div>
+    <div className="flex items-center gap-3">
+      {uploaded && <CheckCircle2 className="h-5 w-5 text-emerald-500" />}
+      {!disabled && (
+        <label className={clsx(
+          "cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest",
+          uploaded ? "bg-slate-100 text-slate-500" : "bg-slate-900 text-white hover:bg-slate-700"
+        )}>
+          {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <UploadCloud className="h-3 w-3" />}
+          {uploaded ? "Replace" : "Upload"}
+          <input type="file" accept={accept} onChange={onUpload} className="hidden" disabled={uploading || disabled} />
+        </label>
+      )}
+    </div>
+  </div>
+);
+
+// ── Steps definition ───────────────────────────────────────────────────────
+
+export const STEPS = [
+  { id: 1, title: "Basic Information",    key: "basic_info" },
+  { id: 2, title: "Professional Details", key: "professional_details" },
+  { id: 3, title: "Work History",         key: "work_history" },
+  { id: 4, title: "Documents",            key: "documents" },
+  { id: 5, title: "Education",            key: "education" },
+  { id: 6, title: "Certifications",       key: "certifications" },
+  { id: 7, title: "References",           key: "references" },
+];
+
+export const SECTION_KEYS = STEPS.map(s => s.key);
+
+// ── Zod Schema (same fields as V1/V2) ────────────────────────────────────────
+
+export const onboardSchema = z.object({
+  firstName: z.string().min(2, "First name is required"),
+  lastName: z.string().min(2, "Last name is required"),
+  email: z.string().email("Invalid email"),
+  phone: z.string().min(5, "Phone number is required"),
+  country: z.string().min(2, "Country is required"),
+  timezone: z.string().min(1, "Timezone is required"),
+  primaryRole: z.string().min(1, "Primary role is required"),
+  headline: z.string().min(10, "Headline must be at least 10 characters"),
+  shortBio: z.string().min(20, "Bio must be at least 20 characters"),
+  yearsOfExperience: z.string().min(1, "Experience is required"),
+  availability: z.string().min(1, "Availability is required"),
+  roleCategory: z.string().min(1, "Role category is required"),
+  secondarySkills: z.array(z.string()).default([]),
+  toolsFamiliarWith: z.array(z.string()).default([]),
+  languagesSpoken: z.array(z.string()).default([]),
+  industryFocus: z.array(z.string()).default([]),
+  functionalAreas: z.array(z.string()).default([]),
+  governmentIdUrl: z.string().optional(),
+  cvUrl: z.string().optional(),
+  proofOfAddressUrl: z.string().optional(),
+  portfolioUrl: z.string().optional(),
+  workHistory: z.array(z.object({
+    id: z.string(), companyName: z.string().min(2, "Company name required"),
+    roleTitle: z.string().min(2, "Role title required"),
+    roleDescription: z.string().optional(),
+    startDate: z.string().optional(), endDate: z.string().optional(),
+    isCurrent: z.boolean().default(false),
+  })).default([]),
+  education: z.array(z.object({
+    id: z.string(), institutionName: z.string().min(2, "Institution required"),
+    degree: z.string().min(2, "Degree required"),
+    startYear: z.string().optional(), endYear: z.string().optional(),
+    isCurrent: z.boolean().default(false),
+  })).default([]),
+  certifications: z.array(z.object({
+    id: z.string(), certificationName: z.string().min(2, "Certification name required"),
+    issuer: z.string().optional(), yearObtained: z.string().optional(),
+    fileUrl: z.string().optional(),
+  })).default([]),
+  references: z.array(z.object({
+    id: z.string(), name: z.string().min(2, "Name required"),
+    company: z.string().optional(),
+    email: z.string().email("Invalid email").optional().or(z.literal("")),
+    phone: z.string().optional(),
+  })).default([]),
+});
+
+export type OnboardFormValues = z.infer<typeof onboardSchema>;
+
+export function getSectionData(step: number, values: OnboardFormValues): Record<string, unknown> {
+  switch (step) {
+    case 1: return { firstName: values.firstName, lastName: values.lastName, phone: values.phone, country: values.country, timezone: values.timezone, languagesSpoken: values.languagesSpoken };
+    case 2: return { roleCategory: values.roleCategory, primaryRole: values.primaryRole, headline: values.headline, shortBio: values.shortBio, yearsOfExperience: values.yearsOfExperience, availability: values.availability, secondarySkills: values.secondarySkills, toolsFamiliarWith: values.toolsFamiliarWith, industryFocus: values.industryFocus, functionalAreas: values.functionalAreas };
+    case 3: return { workHistory: values.workHistory };
+    case 4: return { cvUrl: values.cvUrl, governmentIdUrl: values.governmentIdUrl, proofOfAddressUrl: values.proofOfAddressUrl, portfolioUrl: values.portfolioUrl };
+    case 5: return { education: values.education };
+    case 6: return { certifications: values.certifications };
+    case 7: return { references: values.references };
+    default: return {};
+  }
+}
+
+// ── Form Section Components ──────────────────────────────────────────────────
+
+export const BasicInfoForm = ({ disabled }: { disabled?: boolean }) => {
+  const { watch, setValue } = useFormContext<OnboardFormValues>();
+  const formData = watch();
+  return (
+    <div className="space-y-6">
+      <div className="grid md:grid-cols-2 gap-4">
+        <FieldGroup label="First Name" required>
+          <Input className={OB_INPUT_CLASS} value={formData.firstName} onChange={e => setValue("firstName", e.target.value)} placeholder="John" disabled={disabled} />
+        </FieldGroup>
+        <FieldGroup label="Last Name" required>
+          <Input className={OB_INPUT_CLASS} value={formData.lastName} onChange={e => setValue("lastName", e.target.value)} placeholder="Doe" disabled={disabled} />
+        </FieldGroup>
+      </div>
+      <FieldGroup label="Email" required>
+        <Input className={OB_INPUT_CLASS} value={formData.email} disabled placeholder="email@example.com" />
+      </FieldGroup>
+      <div className="grid md:grid-cols-2 gap-4">
+        <FieldGroup label="Phone" required>
+          <Input className={OB_INPUT_CLASS} value={formData.phone} onChange={e => setValue("phone", e.target.value)} placeholder="+234..." disabled={disabled} />
+        </FieldGroup>
+        <FieldGroup label="Country" required>
+          <Input className={OB_INPUT_CLASS} value={formData.country} onChange={e => setValue("country", e.target.value)} placeholder="Nigeria" disabled={disabled} />
+        </FieldGroup>
+      </div>
+      <FieldGroup label="Timezone" required>
+        <TimezoneSelector value={formData.timezone} onChange={v => setValue("timezone", v)} disabled={disabled} />
+      </FieldGroup>
+      <FieldGroup label="Languages Spoken">
+        <TagInput 
+          value={formData.languagesSpoken || []} 
+          onChange={v => setValue("languagesSpoken", v)} 
+          placeholder="English, Spanish, etc." 
+          disabled={disabled} 
+        />
+      </FieldGroup>
+    </div>
+  );
+};
+
+export const ProfessionalDetailsForm = ({ disabled }: { disabled?: boolean }) => {
+  const { watch, setValue } = useFormContext<OnboardFormValues>();
+  const formData = watch();
+  return (
+    <div className="space-y-6">
+      <FieldGroup label="Role Category & Primary Role" required>
+        <RoleSelector
+          category={formData.roleCategory} onCategoryChange={v => setValue("roleCategory", v)}
+          value={formData.primaryRole} onChange={v => setValue("primaryRole", v)}
+          disabled={disabled}
+        />
+      </FieldGroup>
+      <FieldGroup label="Headline" required>
+        <Input className={OB_INPUT_CLASS} value={formData.headline} onChange={e => setValue("headline", e.target.value)} placeholder="Senior React Developer" disabled={disabled} />
+      </FieldGroup>
+      <FieldGroup label="Short Bio" required>
+        <Textarea className="min-h-[100px] rounded-lg border border-slate-200 bg-white focus:border-slate-800 disabled:opacity-50 disabled:bg-slate-50" value={formData.shortBio} onChange={e => setValue("shortBio", e.target.value)} placeholder="Tell us about yourself..." disabled={disabled} />
+      </FieldGroup>
+      <div className="grid md:grid-cols-2 gap-4">
+        <FieldGroup label="Years of Experience" required>
+          <Select value={formData.yearsOfExperience} onValueChange={v => setValue("yearsOfExperience", v)} disabled={disabled}>
+            <SelectTrigger className={OB_INPUT_CLASS}><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectContent>
+              {["0-1", "1-3", "3-5", "5-10", "10+"].map(y => <SelectItem key={y} value={y}>{y} years</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </FieldGroup>
+        <FieldGroup label="Availability" required>
+          <Select value={formData.availability} onValueChange={v => setValue("availability", v)} disabled={disabled}>
+            <SelectTrigger className={OB_INPUT_CLASS}><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="full_time">Full-Time</SelectItem>
+              <SelectItem value="part_time">Part-Time</SelectItem>
+            </SelectContent>
+          </Select>
+        </FieldGroup>
+      </div>
+      <FieldGroup label="Secondary Skills">
+        <TagInput 
+          value={formData.secondarySkills || []} 
+          onChange={v => setValue("secondarySkills", v)} 
+          placeholder="React, Node.js, PostgreSQL" 
+          disabled={disabled} 
+        />
+      </FieldGroup>
+      <FieldGroup label="Tools & Software">
+        <TagInput 
+          value={formData.toolsFamiliarWith || []} 
+          onChange={v => setValue("toolsFamiliarWith", v)} 
+          placeholder="VS Code, Figma, Jira" 
+          disabled={disabled} 
+        />
+      </FieldGroup>
+    </div>
+  );
+};
+
+export const WorkHistoryForm = ({ disabled }: { disabled?: boolean }) => {
+  const { control, watch, setValue } = useFormContext<OnboardFormValues>();
+  const formData = watch();
+  const { fields, append, remove } = useFieldArray({ control, name: "workHistory" });
+  
+  return (
+    <div className="space-y-4">
+      {fields.map((field, idx) => (
+        <CardBlock key={field.id} onDelete={() => remove(idx)} disabled={disabled || fields.length <= 1}>
+          <div className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <FieldGroup label="Company Name" required>
+                <Input className={OB_INPUT_CLASS} value={formData.workHistory?.[idx]?.companyName || ""} onChange={e => setValue(`workHistory.${idx}.companyName`, e.target.value)} disabled={disabled} />
+              </FieldGroup>
+              <FieldGroup label="Role Title" required>
+                <Input className={OB_INPUT_CLASS} value={formData.workHistory?.[idx]?.roleTitle || ""} onChange={e => setValue(`workHistory.${idx}.roleTitle`, e.target.value)} disabled={disabled} />
+              </FieldGroup>
+            </div>
+            <FieldGroup label="Description">
+              <Textarea className="rounded-lg border border-slate-200 bg-white disabled:opacity-50 disabled:bg-slate-50" value={formData.workHistory?.[idx]?.roleDescription || ""} onChange={e => setValue(`workHistory.${idx}.roleDescription`, e.target.value)} disabled={disabled} />
+            </FieldGroup>
+            <div className="grid md:grid-cols-2 gap-4">
+              <FieldGroup label="Start Date">
+                <Input type="date" className={OB_INPUT_CLASS} value={formData.workHistory?.[idx]?.startDate || ""} onChange={e => setValue(`workHistory.${idx}.startDate`, e.target.value)} disabled={disabled} />
+              </FieldGroup>
+              <FieldGroup label="End Date">
+                <Input type="date" className={OB_INPUT_CLASS} value={formData.workHistory?.[idx]?.endDate || ""} onChange={e => setValue(`workHistory.${idx}.endDate`, e.target.value)} disabled={disabled || formData.workHistory?.[idx]?.isCurrent} />
+              </FieldGroup>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox checked={formData.workHistory?.[idx]?.isCurrent || false} onCheckedChange={checked => setValue(`workHistory.${idx}.isCurrent`, !!checked)} disabled={disabled} />
+              <span className="text-sm text-slate-600">I currently work here</span>
+            </div>
+          </div>
+        </CardBlock>
+      ))}
+      <AddButton label="Add Work Experience" onClick={() => append({ id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false })} disabled={disabled} />
+    </div>
+  );
+};
+
+export const DocumentsForm = ({ disabled, uploadingFields, onUpload }: { disabled?: boolean; uploadingFields: Record<string, boolean>; onUpload: (e: React.ChangeEvent<HTMLInputElement>, field: keyof OnboardFormValues) => void }) => {
+  const { watch, setValue } = useFormContext<OnboardFormValues>();
+  const formData = watch();
+
+  return (
+    <div className="space-y-4">
+      <FileUploadRow label="Resume / CV" hint="PDF or DOCX" accept=".pdf,.doc,.docx" uploaded={!!formData.cvUrl} uploading={!!uploadingFields.cvUrl} disabled={disabled} onUpload={e => onUpload(e, "cvUrl")} />
+      <FileUploadRow label="Government ID" hint="Passport, National ID, or Driver's License" accept=".pdf,.jpg,.png" uploaded={!!formData.governmentIdUrl} uploading={!!uploadingFields.governmentIdUrl} disabled={disabled} onUpload={e => onUpload(e, "governmentIdUrl")} />
+      <FileUploadRow label="Proof of Address" hint="Utility bill or bank statement" accept=".pdf,.jpg,.png" uploaded={!!formData.proofOfAddressUrl} uploading={!!uploadingFields.proofOfAddressUrl} disabled={disabled} onUpload={e => onUpload(e, "proofOfAddressUrl")} />
+      <FieldGroup label="Portfolio URL (optional)">
+        <Input className={OB_INPUT_CLASS} value={formData.portfolioUrl || ""} onChange={e => setValue("portfolioUrl", e.target.value)} placeholder="https://..." disabled={disabled} />
+      </FieldGroup>
+    </div>
+  );
+};
+
+export const EducationForm = ({ disabled }: { disabled?: boolean }) => {
+  const { control, watch, setValue } = useFormContext<OnboardFormValues>();
+  const formData = watch();
+  const { fields, append, remove } = useFieldArray({ control, name: "education" });
+
+  return (
+    <div className="space-y-4">
+      {fields.map((field, idx) => (
+        <CardBlock key={field.id} onDelete={() => remove(idx)} disabled={disabled || fields.length <= 1}>
+          <div className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <FieldGroup label="Institution" required>
+                <Input className={OB_INPUT_CLASS} value={formData.education?.[idx]?.institutionName || ""} onChange={e => setValue(`education.${idx}.institutionName`, e.target.value)} disabled={disabled} />
+              </FieldGroup>
+              <FieldGroup label="Degree / Qualification" required>
+                <Input className={OB_INPUT_CLASS} value={formData.education?.[idx]?.degree || ""} onChange={e => setValue(`education.${idx}.degree`, e.target.value)} disabled={disabled} />
+              </FieldGroup>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <FieldGroup label="Start Year">
+                <Input className={OB_INPUT_CLASS} value={formData.education?.[idx]?.startYear || ""} onChange={e => setValue(`education.${idx}.startYear`, e.target.value)} placeholder="2018" disabled={disabled} />
+              </FieldGroup>
+              <FieldGroup label="End Year">
+                <Input className={OB_INPUT_CLASS} value={formData.education?.[idx]?.endYear || ""} onChange={e => setValue(`education.${idx}.endYear`, e.target.value)} placeholder="2022" disabled={disabled || formData.education?.[idx]?.isCurrent} />
+              </FieldGroup>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox checked={formData.education?.[idx]?.isCurrent || false} onCheckedChange={checked => setValue(`education.${idx}.isCurrent`, !!checked)} disabled={disabled} />
+              <span className="text-sm text-slate-600">I'm currently studying here</span>
+            </div>
+          </div>
+        </CardBlock>
+      ))}
+      <AddButton label="Add Education" onClick={() => append({ id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false })} disabled={disabled} />
+    </div>
+  );
+};
+
+export const CertificationsForm = ({ disabled }: { disabled?: boolean }) => {
+  const { control, watch, setValue } = useFormContext<OnboardFormValues>();
+  const formData = watch();
+  const { fields, append, remove } = useFieldArray({ control, name: "certifications" });
+
+  return (
+    <div className="space-y-4">
+      {fields.map((field, idx) => (
+        <CardBlock key={field.id} onDelete={() => remove(idx)} disabled={disabled || fields.length <= 1}>
+          <div className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <FieldGroup label="Certification Name" required>
+                <Input className={OB_INPUT_CLASS} value={formData.certifications?.[idx]?.certificationName || ""} onChange={e => setValue(`certifications.${idx}.certificationName`, e.target.value)} disabled={disabled} />
+              </FieldGroup>
+              <FieldGroup label="Issuing Organization">
+                <Input className={OB_INPUT_CLASS} value={formData.certifications?.[idx]?.issuer || ""} onChange={e => setValue(`certifications.${idx}.issuer`, e.target.value)} disabled={disabled} />
+              </FieldGroup>
+            </div>
+            <FieldGroup label="Year Obtained">
+              <Input className={OB_INPUT_CLASS} value={formData.certifications?.[idx]?.yearObtained || ""} onChange={e => setValue(`certifications.${idx}.yearObtained`, e.target.value)} placeholder="2023" disabled={disabled} />
+            </FieldGroup>
+          </div>
+        </CardBlock>
+      ))}
+      <AddButton label="Add Certification" onClick={() => append({ id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" })} disabled={disabled} />
+    </div>
+  );
+};
+
+export const ReferencesForm = ({ disabled }: { disabled?: boolean }) => {
+  const { control, watch, setValue } = useFormContext<OnboardFormValues>();
+  const formData = watch();
+  const { fields, append, remove } = useFieldArray({ control, name: "references" });
+
+  return (
+    <div className="space-y-4">
+      {fields.map((field, idx) => (
+        <CardBlock key={field.id} onDelete={() => remove(idx)} disabled={disabled || fields.length <= 1}>
+          <div className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <FieldGroup label="Full Name" required>
+                <Input className={OB_INPUT_CLASS} value={formData.references?.[idx]?.name || ""} onChange={e => setValue(`references.${idx}.name`, e.target.value)} disabled={disabled} />
+              </FieldGroup>
+              <FieldGroup label="Company">
+                <Input className={OB_INPUT_CLASS} value={formData.references?.[idx]?.company || ""} onChange={e => setValue(`references.${idx}.company`, e.target.value)} disabled={disabled} />
+              </FieldGroup>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <FieldGroup label="Email">
+                <Input className={OB_INPUT_CLASS} value={formData.references?.[idx]?.email || ""} onChange={e => setValue(`references.${idx}.email`, e.target.value)} disabled={disabled} />
+              </FieldGroup>
+              <FieldGroup label="Phone">
+                <Input className={OB_INPUT_CLASS} value={formData.references?.[idx]?.phone || ""} onChange={e => setValue(`references.${idx}.phone`, e.target.value)} disabled={disabled} />
+              </FieldGroup>
+            </div>
+          </div>
+        </CardBlock>
+      ))}
+      <AddButton label="Add Reference" onClick={() => append({ id: Date.now().toString(), name: "", company: "", email: "", phone: "" })} disabled={disabled} />
+    </div>
+  );
+};

@@ -49,7 +49,7 @@ const StepViewer = ({ talent, stepKey, step, changeRequests, steps, onRefresh, o
     return (
       <div className={cn("flex items-center gap-2 px-3 py-1.5 rounded-full border border-black/5", config.bg, config.text)}>
         <Icon className="h-3.5 w-3.5" />
-        <span className="text-[11px] font-bold uppercase tracking-wider">{status.replace("_", " ")}</span>
+        <span className="text-[11px] font-semibold uppercase tracking-wider">{status.replace("_", " ")}</span>
       </div>
     );
   };
@@ -85,7 +85,7 @@ const StepViewer = ({ talent, stepKey, step, changeRequests, steps, onRefresh, o
     <div className="max-w-4xl mx-auto p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-black text-gray-900 tracking-tight capitalize">
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight capitalize">
             {stepKey.replace("_", " ")}
           </h2>
           <p className="text-sm text-gray-500 mt-1">Review the talent's information for this section.</p>
@@ -95,25 +95,24 @@ const StepViewer = ({ talent, stepKey, step, changeRequests, steps, onRefresh, o
             <div className="flex items-center gap-3">
             <Button 
                 variant="outline" 
-                className="h-9 px-4 font-black uppercase text-[10px] tracking-widest border-gray-200 group"
+                className="h-9 px-4 font-semibold uppercase text-[10px] tracking-widest border-gray-200 group"
                 onClick={onRequestChanges}
             >
               <ShieldAlert className="h-3.5 w-3.5 mr-2 text-orange-400 transition-transform group-hover:scale-110" />
               Request Changes
             </Button>
             <Button 
-                className="h-9 px-4 font-black uppercase text-[10px] tracking-widest bg-gray-900 shadow-lg shadow-gray-200"
+                className="h-9 px-4 font-semibold uppercase text-[10px] tracking-widest bg-gray-900 shadow-lg shadow-gray-200"
                 onClick={async () => {
                     // Quick approve step
-                    const { error } = await supabase
-                        .from("talent_profile_steps")
+                    const { error } = await (supabase.from("talent_profile_sections" as any) as any)
                         .update({ 
-                            status: "approved",
+                            status: "APPROVED",
                             last_reviewed_at: new Date().toISOString(),
                             reviewed_by: (await supabase.auth.getUser()).data.user?.id
-                        })
-                        .eq("talent_id", talent.id)
-                        .eq("step_key", stepKey);
+                        } as any)
+                        .eq("user_id", talent.user_id)
+                        .eq("section_key", stepKey);
                     
                     if (error) toast.error("Failed to approve step: " + error.message);
                     else {
@@ -134,7 +133,7 @@ const StepViewer = ({ talent, stepKey, step, changeRequests, steps, onRefresh, o
                 <ShieldAlert className="h-4 w-4 text-orange-600" />
             </div>
             <div>
-                <h4 className="text-[11px] font-bold text-orange-800 uppercase tracking-wider mb-1">Active Change Request</h4>
+                <h4 className="text-[11px] font-semibold text-orange-800 uppercase tracking-wider mb-1">Active Change Request</h4>
                 {changeRequests.map((cr, idx) => (
                     <p key={idx} className="text-sm text-orange-800/80 leading-relaxed font-medium">
                         "{cr.message}"

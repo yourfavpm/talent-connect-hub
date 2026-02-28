@@ -153,7 +153,18 @@ const TalentJobs = () => {
         .eq("user_id", user?.id)
         .maybeSingle();
 
-      setTalent((talentData as unknown) as Talent | null);
+      const { data: v2Profile } = await supabase
+        .from("v2_talent_profiles")
+        .select("status")
+        .eq("user_id", user?.id)
+        .maybeSingle();
+
+      if (talentData) {
+        setTalent({
+          ...(talentData as any),
+          vetting_status: v2Profile?.status || talentData.vetting_status
+        });
+      }
 
 
 
@@ -272,7 +283,7 @@ const TalentJobs = () => {
 
 
   const vettingBanner = () => {
-    if (!talent || talent.vetting_status === "fully_vetted" || talent.vetting_status === "approved") return null;
+    if (!talent || talent.vetting_status === "fully_vetted" || talent.vetting_status === "approved" || talent.vetting_status === "vetted") return null;
 
     const config = {
       under_review: {

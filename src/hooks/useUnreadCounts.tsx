@@ -8,6 +8,9 @@ export const useUnreadCounts = () => {
         notifications: 0,
         messages: 0,
         adminOffers: 0,
+        adminJobs: 0,
+        adminTalents: 0,
+        adminTimesheets: 0,
         clientContracts: 0,
         clientTimesheets: 0,
         adminContracts: 0,
@@ -30,18 +33,45 @@ export const useUnreadCounts = () => {
                 let adminOffers = 0;
                 let adminContracts = 0;
                 let adminSupportTickets = 0;
-                if (userRole && ["super_admin", "operations_admin", "finance_admin"].includes(userRole)) {
-                    const { count: offerCount } = await supabase
-                        .from("offers")
-                        .select("*", { count: "exact", head: true })
-                        .eq("status", "sent_to_admin");
+                let adminJobs = 0;
+                let adminTalents = 0;
+                let adminTimesheets = 0;
+                if (userRole && ["super_admin", "operations_admin", "finance_admin", "vetting_admin"].includes(userRole)) {
+                    const [
+                        { count: offerCount },
+                        { count: supportCount },
+                        { count: jobCount },
+                        { count: tsCount },
+                        { count: contractCount },
+                    ] = await Promise.all([
+                        supabase.from("offers").select("*", { count: "exact", head: true }).eq("status", "sent_to_admin"),
+                        supabase.from("support_tickets").select("*", { count: "exact", head: true }).eq("unread_by_admin", true),
+                        supabase.from("jobs").select("*", { count: "exact", head: true }).eq("status", "submitted"),
+                        supabase.from("timesheets").select("*", { count: "exact", head: true }).eq("status", "submitted"),
+                        supabase.from("contracts").select("*", { count: "exact", head: true }).eq("status", "pending"),
+                    ]);
+                    
                     adminOffers = offerCount || 0;
-
-                    const { count: supportCount } = await supabase
-                        .from("support_tickets")
-                        .select("*", { count: "exact", head: true })
-                        .eq("unread_by_admin", true);
                     adminSupportTickets = supportCount || 0;
+                    adminJobs = jobCount || 0;
+                    adminTimesheets = tsCount || 0;
+                    adminContracts = contractCount || 0;
+
+                    const { data: v2 } = await supabase.from("app_settings").select("value").eq("key", "vetting_system_version").maybeSingle();
+                    const isV2 = v2?.value === "v2";
+
+                    if (isV2) {
+                        const { count: v2Count } = await supabase
+                            .from("v2_talent_profiles")
+                            .select("*", { count: "exact", head: true })
+                            .in("status", ["submitted", "resubmitted", "revett_pending"]);
+                        adminTalents = v2Count || 0;
+                    } else {
+                        const { count: v1Count } = await (supabase.from("talent_profiles" as any) as any)
+                            .select("*", { count: "exact", head: true })
+                            .in("status", ["SUBMITTED", "RESUBMITTED"]);
+                        adminTalents = v1Count || 0;
+                    }
                 }
 
                 // 3. Client Specifics
@@ -88,6 +118,9 @@ export const useUnreadCounts = () => {
                     notifications: notifCount || 0,
                     messages: 0,
                     adminOffers,
+                    adminJobs,
+                    adminTalents,
+                    adminTimesheets,
                     clientContracts,
                     clientTimesheets,
                     adminContracts,

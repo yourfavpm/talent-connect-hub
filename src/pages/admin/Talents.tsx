@@ -143,83 +143,83 @@ const AdminTalents = () => {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
 
-      // 1. Fetch talents with vetting relations
-      const { data: talentData, error: talentError } = await supabase
-        .from("talents")
-        .select(`
-          *,
-          talent_vetting(status)
-        `)
+      // 1. Fetch talent profiles
+      const { data: profiles, error: profileError } = await supabase.from("talent_profiles")
+        .select("*")
         .order("created_at", { ascending: false });
 
-      if (talentError) throw talentError;
+      if (profileError) throw profileError;
 
-      // 2. Fetch step data for all talents
-      const { data: stepsData, error: stepsError } = await supabase
-        .from("talent_profile_steps" as any)
-        .select("talent_id, step_key, status")
-        .order("created_at", { ascending: true });
+      // 2. Fetch all talents to join (in a real app with many users, we'd filter or limit, but for this scale it's fine or we can map user_ids)
+      const userIds = profiles?.map((p: any) => p.user_id) || [];
+      const { data: talentsData, error: talentsError } = await supabase
+        .from("talents")
+        .select("*")
+        .in("user_id", userIds);
 
-      if (stepsError) console.warn("Steps table may not exist yet:", stepsError);
+      if (talentsError) throw talentsError;
+
+      const talentMap: Record<string, any> = {};
+      (talentsData || []).forEach(t => {
+        talentMap[t.user_id] = t;
+      });
+
+      // 2. Fetch all sections to calculate progress
+      const { data: sectionsData, error: sectionsError } = await supabase.from("talent_profile_sections")
+        .select("user_id, section_key, status");
+
+      if (sectionsError) console.warn("Sections table error:", sectionsError);
 
       // 3. Fetch admin profiles for manager names
-      const { data: profilesData } = await supabase
+      const { data: adminProfiles } = await supabase
         .from("profiles")
         .select("user_id, first_name, last_name");
 
       const profileMap: Record<string, string> = {};
-      (profilesData || []).forEach((p) => {
+      (adminProfiles || []).forEach((p) => {
         profileMap[p.user_id] = `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Admin";
       });
 
-      // 4. Group steps by talent
-      const stepsMap: Record<string, { completed: number; total: number; attention: string[] }> = {};
-      ((stepsData as any[]) || []).forEach((s: any) => {
-        if (!stepsMap[s.talent_id]) stepsMap[s.talent_id] = { completed: 0, total: 0, attention: [] };
-        stepsMap[s.talent_id].total++;
-        if (s.status === "approved") stepsMap[s.talent_id].completed++;
-        if (s.status === "changes_requested" || s.status === "submitted" || s.status === "in_review") {
-          stepsMap[s.talent_id].attention.push(s.step_key);
+      // 4. Group sections by user_id
+      const sectionsMap: Record<string, { completed: number; total: number; attention: string[] }> = {};
+      ((sectionsData as any[]) || []).forEach((s: any) => {
+        if (!sectionsMap[s.user_id]) sectionsMap[s.user_id] = { completed: 0, total: 0, attention: [] };
+        sectionsMap[s.user_id].total++;
+        if (s.status === "APPROVED") sectionsMap[s.user_id].completed++;
+        if (["CHANGES_REQUESTED", "SUBMITTED", "IN_REVIEW"].includes(s.status)) {
+          sectionsMap[s.user_id].attention.push(s.section_key);
         }
       });
 
       // 5. Build rows
-      const rows: TalentRow[] = (talentData || []).map((t) => {
+      const rows: TalentRow[] = (profiles || []).map((p: any) => {
+        const t = talentMap[p.user_id] || {};
         let uiStatus: TalentRow["uiStatus"] = "pending";
-        if (t.vetting_status === "fully_vetted" || t.vetting_status === "approved") {
-          uiStatus = "approved";
-        } else if (t.vetting_status === "rejected") {
-          uiStatus = "rejected";
-        } else if (
-          t.vetting_status === "changes_requested" ||
-          (t.talent_vetting && t.talent_vetting.some((v: any) => v.status === "needs_clarification"))
-        ) {
-          uiStatus = "changes";
-        } else if (
-          t.talent_vetting && t.talent_vetting.some((v: any) => v.status === "rejected")
-        ) {
-          uiStatus = "rejected";
-        }
+        
+        if (p.status === "VETTED") uiStatus = "approved";
+        else if (p.status === "REJECTED") uiStatus = "rejected";
+        else if (p.status === "CHANGES_REQUESTED") uiStatus = "changes";
+        else uiStatus = "pending";
 
-        const stepInfo = stepsMap[t.id] || { completed: 0, total: 8, attention: [] };
+        const sectionInfo = sectionsMap[p.user_id] || { completed: 0, total: 8, attention: [] };
 
         return {
-          id: t.id,
-          first_name: t.first_name,
-          last_name: t.last_name,
-          email: t.email,
+          id: p.id,
+          first_name: t.first_name || "Unknown",
+          last_name: t.last_name || "",
+          email: t.email || "",
           primary_role: t.primary_role,
-          created_at: t.created_at,
-          vetting_status: t.vetting_status,
+          created_at: p.created_at,
+          vetting_status: p.status,
           assigned_manager: t.assigned_manager,
           overall_skill_level: t.overall_skill_level,
           skill_assessment_notes: t.skill_assessment_notes,
           skill_assessment_visible_to_clients: t.skill_assessment_visible_to_clients,
-          onboarding_completed: t.onboarding_completed,
+          onboarding_completed: p.locked_onboarding,
           uiStatus,
-          completedSteps: stepInfo.completed,
-          totalSteps: stepInfo.total,
-          attentionSteps: stepInfo.attention,
+          completedSteps: sectionInfo.completed,
+          totalSteps: sectionInfo.total || 8,
+          attentionSteps: sectionInfo.attention,
           managerName: t.assigned_manager ? profileMap[t.assigned_manager] || "Unknown" : null,
         };
       });
@@ -497,14 +497,14 @@ const AdminTalents = () => {
                       className="border-gray-300"
                     />
                   </TableHead>
-                  <TableHead className="font-semibold text-[10px] text-gray-500 py-3 uppercase tracking-wider">Talent</TableHead>
-                  <TableHead className="font-semibold text-[10px] text-gray-500 py-3 uppercase tracking-wider hidden lg:table-cell">Role</TableHead>
-                  <TableHead className="font-semibold text-[10px] text-gray-500 py-3 uppercase tracking-wider hidden md:table-cell">Submitted</TableHead>
-                  <TableHead className="font-semibold text-[10px] text-gray-500 py-3 uppercase tracking-wider">Status</TableHead>
-                  <TableHead className="font-semibold text-[10px] text-gray-500 py-3 uppercase tracking-wider hidden xl:table-cell">Steps</TableHead>
-                  <TableHead className="font-semibold text-[10px] text-gray-500 py-3 uppercase tracking-wider hidden xl:table-cell">Needs Attention</TableHead>
-                  <TableHead className="font-semibold text-[10px] text-gray-500 py-3 uppercase tracking-wider hidden lg:table-cell">Skill</TableHead>
-                  <TableHead className="font-semibold text-[10px] text-gray-500 py-3 uppercase tracking-wider hidden md:table-cell">Manager</TableHead>
+                  <TableHead className="font-medium text-[10px] text-gray-500 py-3 uppercase tracking-wider">Talent</TableHead>
+                  <TableHead className="font-medium text-[10px] text-gray-500 py-3 uppercase tracking-wider hidden lg:table-cell">Role</TableHead>
+                  <TableHead className="font-medium text-[10px] text-gray-500 py-3 uppercase tracking-wider hidden md:table-cell">Submitted</TableHead>
+                  <TableHead className="font-medium text-[10px] text-gray-500 py-3 uppercase tracking-wider">Status</TableHead>
+                  <TableHead className="font-medium text-[10px] text-gray-500 py-3 uppercase tracking-wider hidden xl:table-cell">Steps</TableHead>
+                  <TableHead className="font-medium text-[10px] text-gray-500 py-3 uppercase tracking-wider hidden xl:table-cell">Needs Attention</TableHead>
+                  <TableHead className="font-medium text-[10px] text-gray-500 py-3 uppercase tracking-wider hidden lg:table-cell">Skill</TableHead>
+                  <TableHead className="font-medium text-[10px] text-gray-500 py-3 uppercase tracking-wider hidden md:table-cell">Manager</TableHead>
                   <TableHead className="font-semibold text-[10px] text-gray-500 py-3 uppercase tracking-wider text-right w-12" />
                 </TableRow>
               </TableHeader>
@@ -544,7 +544,7 @@ const AdminTalents = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 truncate">{t.first_name} {t.last_name}</p>
+                            <p className="text-sm font-medium text-gray-900 truncate">{t.first_name} {t.last_name}</p>
                             <p className="text-[11px] text-gray-400 font-mono truncate">{t.email}</p>
                           </div>
                         </div>

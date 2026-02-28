@@ -132,6 +132,8 @@ const onboardSchema = z.object({
   secondarySkills: z.array(z.string()).default([]),
   toolsFamiliarWith: z.array(z.string()).default([]),
   languagesSpoken: z.array(z.string()).default([]),
+  industryFocus: z.array(z.string()).default([]),
+  functionalAreas: z.array(z.string()).default([]),
   governmentIdUrl: z.string().optional(),
   cvUrl: z.string().optional(),
   proofOfAddressUrl: z.string().optional(),
@@ -240,6 +242,8 @@ const TalentOnboarding = () => {
       portfolioUrl: "",
       headline: "",
       shortBio: "",
+      industryFocus: [],
+      functionalAreas: [],
       workHistory: [{ id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false }],
       education: [{ id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false }],
       certifications: [{ id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" }],
@@ -262,288 +266,120 @@ const TalentOnboarding = () => {
   // ── Load from DB + localStorage ───────────────────────────────────────────
 
   useEffect(() => {
-    let isMounted = true;
     const loadProfileData = async () => {
       if (!user) return;
-
       try {
-        const { data: talentData, error: fetchError } = await supabase
-          .from("talents")
-          .select("*")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        let talent: Talent | null = talentData as Talent | null;
-
-        if (!talent && !fetchError) {
-          const { data: newTalent, error: createError } = await supabase
-            .from("talents")
-            .insert({
-              user_id: user.id,
-              talent_id: `TAS-VA-${Math.floor(Math.random() * 9000) + 1000}`,
-              email: user.email,
-              first_name: user.user_metadata?.first_name || "",
-              last_name: user.user_metadata?.last_name || "",
-              onboarding_completed: false,
-              current_step: 1
-            })
-            .select()
-            .single();
-          
-          if (!createError) {
-            talent = newTalent;
-          }
+        let { data: profile } = await supabase.from("talent_profiles").select("*").eq("user_id", user.id).maybeSingle();
+        
+        if (!profile) {
+          const { data: newProfile } = await supabase.from("talent_profiles").insert({ user_id: user.id }).select().single();
+          profile = newProfile;
         }
 
-        if (talent && isMounted) {
-          const t = talent;
-          setTalentId(t.id);
-
-          const [workRes, eduRes, certRes, refRes, vettingRes, requestsRes] = await Promise.all([
-            supabase.from("talent_work_history").select("*").eq("talent_id", t.id),
-            supabase.from("talent_education").select("*").eq("talent_id", t.id),
-            supabase.from("talent_certifications").select("*").eq("talent_id", t.id),
-            supabase.from("talent_references").select("*").eq("talent_id", t.id),
-            supabase.from("talent_profile_steps" as any).select("*").eq("talent_id", t.id),
-            supabase.from("step_change_requests" as any).select("*").eq("talent_id", t.id).is("resolved_at", null)
-          ]);
+        if (profile) {
+          setTalentId(profile.id);
+          const submitted = profile.status !== "DRAFT";
+          setIsSubmitted(submitted);
           
-          if (isLoaded.current) return;
-          isLoaded.current = true;
-
-          const initialValues: OnboardFormValues = {
-            firstName: t.first_name || user.user_metadata?.first_name || "",
-            lastName: t.last_name || user.user_metadata?.last_name || "",
-            email: t.email || user.email || "",
-            phone: t.phone || "",
-            country: t.country || "",
-            timezone: t.timezone || "",
-            primaryRole: t.primary_role || "",
-            secondarySkills: t.secondary_skills || [],
-            yearsOfExperience: t.years_of_experience?.toString() || "",
-            availability: t.availability || "",
-            roleCategory: t.role_category || "",
-            toolsFamiliarWith: t.tools_familiar_with || [],
-            languagesSpoken: t.languages_spoken || [],
-            governmentIdUrl: t.government_id_url || "",
-            cvUrl: t.cv_url || "",
-            proofOfAddressUrl: t.proof_of_address_url || "",
-            portfolioUrl: t.draft_profile?.portfolio_url || t.portfolio_url || "",
-            headline: t.draft_profile?.headline || t.headline || "",
-            shortBio: t.draft_profile?.short_bio || t.short_bio || "",
-            workHistory: workRes.data?.length ? workRes.data.map(w => ({ id: w.id, companyName: w.company_name, roleTitle: w.role_title, roleDescription: w.role_description || "", startDate: w.start_date || "", endDate: w.end_date || "", isCurrent: w.is_current })) : [{ id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false }],
-            education: eduRes.data?.length ? eduRes.data.map(e => ({ id: e.id, institutionName: e.institution_name, degree: e.education_level || "", startYear: e.start_year?.toString() || "", endYear: e.end_year?.toString() || "", isCurrent: e.is_current })) : [{ id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false }],
-            certifications: certRes.data?.length ? certRes.data.map(c => ({ id: c.id, certificationName: c.certification_name, issuer: c.issuing_organization || "", yearObtained: c.year_obtained?.toString() || "", fileUrl: c.credential_url || "" })) : [{ id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" }],
-            references: refRes.data?.length ? refRes.data.map(r => ({ id: r.id, name: r.reference_name, company: r.relationship || "", email: r.email, phone: r.phone || "" })) : [{ id: Date.now().toString(), name: "", company: "", email: "", phone: "" }],
-          };
-
-          reset(initialValues);
-          
-          const dbStep = (t as any).current_step || (t as any).onboarding_step;
-          if (dbStep && dbStep > 1) setCurrentStep(Math.min(dbStep, STEPS.length));
-
-          if (t.onboarding_status === "submitted" || t.onboarding_status === "under_review") {
-            setIsSubmitted(true);
+          if (profile.locked_onboarding && currentStep < 8) { 
+            navigate("/talent/profile"); 
+            return; 
           }
-
-          vettingSteps.current = vettingRes.data || [];
-          changeRequests.current = requestsRes.data || [];
-        } else if (isMounted) {
-          reset(prev => ({ ...prev, email: user.email || "", firstName: user.user_metadata?.first_name || "", lastName: user.user_metadata?.last_name || "" }));
+          if (profile.current_step) setCurrentStep(profile.current_step);
         }
-      } catch (error) {
-        console.error("Error loading profile data:", error);
-      }
+        const { data: sections } = await supabase.from("talent_profile_sections").select("*").eq("user_id", user.id);
+        if (sections && sections.length > 0) {
+          const mergedData: any = {};
+          sections.forEach(s => Object.assign(mergedData, s.data));
+          reset(prev => ({ ...prev, ...mergedData }));
+        }
+      } catch (error) { console.error("Error loading data:", error); }
     };
-
-
     loadProfileData();
-    return () => { isMounted = false; };
-  }, [user]);
+  }, [user, navigate, reset, currentStep]);
 
-  // ── Auto-save Engine ──────────────────────────────────────────────────────
-
-  // ── Auto-save & Completion Engine ──────────────────────────────────────────
-  
   const calculateCompletion = useCallback((values: OnboardFormValues) => {
     let score = 0;
-    const weights = {
-      basic: 15, role: 15, bio: 10, work: 15, docs: 20, edu: 10, certs: 5, refs: 10
-    };
+    const total = 7;
 
-    if (values.firstName && values.lastName && values.phone && values.country) score += weights.basic;
-    if (values.primaryRole && values.yearsOfExperience && values.availability) score += weights.role;
-    if (values.shortBio && values.headline) score += weights.bio;
-    if (values.workHistory?.some(w => w.companyName && w.roleTitle)) score += weights.work;
-    if (values.cvUrl && values.governmentIdUrl) score += weights.docs;
-    if (values.education?.some(e => e.institutionName && e.degree)) score += weights.edu;
-    if (values.certifications?.some(c => c.certificationName)) score += weights.certs;
-    if (values.references?.some(r => r.name && r.email)) score += weights.refs;
+    if (values.firstName && values.lastName && values.phone && values.country && values.timezone) score++;
+    if (values.primaryRole && values.yearsOfExperience && values.availability) score++;
+    if (values.workHistory && values.workHistory.length > 0 && values.workHistory[0].companyName) score++;
+    if (values.cvUrl && values.governmentIdUrl) score++;
+    if (values.education && values.education.length > 0 && values.education[0].institutionName) score++;
+    if (values.certifications && values.certifications.length > 0 && values.certifications[0].certificationName) score++;
+    if (values.references && values.references.length > 0 && values.references[0].name) score++;
 
-    return Math.min(score, 100);
+    return Math.round((score / total) * 100);
   }, []);
 
-
   const syncAllToDB = useCallback(async (values: OnboardFormValues = watch()) => {
-    if (!user || !talentId) return;
+    if (!user) return;
     setSaveStatus("saving");
     try {
       const completionPct = calculateCompletion(values);
-      
-      const validAvailability = ["full_time", "part_time", "contract", "hourly"].includes(values.availability) 
-        ? values.availability 
-        : "full_time";
-
-      // 1. Sync main talent record
-      const { error: talentError } = await supabase.from("talents").update({
-        phone: values.phone,
-        country: values.country,
-        timezone: values.timezone,
-        primary_role: values.primaryRole,
-        secondary_skills: values.secondarySkills,
-        years_of_experience: values.yearsOfExperience ? Number(values.yearsOfExperience) : null,
-        availability: validAvailability,
-        role_category: values.roleCategory,
-        tools_familiar_with: values.toolsFamiliarWith,
-        languages_spoken: values.languagesSpoken,
-        portfolio_url: values.portfolioUrl,
-        cv_url: values.cvUrl,
-        government_id_url: values.governmentIdUrl,
-        proof_of_address_url: values.proofOfAddressUrl,
-        first_name: values.firstName,
-        last_name: values.lastName,
-        profile_completion: completionPct,
-        draft_profile: {
-          headline: values.headline,
-          short_bio: values.shortBio,
-          portfolio_url: values.portfolioUrl,
+      const sectionMapping: Record<number, string> = {
+        1: "basic_info", 2: "professional_details", 3: "work_history",
+        4: "documents", 5: "education", 6: "certifications", 7: "references"
+      };
+      const currentSectionKey = sectionMapping[currentStep];
+      if (currentSectionKey) {
+        const sectionData: any = {};
+        if (currentStep === 1) {
+          Object.assign(sectionData, { firstName: values.firstName, lastName: values.lastName, phone: values.phone, country: values.country, timezone: values.timezone, languagesSpoken: values.languagesSpoken });
+        } else if (currentStep === 2) {
+          Object.assign(sectionData, { 
+            roleCategory: values.roleCategory, 
+            primaryRole: values.primaryRole, 
+            headline: values.headline, 
+            shortBio: values.shortBio, 
+            yearsOfExperience: values.yearsOfExperience, 
+            availability: values.availability, 
+            secondarySkills: values.secondarySkills, 
+            toolsFamiliarWith: values.toolsFamiliarWith,
+            industryFocus: values.industryFocus,
+            functionalAreas: values.functionalAreas
+          });
+        } else if (currentStep === 3) {
+          Object.assign(sectionData, { workHistory: values.workHistory });
+        } else if (currentStep === 4) {
+          Object.assign(sectionData, { cvUrl: values.cvUrl, governmentIdUrl: values.governmentIdUrl, proofOfAddressUrl: values.proofOfAddressUrl, portfolioUrl: values.portfolioUrl });
+        } else if (currentStep === 5) {
+          Object.assign(sectionData, { education: values.education });
+        } else if (currentStep === 6) {
+          Object.assign(sectionData, { certifications: values.certifications });
+        } else if (currentStep === 7) {
+          Object.assign(sectionData, { references: values.references });
         }
-      } as any).eq("id", talentId);
-
-      if (talentError) throw talentError;
-
-      // 2. Sync History Tables (PATCH style - clear and re-insert for simplicity/consistency in onboarding)
-      const workData = (values.workHistory || []).filter(w => w.companyName.trim()).map(w => ({
-        talent_id: talentId,
-        company_name: w.companyName,
-        role_title: w.roleTitle,
-        role_description: w.roleDescription,
-        start_date: w.startDate || null,
-        end_date: w.endDate || null,
-        is_current: w.isCurrent
-      }));
-      await supabase.from("talent_work_history").delete().eq("talent_id", talentId);
-      if (workData.length > 0) await supabase.from("talent_work_history").insert(workData);
-
-      const eduData = (values.education || []).filter(e => e.institutionName.trim()).map(e => ({
-        talent_id: talentId,
-        institution_name: e.institutionName,
-        education_level: e.degree as any,
-        start_year: e.startYear ? parseInt(e.startYear) : null,
-        end_year: e.endYear ? parseInt(e.endYear) : null,
-        is_current: e.isCurrent
-      }));
-      await supabase.from("talent_education").delete().eq("talent_id", talentId);
-      if (eduData.length > 0) await supabase.from("talent_education").insert(eduData);
-
-      const certData = (values.certifications || []).filter(c => c.certificationName.trim()).map(c => ({
-        talent_id: talentId,
-        certification_name: c.certificationName,
-        issuing_organization: c.issuer,
-        year_obtained: c.yearObtained ? parseInt(c.yearObtained) : null,
-        credential_url: c.fileUrl
-      }));
-      await supabase.from("talent_certifications").delete().eq("talent_id", talentId);
-      if (certData.length > 0) await supabase.from("talent_certifications").insert(certData);
-
-      const refData = (values.references || []).filter(r => r.name.trim()).map(r => ({
-        talent_id: talentId,
-        reference_name: r.name,
-        relationship: r.company,
-        email: r.email,
-        phone: r.phone || null
-      }));
-      await supabase.from("talent_references").delete().eq("talent_id", talentId);
-      if (refData.length > 0) await supabase.from("talent_references").insert(refData);
-
+        const { error } = await (supabase.rpc as any)("update_section_data", { p_section_key: currentSectionKey, p_data: sectionData, p_completion_percent: completionPct });
+        if (error) throw error;
+      }
       setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 3000);
-    } catch (err) {
-      console.error("Critical Sync Failure:", err);
-      setSaveStatus("unsaved");
-    }
-  }, [user, talentId, calculateCompletion, watch]);
-
-
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (error) { console.error("Sync error:", error); setSaveStatus("unsaved"); }
+  }, [user, currentStep, watch, calculateCompletion]);
 
   const triggerDebouncedSync = useCallback(() => {
     setSaveStatus("unsaved");
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      syncAllToDB(methods.getValues());
-    }, 1500);
-  }, [syncAllToDB, methods]);
-
+    debounceRef.current = setTimeout(() => syncAllToDB(watch()), 1500);
+  }, [syncAllToDB, watch]);
 
   const handleInputChange = useCallback((field: any, value: any) => {
-    methods.setValue(field, value, { shouldDirty: true, shouldTouch: true });
+    setValue(field, value, { shouldDirty: true, shouldTouch: true });
     triggerDebouncedSync();
-  }, [methods, triggerDebouncedSync]);
-
-
+  }, [setValue, triggerDebouncedSync]);
 
   const persistStep = useCallback(async (step: number) => {
-    if (!user || !talentId) return;
-    await supabase.from("talents").update({ 
-      current_step: step,
-      last_saved_step: step
-    } as any).eq("id", talentId);
-  }, [user, talentId]);
-
-
-
-
-  // ── File Upload ───────────────────────────────────────────────────────────
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, field: keyof OnboardFormValues) => {
-    const file = event.target.files?.[0];
-    if (!file || !user) return;
-    setUploadingFields(prev => ({ ...prev, [field]: true }));
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${user.id}/${field}/${fileName}`;
-      const { error: uploadError } = await supabase.storage.from('talent_documents').upload(filePath, file);
-      if (uploadError) throw uploadError;
-      
-      // Update form data and trigger sync immediately
-      setValue(field, filePath, { shouldDirty: true });
-      await syncAllToDB({ ...formData, [field]: filePath });
-
-      toast({ title: "Upload successful", description: "File uploaded successfully." });
-    } catch (err: Error | unknown) {
-      toast({ title: "Upload failed", description: err instanceof Error ? err.message : "An error occurred", variant: "destructive" });
-    } finally {
-      setUploadingFields(prev => ({ ...prev, [field]: false }));
-    }
-  };
-
-
-
-  // ── Validation ────────────────────────────────────────────────────────────
-
-  // Validation is handled via zod schema and methods.trigger()
-
+    if (!user) return;
+    await supabase.from("talent_profiles").update({ current_step: step } as any).eq("user_id", user.id);
+  }, [user]);
 
   const nextStep = async () => {
     const isValid = await methods.trigger(STEPS[currentStep-1].key as any);
-    if (!isValid) {
-      toast({ title: "Validation Error", description: "Please fix the highlighted fields to continue.", variant: "destructive" });
-      return;
-    }
-
+    if (!isValid) { toast({ title: "Validation Error", description: "Please fix error fields.", variant: "destructive" }); return; }
     setLoading(true);
-    await syncAllToDB(methods.getValues());
+    await syncAllToDB();
     const next = Math.min(currentStep + 1, STEPS.length);
     setCurrentStep(next);
     await persistStep(next);
@@ -553,7 +389,7 @@ const TalentOnboarding = () => {
 
   const prevStep = async () => {
     setLoading(true);
-    await syncAllToDB(methods.getValues());
+    await syncAllToDB();
     const prev = Math.max(currentStep - 1, 1);
     setCurrentStep(prev);
     await persistStep(prev);
@@ -563,71 +399,44 @@ const TalentOnboarding = () => {
 
   const handleSaveAndExit = async () => {
     setLoading(true);
-    await syncAllToDB(methods.getValues());
+    await syncAllToDB();
     setLoading(false);
     navigate("/talent/dashboard");
   };
 
-  const handleStepClick = async (stepId: number) => {
-    if (stepId === currentStep) return;
-    
-    // Attempt silent save
-    if (isDirty) {
-      const isValid = await methods.trigger(); 
-      if (!isValid) {
-        toast({ title: "Incomplete Data", description: "This step has invalid fields. Changes might not be fully saved.", variant: "destructive" });
-      }
-      await syncAllToDB(methods.getValues());
-    }
-
-    
-    setCurrentStep(stepId);
-    await persistStep(stepId);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-
-
-  const handleSubmit = async () => {
-    const isValid = await methods.trigger();
-    if (!isValid) {
-      toast({ title: "Incomplete Data", description: "Please complete all required fields before submitting.", variant: "destructive" });
-      return;
-    }
-
+  const onSubmit = async () => {
     setLoading(true);
     try {
-      if (talentId) {
-        // Final sync of all data
-        await syncAllToDB(methods.getValues());
-
-        const { error: updateError } = await supabase
-          .from("talents")
-          .update({ 
-            vetting_status: "in_review", 
-            onboarding_status: "submitted", 
-            profile_completion: 100,
-            last_saved_step: 8,
-            current_step: 8
-          } as any)
-          .eq("id", talentId);
-        
-        if (updateError) throw updateError;
-
-        // Update vetting status for individual steps if they were in changes_requested
-        const requestedSteps = vettingSteps.current.filter(s => s.status === 'changes_requested');
-        for (const s of requestedSteps) {
-          await supabase.from("talent_profile_steps" as any).update({ status: "in_review" as any } as any).eq("id", s.id);
-        }
-      }
-
+      await syncAllToDB();
+      const { error } = await (supabase.rpc as any)("submit_talent_onboarding");
+      if (error) throw error;
+      
       setIsSubmitted(true);
-      toast({ title: "Profile Submitted", description: "Your profile is now pending review by our team." });
-    } catch (error: Error | unknown) {
-      toast({ title: "Submission Failed", description: error instanceof Error ? error.message : "An unknown error occurred", variant: "destructive" });
+      toast({ title: "Profile Submitted", description: "Your profile has been sent for vetting." });
+    } catch (error: any) {
+      toast({ title: "Submission Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = onSubmit;
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, field: keyof OnboardFormValues) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingFields(prev => ({ ...prev, [field]: true }));
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${user.id}/${field}/${fileName}`;
+      const { error } = await supabase.storage.from('talent_documents').upload(filePath, file);
+      if (error) throw error;
+      setValue(field, filePath, { shouldDirty: true });
+      await syncAllToDB();
+      toast({ title: "Uploaded" });
+    } catch (err: any) { toast({ title: "Error", description: err.message, variant: "destructive" }); }
+    finally { setUploadingFields(prev => ({ ...prev, [field]: false })); }
   };
 
 

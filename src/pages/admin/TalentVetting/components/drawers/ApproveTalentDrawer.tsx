@@ -31,16 +31,36 @@ const ApproveTalentDrawer = ({ open, onOpenChange, talent, onSuccess }: ApproveT
     try {
       setSaving(true);
       
-      // 1. Update Talent Status
-      const { error } = await supabase
-        .from("talents" as any)
+      // 1. Update Talent Profile Status
+      const { error } = await (supabase.from("talent_profiles") as any)
         .update({ 
-          vetting_status: "approved" as any,
-          onboarding_completed: true 
+          status: "VETTED",
+          vetted_at: new Date().toISOString(),
+          visibility_to_clients: true,
+          locked_onboarding: true 
         } as any)
         .eq("id", talent.id);
 
       if (error) throw error;
+
+      // 2. Map back to talents table for legacy support if needed
+      await supabase
+        .from("talents")
+        .update({ 
+          vetting_status: "fully_vetted",
+          onboarding_completed: true 
+        } as any)
+        .eq("user_id", talent.user_id);
+
+      // 3. Log action
+      await (supabase.from("vetting_actions") as any)
+        .insert({
+          user_id: talent.user_id,
+          talent_id: talent.id,
+          admin_id: (await supabase.auth.getUser()).data.user?.id,
+          action_type: "APPROVE_TALENT",
+          notes: "Talent approved through final checklist"
+        });
       
       toast.success("Talent vetting approved. Profile is now active.");
       onSuccess();
@@ -71,7 +91,7 @@ const ApproveTalentDrawer = ({ open, onOpenChange, talent, onSuccess }: ApproveT
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-md flex flex-col h-full p-0">
         <SheetHeader className="p-6 border-b border-gray-100 bg-emerald-50/20">
-          <SheetTitle className="text-lg font-black uppercase tracking-tight text-emerald-700 flex items-center gap-2">
+          <SheetTitle className="text-lg font-bold uppercase tracking-tight text-emerald-700 flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5" />
             Final Approval
           </SheetTitle>
@@ -119,7 +139,7 @@ const ApproveTalentDrawer = ({ open, onOpenChange, talent, onSuccess }: ApproveT
 
         <SheetFooter className="p-6 border-t border-gray-100 bg-gray-50/50">
           <Button 
-            className="w-full h-12 font-black uppercase text-[11px] tracking-widest gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-200/50"
+            className="w-full h-12 font-bold uppercase text-[11px] tracking-widest gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-200/50"
             disabled={!allChecked || saving}
             onClick={handleApprove}
           >

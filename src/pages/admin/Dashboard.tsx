@@ -57,6 +57,7 @@ const AdminDashboard = () => {
 
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [vettingVersion, setVettingVersion] = useState<"v1" | "v2">("v2");
 
   useEffect(() => {
     fetchDashboardData();
@@ -65,26 +66,78 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      // Fetch queue tables (limit 5)
+      const { data: versionRow } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "vetting_system_version")
+        .maybeSingle() as { data: any | null };
+      const currentVersion = (versionRow?.value as "v1" | "v2") ?? "v2";
+      setVettingVersion(currentVersion);
+
+      // V1 or V2 Profiles & Counts
+      let pendingProfiles: any[] = [];
+      let unvettedCount = 0;
+
+      if (currentVersion === "v2") {
+        const { data: v2Profiles, count: v2Count } = await supabase
+          .from("v2_talent_profiles")
+          .select("id, user_id, status, submitted_at, created_at", { count: "exact" })
+          .in("status", ["submitted", "resubmitted", "in_review", "changes_requested", "revett_pending"])
+          .order("submitted_at", { ascending: false });
+
+        unvettedCount = v2Count || 0;
+        
+        const limitedV2 = (v2Profiles || []).slice(0, 5);
+        if (limitedV2.length > 0) {
+          const userIds = limitedV2.map(p => p.user_id);
+          const { data: talentsData } = await supabase
+            .from("talents")
+            .select("*")
+            .in("user_id", userIds);
+          
+          pendingProfiles = limitedV2.map((p: any) => ({
+            id: p.id,
+            status: p.status,
+            submitted_at: p.submitted_at,
+            created_at: p.created_at,
+            talents: (talentsData?.find(t => t.user_id === p.user_id) || {}) as Record<string, unknown>
+          }));
+        }
+      } else {
+        const { data: v1Profiles, count: v1Count } = await (supabase.from("talent_profiles" as any) as any)
+          .select("*, talents(*)", { count: "exact" })
+          .in("status", ["SUBMITTED", "RESUBMITTED", "VETTING_IN_PROGRESS"])
+          .order("last_action_at", { ascending: false });
+        
+        unvettedCount = v1Count || 0;
+        pendingProfiles = (v1Profiles || []).slice(0, 5);
+      }
+
+      // Fetch other queue tables (limit 5)
       const [
-        { data: pendingTalents },
         { data: pendingJobsData },
         { data: openTicketsData },
       ] = await Promise.all([
-        supabase.from("talents").select("*").eq("vetting_status", "unvetted").order("created_at", { ascending: false }).limit(5),
         supabase.from("jobs").select("*, clients(company_name)").eq("status", "submitted").order("created_at", { ascending: false }).limit(5),
         supabase.from("support_tickets").select("*").in("status", ["open", "in_progress"]).order("created_at", { ascending: false }).limit(5),
       ]);
 
+      // Map profiles to Talent format for the Table UI
+      const mappedTalents = pendingProfiles.map((p: any) => ({
+        ...p.talents,
+        id: p.id, // Profile UUID for detail link
+        vetting_status: p.status.toLowerCase(),
+        created_at: p.submitted_at || p.created_at
+      }));
+
       setQueues({
-        talents: pendingTalents || [],
+        talents: mappedTalents || [],
         jobs: pendingJobsData || [],
         tickets: openTicketsData || [],
       });
 
       // Fetch global counts & aggregated amounts
       const [
-        { count: unvettedCount },
         { count: submittedJobsCount },
         { count: activeContractsCount },
         { data: invoicesData },
@@ -92,19 +145,18 @@ const AdminDashboard = () => {
         { count: pendingInterviewsCount },
         { data: recentOffers }
       ] = await Promise.all([
-        supabase.from("talents").select("id", { count: "exact", head: true }).eq("vetting_status", "unvetted"),
         supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "submitted"),
         supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
         supabase.from("invoices").select("amount").in("status", ["pending", "overdue"]),
         supabase.from("support_tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
-        supabase.from("interviews").select("id", { count: "exact", head: true }).eq("status", "scheduled"), // Best effort assumption for interviews table
+        supabase.from("interviews").select("id", { count: "exact", head: true }).eq("status", "scheduled"), 
         supabase.from("offers").select("*, talents(first_name, last_name)").order("created_at", { ascending: false }).limit(5)
       ]);
 
-      const invoiceSum = (invoicesData || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+      const invoiceSum = (invoicesData || []).reduce((acc: number, curr: any) => acc + (Number(curr.amount) || 0), 0);
 
       setStats({
-        pendingVetting: unvettedCount || 0,
+        pendingVetting: unvettedCount,
         pendingJobs: submittedJobsCount || 0,
         activeContracts: activeContractsCount || 0,
         outstandingInvoices: invoicesData?.length || 0,
@@ -114,7 +166,7 @@ const AdminDashboard = () => {
       });
 
       // Format basic recent activity feed using offers for now
-      const formattedActivity = (recentOffers || []).map(offer => ({
+      const formattedActivity = (recentOffers || []).map((offer: any) => ({
         id: offer.id,
         type: 'Offer Created',
         description: `Offer created for ${offer.talents?.first_name} ${offer.talents?.last_name} as ${offer.role_title}`,
@@ -133,7 +185,7 @@ const AdminDashboard = () => {
 
   const handleApproveJob = async (jobId: string) => {
     try {
-      await supabase.from("jobs").update({ status: "published", published_at: new Date().toISOString() }).eq("id", jobId);
+      await supabase.from("jobs").update({ status: "published", published_at: new Date().toISOString() } as any).eq("id", jobId);
       fetchDashboardData();
     } catch (error) {
       console.error("Error approving job:", error);
@@ -250,7 +302,7 @@ const AdminDashboard = () => {
                 <Users className="h-4 w-4 text-gray-500" />
                 Talent Vetting Queue
               </CardTitle>
-              <Link to="/admin/talents">
+              <Link to="/admin/vetting">
                 <Button variant="ghost" size="sm" className="h-8 text-xs text-gray-600 hover:text-gray-900">
                   View All <ArrowRight className="h-3 w-3 ml-1" />
                 </Button>
@@ -278,7 +330,7 @@ const AdminDashboard = () => {
                         <TableCell className="py-3 text-sm text-gray-600">{new Date(t.created_at || '').toLocaleDateString()}</TableCell>
                         <TableCell className="py-3">{getStatusBadge(t.vetting_status || 'unvetted')}</TableCell>
                         <TableCell className="py-3 text-right">
-                          <Link to={`/admin/talents/${t.id}`}>
+                          <Link to={vettingVersion === "v2" ? `/admin/vetting/${t.id}` : `/admin/talents/${t.id}`}>
                             <Button variant="secondary" size="sm" className="h-7 px-3 text-xs">Review</Button>
                           </Link>
                         </TableCell>

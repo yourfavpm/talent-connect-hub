@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Mail, Phone, MapPin, Globe } from "lucide-react";
+import { User, Mail, Phone, MapPin, Globe, Clock, Languages } from "lucide-react";
 
 interface BasicInfoViewerProps {
   talent: any;
@@ -45,7 +45,22 @@ const BasicInfoViewer = ({ talent }: BasicInfoViewerProps) => {
         <CardContent className="p-6 grid grid-cols-2 gap-8">
           <Field label="Country" value={talent.country} icon={Globe} />
           <Field label="Timezone" value={talent.timezone} icon={MapPin} />
-          <Field label="Preferred Working Hours" value={talent.preferred_working_hours} icon={MapPin} />
+          <Field label="Preferred Working Hours" value={talent.preferred_working_hours} icon={Clock} />
+          <div className="col-span-2 flex flex-col gap-1.5 pt-2 border-t border-gray-50">
+            <div className="flex items-center gap-2">
+              <Languages className="h-3 w-3 text-gray-400" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Languages Spoken</span>
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              {talent.languages_spoken?.length > 0 ? (
+                talent.languages_spoken.map((lang: string, idx: number) => (
+                  <span key={idx} className="text-sm font-semibold text-gray-900">{lang}</span>
+                ))
+              ) : (
+                <span className="text-sm text-gray-300 italic">No languages listed</span>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

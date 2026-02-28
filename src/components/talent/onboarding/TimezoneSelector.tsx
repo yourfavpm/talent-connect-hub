@@ -21,9 +21,10 @@ interface TimezoneSelectorProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  disabled?: boolean;
 }
 
-export function TimezoneSelector({ value, onChange, className }: TimezoneSelectorProps) {
+export function TimezoneSelector({ value, onChange, className, disabled }: TimezoneSelectorProps) {
   const [open, setOpen] = React.useState(false);
 
   const selectedTimezoneLabel = React.useMemo(() => {
@@ -40,7 +41,7 @@ export function TimezoneSelector({ value, onChange, className }: TimezoneSelecto
         <Button
           variant="outline"
           role="combobox"
-          aria-expanded={open}
+          disabled={disabled}
           className={cn("w-full justify-between bg-white border-slate-200 font-normal", className)}
         >
           <div className="flex items-center gap-2 truncate">

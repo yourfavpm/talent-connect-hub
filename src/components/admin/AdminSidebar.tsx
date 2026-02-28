@@ -15,6 +15,7 @@ import {
   DollarSign,
   Scale,
   Calendar,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 const navigation = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: ["super_admin", "operations_admin", "vetting_admin", "finance_admin", "support_admin"] },
   { name: "Clients", href: "/admin/clients", icon: Users, roles: ["super_admin", "operations_admin"] },
-  { name: "Talents", href: "/admin/talents", icon: UserPlus, badgeKey: "talents", roles: ["super_admin", "operations_admin", "vetting_admin"] },
+  { name: "Vetting", href: "/admin/vetting", icon: ShieldCheck, badgeKey: "vetting", roles: ["super_admin", "operations_admin", "vetting_admin"] },
+  { name: "Talents", href: "/admin/talents", icon: UserPlus, roles: ["super_admin", "operations_admin", "vetting_admin"] },
   { name: "Jobs", href: "/admin/jobs", icon: Briefcase, badgeKey: "jobs", roles: ["super_admin", "operations_admin"] },
   { name: "Timesheets", href: "/admin/timesheets", icon: Clock, badgeKey: "timesheets", roles: ["super_admin", "operations_admin", "finance_admin"] },
   { name: "Agreements", href: "/admin/legal/agreements", icon: Scale, roles: ["super_admin", "operations_admin"] },
@@ -62,7 +64,7 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
   const getBadgeCount = (badgeKey?: string) => {
     switch(badgeKey) {
       case 'jobs': return counts.adminJobs || 0;
-      case 'talents': return counts.adminTalents || 0;
+      case 'vetting': return counts.adminTalents || 0;
       case 'timesheets': return counts.adminTimesheets || 0;
       case 'support': return counts.adminSupportTickets || 0;
       default: return 0;

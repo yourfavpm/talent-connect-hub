@@ -25,9 +25,10 @@ interface RoleSelectorProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  disabled?: boolean;
 }
 
-export function RoleSelector({ category, onCategoryChange, value, onChange, className }: RoleSelectorProps) {
+export function RoleSelector({ category, onCategoryChange, value, onChange, className, disabled }: RoleSelectorProps) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   
@@ -44,6 +45,7 @@ export function RoleSelector({ category, onCategoryChange, value, onChange, clas
         <Select 
           value={category} 
           onValueChange={onCategoryChange}
+          disabled={disabled}
         >
           <SelectTrigger className="w-full bg-white border-slate-200">
             <SelectValue placeholder="Select specialized category" />
@@ -66,7 +68,7 @@ export function RoleSelector({ category, onCategoryChange, value, onChange, clas
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              disabled={!category}
+              disabled={!category || disabled}
               className="w-full justify-between bg-white border-slate-200 font-normal"
             >
               {value ? value : "Select or search role..."}

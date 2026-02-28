@@ -5,9 +5,11 @@ import { TalentListPanel } from "@/components/client/talents/TalentListPanel";
 import { FilterDrawer } from "@/components/client/talents/FilterDrawer";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useVettingVersion } from "@/hooks/useVettingVersion";
 
 const BrowseTalents = () => {
   const navigate = useNavigate();
+  const { version, isLoading: isVersionLoading } = useVettingVersion();
   const [talents, setTalents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -17,19 +19,54 @@ const BrowseTalents = () => {
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
 
   useEffect(() => {
-    fetchTalents();
-  }, []);
+    if (!isVersionLoading) {
+      fetchTalents();
+    }
+  }, [isVersionLoading, version]);
 
   const fetchTalents = async () => {
     try {
-      const { data, error } = await supabase
-        .from("talents")
+      setLoading(true);
+      // 1. Fetch visible profiles
+      const tableName = version === "v2" ? "v2_talent_profiles" : "talent_profiles";
+      const { data: profiles, error: profileError } = await (supabase.from(tableName as any) as any)
         .select("*")
-        .eq("vetting_status", "fully_vetted")
+        .eq(version === "v2" ? "visible_to_clients" : "visibility_to_clients", true)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setTalents(data || []);
+      if (profileError) throw profileError;
+      
+      const userIds = profiles?.map((p: any) => p.user_id) || [];
+      if (userIds.length === 0) {
+        setTalents([]);
+        return;
+      }
+      
+      // 2. Fetch talent details
+      const { data: talentsData, error: talentsError } = await supabase
+        .from("talents")
+        .select("*")
+        .in("user_id", userIds);
+
+      if (talentsError) throw talentsError;
+
+      const talentMap: Record<string, any> = {};
+      (talentsData || []).forEach(t => {
+        talentMap[t.user_id] = t;
+      });
+
+      // 3. Map to UI structure
+      const mapped = (profiles || []).map((p: any) => {
+        const t = talentMap[p.user_id] || {};
+        return {
+          ...t,
+          vetting_status: p.status,
+          talent_profile_id: p.id,
+          vetting_level: p.vetting_level
+        };
+      }).filter(t => t.id); // Ensure we have a valid talent record
+
+      setTalents(mapped);
     } catch (error) {
       console.error("Error fetching talents:", error);
     } finally {
@@ -62,7 +99,7 @@ const BrowseTalents = () => {
     return matchesSearch && matchesRole && matchesAvailability;
   });
   
-  if (loading) {
+  if (loading || isVersionLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] text-gray-500 text-sm">
         Loading talent network...

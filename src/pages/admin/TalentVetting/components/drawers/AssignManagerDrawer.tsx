@@ -56,12 +56,26 @@ const AssignManagerDrawer = ({ open, onOpenChange, talentId, currentManagerId, o
 
     try {
       setSaving(true);
-      const { error } = await supabase
-        .from("talents" as any)
+      
+      // Update legacy talents table
+      const { error: talentError } = await (supabase.from("talents" as any) as any)
         .update({ assigned_manager: selectedId } as any)
         .eq("id", talentId);
 
-      if (error) throw error;
+      if (talentError) throw talentError;
+
+      // Update new talent_profiles table
+      // We need user_id for talent_profiles, but we have talentId (from talents table id)
+      // Usually talent id is the same as the record id in talent_profiles or we can join
+      const { data: talentData } = await supabase.from("talents").select("user_id").eq("id", talentId).single();
+      
+      if (talentData?.user_id) {
+        const { error: profileError } = await (supabase.from("talent_profiles" as any) as any)
+          .update({ assigned_admin_id: selectedId } as any)
+          .eq("user_id", talentData.user_id);
+        
+        if (profileError) console.warn("Failed to update talent_profiles admin:", profileError);
+      }
       
       toast.success("Talent manager assigned successfully");
       onSuccess();
@@ -82,11 +96,11 @@ const AssignManagerDrawer = ({ open, onOpenChange, talentId, currentManagerId, o
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-md flex flex-col h-full p-0">
         <SheetHeader className="p-6 border-b border-gray-100">
-          <SheetTitle className="text-lg font-black uppercase tracking-tight text-gray-900 flex items-center gap-2">
+          <SheetTitle className="text-lg font-bold uppercase tracking-tight text-gray-900 flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
             Assign Manager
           </SheetTitle>
-          <SheetDescription className="text-xs font-medium text-gray-400">
+          <SheetDescription className="text-xs font-semibold text-gray-400">
             Select a Talent Manager to oversee this candidate's vetting process.
           </SheetDescription>
         </SheetHeader>
@@ -127,8 +141,8 @@ const AssignManagerDrawer = ({ open, onOpenChange, talentId, currentManagerId, o
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="text-sm font-bold text-gray-900 leading-tight">{admin.full_name || "Guest Admin"}</div>
-                        <div className="text-[10px] font-medium text-gray-400">{admin.email}</div>
+                      <div className="text-sm font-semibold text-gray-900 leading-tight">{admin.full_name || "Guest Admin"}</div>
+                      <div className="text-[10px] font-semibold text-gray-400">{admin.email}</div>
                       </div>
                     </div>
                     {selectedId === admin.id && (
@@ -149,7 +163,7 @@ const AssignManagerDrawer = ({ open, onOpenChange, talentId, currentManagerId, o
 
         <SheetFooter className="p-6 border-t border-gray-100 bg-gray-50/50">
           <Button 
-            className="w-full h-12 font-black uppercase text-[11px] tracking-widest"
+            className="w-full h-12 font-bold uppercase text-[11px] tracking-widest"
             disabled={!selectedId || saving || loading}
             onClick={handleSave}
           >

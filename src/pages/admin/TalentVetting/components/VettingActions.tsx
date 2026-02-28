@@ -63,21 +63,21 @@ const VettingActions = ({ talent, steps, talentManager, onRefresh, onAssignManag
     <aside className="w-80 border-l border-gray-100 flex flex-col shrink-0 bg-white sticky top-0 h-full overflow-y-auto pb-10">
       <div className="p-5 border-b border-gray-50 flex flex-col gap-4">
         <div>
-          <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-3">Workspace Status</h2>
+          <h2 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-3">Workspace Status</h2>
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 mb-4">
             <div className="h-10 w-10 flex items-center justify-center bg-white rounded-lg border border-gray-100 shadow-sm">
                 <Clock className="h-5 w-5 text-gray-400" />
             </div>
             <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-gray-400 leading-none">Overall Status</span>
-                <span className="text-sm font-bold text-gray-900 leading-tight capitalize">{talent.vetting_status.replace("_", " ")}</span>
+                <span className="text-[10px] uppercase font-medium text-gray-400 leading-none">Overall Status</span>
+                <span className="text-sm font-semibold text-gray-900 leading-tight capitalize">{talent.vetting_status.replace("_", " ")}</span>
             </div>
           </div>
         </div>
 
         <footer className="p-6 border-t border-gray-100 bg-gray-50/30 space-y-3">
             <Button 
-                className="w-full h-11 font-black uppercase text-[11px] tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-100"
+                className="w-full h-11 font-bold uppercase text-[11px] tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-100"
                 onClick={onApprove}
             >
                 Approve Talent
@@ -85,14 +85,14 @@ const VettingActions = ({ talent, steps, talentManager, onRefresh, onAssignManag
             <div className="grid grid-cols-2 gap-3">
                 <Button 
                     variant="outline" 
-                    className="h-11 font-black uppercase text-[10px] tracking-widest border-gray-200"
+                    className="h-11 font-bold uppercase text-[10px] tracking-widest border-gray-200"
                     onClick={onRequestChanges}
                 >
                     Request Changes
                 </Button>
                 <Button 
                     variant="outline" 
-                    className="h-11 font-black uppercase text-[10px] tracking-widest border-gray-200 text-red-600 hover:bg-red-50 hover:border-red-100"
+                    className="h-11 font-bold uppercase text-[10px] tracking-widest border-gray-200 text-red-600 hover:bg-red-50 hover:border-red-100"
                     onClick={onReject}
                 >
                     Reject
@@ -104,12 +104,12 @@ const VettingActions = ({ talent, steps, talentManager, onRefresh, onAssignManag
       <div className="p-5 space-y-6">
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-500">Internal Review Notes</h3>
+            <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">Internal Review Notes</h3>
             <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={saveNotes} 
-                className="h-6 text-[10px] font-bold text-blue-600 px-2"
+                className="h-6 text-[10px] font-semibold text-blue-600 px-2"
                 disabled={saving}
             >
                 {saving ? "Saving..." : "Save"}
@@ -128,11 +128,11 @@ const VettingActions = ({ talent, steps, talentManager, onRefresh, onAssignManag
         </section>
 
         <section>
-          <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-3">Compliance Summary</h3>
+          <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-500 mb-3">Compliance Summary</h3>
           <div className="space-y-2">
             {complianceItems.map((item, idx) => (
               <div key={idx} className="flex items-center justify-between p-2.5 rounded-lg border border-gray-50 bg-white">
-                <span className="text-[11px] font-bold text-gray-600">{item.label}</span>
+                <span className="text-[11px] font-semibold text-gray-600">{item.label}</span>
                 {item.met ? (
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                 ) : (
@@ -145,7 +145,7 @@ const VettingActions = ({ talent, steps, talentManager, onRefresh, onAssignManag
 
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-500">Assigned Manager</h3>
+            <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">Assigned Manager</h3>
             <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                 <ChevronRight className="h-4 w-4 text-gray-300" />
             </Button>
@@ -155,7 +155,7 @@ const VettingActions = ({ talent, steps, talentManager, onRefresh, onAssignManag
                 <UserCog className="h-4 w-4 text-gray-400" />
              </div>
              <div className="flex flex-col overflow-hidden">
-                <span className="text-[11px] font-bold text-gray-900 truncate">
+                <span className="text-[11px] font-semibold text-gray-900 truncate">
                     {talentManager?.full_name || "Unassigned"}
                 </span>
                 <span className="text-[9px] text-gray-400 truncate">
@@ -167,15 +167,15 @@ const VettingActions = ({ talent, steps, talentManager, onRefresh, onAssignManag
 
         <section className="bg-blue-50/30 rounded-xl border border-blue-100 p-4">
             <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-blue-700">Skill Level</h3>
-                <Button variant="ghost" className="h-6 text-[10px] font-bold text-blue-600 px-2 hover:bg-blue-100/50" onClick={onSkillAssessment}>Edit</Button>
+                <h3 className="text-[11px] font-semibold uppercase tracking-widest text-blue-700">Skill Level</h3>
+                <Button variant="ghost" className="h-6 text-[10px] font-semibold text-blue-600 px-2 hover:bg-blue-100/50" onClick={onSkillAssessment}>Edit</Button>
             </div>
             <div className="flex items-center gap-3">
                 <div className="h-8 w-8 rounded bg-white shadow-sm flex items-center justify-center border border-blue-100">
                     <ShieldCheck className="h-4 w-4 text-blue-600" />
                 </div>
                 <div>
-                    <span className="text-sm font-black text-blue-900 uppercase tracking-tight">
+                    <span className="text-sm font-bold text-blue-900 uppercase tracking-tight">
                         {talent.overall_skill_level || "Not Rated"}
                     </span>
                 </div>
