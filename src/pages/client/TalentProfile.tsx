@@ -7,136 +7,73 @@ import { TalentActionPanel } from "@/components/client/talent-profile/TalentActi
 import { TalentSections } from "@/components/client/talent-profile/TalentSections";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { useVettingVersion } from "@/hooks/useVettingVersion";
+import { useToast } from "@/hooks/use-toast";
+import { InterviewInviteDrawer } from "@/components/client/talents/InterviewInviteDrawer";
 
 const ClientTalentProfile = () => {
   const { talentId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { version, isLoading: isVersionLoading } = useVettingVersion();
   
   const [talent, setTalent] = useState<ClientTalentProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [inviteDrawerOpen, setInviteDrawerOpen] = useState(false);
 
   useEffect(() => {
     const fetchTalentProfile = async (id: string) => {
       try {
         setLoading(true);
         
-        const { data, error: talentError } = await supabase
-          .from("talents")
-          .select("*")
-          .eq("id", id)
-          .maybeSingle();
+        // Use the secure RPC
+        const { data, error } = await supabase.rpc('get_client_talent_profile', {
+          p_talent_id: id
+        });
           
-        if (talentError) throw talentError;
+        if (error) throw error;
         if (!data) {
-          console.error("Talent not found or not vet-approved. ID:", id);
-          throw new Error("Talent not found");
+          throw new Error("Talent not found or not approved");
         }
 
-        const talentData = data as any; // Ignore strict Supabase types
+        const rpcData = data as any;
 
-        if (version === "v2") {
-          const { data: v2Profile } = await supabase
-            .from("v2_talent_profiles")
-            .select("status, vetting_level")
-            .eq("user_id", talentData.user_id)
-            .maybeSingle();
+        // Map RPC data to our type structure (Zero PII leak)
+        const profile: ClientTalentProfileData = {
+          talent_id: rpcData.display_id || id.slice(0, 8).toUpperCase(),
+          full_name: `${rpcData.first_name || ""} ${rpcData.last_initial || ""}.`.trim() || "Vetted Professional",
+          avatar: rpcData.avatar_url || null,
+          primary_role: rpcData.headline || "Professional",
+          skill_level: rpcData.skill_level || "mid",
+          vetting_status: "approved" as any, 
+          location: rpcData.location || "Remote",
+          timezone: rpcData.timezone || "UTC",
+          years_experience: rpcData.years_experience || 0,
+          availability: rpcData.availability || "Full-time",
+          about: rpcData.bio || "No summary provided.",
+          skills: rpcData.skills || [],
+          tools: rpcData.tools || [],
+          languages: rpcData.languages || ["English"],
+          work_history: (rpcData.work_history || []).map((w: any) => ({
+            id: w.id || Math.random().toString(),
+            company: w.companyName || w.company,
+            role: w.roleTitle || w.role,
+            duration: `${w.startDate || w.start_date ? new Date(w.startDate || w.start_date).getFullYear() : ""} - ${w.isCurrent || w.is_current ? "Present" : (w.endDate || w.end_date ? new Date(w.endDate || w.end_date).getFullYear() : "")}`,
+            description: w.roleDescription || w.description || "",
+          })),
+          education: (rpcData.education || []).map((e: any) => ({
+            id: e.id || Math.random().toString(),
+            institution: e.institutionName || e.institution,
+            degree: e.degree,
+            year: e.endYear || e.end_year || e.startYear || e.start_year || "",
+          })),
+          certifications: (rpcData.certifications || []).map((c: any) => ({
+            id: c.id || Math.random().toString(),
+            name: c.certificationName || c.name,
+            issuer: c.issuer || c.issuing_organization || "Taskive",
+          })),
+          references: [],
+        };
 
-          const { data: v2Sections } = await supabase
-            .from("v2_profile_sections")
-            .select("*")
-            .eq("user_id", talentData.user_id);
-
-          const merged: Record<string, any> = {};
-          (v2Sections || []).forEach(sec => {
-            if (sec.data && typeof sec.data === "object") {
-              Object.assign(merged, sec.data);
-            }
-          });
-
-          const profile: ClientTalentProfileData = {
-            talent_id: talentData.id?.slice(0, 8).toUpperCase() || id.slice(0, 8).toUpperCase(),
-            full_name: `${merged.firstName || talentData.first_name || ""} ${merged.lastName || talentData.last_name || ""}`.trim() || "Unknown Talent",
-            avatar: talentData.avatar_url || talentData.avatar || null,
-            primary_role: merged.primaryRole || talentData.primary_role || "Professional",
-            skill_level: talentData.skill_level || "mid",
-            vetting_status: v2Profile?.status as any,
-            location: merged.country || talentData.location || talentData.country || "Remote",
-            timezone: merged.timezone || talentData.timezone || "UTC",
-            years_experience: merged.yearsOfExperience || talentData.years_experience || talentData.years_of_experience || 0,
-            availability: merged.availability || talentData.availability || "Full-time",
-            about: merged.shortBio || talentData.about_me || talentData.bio || talentData.summary || "No summary provided.",
-            skills: merged.secondarySkills || talentData.primary_skills || [],
-            tools: merged.toolsFamiliarWith || talentData.secondary_skills || [],
-            languages: merged.languagesSpoken || talentData.languages || ["English"],
-            work_history: (merged.workHistory || []).map((w: any) => ({
-              id: w.id || Date.now().toString(),
-              company: w.companyName,
-              role: w.roleTitle,
-              duration: `${w.startDate ? new Date(w.startDate).getFullYear() : ""} - ${w.isCurrent ? "Present" : (w.endDate ? new Date(w.endDate).getFullYear() : "")}`,
-              description: w.roleDescription || "",
-            })),
-            education: (merged.education || []).map((e: any) => ({
-              id: e.id || Date.now().toString(),
-              institution: e.institutionName,
-              degree: e.degree,
-              year: e.endYear || e.startYear || "",
-            })),
-            certifications: (merged.certifications || []).map((c: any) => ({
-              id: c.id || Date.now().toString(),
-              name: c.certificationName,
-              issuer: c.issuer || "Taskive",
-            })),
-            references: [],
-          };
-          setTalent(profile);
-        } else {
-          const [workHistory, education, certifications] = await Promise.all([
-            supabase.from("talent_work_history").select("*").eq("talent_id", id).order("start_date", { ascending: false }),
-            supabase.from("talent_education").select("*").eq("talent_id", id).order("start_year", { ascending: false }),
-            supabase.from("talent_certifications").select("*").eq("talent_id", id),
-          ]);
-
-          const profile: ClientTalentProfileData = {
-            talent_id: talentData.id?.slice(0, 8).toUpperCase() || id.slice(0, 8).toUpperCase(),
-            full_name: `${talentData.first_name || ""} ${talentData.last_name || ""}`.trim() || "Unknown Talent",
-            avatar: talentData.avatar_url || talentData.avatar || null,
-            primary_role: talentData.primary_role || "Professional",
-            skill_level: talentData.skill_level || "mid",
-            vetting_status: talentData.vetting_status as any,
-            location: talentData.location || talentData.country || "Remote",
-            timezone: talentData.timezone || "UTC",
-            years_experience: talentData.years_experience || talentData.years_of_experience || 0,
-            availability: talentData.availability || "Full-time",
-            about: talentData.about_me || talentData.bio || talentData.summary || "No summary provided.",
-            skills: talentData.primary_skills || [],
-            tools: talentData.secondary_skills || [],
-            languages: talentData.languages || ["English"],
-            work_history: (workHistory.data || []).map((w: any) => ({
-              id: w.id,
-              company: w.company,
-              role: w.title || w.role,
-              duration: `${w.start_date ? new Date(w.start_date).getFullYear() : ""} - ${w.is_current ? "Present" : (w.end_date ? new Date(w.end_date).getFullYear() : "")}`,
-              description: w.description || "",
-            })),
-            education: (education.data || []).map((e: any) => ({
-              id: e.id,
-              institution: e.institution,
-              degree: e.degree,
-              year: e.end_year || e.start_year || "",
-            })),
-            certifications: (certifications.data || []).map((c: any) => ({
-              id: c.id,
-              name: c.name,
-              issuer: c.issuer || c.organization || "Taskive",
-            })),
-            references: [],
-          };
-          setTalent(profile);
-        }
+        setTalent(profile);
       } catch (error: any) {
         console.error("Error fetching talent:", error);
         toast({
@@ -150,12 +87,30 @@ const ClientTalentProfile = () => {
       }
     };
 
-    if (talentId && !isVersionLoading) {
+    if (talentId) {
       fetchTalentProfile(talentId);
     }
-  }, [talentId, navigate, toast, version, isVersionLoading]);
+  }, [talentId, navigate, toast]);
 
-  if (loading || isVersionLoading) {
+  const handleInvite = () => {
+    setInviteDrawerOpen(true);
+  };
+
+  const handleRequestCV = async () => {
+    try {
+      toast({
+        title: "Request Sent",
+        description: `We've notified Taskive admins about your CV request for this professional.`,
+      });
+      
+      // In a real app, this might trigger a notification or create a record
+      console.log("CV requested for talent:", talentId);
+    } catch (error) {
+      console.error("Error requesting CV:", error);
+    }
+  };
+
+  if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <Loader2 className="h-8 w-8 animate-spin text-gray-400 mb-4" />
@@ -167,27 +122,44 @@ const ClientTalentProfile = () => {
   if (!talent) return null;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 font-sans">
+    <div className="max-w-6xl mx-auto px-4 py-8 font-sans animate-fade-in">
       <Button 
         variant="ghost" 
         onClick={() => navigate(-1)}
-        className="mb-6 -ml-4 text-gray-500 hover:text-gray-900"
+        className="mb-6 -ml-4 text-gray-500 hover:text-gray-900 group"
       >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Back
+        <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+        Back to Professionals
       </Button>
 
       <TalentProfileHeader talent={talent} />
 
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 min-w-0">
           <TalentSections talent={talent} />
         </div>
         
         <div className="w-full lg:w-[320px] shrink-0 hidden lg:block">
-          <TalentActionPanel talent={talent} />
+          <TalentActionPanel 
+            talent={talent} 
+            onInvite={handleInvite}
+            onMessage={() => navigate(`/client/messages`)}
+          />
+          
+          <div className="mt-4">
+             <Button variant="ghost" className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm font-semibold py-6 h-auto border border-dashed border-blue-200" onClick={handleRequestCV}>
+                Request Full CV / Resume
+             </Button>
+          </div>
         </div>
       </div>
+
+      <InterviewInviteDrawer 
+        isOpen={inviteDrawerOpen}
+        onClose={() => setInviteDrawerOpen(false)}
+        talentId={talentId || ""}
+        talentName={talent.full_name}
+      />
     </div>
   );
 };

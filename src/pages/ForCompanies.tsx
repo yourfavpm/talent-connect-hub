@@ -52,15 +52,15 @@ const ForCompanies = () => {
                         </div>
                         
                         {/* System Status Indicators */}
-                        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 pt-6 border-t border-slate-200/60">
+                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-y-4 sm:gap-x-8 pt-8 border-t border-slate-200/60 w-full mb-8 lg:mb-0">
                             {[
                                 { label: "Vetting Completed", icon: UserCheck },
                                 { label: "Contract Model Selected", icon: Shield },
                                 { label: "Ops Manager Assigned", icon: Target }
                             ].map((item, i) => (
-                                <div key={i} className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                                    <item.icon className="h-3.5 w-3.5 text-blue-600" />
-                                    {item.label}
+                                <div key={i} className="flex items-center gap-2.5 text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                                    <item.icon className="h-4 w-4 text-blue-600 shrink-0" />
+                                    <span>{item.label}</span>
                                 </div>
                             ))}
                         </div>

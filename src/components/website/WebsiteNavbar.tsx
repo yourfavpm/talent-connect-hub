@@ -65,7 +65,7 @@ const WebsiteNavbar = () => {
             <div className="max-w-[1440px] mx-auto px-6 md:px-10 h-[72px] flex items-center justify-between">
                 
                 {/* Left: Logo */}
-                <Link to="/" className="flex items-center shrink-0">
+                <Link to="/" className="flex items-center shrink-0 p-2 lg:p-0 transition-transform hover:scale-[1.02]">
                     <img src="/wordmark.png" alt="Taskive" className="h-7" />
                 </Link>
 
@@ -162,19 +162,19 @@ const WebsiteNavbar = () => {
                 {/* Right: CTAs */}
                 <div className="hidden lg:flex items-center gap-6">
                     <Link 
-                        to="/auth/signup?portal=talent"
+                        to="/auth/signup?portal=talent#form"
                         className="text-[13px] font-semibold text-slate-500 hover:text-slate-900 transition-colors"
                     >
                         Apply as Talent
                     </Link>
                     <Link 
-                        to="/auth/login?portal=client"
+                        to="/auth/login?portal=client#form"
                         className="px-5 py-2.5 border border-slate-200 text-slate-900 text-[13px] font-semibold rounded-lg hover:border-slate-900 transition-all font-inter"
                     >
                         Login
                     </Link>
                     <Link 
-                        to="/auth/signup?portal=client"
+                        to="/auth/signup?portal=client#form"
                         className="px-6 py-2.5 bg-slate-900 text-white text-[13px] font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-sm font-inter"
                     >
                         Request Talent
@@ -345,19 +345,19 @@ const WebsiteNavbar = () => {
                             <div className="mt-auto px-6 py-8 border-t border-slate-100 bg-white">
                                 <div className="space-y-4">
                                     <Link 
-                                        to="/auth/signup?portal=client"
+                                        to="/auth/signup?portal=client#form"
                                         className="flex items-center justify-center w-full py-3.5 bg-slate-900 text-white font-bold rounded-xl text-sm shadow-sm hover:bg-blue-700 transition-all"
                                     >
                                         Request Talent →
                                     </Link>
                                     <Link 
-                                        to="/auth/signup?portal=talent"
+                                        to="/auth/signup?portal=talent#form"
                                         className="flex items-center justify-center w-full py-3.5 border border-slate-200 text-slate-900 font-bold rounded-xl text-sm hover:border-slate-900 transition-all"
                                     >
                                         Apply as Talent →
                                     </Link>
                                     <Link 
-                                        to="/auth/login?portal=client"
+                                        to="/auth/login?portal=client#form"
                                         className="block w-full py-2 text-slate-500 font-bold text-center text-[13px] hover:text-slate-900 transition-colors"
                                     >
                                         Login

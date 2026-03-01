@@ -1,11 +1,82 @@
 
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle, Clock, Globe, Shield, Users, Zap, Briefcase, Layout, CreditCard, Search, UserCheck } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, Globe, Shield, Users, Zap, Briefcase, Layout, CreditCard, Search, UserCheck, ChevronRight, TrendingUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Index = () => {
+  const [activeStep, setActiveStep] = useState(1);
+
+  const vettingSteps = [
+    {
+      id: 1,
+      number: "01",
+      label: "Skill Testing",
+      headline: "Structured Capability Validation",
+      description: "Every professional undergoes role-specific evaluation to validate operational depth and execution ability.",
+      bullets: [
+        "Functional scenario testing",
+        "Real-world case assessments",
+        "Tool proficiency validation",
+        "Process documentation review"
+      ]
+    },
+    {
+      id: 2,
+      number: "02",
+      label: "Reference Checks",
+      headline: "Professional Background Verification",
+      description: "We validate work history and performance reliability through structured reference checks.",
+      bullets: [
+        "Previous employer confirmation",
+        "Performance feedback",
+        "Role scope validation",
+        "Professional conduct review"
+      ]
+    },
+    {
+      id: 3,
+      number: "03",
+      label: "Performance Review",
+      headline: "Operational Track Record Review",
+      description: "We assess prior measurable outcomes to ensure execution capability.",
+      bullets: [
+        "KPI impact evaluation",
+        "Process optimization examples",
+        "Delivery consistency analysis",
+        "Remote collaboration history"
+      ]
+    },
+    {
+      id: 4,
+      number: "04",
+      label: "Soft Skills & Communication",
+      headline: "Communication & Alignment Screening",
+      description: "Professionals are screened for clarity, fluency, and collaborative ability.",
+      bullets: [
+        "English fluency assessment",
+        "Timezone compatibility",
+        "Communication clarity review",
+        "Professional demeanor evaluation"
+      ]
+    },
+    {
+      id: 5,
+      number: "05",
+      label: "Ongoing Monitoring",
+      headline: "Continuous Quality Oversight",
+      description: "Vetting does not stop at placement.",
+      bullets: [
+        "Performance check-ins",
+        "Client feedback loops",
+        "Talent manager oversight",
+        "Replacement guarantee if needed"
+      ]
+    }
+  ];
+
   return (
     <div className="bg-background min-h-screen text-foreground overflow-x-hidden selection:bg-primary selection:text-white font-sans">
 
@@ -18,22 +89,22 @@ const Index = () => {
           {/* Left Side: Content & Trust Indicators */}
           <div className="animate-slide-up flex flex-col items-center text-center lg:items-start lg:text-left">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
-              Build With Proven Product & <br className="hidden md:block" /> Operations Leaders
+              Hire Vetted Remote Operations Experts — Built for Global Teams
             </h1>
 
             <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium mx-auto lg:mx-0">
-              Access rigorously vetted professionals across EMEA — matched, contracted, and managed through a structured platform.
+              We match you with pre-screened professionals ready to handle operations, support, project work, and team management — no recruitment burden.
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-14 w-full">
-              <Link to="/book-consultation" className="w-full sm:w-auto">
+              <Link to="/auth/login" className="w-full sm:w-auto">
                 <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/10 transition-all font-semibold w-full">
-                  Book a Consultation
+                  Get Matched With Talent
                 </Button>
               </Link>
-              <Link to="/service-models" className="w-full sm:w-auto">
+              <Link to="/book-consultation" className="w-full sm:w-auto">
                 <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-700 hover:bg-slate-100/80 rounded-full font-semibold flex items-center justify-center lg:justify-start gap-2 w-full">
-                  Explore Talent <ArrowRight className="w-4 h-4" />
+                  Book a Strategy Call <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -175,7 +246,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* 3. TRUST & CREDIBILITY */}
+      {/* 3. TRUST & CREDIBILITY (REPOSITIONED) */}
       <section className="py-12 md:py-16 border-b border-slate-200 bg-white">
         <div className="container max-w-7xl mx-auto text-center">
           <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-2">Trusted by Global Teams and Growing Enterprises</p>
@@ -198,6 +269,197 @@ const Index = () => {
             <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white to-transparent z-10"></div>
             <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white to-transparent z-10"></div>
           </div>
+        </div>
+      </section>
+
+      {/* NEW TRUST-BUILDING SECTION (STRATEGIC POSITIONING) */}
+      <section className="py-24 px-6 bg-slate-50 font-inter border-b border-slate-200">
+        <div className="container max-w-[1200px] mx-auto">
+          {/* Header */}
+          <div className="mb-16 md:mb-20 animate-slide-up">
+            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-4 leading-tight tracking-tight">
+              No Search. No Guesswork. No Hiring Headaches.
+            </h2>
+            <p className="text-base md:text-lg text-slate-500 font-light max-w-2xl">
+              We handle sourcing, vetting, compliance, and ongoing support — so you don’t have to.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 items-start">
+            {/* Left Side: Structured Benefit Blocks (60%) */}
+            <div className="lg:col-span-7 relative pl-8">
+              {/* Vertical Dotted Line */}
+              <div className="absolute left-0 top-2 bottom-2 w-px border-l border-dotted border-slate-300"></div>
+
+              <div className="space-y-10 md:space-y-12">
+                {[
+                  {
+                    title: "Verified Skills & Performance Testing",
+                    desc: "Every professional goes through structured vetting and capability validation."
+                  },
+                  {
+                    title: "Replacement Guarantee",
+                    desc: "If a match isn’t right, we replace at no additional cost."
+                  },
+                  {
+                    title: "Managed HR & Compliance Included",
+                    desc: "Contracts, payments, and engagement compliance handled for you."
+                  },
+                  {
+                    title: "English Fluency & Timezone Matching",
+                    desc: "Professionals aligned to your communication and working hours."
+                  },
+                  {
+                    title: "Flexible Engagement Models",
+                    desc: "Direct hire, trial-to-hire, and project-based engagements."
+                  }
+                ].map((benefit, i) => (
+                  <div key={i} className="relative">
+                    {/* Circular Dot */}
+                    <div className="absolute -left-[36px] top-1.5 w-2 h-2 rounded-full bg-blue-600 shadow-[0_0_0_4px_rgba(37,99,235,0.1)]"></div>
+                    
+                    <h3 className="text-lg md:text-xl font-medium text-slate-900 mb-1">
+                      {benefit.title}
+                    </h3>
+                    <p className="text-sm md:text-base text-slate-500 font-light">
+                      {benefit.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Side: Trust Visualization (40%) */}
+            <div className="lg:col-span-5">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 md:p-10 sticky top-32">
+                <h4 className="text-base font-semibold text-slate-900 mb-8 uppercase tracking-wider">
+                  Enterprise-Level Operational Support
+                </h4>
+                
+                <div className="space-y-6">
+                  {[
+                    "Dedicated talent manager",
+                    "Structured onboarding",
+                    "Ongoing performance oversight",
+                    "Transparent billing"
+                  ].map((item, i) => (
+                    <div key={i} className={`pb-6 ${i !== 3 ? 'border-b border-slate-100' : ''}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                        <span className="text-base text-slate-600 font-medium">{item}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-10 pt-8 border-t border-slate-100">
+                  <div className="flex items-center gap-4">
+                    <div className="flex -space-x-2">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 overflow-hidden">
+                          <img 
+                            src={`https://images.unsplash.com/photo-${1500000000000 + i * 100000}?auto=format&fit=crop&q=80&w=100&h=100`} 
+                            alt="Support Team" 
+                            className="w-full h-full object-cover grayscale opacity-80"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-400 font-medium leading-tight">
+                      Standard in every <br />engagement model.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* VETTING ENGINE SECTION (ENTERPRISE GRADE) */}
+      <section className="py-24 px-6 bg-white font-inter border-b border-slate-200 overflow-hidden">
+        <div className="container max-w-[1200px] mx-auto">
+          {/* Header */}
+          <div className="mb-16 animate-slide-up">
+            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-4 tracking-tight">
+              The Taskive Vetting Engine
+            </h2>
+            <p className="text-base md:text-lg text-slate-500 font-light max-w-2xl">
+              A structured multi-layer quality system designed to ensure every professional meets global operational standards.
+            </p>
+          </div>
+
+          {/* Interactive Step Navigation */}
+          <div className="relative mb-16">
+            <div className="flex overflow-x-auto pb-4 md:pb-0 md:flex-row md:justify-between border-b border-slate-100 no-scrollbar items-center">
+              {vettingSteps.map((step) => (
+                <button
+                  key={step.id}
+                  onClick={() => setActiveStep(step.id)}
+                  className={`flex flex-col items-start min-w-[160px] md:min-w-0 md:flex-1 py-6 px-4 transition-all relative group text-left ${
+                    activeStep === step.id ? 'opacity-100' : 'opacity-50 hover:opacity-80'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className={`text-[10px] font-bold w-6 h-6 rounded-full flex items-center justify-center border transition-all ${
+                      activeStep === step.id 
+                      ? 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-200' 
+                      : 'bg-white border-slate-200 text-slate-400 group-hover:border-slate-300'
+                    }`}>
+                      {step.number}
+                    </span>
+                    <span className={`text-sm font-semibold transition-colors ${
+                      activeStep === step.id ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-700'
+                    }`}>
+                      {step.label}
+                    </span>
+                  </div>
+                  {activeStep === step.id && (
+                    <motion.div 
+                      layoutId="activeStep"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Detail Panel */}
+          <div className="min-h-[400px] md:min-h-[300px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeStep}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="grid md:grid-cols-12 gap-12 items-start"
+              >
+                <div className="md:col-span-7">
+                  <h3 className="text-2xl md:text-3xl font-medium text-slate-900 mb-6">
+                    {vettingSteps[activeStep - 1].headline}
+                  </h3>
+                  <p className="text-base md:text-lg text-slate-500 font-light leading-relaxed mb-8">
+                    {vettingSteps[activeStep - 1].description}
+                  </p>
+                </div>
+                <div className="md:col-span-5">
+                  <div className="bg-slate-50/50 rounded-2xl p-8 border border-slate-100">
+                    <div className="space-y-4">
+                      {vettingSteps[activeStep - 1].bullets.map((bullet, idx) => (
+                        <div key={idx} className="flex items-center gap-4 pb-4 border-b border-slate-100 last:border-0 last:pb-0">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-600/30"></div>
+                          <span className="text-base text-slate-600 font-medium">{bullet}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
         </div>
       </section>
 
@@ -516,116 +778,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* 6. TALENT INFRASTRUCTURE SECTION (REDESIGNED) */}
-      <section className="py-24 px-6 bg-white font-inter">
-        <div className="container max-w-[1200px] mx-auto">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            {/* Left Column: Content */}
-            <div className="animate-slide-up">
-              <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 leading-tight tracking-tight">
-                Talent Infrastructure for Modern Companies
-              </h2>
-              <p className="text-base text-slate-600 mb-12 leading-relaxed max-w-lg">
-                From sourcing and vetting to contracts, payroll, and compliance — Taskive manages the full talent lifecycle with precision.
-              </p>
-
-              <div className="grid gap-8">
-                {[
-                  { 
-                    title: "Structured Vetting Framework", 
-                    desc: "Every professional is skill-assessed, verified, and categorized before client visibility." 
-                  },
-                  { 
-                    title: "Multi-Model Hiring Engine", 
-                    desc: "Direct hire, managed trial, or project-based aligned to operational needs." 
-                  },
-                  { 
-                    title: "Contract & Compliance Automation", 
-                    desc: "Service-model-based agreements generated and tracked in-platform." 
-                  },
-                  { 
-                    title: "Integrated Billing & Payout Controls", 
-                    desc: "Timesheet approvals, invoice generation, and transparent margin breakdown in one system." 
-                  }
-                ].map((feat, i) => (
-                  <div key={i} className="flex gap-4 group">
-                    <div className="mt-1 w-5 h-5 rounded-full border border-blue-200 flex items-center justify-center flex-shrink-0 group-hover:border-blue-900 transition-colors">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-900 opacity-40 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                    <div>
-                      <h4 className="text-base font-semibold text-slate-900 mb-1">{feat.title}</h4>
-                      <p className="text-sm text-slate-500 leading-relaxed font-medium">{feat.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right Column: Dashboard Preview */}
-            <div className="relative">
-              <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-                className="bg-slate-900 rounded-[14px] p-8 shadow-sm border border-slate-800 text-slate-300"
-              >
-                <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-800">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                      <Layout className="h-4 w-4 text-white" />
-                    </div>
-                    <span className="text-sm font-semibold text-white">Talent Operations</span>
-                  </div>
-                  <div className="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-400">LIVE VIEW</div>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Active Contracts</div>
-                      <div className="text-xl font-bold text-white tracking-tight">24</div>
-                    </div>
-                    <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Invoice Status</div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                        <span className="text-sm font-semibold text-white">All Clear</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-5 rounded-xl bg-slate-800/50 border border-slate-700/50 space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-slate-400">Pending Timesheets</span>
-                      <span className="text-xs font-bold text-white">3 Review Required</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-slate-700 rounded-full overflow-hidden">
-                      <div className="h-full w-2/3 bg-blue-600" />
-                    </div>
-                  </div>
-
-                  <div className="p-5 rounded-xl bg-white/5 border border-white/5 space-y-4">
-                    {[
-                      { l: 'Service Model', v: 'Managed Trial', c: 'text-blue-400' },
-                      { l: 'Talent Level', v: 'Senior Engineering', c: 'text-white' },
-                      { l: 'Profit Margin', v: '22.4%', c: 'text-green-400' }
-                    ].map((row, i) => (
-                      <div key={i} className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{row.l}</span>
-                        <span className={`text-[11px] font-bold ${row.c}`}>{row.v}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-              
-              {/* Subtle Decorative Elements */}
-              <div className="absolute -z-10 -bottom-10 -right-10 w-40 h-40 bg-blue-600/5 rounded-full blur-3xl" />
-              <div className="absolute -z-10 -top-10 -left-10 w-40 h-40 bg-slate-900/10 rounded-full blur-2xl" />
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* 7. TALENT OPERATIONS FEATURE SECTION (PREMIUM REPLACEMENT) */}
       <section className="py-24 px-6 bg-slate-50/80 font-inter">
@@ -870,7 +1022,5 @@ const Index = () => {
   );
 };
 
-// Icon imports need to be added to top
-import { TrendingUp } from "lucide-react";
 
 export default Index;

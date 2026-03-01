@@ -108,7 +108,10 @@ const AdminTalentProfileView = () => {
           .select("first_name, last_name")
           .eq("id", pData.talent_manager_admin_id)
           .single();
-        if (mData) setManagerName(`${mData.first_name || ""} ${mData.last_name || ""}`);
+        if (mData) {
+          const m = mData as { first_name: string | null; last_name: string | null };
+          setManagerName(`${m.first_name || ""} ${m.last_name || ""}`);
+        }
       } else {
         setManagerName("");
       }
@@ -144,6 +147,18 @@ const AdminTalentProfileView = () => {
 
   const talent = tp.talents;
 
+  // Derive professional data from V2 sections if available
+  const profSection = sections.find(s => s.section_key === "professional_details")?.data || {};
+  const basicSection = sections.find(s => s.section_key === "basic_info")?.data || {};
+
+  const headline = (profSection.primaryRole as string) || talent?.primary_role?.replace('_', ' ') || "No primary role set";
+  const experience = (profSection.yearsOfExperience as number) || talent?.years_of_experience || 0;
+  const summary = (profSection.shortBio as string) || talent?.summary || "No professional summary provided.";
+  const displayCountry = (basicSection.country as string) || talent?.country || "Location not set";
+  const displayTimezone = (basicSection.timezone as string) || talent?.timezone || "Timezone unknown";
+  const displayEmail = (basicSection.email as string) || (basicSection.contactEmail as string) || talent?.email;
+  const displayAvailability = (profSection.availability as string) || talent?.availability || "Availability unknown";
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20 font-[Inter]">
       {/* Header Bar */}
@@ -170,7 +185,7 @@ const AdminTalentProfileView = () => {
                 )}
                 <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block" />
                 <span className="text-sm text-slate-500 font-medium flex items-center gap-1.5 italic">
-                  <Globe className="h-3.5 w-3.5" /> {talent?.timezone || "Timezone unknown"}
+                  <Globe className="h-3.5 w-3.5" /> {displayTimezone}
                 </span>
               </div>
            </div>
@@ -256,17 +271,17 @@ const AdminTalentProfileView = () => {
           <Card className="rounded-2xl border-slate-200 shadow-sm">
              <CardContent className="p-6 space-y-4">
                 <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Contact Details</h3>
-                <div className="space-y-3">
-                   <div className="flex items-center gap-3 text-sm text-slate-600">
-                     <Mail className="h-4 w-4 text-slate-400" /> {talent?.email}
+                 <div className="space-y-3">
+                   <div className="flex items-center gap-3 text-sm text-slate-600 font-medium">
+                     <Mail className="h-4 w-4 text-slate-400" /> {displayEmail}
                    </div>
-                   <div className="flex items-center gap-3 text-sm text-slate-600">
-                     <MapPin className="h-4 w-4 text-slate-400" /> {talent?.country || "Location not set"}
+                   <div className="flex items-center gap-3 text-sm text-slate-600 font-medium">
+                     <MapPin className="h-4 w-4 text-slate-400" /> {displayCountry}
                    </div>
-                   <div className="flex items-center gap-3 text-sm text-slate-600">
-                     <Clock className="h-4 w-4 text-slate-400" /> {talent?.availability || "Availability unknown"}
+                   <div className="flex items-center gap-3 text-sm text-slate-600 font-medium">
+                     <Clock className="h-4 w-4 text-slate-400" /> {displayAvailability}
                    </div>
-                </div>
+                 </div>
              </CardContent>
           </Card>
         </div>
@@ -279,25 +294,25 @@ const AdminTalentProfileView = () => {
                   <User className="h-4 w-4 text-slate-400" /> Professional Overview
                 </h3>
              </div>
-             <CardContent className="p-6 space-y-8">
+              <CardContent className="p-6 space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="space-y-2">
                       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Headline</p>
-                      <p className="text-lg font-semibold text-slate-900 leading-tight">{talent?.primary_role?.replace('_', ' ') || "No primary role set"}</p>
+                      <p className="text-lg font-semibold text-slate-900 leading-tight">{headline}</p>
                    </div>
                    <div className="space-y-2">
                       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Experience</p>
-                      <p className="text-lg font-semibold text-slate-900">{talent?.years_of_experience || 0} Years</p>
+                      <p className="text-lg font-semibold text-slate-900">{experience} Years</p>
                    </div>
                 </div>
 
                 <div className="space-y-4 pt-2">
                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Professional Summary</p>
                    <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 border border-slate-100 p-5 rounded-2xl italic">
-                     {talent?.summary || "No professional summary provided."}
+                     {summary}
                    </p>
                 </div>
-             </CardContent>
+              </CardContent>
            </Card>
 
            {/* Detailed Sections Rendering */}

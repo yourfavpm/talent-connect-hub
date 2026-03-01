@@ -5,10 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, Star } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, CheckCircle2, Star, ArrowRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 const BookConsultation = () => {
     const { toast } = useToast();
@@ -56,10 +57,46 @@ const BookConsultation = () => {
                 description: "Failed to submit request. Please try again.",
                 variant: "destructive"
             });
-        } finally {
-            setLoading(false);
-        }
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const firstNameRef = useRef<HTMLInputElement>(null);
+  const [showStickyCTA, setShowStickyCTA] = useState(false);
+
+  const scrollToForm = () => {
+    const formElement = document.getElementById("form");
+    formElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+    firstNameRef.current?.focus();
+  };
+
+  useEffect(() => {
+    const checkScroll = () => {
+      const formElement = document.getElementById("form");
+      if (window.innerWidth <= 767 && formElement) {
+        const rect = formElement.getBoundingClientRect();
+        setShowStickyCTA(rect.bottom < 0 || rect.top > window.innerHeight);
+      } else {
+        setShowStickyCTA(false);
+      }
     };
+
+    window.addEventListener("scroll", checkScroll);
+    checkScroll();
+
+    if (window.innerWidth <= 767 || window.location.hash === "#form") {
+      const formElement = document.getElementById("form");
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: "smooth", block: "start" });
+        setTimeout(() => firstNameRef.current?.focus(), 600);
+      }
+    } else {
+      firstNameRef.current?.focus();
+    }
+
+    return () => window.removeEventListener("scroll", checkScroll);
+  }, []);
 
     if (submitted) {
         return (
@@ -96,7 +133,7 @@ const BookConsultation = () => {
 
                 <div className="grid lg:grid-cols-[45%_1fr] gap-16 lg:gap-32 items-start">
                     {/* LEFT COLUMN: Context Panel */}
-                    <div className="lg:sticky lg:top-24 space-y-12">
+                    <div className="order-2 lg:order-1 lg:sticky lg:top-24 space-y-12">
                         <div>
                             <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200 uppercase tracking-[0.15em] mb-6">
                                 Consultation Request
@@ -146,8 +183,13 @@ const BookConsultation = () => {
                     </div>
 
                     {/* RIGHT COLUMN: Form Panel */}
-                    <div className="bg-white border border-slate-200 rounded-xl p-8 md:p-12 shadow-sm max-w-[600px] w-full">
-                        <div className="mb-10">
+                    <div id="form" className="order-1 lg:order-2 bg-white border border-slate-200 rounded-xl p-8 md:p-12 shadow-sm max-w-[600px] w-full">
+                        {/* Mobile Header */}
+                        <div className="lg:hidden mb-10">
+                            <h1 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Define the Role.</h1>
+                            <p className="text-slate-500 font-medium tracking-tight leading-relaxed">We structure the match within 48 hours.</p>
+                        </div>
+                        <div className="hidden lg:block mb-10">
                             <h2 className="text-2xl font-bold text-slate-900 mb-2">Request Structured Matching</h2>
                             <p className="text-sm text-slate-500">All fields required unless marked optional.</p>
                         </div>
@@ -157,6 +199,7 @@ const BookConsultation = () => {
                                 <div className="space-y-2">
                                     <Label htmlFor="firstName" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">First Name</Label>
                                     <Input 
+                                        ref={firstNameRef}
                                         id="firstName" 
                                         value={formData.firstName} 
                                         onChange={(e) => handleChange("firstName", e.target.value)} 
@@ -267,6 +310,25 @@ const BookConsultation = () => {
                     </div>
                 </div>
             </div>
+            {/* Sticky Mobile CTA */}
+            <AnimatePresence>
+                {showStickyCTA && (
+                    <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] lg:hidden w-full px-6 flex justify-center"
+                    >
+                        <button
+                            onClick={scrollToForm}
+                            className="bg-slate-900 text-white px-8 py-4 rounded-full font-bold text-sm shadow-2xl flex items-center justify-center gap-2 whitespace-nowrap active:scale-95 transition-transform"
+                        >
+                            <ArrowRight className="w-4 h-4 rotate-[-90deg]" />
+                            Complete the form
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

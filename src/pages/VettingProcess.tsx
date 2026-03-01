@@ -9,13 +9,15 @@ const VettingProcess = () => {
     return (
         <div className="bg-white font-inter">
             {/* HERO SECTION */}
-            <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6">
+            <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="max-w-4xl">
+                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+                        {/* Left Content */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6 }}
+                            className="max-w-4xl"
                         >
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
                                 Vetting Standard
@@ -45,6 +47,58 @@ const VettingProcess = () => {
                                 >
                                     Explore Engagement Models →
                                 </Link>
+                            </div>
+                        </motion.div>
+
+                        {/* Right Visual (Layered Assurance) */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.8, delay: 0.2 }}
+                            className="relative lg:h-[500px] flex items-center justify-center"
+                        >
+                            <div className="relative w-full max-w-[400px]">
+                                {[
+                                    { title: "Institutional Baseline", desc: "Compliance & Identity Verification", icon: ShieldCheck, color: "bg-slate-50" },
+                                    { title: "Functional Integrity", desc: "Domain-Specific Skill Mapping", icon: Target, color: "bg-white" },
+                                    { title: "Execution Proof", desc: "Outcome-Based Case Review", icon: Award, color: "bg-white" },
+                                    { title: "Outcome Verification", desc: "Continuous Performance Scoring", icon: Zap, color: "bg-blue-50/50", active: true }
+                                ].map((card, idx) => (
+                                    <motion.div
+                                        key={idx}
+                                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        transition={{ duration: 0.5, delay: 0.4 + idx * 0.1 }}
+                                        style={{ 
+                                            zIndex: 4 - idx,
+                                            marginTop: idx === 0 ? 0 : "-40px",
+                                            marginLeft: `${idx * 16}px`,
+                                            rotate: `${(idx - 1.5) * 1}deg`
+                                        }}
+                                        className={`group relative border border-slate-200 rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_30px_rgb(0,0,0,0.06)] transition-all duration-500 ${card.color} ${card.active ? 'border-blue-200 ring-1 ring-blue-100' : ''}`}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300 ${card.active ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500'}`}>
+                                                <card.icon className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className={`text-sm font-bold tracking-tight transition-colors duration-300 ${card.active ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-900'}`}>
+                                                        {card.title}
+                                                    </h4>
+                                                    <span className={`text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border ${card.active ? 'bg-blue-100 border-blue-200 text-blue-700' : 'bg-slate-50 border-slate-200 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity'}`}>
+                                                        {card.active ? 'Active Standard' : 'Verified'}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[11px] text-slate-400 font-medium mt-1 leading-tight">{card.desc}</p>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+
+                                {/* Decorative Dots */}
+                                <div className="absolute -top-10 -right-10 w-24 h-24 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
+                                <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-slate-50 rounded-full blur-3xl opacity-50"></div>
                             </div>
                         </motion.div>
                     </div>

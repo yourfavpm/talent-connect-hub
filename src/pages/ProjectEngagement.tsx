@@ -8,13 +8,15 @@ const ProjectEngagement = () => {
   return (
     <div className="bg-white font-inter">
       {/* HERO SECTION */}
-      <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6">
+      <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
         <div className="container max-w-[1200px] mx-auto">
-          <div className="max-w-4xl">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            {/* Left Content */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
+              className="max-w-4xl"
             >
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
                 Project Engagement
@@ -45,6 +47,67 @@ const ProjectEngagement = () => {
                     Compare Engagement Models →
                 </Link>
               </div>
+            </motion.div>
+
+            {/* Right Visual (Enterprise Workflow) */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative"
+            >
+              <div className="bg-white border border-slate-200 rounded-[24px] p-10 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-blue-100/50 transition-colors duration-700"></div>
+                
+                <div className="relative space-y-0">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-10">Project Lifecycle Tracking</div>
+                  
+                  {[
+                    { label: "Project Scope", status: "defined", icon: Target },
+                    { label: "Talent Match", status: "assembled", icon: Users },
+                    { label: "Delivery Phase", status: "milestones", icon: Zap },
+                    { label: "Closeout", status: "transition", icon: CheckCircle2 }
+                  ].map((step, idx) => (
+                    <div key={idx} className="relative flex items-start gap-6 pb-12 last:pb-0">
+                      {/* Vertical Line */}
+                      {idx !== 3 && (
+                        <div className="absolute left-[7px] top-[24px] w-[1px] h-[calc(100%-14px)] bg-slate-100">
+                          <motion.div 
+                            initial={{ height: 0 }}
+                            animate={{ height: "100%" }}
+                            transition={{ duration: 1, delay: 0.5 + idx * 0.2 }}
+                            className="w-full bg-blue-600/30"
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Step Indicator */}
+                      <motion.div 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.4, delay: 0.4 + idx * 0.2 }}
+                        className={`w-4 h-4 rounded-full border-2 bg-white shrink-0 mt-1.5 z-10 transition-colors duration-300 ${idx === 2 ? 'border-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.2)]' : 'border-slate-200'}`}
+                      />
+                      
+                      {/* Label and Status */}
+                      <div className="flex flex-col flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-base font-bold tracking-tight transition-colors duration-300 ${idx === 2 ? 'text-slate-900' : 'text-slate-400'}`}>
+                            {step.label}
+                          </span>
+                          <step.icon className={`h-4 w-4 transition-colors duration-300 ${idx <= 2 ? 'text-blue-500/50' : 'text-slate-200'}`} />
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest mt-1 transition-colors duration-300 ${idx === 2 ? 'text-blue-600' : 'text-slate-400'}`}>
+                          {step.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Background accent */}
+              <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-blue-50/30 rounded-full blur-[100px]"></div>
             </motion.div>
           </div>
         </div>

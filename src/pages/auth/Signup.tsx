@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Star } from "lucide-react";
+import { Eye, EyeOff, Star, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import taskiveLogo from "@/assets/taskive-logo.png";
 import { z } from "zod";
 import { getFriendlyErrorMessage } from "@/utils/errorHandling";
@@ -120,10 +121,10 @@ const Signup = () => {
       });
 
       navigate(`/${portal}/dashboard`);
-    } catch (error: any) {
+    } catch (err: unknown) {
       toast({
         title: "Signup failed",
-        description: getFriendlyErrorMessage(error),
+        description: getFriendlyErrorMessage(err),
         variant: "destructive",
       });
     } finally {
@@ -131,8 +132,57 @@ const Signup = () => {
     }
   };
 
+  const firstNameRef = useRef<HTMLInputElement>(null);
+  const companyNameRef = useRef<HTMLInputElement>(null);
+  const [showStickyCTA, setShowStickyCTA] = useState(false);
+
+  const scrollToForm = () => {
+    const formElement = document.getElementById("form");
+    formElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (isTalent) {
+      firstNameRef.current?.focus();
+    } else {
+      companyNameRef.current?.focus();
+    }
+  };
+
+  useEffect(() => {
+    const checkScroll = () => {
+      if (window.innerWidth <= 767) {
+        const formElement = document.getElementById("form");
+        if (formElement) {
+          const rect = formElement.getBoundingClientRect();
+          setShowStickyCTA(rect.bottom < 0 || rect.top > window.innerHeight);
+        }
+      } else {
+        setShowStickyCTA(false);
+      }
+    };
+
+    window.addEventListener("scroll", checkScroll);
+    checkScroll();
+
+    // Initial focus and scroll
+    const isMobile = window.innerWidth <= 767;
+    if (isMobile || window.location.hash === "#form") {
+      const formElement = document.getElementById("form");
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: "smooth", block: "start" });
+        setTimeout(() => {
+          if (isTalent) firstNameRef.current?.focus();
+          else companyNameRef.current?.focus();
+        }, 600);
+      }
+    } else {
+      if (isTalent) firstNameRef.current?.focus();
+      else companyNameRef.current?.focus();
+    }
+
+    return () => window.removeEventListener("scroll", checkScroll);
+  }, [isTalent]);
+
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-white font-inter">
+    <div className="min-h-screen flex flex-col-reverse lg:flex-row bg-white font-inter overflow-x-hidden">
       {/* Brand Side (40%) - Light Style */}
       <div className="lg:w-[40%] bg-slate-50/80 border-r border-slate-100 p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden">
         {/* Subtle background element */}
@@ -186,10 +236,27 @@ const Signup = () => {
         </div>
       </div>
 
-      {/* Form Side (60%) */}
-      <div className="lg:w-[60%] flex flex-col justify-center px-6 lg:px-20 xl:px-32 py-12 bg-white">
+      <div id="form" className="lg:w-[60%] flex flex-col justify-center px-6 lg:px-20 xl:px-32 py-12 bg-white relative">
+        {/* Mobile Header (Refined) */}
+        <div className="lg:hidden flex flex-col items-center mb-10 text-center">
+          <Link to="/" className="mb-6">
+            <img src="/wordmark.png" alt="Taskive" className="h-6" />
+          </Link>
+          <div className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-50 text-blue-600 border border-slate-200 uppercase tracking-widest mb-6">
+            {isTalent ? "TALENT NETWORK" : "CLIENT ACCESS"}
+          </div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight leading-tight mb-4">
+            {isTalent ? "Accelerate Your Career Outcomes." : "Build Your Operations Team Structurally."}
+          </h1>
+          <p className="text-slate-500 text-base font-medium leading-relaxed">
+            {isTalent 
+              ? "Join an exclusive network of high-ownership professionals. Work with curated companies on your terms."
+              : "Taskive provides structured systems for hiring and managing pre-vetted product and operations talent globally."}
+          </p>
+        </div>
+
         <div className="max-w-md w-full mx-auto">
-          <div className="mb-10 text-center lg:text-left">
+          <div className="hidden lg:block mb-10 text-left">
             <h1 className="text-3xl font-bold text-slate-950 tracking-tight lg:text-4xl mb-3">
               {isTalent ? "Apply as Talent" : "Get Started"}
             </h1>
@@ -206,6 +273,7 @@ const Signup = () => {
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">First Name</Label>
                   <Input
+                    ref={firstNameRef}
                     id="firstName"
                     name="firstName"
                     type="text"
@@ -237,6 +305,7 @@ const Signup = () => {
                 <div className="space-y-2">
                   <Label htmlFor="companyName" className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">Company Name</Label>
                   <Input
+                    ref={companyNameRef}
                     id="companyName"
                     name="companyName"
                     type="text"
@@ -331,6 +400,25 @@ const Signup = () => {
           </div>
         </div>
       </div>
+      {/* Sticky Mobile CTA */}
+      <AnimatePresence>
+        {showStickyCTA && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] lg:hidden"
+          >
+            <button
+              onClick={scrollToForm}
+              className="bg-slate-900 text-white px-6 py-3 rounded-full font-bold text-sm shadow-xl flex items-center gap-2 whitespace-nowrap active:scale-95 transition-transform"
+            >
+              <ArrowRight className="w-4 h-4 rotate-[-90deg]" />
+              Start here
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
