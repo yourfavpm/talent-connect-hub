@@ -36,8 +36,8 @@ interface JobFormProps {
 
 const SERVICE_MODELS = [
     { value: "full_time", label: "Full-Time Hire", description: "One-Time Buyout, 15% of talent monthly salary, no time tracking." },
-    { value: "trial_to_hire", label: "Trial-to-Hire", description: "Taskive-managed, optional time tracking, buyout possible." },
-    { value: "one_time_project", label: "One-Time Project", description: "Taskive-managed, milestone/fixed payment, optional time tracking." },
+    { value: "trial_to_hire", label: "Trial-to-Hire", description: "OPSlyHR-managed, optional time tracking, buyout possible." },
+    { value: "one_time_project", label: "One-Time Project", description: "OPSlyHR-managed, milestone/fixed payment, optional time tracking." },
 ];
 
 const CURRENCIES = [

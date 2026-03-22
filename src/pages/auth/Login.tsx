@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Star, Shield, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import taskiveLogo from "@/assets/taskive-logo.png";
+
 import { getFriendlyErrorMessage } from "@/utils/errorHandling";
 
 const Login = () => {
@@ -173,7 +173,7 @@ const Login = () => {
         
         <div className="relative z-10">
           <Link to="/" className="inline-block mb-16 lg:mb-24">
-            <img src="/wordmark.png" alt="Taskive" className="h-7" />
+            <img src="/images/mainlogo.png" alt="OPSlyHR" className="h-28" />
           </Link>
 
           <div className="max-w-md">
@@ -226,7 +226,7 @@ const Login = () => {
         {/* Mobile Header (Refined) */}
         <div className="lg:hidden flex flex-col items-center mb-10 text-center">
           <Link to="/" className="mb-6">
-            <img src="/wordmark.png" alt="Taskive" className="h-6" />
+            <img src="/images/mainlogo.png" alt="OPSlyHR" className="h-24" />
           </Link>
           <div className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-50 text-slate-400 border border-slate-200 uppercase tracking-widest mb-6">
             {portal === "admin" ? "ADMIN ACCESS" : portal === "talent" ? "TALENT PORTAL" : "CLIENT PORTAL"}

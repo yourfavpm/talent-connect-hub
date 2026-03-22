@@ -122,7 +122,7 @@ export default function AdminJobs() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Jobs</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage all hiring requests across Taskive.</p>
+        <p className="text-sm text-gray-500 mt-1">Manage all hiring requests across OPSlyHR.</p>
       </div>
 
       {loading ? (

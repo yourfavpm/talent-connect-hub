@@ -25,11 +25,12 @@ import {
   ExternalLink, FileText, CheckCircle, Timer,
   AlertCircle, ChevronRight, LayoutDashboard,
   Filter, UserCircle, Settings, HelpCircle,
-  XCircle,
+  XCircle, ClipboardList,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useSearchParams } from "react-router-dom";
 import clsx from "clsx";
+import { FEATURES } from "@/config/features";
 
 
 interface Job {
@@ -139,6 +140,15 @@ const TalentJobs = () => {
   const [applying, setApplying] = useState(false);
   const [applyDialogOpen, setApplyDialogOpen] = useState(false);
 
+  // V2 Hire Requests state
+  const [v2Requests, setV2Requests] = useState<Record<string, unknown>[]>([]);
+  const [v2Applications, setV2Applications] = useState<Record<string, unknown>[]>([]);
+  const [v2ApplyNote, setV2ApplyNote] = useState("");
+  const [v2ApplyingFor, setV2ApplyingFor] = useState<string | null>(null);
+  const [v2ApplyDialogOpen, setV2ApplyDialogOpen] = useState(false);
+  const [selectedV2Request, setSelectedV2Request] = useState<Record<string, unknown> | null>(null);
+  const [isV2DrawerOpen, setIsV2DrawerOpen] = useState(false);
+
 
   const setTab = (tab: string) => {
     setSearchParams({ tab });
@@ -161,7 +171,7 @@ const TalentJobs = () => {
 
       if (talentData) {
         setTalent({
-          ...(talentData as any),
+          ...(talentData as unknown as Record<string, unknown>),
           vetting_status: v2Profile?.status || talentData.vetting_status
         });
       }
@@ -193,6 +203,24 @@ const TalentJobs = () => {
           .eq("status", "active");
 
         setActiveContracts((contractsData as unknown as Contract[]) || []);
+      }
+
+      // Fetch V2 Hire Requests
+      if (FEATURES.hire_request_v2_enabled) {
+        const { data: v2Reqs } = await supabase
+          .from("hr_v2_hire_requests")
+          .select("*")
+          .eq("status", "published")
+          .order("published_at", { ascending: false });
+        setV2Requests((v2Reqs as unknown as Record<string, unknown>[]) || []);
+
+        if (user) {
+          const { data: v2Apps } = await supabase
+            .from("hr_v2_applications")
+            .select("*")
+            .eq("talent_user_id", user.id);
+          setV2Applications((v2Apps as unknown as Record<string, unknown>[]) || []);
+        }
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -231,7 +259,7 @@ const TalentJobs = () => {
       setApplyDialogOpen(false);
       setCoverLetter("");
       fetchData(); // Refresh to update status
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
         description: (error as Error).message || "Failed to submit application",
@@ -355,17 +383,17 @@ const TalentJobs = () => {
         </div>
         
         {/* Compact Tab Switcher (Pill Style) */}
-        <div className="flex items-center gap-1 bg-slate-100/50 p-1 rounded-xl border border-slate-100">
+        <div className="flex items-center gap-1 bg-slate-100/50 p-1 rounded-xl border border-slate-100 overflow-x-auto">
            {[
              { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-             { id: "taskive", label: "Taskive Jobs", icon: Briefcase },
+             { id: "taskive", label: FEATURES.hire_request_v2_enabled ? "Hire Requests" : "OPSlyHR Jobs", icon: FEATURES.hire_request_v2_enabled ? ClipboardList : Briefcase },
              { id: "external", label: "External Roles", icon: Globe }
            ].map((tab) => (
              <button
               key={tab.id}
               onClick={() => setTab(tab.id)}
               className={clsx(
-                "flex items-center gap-2 px-4 py-2 text-[12px] font-bold uppercase tracking-widest transition-all rounded-lg",
+                "flex items-center gap-2 px-4 py-2 text-[12px] font-bold uppercase tracking-widest transition-all rounded-lg whitespace-nowrap",
                 activeTab === tab.id 
                   ? "bg-white text-slate-900 shadow-sm border border-slate-200" 
                   : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
@@ -373,6 +401,9 @@ const TalentJobs = () => {
              >
                <tab.icon className="h-3.5 w-3.5" />
                {tab.label}
+               {tab.id === "taskive" && FEATURES.hire_request_v2_enabled && v2Requests.length > 0 && (
+                 <span className="bg-blue-100 text-blue-700 text-[9px] font-bold px-1.5 rounded-md">{v2Requests.length}</span>
+               )}
              </button>
            ))}
         </div>
@@ -409,7 +440,7 @@ const TalentJobs = () => {
               onClick={() => setTab("taskive")}
               className="h-12 px-8 bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-bold uppercase tracking-widest rounded-xl shadow-lg shadow-slate-900/10 transition-all active:scale-[0.98]"
             >
-              Browse Taskive Jobs
+              Browse OPSlyHR Jobs
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
             <Button 
@@ -515,104 +546,199 @@ const TalentJobs = () => {
 
 
         <TabsContent value="taskive" className="space-y-8 m-0 focus-visible:outline-none">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
-            <div>
-              <h2 className="text-[18px] font-bold text-slate-900 tracking-tight">Available Positions</h2>
-              <p className="text-[14px] text-slate-500">Roles posted directly by Taskive partners.</p>
-            </div>
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <div className="relative flex-1 md:w-72">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder="Search roles, skills, or companies..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-11 bg-white border-slate-200 rounded-xl focus:ring-0 focus:border-slate-900 text-[13px] shadow-sm"
-                />
+          {FEATURES.hire_request_v2_enabled ? (
+            /* ── V2 Hire Requests (replaces legacy Taskive Jobs) ── */
+            <>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
+                <div>
+                  <h2 className="text-[18px] font-bold text-slate-900 tracking-tight">OPSlyHR Hire Requests</h2>
+                  <p className="text-[14px] text-slate-500">Hiring requests from verified enterprise clients.</p>
+                </div>
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                  <div className="relative flex-1 md:w-72">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                      placeholder="Search requests..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 h-11 bg-white border-slate-200 rounded-xl focus:ring-0 focus:border-slate-900 text-[13px] shadow-sm"
+                    />
+                  </div>
+                </div>
               </div>
-              <Button variant="outline" className="h-11 px-4 border-slate-200 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-50">
-                <Filter className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
 
-          <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
-            {filteredJobs.length === 0 ? (
-              <div className="py-32 text-center space-y-4">
-                <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300">
-                  <Briefcase className="h-8 w-8" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[15px] font-bold text-slate-900">No open jobs found</p>
-                  <p className="text-[13px] text-slate-500 max-w-[280px] mx-auto italic">Check back frequently for new opportunities matching your profile.</p>
-                </div>
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-100/50">
-                {filteredJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    onClick={() => openJobDetail(job)}
-                    className="group px-8 py-7 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-all cursor-pointer relative"
-                  >
-                    <div className="flex-1 min-w-0 space-y-4">
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">{job.title}</h3>
-                          {job.service_model && (
-                            <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest bg-slate-50 text-slate-500 border-slate-200/60 transition-colors group-hover:bg-white px-2 py-0.5">
-                              {SERVICE_MODEL_LABELS[job.service_model] || job.service_model.replace('_', ' ')}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500">
-                          <span className="text-slate-400">{job.clients?.company_name}</span>
-                          <span className="h-1 w-1 rounded-full bg-slate-300" />
-                          <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-slate-300" /> {job.location || "Remote"}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-wrap items-center gap-y-2 gap-x-6">
-                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                          <DollarSign className="h-3.5 w-3.5" />
-                          <span className="text-slate-900">
-                            {getCurrencySymbol(job.preferred_currency)}{job.budget_min}-{job.budget_max}
-                          </span>
-                          <span className="opacity-60">/{job.salary_type || "hr"}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                          <Timer className="h-3.5 w-3.5" />
-                          <span className="text-slate-900">{job.weekly_hours || "40"} hrs/week</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                          <Calendar className="h-3.5 w-3.5" />
-                          <span className="text-slate-900">{job.duration || "Ongoing"}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                          <Clock className="h-3.5 w-3.5" />
-                          <span className="text-slate-500">Posted {format(new Date(job.published_at || job.created_at), "MMM d, yyyy")}</span>
-                        </div>
-                      </div>
+              <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
+                {v2Requests.filter(r => r.title?.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+                  <div className="py-32 text-center space-y-4">
+                    <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300">
+                      <ClipboardList className="h-8 w-8" />
                     </div>
-                    
-                    <div className="flex items-center justify-between md:justify-end gap-6 shrink-0 border-t md:border-t-0 pt-4 md:pt-0">
-                       {hasApplied(job.id) ? (
-                         <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl text-[11px] font-bold text-emerald-600 uppercase tracking-widest transition-all">
-                           <CheckCircle className="h-3.5 w-3.5" />
-                           Applied
-                         </div>
-                       ) : (
-                         <button className="flex items-center gap-2 group/btn px-5 py-2.5 bg-slate-50 hover:bg-slate-900 text-slate-600 hover:text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all border border-slate-100 hover:border-slate-900 shadow-sm active:scale-[0.98]">
-                           View Role
-                           <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-0.5" />
-                         </button>
-                       )}
+                    <div className="space-y-1">
+                      <p className="text-[15px] font-bold text-slate-900">No hire requests available</p>
+                      <p className="text-[13px] text-slate-500 max-w-[280px] mx-auto italic">New requests from clients will appear here once published.</p>
                     </div>
                   </div>
-                ))}
+                ) : (
+                  <div className="divide-y divide-slate-100/50">
+                    {v2Requests.filter(r => r.title?.toLowerCase().includes(searchQuery.toLowerCase())).map((req) => {
+                      const alreadyApplied = v2Applications.some(a => a.hire_request_id === req.id);
+                      const isVetted = talent && ["fully_vetted", "approved", "vetted"].includes(talent.vetting_status);
+                      return (
+                        <div
+                          key={req.id}
+                          onClick={() => { setSelectedV2Request(req); setIsV2DrawerOpen(true); }}
+                          className="group px-8 py-7 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-all cursor-pointer"
+                        >
+                          <div className="flex-1 min-w-0 space-y-4">
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2 mb-1">
+                                <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">{req.title}</h3>
+                                <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest bg-blue-50 text-blue-600 border-blue-200/60 px-2 py-0.5">
+                                  {req.service_model?.replace(/_/g, ' ')}
+                                </Badge>
+                              </div>
+                              <p className="text-[13px] text-slate-500 line-clamp-2">{req.role_summary}</p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-y-2 gap-x-6">
+                              {req.engagement_type && (
+                                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                                  <Clock className="h-3.5 w-3.5" /><span className="text-slate-900 capitalize">{req.engagement_type.replace(/_/g, ' ')}</span>
+                                </div>
+                              )}
+                              {req.location_preference && (
+                                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                                  <MapPin className="h-3.5 w-3.5" /><span className="text-slate-900">{req.location_preference}</span>
+                                </div>
+                              )}
+                              {req.budget_min && req.budget_max && (
+                                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                                  <DollarSign className="h-3.5 w-3.5" /><span className="text-slate-900">${req.budget_min} - ${req.budget_max}</span>
+                                </div>
+                              )}
+                              {req.published_at && (
+                                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                                  <Calendar className="h-3.5 w-3.5" /><span className="text-slate-500">Published {format(new Date(req.published_at), "MMM d, yyyy")}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between md:justify-end gap-4 shrink-0 border-t md:border-t-0 pt-4 md:pt-0">
+                            {alreadyApplied ? (
+                              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl text-[11px] font-bold text-emerald-600 uppercase tracking-widest">
+                                <CheckCircle className="h-3.5 w-3.5" /> Applied
+                              </div>
+                            ) : !isVetted ? (
+                              <div className="text-[11px] text-slate-400 italic">Complete vetting to apply</div>
+                            ) : (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setV2ApplyingFor(req.id); setV2ApplyDialogOpen(true); }}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-slate-50 hover:bg-slate-900 text-slate-600 hover:text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all border border-slate-100 hover:border-slate-900 shadow-sm active:scale-[0.98]"
+                              >
+                                Apply Now <ArrowRight className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            /* ── Legacy Taskive Jobs ── */
+            <>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
+                <div>
+                  <h2 className="text-[18px] font-bold text-slate-900 tracking-tight">Available Positions</h2>
+                  <p className="text-[14px] text-slate-500">Roles posted directly by OPSlyHR partners.</p>
+                </div>
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                  <div className="relative flex-1 md:w-72">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                      placeholder="Search roles, skills, or companies..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 h-11 bg-white border-slate-200 rounded-xl focus:ring-0 focus:border-slate-900 text-[13px] shadow-sm"
+                    />
+                  </div>
+                  <Button variant="outline" className="h-11 px-4 border-slate-200 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-50">
+                    <Filter className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
+                {filteredJobs.length === 0 ? (
+                  <div className="py-32 text-center space-y-4">
+                    <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300">
+                      <Briefcase className="h-8 w-8" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[15px] font-bold text-slate-900">No open jobs found</p>
+                      <p className="text-[13px] text-slate-500 max-w-[280px] mx-auto italic">Check back frequently for new opportunities matching your profile.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-100/50">
+                    {filteredJobs.map((job) => (
+                      <div
+                        key={job.id}
+                        onClick={() => openJobDetail(job)}
+                        className="group px-8 py-7 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-all cursor-pointer relative"
+                      >
+                        <div className="flex-1 min-w-0 space-y-4">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">{job.title}</h3>
+                              {job.service_model && (
+                                <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest bg-slate-50 text-slate-500 border-slate-200/60 transition-colors group-hover:bg-white px-2 py-0.5">
+                                  {SERVICE_MODEL_LABELS[job.service_model] || job.service_model.replace('_', ' ')}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500">
+                              <span className="text-slate-400">{job.clients?.company_name}</span>
+                              <span className="h-1 w-1 rounded-full bg-slate-300" />
+                              <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-slate-300" /> {job.location || "Remote"}</span>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-y-2 gap-x-6">
+                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                              <DollarSign className="h-3.5 w-3.5" />
+                              <span className="text-slate-900">{getCurrencySymbol(job.preferred_currency)}{job.budget_min}-{job.budget_max}</span>
+                              <span className="opacity-60">/{job.salary_type || "hr"}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                              <Timer className="h-3.5 w-3.5" /><span className="text-slate-900">{job.weekly_hours || "40"} hrs/week</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                              <Calendar className="h-3.5 w-3.5" /><span className="text-slate-900">{job.duration || "Ongoing"}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                              <Clock className="h-3.5 w-3.5" /><span className="text-slate-500">Posted {format(new Date(job.published_at || job.created_at), "MMM d, yyyy")}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between md:justify-end gap-6 shrink-0 border-t md:border-t-0 pt-4 md:pt-0">
+                           {hasApplied(job.id) ? (
+                             <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl text-[11px] font-bold text-emerald-600 uppercase tracking-widest">
+                               <CheckCircle className="h-3.5 w-3.5" /> Applied
+                             </div>
+                           ) : (
+                             <button className="flex items-center gap-2 group/btn px-5 py-2.5 bg-slate-50 hover:bg-slate-900 text-slate-600 hover:text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all border border-slate-100 hover:border-slate-900 shadow-sm active:scale-[0.98]">
+                               View Role <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-0.5" />
+                             </button>
+                           )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </TabsContent>
 
 
@@ -822,6 +948,166 @@ const TalentJobs = () => {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* V2 Hire Request Detail Drawer */}
+      {FEATURES.hire_request_v2_enabled && (
+        <Sheet open={isV2DrawerOpen} onOpenChange={setIsV2DrawerOpen}>
+          <SheetContent className="w-full sm:max-w-2xl bg-white border-l border-slate-200 p-0 overflow-auto">
+            {selectedV2Request && (
+              <div className="flex flex-col min-h-full">
+                <SheetHeader className="sr-only">
+                  <SheetTitle>{selectedV2Request.title}</SheetTitle>
+                  <SheetDescription>Details for this hire request</SheetDescription>
+                </SheetHeader>
+                {/* Hero */}
+                <div className="bg-gradient-to-b from-blue-50 to-white px-10 pt-14 pb-10 space-y-6">
+                  <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none text-[10px] font-bold uppercase tracking-widest">
+                    {selectedV2Request.service_model?.replace(/_/g, ' ')}
+                  </Badge>
+                  <h2 className="text-[28px] font-bold text-slate-900 tracking-tight leading-tight">{selectedV2Request.title}</h2>
+                  <div className="flex flex-wrap items-center gap-6">
+                    {selectedV2Request.location_preference && (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-slate-400" />
+                        <span className="text-sm text-slate-600 font-medium">{selectedV2Request.location_preference}</span>
+                      </div>
+                    )}
+                    {selectedV2Request.engagement_type && (
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-slate-400" />
+                        <span className="text-sm text-slate-600 font-medium capitalize">{selectedV2Request.engagement_type.replace(/_/g, ' ')}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 px-10 py-10 space-y-12">
+                  {/* Key Details Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    {[
+                      { label: "Budget", val: selectedV2Request.budget_min && selectedV2Request.budget_max ? `$${selectedV2Request.budget_min} - $${selectedV2Request.budget_max}` : selectedV2Request.fixed_budget ? `$${selectedV2Request.fixed_budget}` : "TBD", icon: DollarSign },
+                      { label: "Timezone", val: selectedV2Request.timezone_overlap?.replace(/_/g, ' ') || "Flexible", icon: Globe },
+                      { label: "Published", val: selectedV2Request.published_at ? format(new Date(selectedV2Request.published_at), "MMM d, yyyy") : "—", icon: Calendar },
+                    ].map((item, i) => (
+                      <div key={i} className="p-5 rounded-2xl bg-slate-50/50 border border-slate-100 space-y-2">
+                        <item.icon className="h-4 w-4 text-slate-400" />
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.label}</p>
+                          <p className="text-[13px] font-bold text-slate-900 capitalize">{item.val}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Sections */}
+                  <div className="space-y-10">
+                    {selectedV2Request.role_summary && (
+                      <section className="space-y-4">
+                        <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest border-l-2 border-blue-600 pl-4 py-1">Role Summary</h3>
+                        <p className="text-[15px] text-slate-600 leading-relaxed font-medium whitespace-pre-line">{selectedV2Request.role_summary}</p>
+                      </section>
+                    )}
+                    {selectedV2Request.responsibilities && (
+                      <section className="space-y-4">
+                        <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest border-l-2 border-slate-200 pl-4 py-1">Responsibilities</h3>
+                        <p className="text-[15px] text-slate-600 leading-relaxed font-medium whitespace-pre-line">{selectedV2Request.responsibilities}</p>
+                      </section>
+                    )}
+                    {selectedV2Request.requirements && (
+                      <section className="space-y-4">
+                        <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest border-l-2 border-slate-200 pl-4 py-1">Requirements</h3>
+                        <p className="text-[15px] text-slate-600 leading-relaxed font-medium whitespace-pre-line">{selectedV2Request.requirements}</p>
+                      </section>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sticky Footer */}
+                <div className="sticky bottom-0 w-full p-8 bg-white/80 backdrop-blur-md border-t border-slate-100 flex items-center justify-end gap-4 z-20">
+                  <Button variant="outline" onClick={() => setIsV2DrawerOpen(false)} className="h-12 px-6 border-slate-200 text-[12px] font-bold uppercase tracking-widest text-slate-500 rounded-xl">
+                    Close
+                  </Button>
+                  {(() => {
+                    const alreadyApplied = v2Applications.some(a => a.hire_request_id === selectedV2Request.id);
+                    const isVetted = talent && ["fully_vetted", "approved", "vetted"].includes(talent.vetting_status);
+                    if (alreadyApplied) {
+                      return (
+                        <div className="h-12 px-8 bg-emerald-500 text-white rounded-xl flex items-center gap-2 text-[12px] font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/20">
+                          <CheckCircle className="h-4 w-4" /> Applied
+                        </div>
+                      );
+                    }
+                    if (!isVetted) {
+                      return <span className="text-xs text-slate-400 italic">Complete vetting to apply</span>;
+                    }
+                    return (
+                      <Button
+                        onClick={() => { setV2ApplyingFor(selectedV2Request.id); setV2ApplyDialogOpen(true); setIsV2DrawerOpen(false); }}
+                        className="h-12 px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[12px] font-bold uppercase tracking-widest shadow-lg shadow-blue-600/20 active:scale-[0.98]"
+                      >
+                        Apply for this role
+                      </Button>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+          </SheetContent>
+        </Sheet>
+      )}
+
+
+      {/* V2 Hire Request Apply Dialog */}
+      {FEATURES.hire_request_v2_enabled && (
+        <Dialog open={v2ApplyDialogOpen} onOpenChange={setV2ApplyDialogOpen}>
+          <DialogContent className="sm:max-w-lg bg-white rounded-[32px] p-0 overflow-hidden border-none shadow-2xl">
+            <div className="px-10 py-12 space-y-8">
+              <div className="space-y-2 text-center">
+                <h2 className="text-[24px] font-bold text-slate-900 tracking-tight leading-none">Apply for Hire Request</h2>
+                <p className="text-[14px] text-slate-500 font-medium">Tell the admin team why you're a great fit.</p>
+              </div>
+              <div className="space-y-4">
+                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Application Note (Optional)</label>
+                <Textarea
+                  placeholder="Highlight your relevant experience and interest..."
+                  className="min-h-[120px] p-5 bg-slate-50 border-slate-100 rounded-2xl focus:ring-0 focus:border-slate-300 text-[14px] font-medium leading-relaxed shadow-inner"
+                  value={v2ApplyNote}
+                  onChange={(e) => setV2ApplyNote(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-4 pt-2">
+                <Button variant="ghost" onClick={() => { setV2ApplyDialogOpen(false); setV2ApplyNote(""); setV2ApplyingFor(null); }} className="flex-1 h-14 rounded-2xl text-[12px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900 hover:bg-slate-50">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={async () => {
+                    if (!v2ApplyingFor) return;
+                    setApplying(true);
+                    try {
+                      const { error } = await (supabase as unknown as { rpc: (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }> }).rpc('hr_v2_talent_apply', { req_id: v2ApplyingFor, note: v2ApplyNote });
+                      if (error) throw error;
+                      toast({ title: "Application Submitted", description: "Your application has been sent to the OPSlyHR team." });
+                      setV2ApplyDialogOpen(false);
+                      setV2ApplyNote("");
+                      setV2ApplyingFor(null);
+                      fetchData();
+                    } catch (error: unknown) {
+                      toast({ title: "Error", description: (error as Error).message || "Failed to apply", variant: "destructive" });
+                    } finally {
+                      setApplying(false);
+                    }
+                  }}
+                  disabled={applying}
+                  className="flex-[2] h-14 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-[12px] font-bold uppercase tracking-widest shadow-xl shadow-slate-900/10 transition-all active:scale-[0.98]"
+                >
+                  {applying ? "Sending..." : "Submit Application"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

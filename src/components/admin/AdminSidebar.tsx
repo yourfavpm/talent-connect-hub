@@ -16,18 +16,23 @@ import {
   Scale,
   Calendar,
   ShieldCheck,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCounts } from "@/hooks/useUnreadCounts";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { FEATURES } from "@/config/features";
 
 const navigation = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: ["super_admin", "operations_admin", "vetting_admin", "finance_admin", "support_admin"] },
   { name: "Clients", href: "/admin/clients", icon: Users, roles: ["super_admin", "operations_admin"] },
   { name: "Vetting", href: "/admin/vetting", icon: ShieldCheck, badgeKey: "vetting", roles: ["super_admin", "operations_admin", "vetting_admin"] },
   { name: "Talents", href: "/admin/talents", icon: UserPlus, roles: ["super_admin", "operations_admin", "vetting_admin"] },
+  ...(FEATURES.hire_request_v2_enabled
+    ? [{ name: "Hire Requests", href: "/admin/hire-requests", icon: ClipboardList, roles: ["super_admin", "operations_admin"] }]
+    : []),
   { name: "Jobs", href: "/admin/jobs", icon: Briefcase, badgeKey: "jobs", roles: ["super_admin", "operations_admin"] },
   { name: "Timesheets", href: "/admin/timesheets", icon: Clock, badgeKey: "timesheets", roles: ["super_admin", "operations_admin", "finance_admin"] },
   { name: "Agreements", href: "/admin/legal/agreements", icon: Scale, roles: ["super_admin", "operations_admin"] },
@@ -148,7 +153,7 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
         <div className="flex items-center justify-between px-5 h-20 shrink-0 pt-4">
           {!isCollapsed ? (
             <div className="flex flex-col">
-              <img src="/wordmark.png" alt="Taskive" className="h-[22px] w-auto animate-fade-in" />
+              <img src="/images/logoicon.png" alt="OPSlyHR" className="h-28 w-auto animate-fade-in" />
               <span className="text-[10px] font-semibold text-gray-400 tracking-wider uppercase mt-1 ml-0.5">Admin Portal</span>
             </div>
           ) : (

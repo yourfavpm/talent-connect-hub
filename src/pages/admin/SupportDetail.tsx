@@ -315,7 +315,7 @@ const AdminSupportDetail = () => {
                                     <div className={cn("flex-1 space-y-1.5 flex flex-col", reply.is_admin_reply ? "items-end" : "items-start")}>
                                         <div className="flex items-center gap-2 px-1">
                                             <span className="text-xs font-bold text-gray-900">
-                                                {reply.is_admin_reply ? "Taskive Admin" : `${ticket.user?.first_name} ${ticket.user?.last_name}`}
+                                                {reply.is_admin_reply ? "OPSlyHR Admin" : `${ticket.user?.first_name} ${ticket.user?.last_name}`}
                                             </span>
                                             <span className="text-[10px] text-gray-400">
                                                 {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}

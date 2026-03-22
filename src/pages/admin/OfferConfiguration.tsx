@@ -708,7 +708,7 @@ const AdminOfferConfig = () => {
                                 <span className="font-mono font-semibold">${clientBillingAmount.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">Taskive Margin:</span>
+                                <span className="text-sm text-muted-foreground">OPSlyHR Margin:</span>
                                 <span className="font-mono">{taskiveMargin}%</span>
                             </div>
                             <div className="h-px bg-green-200"></div>
@@ -760,7 +760,7 @@ const AdminOfferConfig = () => {
                                     <div className="text-sm">
                                         <p className="font-semibold text-green-900">Direct Employment</p>
                                         <p className="text-green-700 mt-1">
-                                            Talent will be directly employed by client. No ongoing payments from Taskive.
+                                            Talent will be directly employed by client. No ongoing payments from OPSlyHR.
                                         </p>
                                     </div>
                                 </div>

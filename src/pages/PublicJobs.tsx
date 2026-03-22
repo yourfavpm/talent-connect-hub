@@ -30,7 +30,7 @@ import {
     LogIn,
     UserPlus,
 } from "lucide-react";
-import taskiveLogo from "@/assets/taskive-logo.png";
+
 
 const PublicJobs = () => {
     const { user } = useAuth();
@@ -104,7 +104,7 @@ const PublicJobs = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <img src={taskiveLogo} alt="Taskive" className="h-8" />
+                            <img src="/images/mainlogo.png" alt="OPSlyHR" className="h-32" />
                             <h1 className="text-2xl font-bold text-gray-900">Job Board</h1>
                         </div>
                         {!user && (

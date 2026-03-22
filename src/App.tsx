@@ -39,6 +39,10 @@ import ClientTimesheets from "@/pages/client/Timesheets";
 import Team from "@/pages/client/Team";
 import ClientSupport from "@/pages/client/Support";
 import ClientSettings from "@/pages/client/Settings";
+import { FEATURES } from "@/config/features";
+import HireRequestsList from "@/pages/client/HireRequests/HireRequestsList";
+import CreateHireRequest from "@/pages/client/HireRequests/CreateHireRequest";
+import HireRequestDetail from "@/pages/client/HireRequests/HireRequestDetail";
 
 import TalentLayout from "./components/talent/TalentLayout";
 import TalentOnboarding from "./pages/talent/Onboarding";
@@ -109,6 +113,8 @@ import VettingQueueV2 from "./pages/admin/VettingQueueV2";
 import VettingWorkspaceV2 from "./pages/admin/VettingWorkspaceV2";
 import AdminTalentDirectory from "./pages/admin/TalentDirectory/AdminTalentDirectory";
 import AdminTalentProfileView from "./pages/admin/TalentDirectory/AdminTalentProfileView";
+import AdminHireRequestsList from "./pages/admin/HireRequests/AdminHireRequestsList";
+import AdminHireRequestDetail from "./pages/admin/HireRequests/AdminHireRequestDetail";
 
 const OnboardingRouter = () => {
   const { version, isLoading } = useVettingVersion();
@@ -188,9 +194,23 @@ const App = () => (
               <Route path="dashboard" element={<ClientDashboard />} />
               <Route path="browse-talents" element={<BrowseTalents />} />
               <Route path="browse-talents/:talentId" element={<ClientTalentProfile />} />
-              <Route path="jobs" element={<Jobs />} />
-              <Route path="jobs/new" element={<CreateJob />} />
-              <Route path="jobs/:id" element={<ClientJobDetail />} />
+              
+              {/* Feature Flagged: Jobs vs Hire Requests */}
+              {FEATURES.hire_request_v2_enabled ? (
+                <>
+                  <Route path="hire-requests" element={<HireRequestsList />} />
+                  <Route path="hire-requests/new" element={<CreateHireRequest />} />
+                  <Route path="hire-requests/:id" element={<HireRequestDetail />} />
+                  <Route path="jobs/*" element={<Navigate to="/client/hire-requests" replace />} />
+                </>
+              ) : (
+                <>
+                  <Route path="jobs" element={<Jobs />} />
+                  <Route path="jobs/new" element={<CreateJob />} />
+                  <Route path="jobs/:id" element={<ClientJobDetail />} />
+                </>
+              )}
+
               <Route path="contracts" element={<Contracts />} />
               <Route path="timesheets" element={<ClientTimesheets />} />
               <Route path="invoices" element={<Invoices />} />
@@ -243,6 +263,11 @@ const App = () => (
               <Route path="clients/:id" element={<AdminClientDetail />} />
               <Route path="jobs" element={<AdminJobs />} />
               <Route path="jobs/:id" element={<AdminJobDetail />} />
+
+              {/* Hire Requests V2 */}
+              <Route path="hire-requests" element={<AdminHireRequestsList />} />
+              <Route path="hire-requests/:id" element={<AdminHireRequestDetail />} />
+
               <Route path="offers" element={<AdminOffers />} />
               <Route path="offers/:offerId/configure" element={<AdminOfferConfig />} />
               <Route path="legal/agreements" element={<AgreementTemplates />} />

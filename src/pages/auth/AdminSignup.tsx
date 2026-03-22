@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, ShieldAlert } from "lucide-react";
-import taskiveLogo from "@/assets/taskive-logo.png";
+
 import { getFriendlyErrorMessage } from "@/utils/errorHandling";
 
 const AdminSignup = () => {
@@ -41,7 +41,7 @@ const AdminSignup = () => {
         password,
         options: {
           data: {
-            full_name: "Taskive Super Admin",
+            full_name: "OPSlyHR Super Admin",
             first_name: "Super",
             last_name: "Admin",
             portal: "admin" // Add portal meta just in case
@@ -109,7 +109,7 @@ const AdminSignup = () => {
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-lg p-8 shadow-2xl">
         <div className="text-center mb-8">
-          <img src={taskiveLogo} alt="Taskive" className="h-10 mx-auto mb-4 opacity-80" />
+          <img src="/images/logoicon.png" alt="OPSlyHR" className="h-36 mx-auto mb-4 opacity-80" />
           <div className="flex items-center justify-center gap-2 text-red-500 mb-2">
             <ShieldAlert className="h-5 w-5" />
             <span className="font-bold text-sm tracking-wider uppercase">Restricted Access</span>

@@ -258,7 +258,7 @@ const ServiceModels = () => {
                                 <Clock className="h-4 w-4 text-blue-500" />
                                 Managed Payroll & Splits
                             </CardTitle>
-                            <CardDescription className="text-[11px]">Configure how the client bill is split between Taskive and the Talent.</CardDescription>
+                            <CardDescription className="text-[11px]">Configure how the client bill is split between OPSlyHR and the Talent.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-2 gap-8">
@@ -274,7 +274,7 @@ const ServiceModels = () => {
                                         />
                                         <Percent className="h-3 w-3 absolute right-3 top-3 text-gray-400" />
                                     </div>
-                                    <p className="text-[10px] text-gray-400">Taskive's share of the billing.</p>
+                                    <p className="text-[10px] text-gray-400">OPSlyHR's share of the billing.</p>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="payout_pct" className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Talent Payout (%)</Label>

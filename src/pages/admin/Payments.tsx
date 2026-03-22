@@ -519,7 +519,7 @@ const AdminPayments = () => {
                                                     <span className="font-medium text-gray-900">${selectedPayout.gross_amount.toLocaleString()}</span>
                                                 </div>
                                                 <div className="flex justify-between text-xs text-gray-600">
-                                                    <span>Taskive Commission</span>
+                                                    <span>OPSlyHR Commission</span>
                                                     <span className="font-medium text-red-600">-${selectedPayout.commission_amount.toLocaleString()}</span>
                                                 </div>
                                                 {/* Deduction Records loop would go here */}

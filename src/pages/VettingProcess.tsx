@@ -26,7 +26,7 @@ const VettingProcess = () => {
                                 A Structured Evaluation <br className="hidden md:block" /> Framework for Operators.
                             </h1>
                             <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-2xl">
-                                Every professional admitted into the Taskive network undergoes a multi-stage assessment designed to evaluate execution depth, operational judgment, and long-term impact.
+                                Every professional admitted into the OPSlyHR network undergoes a multi-stage assessment designed to evaluate execution depth, operational judgment, and long-term impact.
                             </p>
                             
                             <div className="flex flex-col sm:flex-row items-center gap-8">
@@ -112,7 +112,7 @@ const VettingProcess = () => {
                         <div>
                             <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">We Vet for Execution, <br /> Not Just Experience.</h2>
                             <p className="text-lg text-slate-600 font-medium leading-relaxed mb-8">
-                                Taskive evaluates documented outcomes, execution maturity, and functional depth — not resumes alone. We look for operators who can translate complexity into measurable progress.
+                                OPSlyHR evaluates documented outcomes, execution maturity, and functional depth — not resumes alone. We look for operators who can translate complexity into measurable progress.
                             </p>
                         </div>
                         <div className="space-y-6">
@@ -237,7 +237,7 @@ const VettingProcess = () => {
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="max-w-3xl mx-auto text-center mb-20">
                         <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">Why Structured Vetting Reduces Risk</h2>
-                        <p className="text-slate-500 font-medium">Hiring without vetting is a variable cost. Hiring with Taskive is a managed investment.</p>
+                        <p className="text-slate-500 font-medium">Hiring without vetting is a variable cost. Hiring with OPSlyHR is a managed investment.</p>
                     </div>
 
                     <div className="max-w-4xl mx-auto overflow-hidden border border-slate-100 rounded-2xl shadow-sm">
@@ -246,7 +246,7 @@ const VettingProcess = () => {
                                 <tr className="bg-slate-50 border-b border-slate-100">
                                     <th className="px-8 py-6 text-sm font-bold text-slate-500 uppercase tracking-widest">Dimension</th>
                                     <th className="px-8 py-6 text-sm font-bold text-slate-900 uppercase tracking-widest">Unvetted Market</th>
-                                    <th className="px-8 py-6 text-sm font-bold text-blue-600 uppercase tracking-widest bg-blue-50/30">Taskive Network</th>
+                                    <th className="px-8 py-6 text-sm font-bold text-blue-600 uppercase tracking-widest bg-blue-50/30">OPSlyHR Network</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">

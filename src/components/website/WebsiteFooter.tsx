@@ -10,7 +10,7 @@ const WebsiteFooter = () => {
           {/* Brand & Mission Block */}
           <div className="lg:col-span-4 space-y-8">
             <Link to="/" className="inline-block">
-              <span className="text-2xl font-bold text-slate-900 tracking-tight">Taskive</span>
+              <img src="/images/logohorizontal.png" alt="OPSlyHR" className="h-8 w-auto" />
             </Link>
             <p className="text-base text-slate-500 leading-relaxed font-medium max-w-sm">
               Taskive connects vetted product and operations professionals across EMEA with growth-focused companies globally.

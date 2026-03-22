@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { FEATURES } from "@/config/features";
 import {
   LayoutDashboard,
   Users,
@@ -24,7 +25,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 const navigation = [
   { name: "Dashboard", href: "/client/dashboard", icon: LayoutDashboard, iconColor: "text-blue-600", bgColor: "bg-blue-50" },
   { name: "Browse Talents", href: "/client/browse-talents", icon: Users, iconColor: "text-indigo-600", bgColor: "bg-indigo-50" },
-  { name: "Jobs", href: "/client/jobs", icon: Briefcase, iconColor: "text-emerald-600", bgColor: "bg-emerald-50" },
+  FEATURES.hire_request_v2_enabled 
+    ? { name: "Hire Requests", href: "/client/hire-requests", icon: Briefcase, iconColor: "text-emerald-600", bgColor: "bg-emerald-50" }
+    : { name: "Jobs", href: "/client/jobs", icon: Briefcase, iconColor: "text-emerald-600", bgColor: "bg-emerald-50" },
   { name: "Contracts", href: "/client/contracts", icon: FileText, iconColor: "text-amber-600", bgColor: "bg-amber-50" },
   { name: "Invoices", href: "/client/invoices", icon: Receipt, iconColor: "text-rose-600", bgColor: "bg-rose-50" },
   // { name: "Timesheets", href: "/client/timesheets", icon: Clock }, // Kept hidden or matched to existing nav
@@ -146,7 +149,7 @@ const ClientSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
         <div className="flex items-center justify-between px-5 h-20 shrink-0 pt-4">
           {!isCollapsed ? (
             <div className="flex flex-col">
-              <img src="/wordmark.png" alt="Taskive" className="h-[22px] w-auto animate-fade-in" />
+              <img src="/images/logoicon.png" alt="OPSlyHR" className="h-28 w-auto animate-fade-in" />
               <span className="text-[10px] font-semibold text-gray-400 tracking-wider uppercase mt-1 ml-0.5">Client Portal</span>
             </div>
           ) : (

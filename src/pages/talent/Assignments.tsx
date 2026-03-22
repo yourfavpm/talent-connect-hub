@@ -425,7 +425,7 @@ const TalentAssignments = () => {
                             <div><strong>Rate:</strong> ${selectedAssignment.talent_rate}/hr</div>
                          </div>
                          <div dangerouslySetInnerHTML={{
-                             __html: selectedAssignment.talent_contract_terms || selectedAssignment.contract_terms || '<p>Standard Taskive HR contracting terms apply.</p>'
+                             __html: selectedAssignment.talent_contract_terms || selectedAssignment.contract_terms || '<p>Standard OPSlyHR HR contracting terms apply.</p>'
                          }} />
                          <div className="mt-12 pt-8 border-t grid grid-cols-2 gap-8">
                              <div>
@@ -434,7 +434,7 @@ const TalentAssignments = () => {
                              </div>
                              <div>
                                  <p className="font-bold mb-8">Client Signature:</p>
-                                 <p>{selectedAssignment.client_signed_at ? `Signed electronically on ${format(new Date(selectedAssignment.client_signed_at), "MMM d, yyyy")}` : "Taskive Automated Signature"}</p>
+                                 <p>{selectedAssignment.client_signed_at ? `Signed electronically on ${format(new Date(selectedAssignment.client_signed_at), "MMM d, yyyy")}` : "OPSlyHR Automated Signature"}</p>
                              </div>
                          </div>
                      </div>

@@ -25,13 +25,13 @@ const Careers = () => {
                         transition={{ duration: 0.6 }}
                     >
                         <div className="inline-flex items-center px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
-                            CAREERS AT TASKIVE
+                            CAREERS AT OPSLYHR
                         </div>
                         <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1] max-w-5xl mx-auto">
                             Help Build the Infrastructure Behind Modern Operations Teams.
                         </h1>
                         <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-3xl mx-auto">
-                            Taskive is building structured systems for how companies hire and manage product and operations talent globally. We’re looking for thoughtful, high-ownership individuals to help us scale that vision.
+                            OPSlyHR is building structured systems for how companies hire and manage product and operations talent globally. We're looking for thoughtful, high-ownership individuals to help us scale that vision.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                             <Button 
@@ -59,7 +59,7 @@ const Careers = () => {
                             <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-12 tracking-tight">We Hire for Ownership and Execution.</h2>
                             <div className="space-y-8">
                                 <p className="text-lg md:text-xl text-slate-600 font-medium leading-[1.8]">
-                                    Taskive is not built on hype. It is built on structure, clarity, and operational excellence. We hire people who think in systems, execute with discipline, and prioritize measurable outcomes over noise.
+                                    OPSlyHR is not built on hype. It is built on structure, clarity, and operational excellence. We hire people who think in systems, execute with discipline, and prioritize measurable outcomes over noise.
                                 </p>
                                 <ul className="space-y-4 pt-4">
                                     {[
@@ -116,7 +116,7 @@ const Careers = () => {
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="max-w-4xl">
                         <motion.div {...fadeIn}>
-                            <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Why Join Taskive</h2>
+                            <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Why Join OPSlyHR</h2>
                             <p className="text-lg md:text-xl text-slate-600 font-medium leading-[1.8] mb-12">
                                 We are building long-term infrastructure. That requires long-term thinking — in how we hire, grow, and support our team.
                             </p>
@@ -156,7 +156,7 @@ const Careers = () => {
                             <motion.div {...fadeIn}>
                                 <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">We’re Not Actively Hiring — But We’re Always Listening.</h2>
                                 <p className="text-lg text-slate-600 font-medium leading-relaxed mb-8">
-                                    If you believe you can contribute meaningfully to Taskive’s mission, reach out.
+                                    If you believe you can contribute meaningfully to OPSlyHR's mission, reach out.
                                 </p>
                                 <Button 
                                     variant="outline"
@@ -213,7 +213,7 @@ const Careers = () => {
                         <motion.div {...fadeIn}>
                             <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Built on Professionalism and Integrity</h2>
                             <p className="text-lg text-slate-600 font-medium leading-relaxed">
-                                We value diverse perspectives and maintain strict professional standards. Taskive is committed to ethical hiring, equal opportunity, and a respectful work environment.
+                                We value diverse perspectives and maintain strict professional standards. OPSlyHR is committed to ethical hiring, equal opportunity, and a respectful work environment.
                             </p>
                         </motion.div>
                     </div>

@@ -382,7 +382,7 @@ const Index = () => {
           {/* Header */}
           <div className="mb-16 animate-slide-up">
             <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-4 tracking-tight">
-              The Taskive Vetting Engine
+              The OPSlyHR Vetting Engine
             </h2>
             <p className="text-base md:text-lg text-slate-500 font-light max-w-2xl">
               A structured multi-layer quality system designed to ensure every professional meets global operational standards.
@@ -496,7 +496,7 @@ const Index = () => {
                 desc: "Start managed, convert anytime. The most flexible path to permanent scale.",
                 traits: [
                   "20% platform margin",
-                  "Payroll managed by Taskive",
+                  "Payroll managed by OPSlyHR",
                   "Monthly or hourly billing",
                   "Conversion flexibility"
                 ],
@@ -570,7 +570,7 @@ const Index = () => {
                 Operational Performance, Measured.
               </h2>
               <p className="text-base text-slate-600 mb-12 leading-relaxed max-w-lg">
-                Taskive replaces guesswork with structured vetting, automated contracts, and transparent billing.
+                OPSlyHR replaces guesswork with structured vetting, automated contracts, and transparent billing.
               </p>
 
               <div className="grid grid-cols-2 gap-4">
@@ -699,7 +699,7 @@ const Index = () => {
               Structured Hiring, Step by Step
             </h2>
             <p className="text-base text-slate-600 leading-relaxed">
-              From role definition to payment processing, Taskive manages the entire talent lifecycle.
+              From role definition to payment processing, OPSlyHR manages the entire talent lifecycle.
             </p>
           </div>
 
@@ -788,7 +788,7 @@ const Index = () => {
               We handle the talent operations complexity
             </h2>
             <p className="text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-              From sourcing and vetting to contracts, timesheets, payroll, and compliance — Taskive manages the details so you can focus on building.
+              From sourcing and vetting to contracts, timesheets, payroll, and compliance — OPSlyHR manages the details so you can focus on building.
             </p>
           </div>
 
@@ -933,7 +933,7 @@ const Index = () => {
                   {[
                     { l: 'Client Paid', v: '$4,000', b: false },
                     { l: 'Talent Payout', v: '$3,200', b: false },
-                    { l: 'Taskive Margin', v: '$800', b: true }
+                    { l: 'OPSlyHR Margin', v: '$800', b: true }
                   ].map((row, i) => (
                     <div key={i} className="flex justify-between items-center">
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{row.l}</span>
@@ -959,7 +959,7 @@ const Index = () => {
               Trusted by Growth-Focused Teams
             </h2>
             <p className="text-base text-slate-600 leading-relaxed">
-              Companies across SaaS and fintech rely on Taskive for structured talent engagement.
+              Companies across SaaS and fintech rely on OPSlyHR for structured talent engagement.
             </p>
           </div>
 

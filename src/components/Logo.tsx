@@ -1,5 +1,3 @@
-import taskiveLogo from "@/assets/taskive-logo.png";
-
 interface LogoProps {
   className?: string;
   showText?: boolean;
@@ -7,12 +5,13 @@ interface LogoProps {
 }
 
 const Logo = ({ className = "", showText = true, variant = "dark" }: LogoProps) => {
+  const logoPath = variant === "light" ? "/images/logoinverted.png" : "/images/mainlogo.png";
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <img 
-        src={taskiveLogo} 
-        alt="Taskive" 
-        className={`h-8 w-auto object-contain ${variant === "light" ? "brightness-0 invert" : ""}`}
+        src={logoPath} 
+        alt="OPSlyHR" 
+        className="h-32 w-auto object-contain"
       />
     </div>
   );

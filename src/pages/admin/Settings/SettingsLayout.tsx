@@ -8,7 +8,7 @@ const SettingsLayout = () => {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">Settings Console</h1>
                     <p className="text-sm text-gray-500 font-medium mt-1">
-                        Configure Taskive Connect operational defaults, service models, and platform security.
+                        Configure OPSlyHR Connect operational defaults, service models, and platform security.
                     </p>
                 </div>
             </div>

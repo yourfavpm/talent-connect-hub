@@ -234,7 +234,7 @@ const TalentDashboard = () => {
           <h1 className="text-[28px] font-bold text-slate-900 tracking-tight leading-none">
             Welcome back, {talent?.first_name || "User"}
           </h1>
-          <p className="text-[15px] text-slate-500 font-medium">Here's an overview of your work on Taskive.</p>
+          <p className="text-[15px] text-slate-500 font-medium">Here's an overview of your work on OPSlyHR.</p>
         </div>
         
         <div className="flex items-center gap-3">

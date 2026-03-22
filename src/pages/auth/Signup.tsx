@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Star, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import taskiveLogo from "@/assets/taskive-logo.png";
+
 import { z } from "zod";
 import { getFriendlyErrorMessage } from "@/utils/errorHandling";
 import { sendClientWelcomeEmail, sendTalentWelcomeEmail } from "@/lib/email/triggers";
@@ -117,7 +117,7 @@ const Signup = () => {
 
       toast({
         title: "Account created!",
-        description: `Welcome to Taskive, ${isTalent ? formData.firstName : formData.fullName}! Your account has been created successfully.`,
+        description: `Welcome to OPSlyHR, ${isTalent ? formData.firstName : formData.fullName}! Your account has been created successfully.`,
       });
 
       navigate(`/${portal}/dashboard`);
@@ -190,7 +190,7 @@ const Signup = () => {
         
         <div>
           <Link to="/" className="inline-block mb-16 lg:mb-24">
-            <img src="/wordmark.png" alt="Taskive" className="h-7" />
+            <img src="/images/mainlogo.png" alt="OPSlyHR" className="h-28" />
           </Link>
 
           <div className="max-w-md">
@@ -203,7 +203,7 @@ const Signup = () => {
             <p className="text-slate-500 text-lg font-medium leading-relaxed mb-12">
               {isTalent
                 ? "Join an exclusive network of high-ownership professionals. Work with curated companies on your terms."
-                : "Taskive provides structured systems for hiring and managing pre-vetted product and operations talent globally."}
+                : "OPSlyHR provides structured systems for hiring and managing pre-vetted product and operations talent globally."}
             </p>
 
             <div className="space-y-6 pt-10 border-t border-slate-200/60 max-w-sm">
@@ -231,7 +231,7 @@ const Signup = () => {
 
         <div className="mt-12 lg:mt-0">
           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-            © {new Date().getFullYear()} Taskive HR Solutions.
+            © {new Date().getFullYear()} OPSlyHR HR Solutions.
           </p>
         </div>
       </div>
@@ -240,7 +240,7 @@ const Signup = () => {
         {/* Mobile Header (Refined) */}
         <div className="lg:hidden flex flex-col items-center mb-10 text-center">
           <Link to="/" className="mb-6">
-            <img src="/wordmark.png" alt="Taskive" className="h-6" />
+            <img src="/images/mainlogo.png" alt="OPSlyHR" className="h-24" />
           </Link>
           <div className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-50 text-blue-600 border border-slate-200 uppercase tracking-widest mb-6">
             {isTalent ? "TALENT NETWORK" : "CLIENT ACCESS"}
@@ -251,7 +251,7 @@ const Signup = () => {
           <p className="text-slate-500 text-base font-medium leading-relaxed">
             {isTalent 
               ? "Join an exclusive network of high-ownership professionals. Work with curated companies on your terms."
-              : "Taskive provides structured systems for hiring and managing pre-vetted product and operations talent globally."}
+              : "OPSlyHR provides structured systems for hiring and managing pre-vetted product and operations talent globally."}
           </p>
         </div>
 

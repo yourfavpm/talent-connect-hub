@@ -229,7 +229,7 @@ const AdminDashboard = () => {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-gray-200 pb-5">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Admin Overview</h1>
-          <p className="text-sm text-gray-500 mt-1">Operational summary across Taskive.</p>
+          <p className="text-sm text-gray-500 mt-1">Operational summary across OPSlyHR.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={fetchDashboardData} className="h-9 px-3 text-gray-600">
