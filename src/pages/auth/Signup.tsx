@@ -190,7 +190,7 @@ const Signup = () => {
         
         <div>
           <Link to="/" className="inline-block mb-16 lg:mb-24">
-            <img src="/images/mainlogo.png" alt="OPSlyHR" className="h-28" />
+            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-28" />
           </Link>
 
           <div className="max-w-md">
@@ -240,7 +240,7 @@ const Signup = () => {
         {/* Mobile Header (Refined) */}
         <div className="lg:hidden flex flex-col items-center mb-10 text-center">
           <Link to="/" className="mb-6">
-            <img src="/images/mainlogo.png" alt="OPSlyHR" className="h-24" />
+            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-24" />
           </Link>
           <div className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-50 text-blue-600 border border-slate-200 uppercase tracking-widest mb-6">
             {isTalent ? "TALENT NETWORK" : "CLIENT ACCESS"}

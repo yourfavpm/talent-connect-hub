@@ -3,7 +3,7 @@
 
 import { queueEmail } from './emailService';
 
-const APP_URL = import.meta.env.VITE_APP_URL || 'https://app.taskive.com';
+const APP_URL = import.meta.env.VITE_APP_URL || 'https://app.opslyhr.com';
 
 /**
  * Send welcome email to new talent

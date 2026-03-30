@@ -622,7 +622,7 @@ const ForCompanies = () => {
                 </div>
             </section>
 
-            {/* 8. WHY TASKIVE (REDESIGNED) */}
+            {/* 8. WHY OPSLYHR (REDESIGNED) */}
             <section className="py-24 px-6 bg-slate-50/50 font-inter">
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="grid lg:grid-cols-2 gap-20 items-start">

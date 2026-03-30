@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Mail } from "lucide-react";
-import logoIcon from "@/assets/logoicon.png";
 
 const ResetPassword = () => {
   const [email, setEmail] = useState("");
@@ -78,7 +77,7 @@ const ResetPassword = () => {
         </Link>
 
         <div className="mb-8">
-          <img src="/images/logoicon.png" alt="OPSlyHR" className="h-36 mb-6" />
+          <img src="/images/logoplain.png" alt="OPSlyHR" className="h-36 mb-6" />
           <h1 className="text-3xl font-bold text-foreground">Reset password</h1>
           <p className="text-muted-foreground mt-2">
             Enter your email and we'll send you a reset link

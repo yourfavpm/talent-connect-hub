@@ -13,7 +13,7 @@ import { Search, FileText, DollarSign, ArrowRight, AlertCircle, Briefcase } from
 import { ContractConfigurationModal } from "@/components/admin/ContractConfigurationModal";
 import InternalJobModal from "@/components/admin/InternalJobModal";
 
-const TASKIVE_MARGIN = 20; // 20% margin
+const OPSLYHR_MARGIN = 20; // 20% margin
 
 const AdminOffers = () => {
   const { user } = useAuth();
@@ -55,8 +55,8 @@ const AdminOffers = () => {
     setGenerating(true);
 
     try {
-      // Calculate talent rate (after Taskive margin)
-      const talentRate = offer.hourly_rate * (1 - TASKIVE_MARGIN / 100);
+      // Calculate talent rate (after OPSlyHR margin)
+      const talentRate = offer.hourly_rate * (1 - OPSLYHR_MARGIN / 100);
 
       // Generate contract number
       const { data: contractNum } = await supabase.rpc("generate_contract_number");
@@ -71,7 +71,7 @@ const AdminOffers = () => {
         role_title: offer.role_title,
         hourly_rate: offer.hourly_rate || 0,
         talent_rate: talentRate || 0,
-        taskive_margin: TASKIVE_MARGIN,
+        taskive_margin: OPSLYHR_MARGIN,
         weekly_hours: offer.weekly_hours || 40,
         start_date: offer.start_date,
         contract_terms: `This contract is between ${offer.clients?.company_name} and the talent for the role of ${offer.role_title}. The engagement will commence on ${offer.start_date} with ${offer.weekly_hours} hours per week at a rate of $${offer.hourly_rate}/hour.`,

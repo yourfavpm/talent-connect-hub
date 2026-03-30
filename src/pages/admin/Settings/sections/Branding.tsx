@@ -112,7 +112,7 @@ const Branding = () => {
                                             theme_json: { ...s.theme_json, logo_alt: e.target.value }
                                         } : null)}
                                         className="h-9 text-sm"
-                                        placeholder="e.g. Taskive Connect Logo"
+                                        placeholder="e.g. OPSlyHR Connect Logo"
                                     />
                                 </div>
                                 <div className="space-y-2">

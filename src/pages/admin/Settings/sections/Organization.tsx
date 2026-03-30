@@ -93,7 +93,7 @@ const Organization = () => {
                                     id="legal_name" 
                                     value={settings?.legal_name || ""} 
                                     onChange={(e) => setSettings(s => s ? {...s, legal_name: e.target.value} : null)}
-                                    placeholder="e.g. Taskive Connect Ltd"
+                                    placeholder="e.g. OPSlyHR Connect Ltd"
                                     className="h-9 text-sm"
                                 />
                             </div>
@@ -103,7 +103,7 @@ const Organization = () => {
                                     id="display_name" 
                                     value={settings?.display_name || ""} 
                                     onChange={(e) => setSettings(s => s ? {...s, display_name: e.target.value} : null)}
-                                    placeholder="e.g. Taskive Connect"
+                                    placeholder="e.g. OPSlyHR Connect"
                                     className="h-9 text-sm"
                                 />
                             </div>
@@ -172,7 +172,7 @@ const Organization = () => {
                                     type="email"
                                     value={settings?.support_email || ""} 
                                     onChange={(e) => setSettings(s => s ? {...s, support_email: e.target.value} : null)}
-                                    placeholder="support@taskive.connect"
+                                    placeholder="support@opslyhr.connect"
                                     className="h-9 text-sm"
                                 />
                             </div>
@@ -183,7 +183,7 @@ const Organization = () => {
                                     type="email"
                                     value={settings?.finance_email || ""} 
                                     onChange={(e) => setSettings(s => s ? {...s, finance_email: e.target.value} : null)}
-                                    placeholder="finance@taskive.connect"
+                                    placeholder="finance@opslyhr.connect"
                                     className="h-9 text-sm"
                                 />
                             </div>

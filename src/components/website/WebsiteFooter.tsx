@@ -10,10 +10,10 @@ const WebsiteFooter = () => {
           {/* Brand & Mission Block */}
           <div className="lg:col-span-4 space-y-8">
             <Link to="/" className="inline-block">
-              <img src="/images/logohorizontal.png" alt="OPSlyHR" className="h-8 w-auto" />
+              <img src="/images/logoplain.png" alt="OPSlyHR" className="h-24 w-auto" />
             </Link>
             <p className="text-base text-slate-500 leading-relaxed font-medium max-w-sm">
-              Taskive connects vetted product and operations professionals across EMEA with growth-focused companies globally.
+              OPSlyHR connects vetted product and operations professionals across EMEA with growth-focused companies globally.
             </p>
             <div className="flex gap-4">
               {[
@@ -120,7 +120,7 @@ const WebsiteFooter = () => {
         <div className="pt-12 border-t border-slate-200 grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           <div className="flex items-center gap-3">
             <Mail className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-semibold text-slate-700">hire@taskive.ca</span>
+            <span className="text-sm font-semibold text-slate-700">hire@opslyhr.com</span>
           </div>
           <div className="flex items-start gap-3">
             <MapPin className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
@@ -139,7 +139,7 @@ const WebsiteFooter = () => {
         {/* Copyright & Status */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 border-t border-slate-100">
           <p className="text-[13px] text-slate-400 font-medium">
-            © {new Date().getFullYear()} Taskive HR Solutions. All rights reserved.
+            © {new Date().getFullYear()} OPSlyHR HR Solutions. All rights reserved.
           </p>
           <div className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-100 rounded-full shadow-sm">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>

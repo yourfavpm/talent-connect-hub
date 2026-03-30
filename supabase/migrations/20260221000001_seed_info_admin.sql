@@ -1,9 +1,9 @@
--- Seed the new admin user info@taskivetech.tech
+-- Seed the new admin user info@opslyhrtech.tech
 DO $$
 DECLARE
     new_user_id UUID := gen_random_uuid();
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'info@taskivetech.tech') THEN
+    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'info@opslyhrtech.tech') THEN
         INSERT INTO auth.users (
             id,
             instance_id,
@@ -19,8 +19,8 @@ BEGIN
         ) VALUES (
             new_user_id,
             '00000000-0000-0000-0000-000000000000',
-            'info@taskivetech.tech',
-            crypt('TaskiveAdmin2026!', gen_salt('bf')),
+            'info@opslyhrtech.tech',
+            crypt('OPSlyHRAdmin2026!', gen_salt('bf')),
             now(),
             now(),
             now(),
@@ -32,7 +32,7 @@ BEGIN
         
         -- Upsert into public.profiles
         INSERT INTO public.profiles (user_id, email, first_name, last_name)
-        VALUES (new_user_id, 'info@taskivetech.tech', 'Taskive', 'Admin')
+        VALUES (new_user_id, 'info@opslyhrtech.tech', 'OPSlyHR', 'Admin')
         ON CONFLICT (user_id) DO UPDATE 
         SET email = EXCLUDED.email, 
             first_name = EXCLUDED.first_name, 
@@ -42,11 +42,11 @@ BEGIN
         INSERT INTO public.user_roles (user_id, role)
         VALUES (new_user_id, 'super_admin');
     ELSE
-        SELECT id INTO new_user_id FROM auth.users WHERE email = 'info@taskivetech.tech';
+        SELECT id INTO new_user_id FROM auth.users WHERE email = 'info@opslyhrtech.tech';
         
         -- Update password just in case
         UPDATE auth.users 
-        SET encrypted_password = crypt('TaskiveAdmin2026!', gen_salt('bf'))
+        SET encrypted_password = crypt('OPSlyHRAdmin2026!', gen_salt('bf'))
         WHERE id = new_user_id;
         
         -- Ensure role

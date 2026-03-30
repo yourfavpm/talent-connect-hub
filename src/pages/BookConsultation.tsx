@@ -110,7 +110,7 @@ const BookConsultation = () => {
                         Thank you for trusting us. We'll be in touch within 24 hours to schedule a conversation that fits your time.
                     </p>
                     <Button asChild className="w-full h-14 text-lg rounded-full bg-stone-900 text-white hover:bg-stone-800">
-                        <Link to="/">Return to Taskive</Link>
+                        <Link to="/">Return to OPSlyHR</Link>
                     </Button>
                 </div>
             </div>

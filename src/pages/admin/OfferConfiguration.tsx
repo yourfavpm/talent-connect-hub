@@ -48,7 +48,7 @@ const AdminOfferConfig = () => {
     const [clientContractTemplate, setClientContractTemplate] = useState<string>("");
 
     // ========== TALENT CONTRACT CONFIGURATION ==========
-    const [taskiveMargin, setTaskiveMargin] = useState<number>(20);
+    const [opslyhrMargin, setOpslyhrMargin] = useState<number>(20);
     const [talentNetRate, setTalentNetRate] = useState<number>(0);
     const [talentPaymentFrequency, setTalentPaymentFrequency] = useState<string>("monthly");
     const [talentPayday, setTalentPayday] = useState<string>("15th");
@@ -92,7 +92,7 @@ const AdminOfferConfig = () => {
 
             const fee = annualSalary * 0.15;
             setPlacementFee(fee);
-            setTaskiveMargin(0); // No margin for Direct Hire
+            setOpslyhrMargin(0); // No margin for Direct Hire
             setTalentNetRate(annualSalary); // Talent gets full salary from client
         } else {
             // Trial-to-Hire / Contract: 20% margin

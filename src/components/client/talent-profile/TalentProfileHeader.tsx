@@ -37,7 +37,7 @@ export function TalentProfileHeader({ talent, onInvite, onMessage }: TalentProfi
             {/* Badges */}
             <div className="flex flex-wrap gap-2 mb-4">
               <Badge className="bg-slate-900 text-white border-transparent hover:bg-slate-800 px-3 py-1 text-xs font-semibold">
-                <ShieldCheck className="w-3.5 h-3.5 mr-1.5 text-blue-400" /> Taskive Vetted
+                <ShieldCheck className="w-3.5 h-3.5 mr-1.5 text-blue-400" /> OPSlyHR Vetted
               </Badge>
               <Badge variant="secondary" className="bg-slate-100 text-slate-600 hover:bg-slate-100 capitalize px-3 py-1 text-xs font-semibold">
                 {talent.skill_level} Level

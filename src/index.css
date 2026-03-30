@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* TASKIVE CONNECT DESIGN TOKENS */
+    /* OPSLYHR DESIGN TOKENS */
     /* Core Brand */
     --color-brand-primary: #1e40af;
     --color-brand-secondary: #0f172a;
@@ -179,11 +179,11 @@
 
 @layer components {
   /* Card styling - Soft shadow, no heavy borders */
-  .taskive-card {
+  .opslyhr-card {
     @apply bg-card rounded-xl border border-border/50 shadow-sm transition-shadow duration-200;
   }
 
-  .taskive-card:hover {
+  .opslyhr-card:hover {
     box-shadow: var(--shadow-md);
   }
 }

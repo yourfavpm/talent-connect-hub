@@ -386,7 +386,7 @@ const TalentJobs = () => {
         <div className="flex items-center gap-1 bg-slate-100/50 p-1 rounded-xl border border-slate-100 overflow-x-auto">
            {[
              { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-             { id: "taskive", label: FEATURES.hire_request_v2_enabled ? "Hire Requests" : "OPSlyHR Jobs", icon: FEATURES.hire_request_v2_enabled ? ClipboardList : Briefcase },
+             { id: "opslyhr", label: FEATURES.hire_request_v2_enabled ? "Hire Requests" : "OPSlyHR Jobs", icon: FEATURES.hire_request_v2_enabled ? ClipboardList : Briefcase },
              { id: "external", label: "External Roles", icon: Globe }
            ].map((tab) => (
              <button
@@ -401,7 +401,7 @@ const TalentJobs = () => {
              >
                <tab.icon className="h-3.5 w-3.5" />
                {tab.label}
-               {tab.id === "taskive" && FEATURES.hire_request_v2_enabled && v2Requests.length > 0 && (
+               {tab.id === "opslyhr" && FEATURES.hire_request_v2_enabled && v2Requests.length > 0 && (
                  <span className="bg-blue-100 text-blue-700 text-[9px] font-bold px-1.5 rounded-md">{v2Requests.length}</span>
                )}
              </button>
@@ -437,7 +437,7 @@ const TalentJobs = () => {
           {/* Action Row */}
           <div className="flex flex-wrap items-center gap-4">
             <Button 
-              onClick={() => setTab("taskive")}
+              onClick={() => setTab("opslyhr")}
               className="h-12 px-8 bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-bold uppercase tracking-widest rounded-xl shadow-lg shadow-slate-900/10 transition-all active:scale-[0.98]"
             >
               Browse OPSlyHR Jobs
@@ -545,7 +545,7 @@ const TalentJobs = () => {
         </TabsContent>
 
 
-        <TabsContent value="taskive" className="space-y-8 m-0 focus-visible:outline-none">
+        <TabsContent value="opslyhr" className="space-y-8 m-0 focus-visible:outline-none">
           {FEATURES.hire_request_v2_enabled ? (
             /* ── V2 Hire Requests (replaces legacy Taskive Jobs) ── */
             <>

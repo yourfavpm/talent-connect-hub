@@ -71,7 +71,7 @@ const ContractList = ({
       return (
         <div
           key={contract.id}
-          className="bg-card rounded-xl border border-border p-6 hover:shadow-taskive-sm transition-shadow animate-slide-up"
+          className="bg-card rounded-xl border border-border p-6 hover:shadow-sm transition-shadow animate-slide-up"
           style={{ animationDelay: `${index * 0.05}s` }}
         >
           <div className="flex items-center justify-between">

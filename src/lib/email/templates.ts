@@ -15,9 +15,9 @@ export const emailTemplates: EmailTemplateData[] = [
     {
         key: 'talent_welcome',
         name: 'Talent Welcome Email',
-        subject: 'Welcome to Taskive - Your Talent ID: {{talent_id}}',
+        subject: 'Welcome to OPSlyHR - Your Talent ID: {{talent_id}}',
         bodyHtml: `
-      <h1>Welcome to Taskive, {{talent_name}}!</h1>
+      <h1>Welcome to OPSlyHR, {{talent_name}}!</h1>
       <p>We're excited to have you join our platform of top-tier professionals.</p>
       <p><strong>Your Talent ID:</strong> {{talent_id}}</p>
       <h2>Next Steps:</h2>
@@ -27,9 +27,9 @@ export const emailTemplates: EmailTemplateData[] = [
         <li>Browse available positions</li>
       </ol>
       <p><a href="{{login_link}}" style="background:#0066cc;color:white;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;">Login to Your Account</a></p>
-      <p>Best regards,<br>The Taskive Team</p>
+      <p>Best regards,<br>The OPSlyHR Team</p>
     `,
-        bodyText: `Welcome to Taskive, {{talent_name}}!
+        bodyText: `Welcome to OPSlyHR, {{talent_name}}!
 
 We're excited to have you join our platform of top-tier professionals.
 
@@ -43,7 +43,7 @@ Next Steps:
 Login to Your Account: {{login_link}}
 
 Best regards,
-The Taskive Team`,
+The OPSlyHR Team`,
         variables: ['talent_name', 'talent_id', 'login_link']
     },
 
@@ -62,7 +62,7 @@ The Taskive Team`,
         <li><strong>Start Date:</strong> {{start_date}}</li>
       </ul>
       <p><a href="{{offer_link}}" style="background:#28a745;color:white;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;">View Offer</a></p>
-      <p>Best regards,<br>The Taskive Team</p>
+      <p>Best regards,<br>The OPSlyHR Team</p>
     `,
         bodyText: `Congratulations, {{talent_name}}!
 
@@ -77,7 +77,7 @@ Offer Details:
 View Offer: {{offer_link}}
 
 Best regards,
-The Taskive Team`,
+The OPSlyHR Team`,
         variables: ['talent_name', 'job_title', 'client_name', 'rate', 'start_date', 'offer_link']
     },
 
@@ -92,7 +92,7 @@ The Taskive Team`,
       <strong>Start Date:</strong> {{start_date}}</p>
       <p>We'll notify you once the client signs as well. You can view your contract anytime in your dashboard.</p>
       <p><a href="{{contract_link}}">View Contract</a></p>
-      <p>Best regards,<br>The Taskive Team</p>
+      <p>Best regards,<br>The OPSlyHR Team</p>
     `,
         bodyText: `Contract Signed, {{talent_name}}!
 
@@ -106,7 +106,7 @@ We'll notify you once the client signs as well. You can view your contract anyti
 View Contract: {{contract_link}}
 
 Best regards,
-The Taskive Team`,
+The OPSlyHR Team`,
         variables: ['talent_name', 'contract_id', 'start_date', 'contract_link']
     },
 
@@ -114,10 +114,10 @@ The Taskive Team`,
     {
         key: 'client_welcome',
         name: 'Client Welcome Email',
-        subject: 'Welcome to Taskive - Let\'s Find Your Perfect Talent',
+        subject: 'Welcome to OPSlyHR - Let\'s Find Your Perfect Talent',
         bodyHtml: `
-      <h1>Welcome to Taskive, {{client_name}}!</h1>
-      <p>Thank you for choosing Taskive to build your team with top-tier professionals.</p>
+      <h1>Welcome to OPSlyHR, {{client_name}}!</h1>
+      <p>Thank you for choosing OPSlyHR to build your team with top-tier professionals.</p>
       <p><strong>Company:</strong> {{company_name}}</p>
       <h2>Get Started:</h2>
       <ol>
@@ -126,11 +126,11 @@ The Taskive Team`,
         <li>Schedule interviews with candidates</li>
       </ol>
       <p><a href="{{login_link}}" style="background:#0066cc;color:white;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;">Access Your Dashboard</a></p>
-      <p>Best regards,<br>The Taskive Team</p>
+      <p>Best regards,<br>The OPSlyHR Team</p>
     `,
-        bodyText: `Welcome to Taskive, {{client_name}}!
+        bodyText: `Welcome to OPSlyHR, {{client_name}}!
 
-Thank you for choosing Taskive to build your team with top-tier professionals.
+Thank you for choosing OPSlyHR to build your team with top-tier professionals.
 
 Company: {{company_name}}
 
@@ -142,7 +142,7 @@ Get Started:
 Access Your Dashboard: {{login_link}}
 
 Best regards,
-The Taskive Team`,
+The OPSlyHR Team`,
         variables: ['client_name', 'company_name', 'login_link']
     },
 
@@ -156,7 +156,7 @@ The Taskive Team`,
       <p><strong>Position:</strong> {{job_title}}</p>
       <p>Please review the contract details and sign to proceed.</p>
       <p><a href="{{contract_link}}" style="background:#0066cc;color:white;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;">Review & Sign Contract</a></p>
-      <p>Best regards,<br>The Taskive Team</p>
+      <p>Best regards,<br>The OPSlyHR Team</p>
     `,
         bodyText: `Hi {{client_name}},
 
@@ -169,7 +169,7 @@ Please review the contract details and sign to proceed.
 Review & Sign Contract: {{contract_link}}
 
 Best regards,
-The Taskive Team`,
+The OPSlyHR Team`,
         variables: ['client_name', 'talent_name', 'job_title', 'contract_link']
     },
 
@@ -184,7 +184,7 @@ The Taskive Team`,
       <strong>Amount:</strong> {{amount}}<br>
       <strong>Due Date:</strong> {{due_date}}</p>
       <p><a href="{{invoice_link}}" style="background:#0066cc;color:white;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;">View Invoice</a></p>
-      <p>Best regards,<br>The Taskive Team</p>
+      <p>Best regards,<br>The OPSlyHR Team</p>
     `,
         bodyText: `New Invoice, {{client_name}}
 
@@ -197,7 +197,7 @@ Due Date: {{due_date}}
 View Invoice: {{invoice_link}}
 
 Best regards,
-The Taskive Team`,
+The OPSlyHR Team`,
         variables: ['client_name', 'invoice_id', 'amount', 'due_date', 'invoice_link']
     },
 

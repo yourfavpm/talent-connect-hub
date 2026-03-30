@@ -15,7 +15,7 @@ export const CONTRACT_TEMPLATES = {
         <li><strong>Scope of Services:</strong> Taskive provides sourcing, vetting, and administrative management of remote talent.</li>
         <li><strong>Confidentiality:</strong> Both parties agree to maintain confidentiality of proprietary information.</li>
         <li><strong>Intellectual Property:</strong> All work product created by Talent for Client belongs to Client.</li>
-        <li><strong>Liability:</strong> Taskive's liability is limited to fees paid in the prior 3 months.</li>
+        <li><strong>Liability:</strong> OPSlyHR's liability is limited to fees paid in the prior 3 months.</li>
       </ul>
       <p>This Agreement becomes effective upon signature and applies to all future Statements of Work and Talent Engagement Contracts.</p>
     `

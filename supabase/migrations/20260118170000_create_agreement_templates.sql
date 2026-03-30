@@ -80,7 +80,7 @@ VALUES (
     'direct_hire',
     'Direct Hire Client Agreement v1',
     '<h2>DIRECT HIRE PLACEMENT AGREEMENT</h2>
-<p>This Agreement is entered into between <strong>{{clientCompany}}</strong> ("Client") and <strong>Taskive</strong> ("Agency") for the direct hire placement of <strong>{{talentName}}</strong> ("Candidate").</p>
+<p>This Agreement is entered into between <strong>{{clientCompany}}</strong> ("Client") and <strong>OPSlyHR</strong> ("Agency") for the direct hire placement of <strong>{{talentName}}</strong> ("Candidate").</p>
 
 <h3>1. PLACEMENT FEE</h3>
 <p>Client agrees to pay Agency a one-time placement fee of <strong>${{placementFee}}</strong>, representing 15% of the Candidate''s annual compensation.</p>
@@ -146,7 +146,7 @@ VALUES (
     'trial_to_hire',
     'Trial-to-Hire Client Agreement v1',
     '<h2>TRIAL-TO-HIRE SERVICE AGREEMENT</h2>
-<p>This Agreement is between <strong>{{clientCompany}}</strong> ("Client") and <strong>Taskive</strong> ("Agency") for talent services provided by <strong>{{talentName}}</strong> ("Contractor").</p>
+<p>This Agreement is between <strong>{{clientCompany}}</strong> ("Client") and <strong>OPSlyHR</strong> ("Agency") for talent services provided by <strong>{{talentName}}</strong> ("Contractor").</p>
 
 <h3>1. SERVICE TERMS</h3>
 <p><strong>Role:</strong> {{jobTitle}}<br>
@@ -189,7 +189,7 @@ VALUES (
     'trial_to_hire',
     'Trial-to-Hire Talent Agreement v1',
     '<h2>INDEPENDENT CONTRACTOR AGREEMENT</h2>
-<p>This Agreement is between <strong>{{talentName}}</strong> (ID: {{talentId}}) ("Contractor") and <strong>Taskive</strong> ("Company") for services provided to <strong>{{clientCompany}}</strong> ("Client").</p>
+<p>This Agreement is between <strong>{{talentName}}</strong> (ID: {{talentId}}) ("Contractor") and <strong>OPSlyHR</strong> ("Company") for services provided to <strong>{{clientCompany}}</strong> ("Client").</p>
 
 <h3>1. ENGAGEMENT TERMS</h3>
 <p><strong>Role:</strong> {{jobTitle}}<br>
@@ -240,7 +240,7 @@ VALUES (
     'contract_talent',
     'Managed Contract Talent Agreement v1',
     '<h2>MANAGED CONTRACT TALENT AGREEMENT</h2>
-<p>This Agreement is between <strong>{{clientCompany}}</strong> ("Client") and <strong>Taskive</strong> ("Agency") for ongoing talent services provided by <strong>{{talentName}}</strong> ("Contractor").</p>
+<p>This Agreement is between <strong>{{clientCompany}}</strong> ("Client") and <strong>OPSlyHR</strong> ("Agency") for ongoing talent services provided by <strong>{{talentName}}</strong> ("Contractor").</p>
 
 <h3>1. SERVICE TERMS</h3>
 <p><strong>Role:</strong> {{jobTitle}}<br>

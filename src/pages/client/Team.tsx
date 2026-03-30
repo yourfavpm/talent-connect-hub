@@ -178,7 +178,7 @@ const Team = () => {
           {team.map((member, index) => (
             <div
               key={member.id}
-              className="bg-card rounded-xl border border-border p-6 hover:shadow-taskive-md transition-all duration-200 animate-slide-up"
+              className="bg-card rounded-xl border border-border p-6 hover:shadow-md transition-all duration-200 animate-slide-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div className="flex items-start gap-4">

@@ -24,7 +24,7 @@ const StatCard = ({
   return (
     <div
       className={cn(
-        "bg-card rounded-xl border border-border p-6 shadow-taskive-sm hover:shadow-taskive-md transition-shadow duration-200",
+        "bg-card rounded-xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow duration-200",
         className
       )}
     >

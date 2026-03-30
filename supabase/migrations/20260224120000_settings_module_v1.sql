@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS public.compliance_settings (
 
 -- Seed Initial Data
 INSERT INTO public.organization_settings (legal_name, display_name) 
-VALUES ('Taskive Connect Ltd', 'Taskive Connect')
+VALUES ('OPSlyHR Connect Ltd', 'OPSlyHR Connect')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO public.pricing_rules (service_type, rule_key, value_json) VALUES

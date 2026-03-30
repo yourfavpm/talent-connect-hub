@@ -1,4 +1,4 @@
--- Rebuild Core Schema for Taskive Master Build
+-- Rebuild Core Schema for OPSlyHR Master Build
 -- Phase 1: Enums and Table Alterations
 
 -- 1. Create New Enums

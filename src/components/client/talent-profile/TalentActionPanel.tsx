@@ -46,7 +46,7 @@ export function TalentActionPanel({ talent, onInvite, onMessage }: TalentActionP
 
         <div className="mt-5 pt-5 border-t border-gray-100 flex items-center justify-center gap-2 text-sm text-gray-500">
           <ShieldCheck className="w-4 h-4 text-green-600" />
-          <span>Talent verified by Taskive.</span>
+          <span>Talent verified by OPSlyHR.</span>
         </div>
       </div>
     </div>
