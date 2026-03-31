@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { SkillLevel } from "@/types/talent";
+import { sendLevelAssignedEmail } from "@/lib/email/triggers";
 
 interface SkillAssessmentDrawerProps {
   open: boolean;
@@ -51,6 +52,25 @@ const SkillAssessmentDrawer = ({ open, onOpenChange, talent, onSuccess }: SkillA
         .eq("id", talent.id);
 
       if (error) throw error;
+
+      // Send Level Assigned Email
+      try {
+        const { data: profile } = await (supabase
+          .from("profiles") as any)
+          .select("email, first_name")
+          .eq("user_id", talent.user_id)
+          .single();
+
+        if (profile?.email) {
+          await sendLevelAssignedEmail({
+            email: profile.email,
+            firstName: profile.first_name || 'there',
+            level: skillLevel as string,
+          });
+        }
+      } catch (emailError) {
+        console.error('Failed to send level assigned email:', emailError);
+      }
       
       toast.success("Skill assessment updated");
       onSuccess();

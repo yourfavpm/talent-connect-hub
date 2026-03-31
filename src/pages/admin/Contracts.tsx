@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { generateTalentContractTerms } from "@/utils/contractGeneration";
 import { FileText, Send, DollarSign, Clock, Search, Briefcase } from "lucide-react";
+import { sendTalentContractReceivedEmail, sendAdminContractFullySignedEmail } from "@/lib/email/triggers";
 
 const AdminContracts = () => {
   const [contracts, setContracts] = useState<any[]>([]);
@@ -30,8 +31,8 @@ const AdminContracts = () => {
         .from("contracts")
         .select(`
           *,
-          clients (company_name, user_id),
-          talents (first_name, last_name, user_id)
+          clients (company_name, user_id, profiles(email)),
+          talents (first_name, last_name, user_id, profiles(email))
         `)
         .not("client_signed_at", "is", null) // Client must have signed
         .not("talent_signed_at", "is", null) // Talent must have signed
@@ -70,9 +71,22 @@ const AdminContracts = () => {
 
       if (error) throw error;
 
+      // Trigger Email to Talent
+      try {
+        if (contract.talents?.profiles?.email) {
+          await sendTalentContractReceivedEmail({
+            email: contract.talents.profiles.email,
+            firstName: contract.talents.first_name,
+            contractId: contract.id
+          });
+        }
+      } catch (emailErr) {
+        console.error("Failed to send talent contract email:", emailErr);
+      }
+
       toast({
-        title: "Talent Contract Generated",
-        description: "The subcontractor agreement has been generated.",
+        title: "Talent Contract Generated & Email Sent",
+        description: "The subcontractor agreement has been generated and talent notified.",
       });
       fetchContracts();
     } catch (error: any) {
@@ -122,9 +136,22 @@ const AdminContracts = () => {
         .update({ status: "active" })
         .eq("id", contractId);
 
+      // Trigger Admin/System Email for fully signed
+      const contract = contracts.find(c => c.id === contractId);
+      try {
+        await sendAdminContractFullySignedEmail({
+          adminEmail: "admin@opslyhr.com", // Fallback or dynamic
+          contractId: contractId,
+          clientName: contract?.clients?.company_name || "Client",
+          talentName: `${contract?.talents?.first_name} ${contract?.talents?.last_name}`
+        });
+      } catch (emailErr) {
+        console.error("Failed to send admin sign-off email:", emailErr);
+      }
+
       toast({
         title: "Contract Activated",
-        description: "Contract is now active.",
+        description: "Contract is now active and notifications sent.",
       });
 
       fetchContracts();

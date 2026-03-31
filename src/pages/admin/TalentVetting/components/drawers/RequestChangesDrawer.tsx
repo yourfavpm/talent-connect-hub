@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { StepChangeRequest } from "@/types/talent";
+import { sendVettingChangesRequestedEmail } from "@/lib/email/triggers";
 
 interface RequestChangesDrawerProps {
   open: boolean;
@@ -100,6 +101,25 @@ const RequestChangesDrawer = ({ open, onOpenChange, talentId, stepKey, onSuccess
           section_key: stepKey,
           notes: message
         });
+
+      // 5. Send Notification Email
+      try {
+        const { data: userData } = await (supabase
+          .from("profiles") as any)
+          .select("email, first_name")
+          .eq("user_id", profile.user_id)
+          .single();
+
+        if (userData && 'email' in userData) {
+          await sendVettingChangesRequestedEmail({
+            email: userData.email,
+            firstName: userData.first_name || 'there',
+            feedback: message,
+          });
+        }
+      } catch (emailError) {
+        console.error('Failed to send vetting changes email:', emailError);
+      }
       
       toast.success("Change request sent to talent");
       onSuccess();

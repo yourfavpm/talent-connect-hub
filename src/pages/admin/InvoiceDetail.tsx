@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { sendClientPaymentReceiptEmail } from "@/lib/email/triggers";
 import {
     Table,
     TableBody,
@@ -70,11 +71,11 @@ const AdminInvoiceDetail = () => {
     const fetchInvoiceData = async () => {
         try {
             setLoading(true);
-            const { data: rawData, error } = await supabase
-                .from("invoices")
+            const { data: rawData, error } = await (supabase
+                .from("invoices") as any)
                 .select(`
                     *,
-                    clients (id, company_name),
+                    clients (id, company_name, profiles(email)),
                     contracts (
                         id,
                         contract_number,
@@ -143,6 +144,21 @@ const AdminInvoiceDetail = () => {
                 .eq("id", id);
 
             if (error) throw error;
+
+            // Trigger Email to Client
+            try {
+                if (invoice?.clients?.profiles?.email) {
+                    await sendClientPaymentReceiptEmail({
+                        email: invoice.clients.profiles.email,
+                        clientName: invoice.clients.company_name,
+                        amount: invoice.total_amount,
+                        invoiceNumber: invoice.invoice_number || invoice.id.slice(0, 8)
+                    });
+                }
+            } catch (emailErr) {
+                console.error("Failed to send payment receipt email:", emailErr);
+            }
+
             toast.success("Payment recorded and invoice marked as paid");
             fetchInvoiceData();
         } catch (error: any) {

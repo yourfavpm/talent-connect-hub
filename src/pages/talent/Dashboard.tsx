@@ -18,7 +18,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import clsx from "clsx";
 import { format } from "date-fns";
 import { ProfileStatusBanner } from "@/components/talent/ProfileStatusBanner";
-
+import { sendTalentEmailVerifiedEmail } from "@/lib/email/triggers";
+import { useEffect, useRef } from "react";
 
 
 interface TalentData {
@@ -75,23 +76,23 @@ const TalentDashboard = () => {
     queryFn: async () => {
       if (!user?.id) return null;
 
-      let { data: talentData } = await supabase
+      let { data: talentData } = await (supabase
         .from("talents")
         .select("*")
         .eq("user_id", user.id)
-        .maybeSingle();
+        .maybeSingle() as any);
 
       if (!talentData) {
         // Fallback robust ID generation if RPC fails or returns concurrently identical values
         const fallbackId = `TAS-VA-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
         
-        const { data: talentIdData } = await supabase.rpc("generate_talent_id");
+        const { data: talentIdData } = await (supabase.rpc("generate_talent_id") as any);
         const generatedTalentId = talentIdData || fallbackId;
         
         const firstName = user.user_metadata?.first_name || user.user_metadata?.firstName || "User";
         const lastName = user.user_metadata?.last_name || user.user_metadata?.lastName || "";
 
-        const { data: newTalent, error } = await supabase
+        const { data: newTalent, error } = await (supabase
           .from("talents")
           .insert({
             user_id: user.id,
@@ -102,13 +103,13 @@ const TalentDashboard = () => {
             onboarding_completed: false,
             onboarding_status: "not_started",
             current_step: 1,
-          })
+          } as any)
           .select()
-          .single();
+          .single() as any);
 
         // If insert fails due to unique constraint on talent_id concurrently, retry with fallback
         if (error?.code === '23505') {
-            const { data: retryTalent, error: retryError } = await supabase
+            const { data: retryTalent, error: retryError } = await (supabase
               .from("talents")
               .insert({
                 user_id: user.id,
@@ -119,9 +120,9 @@ const TalentDashboard = () => {
                 onboarding_completed: false,
                 onboarding_status: "not_started",
                 current_step: 1,
-              })
+              } as any)
               .select()
-              .single();
+              .single() as any);
               
             if (retryError) throw retryError;
             talentData = retryTalent;
@@ -131,38 +132,41 @@ const TalentDashboard = () => {
             talentData = newTalent;
         }
       } else {
-        if (!talentData.first_name || talentData.first_name === "User") {
+        const currentTalent: any = talentData;
+        if (!currentTalent.first_name || currentTalent.first_name === "User") {
           const firstName = user.user_metadata?.first_name || user.user_metadata?.firstName || "User";
           const lastName = user.user_metadata?.last_name || user.user_metadata?.lastName || "";
 
           if (firstName !== "User") {
-            const { data: updatedTalent } = await supabase
-              .from("talents")
-              .update({ first_name: firstName, last_name: lastName })
-              .eq("id", talentData.id)
+            const { data: updatedTalent } = await (supabase
+              .from("talents" as any)
+              .update({ first_name: firstName, last_name: lastName } as any)
+              .eq("id", currentTalent.id)
               .select()
-              .single();
+              .single() as any);
             if (updatedTalent) talentData = updatedTalent;
           }
         }
       }
 
-      const [applicationsRes, contractsRes, timesheetsRes, messagesRes, ticketsRes, notificationsRes, profileRes, sectionsRes] = await Promise.all([
-        supabase.from("job_applications").select("*", { count: "exact", head: true }).eq("talent_id", talentData.id),
-        supabase.from("contracts").select("*", { count: "exact", head: true }).eq("talent_id", talentData.id).eq("status", "active"),
-        supabase.from("timesheets").select("*", { count: "exact", head: true }).eq("talent_id", talentData.id).eq("status", "draft"),
-        supabase.from("messages").select("*", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
-        supabase.from("support_tickets").select("*", { count: "exact", head: true }).eq("user_id", user.id).in("status", ["open", "in_progress"]),
-        supabase.from("notifications").select("*").eq("user_id", user.id).order('created_at', { ascending: false }).limit(5),
-        supabase.from("v2_talent_profiles").select("*").eq("user_id", user.id).maybeSingle(),
-        supabase.from("v2_profile_sections").select("*").eq("user_id", user.id)
+      const [applicationsRes, contractsRes, timesheetsRes, messagesRes, ticketsRes, notificationsRes, profileRes, profileV2Res, sectionsRes] = await Promise.all([
+        (supabase.from("job_applications" as any).select("*", { count: "exact", head: true }).eq("talent_id", (talentData as any).id) as any),
+        (supabase.from("contracts" as any).select("*", { count: "exact", head: true }).eq("talent_id", (talentData as any).id).eq("status", "active") as any),
+        (supabase.from("timesheets" as any).select("*", { count: "exact", head: true }).eq("talent_id", (talentData as any).id).eq("status", "draft") as any),
+        (supabase.from("messages" as any).select("*", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null) as any),
+        (supabase.from("support_tickets" as any).select("*", { count: "exact", head: true }).eq("user_id", user.id).in("status", ["open", "in_progress"]) as any),
+        (supabase.from("notifications" as any).select("*").eq("user_id", user.id).order('created_at', { ascending: false }).limit(5) as any),
+        (supabase.from("profiles" as any).select("*").eq("user_id", user.id).maybeSingle() as any),
+        (supabase.from("v2_talent_profiles" as any).select("*").eq("user_id", user.id).maybeSingle() as any),
+        (supabase.from("v2_profile_sections" as any).select("*").eq("user_id", user.id) as any)
       ]);
 
-      const profile = profileRes.data;
-      const sections = sectionsRes.data || [];
+      const baseProfile = (profileRes as any).data;
+      const profile = (profileV2Res as any).data;
+      const sections = (sectionsRes as any).data || [];
       let managerName = "";
       if (profile?.talent_manager_admin_id) {
-        const { data: managerData } = await supabase.from("profiles").select("first_name, last_name").eq("id", profile.talent_manager_admin_id).maybeSingle();
+        const { data: managerData } = await (supabase.from("profiles" as any).select("first_name, last_name").eq("id", profile.talent_manager_admin_id).maybeSingle() as any);
         if (managerData) {
           managerName = `${managerData.first_name || ""} ${managerData.last_name || ""}`.trim();
         }
@@ -170,22 +174,23 @@ const TalentDashboard = () => {
  
       return {
         talent: talentData ? {
-          ...talentData,
-          vetting_status: profile?.status || talentData.vetting_status || "DRAFT",
+          ...(talentData as any),
+          vetting_status: profile?.status || (talentData as any).vetting_status || "DRAFT",
           onboarding_status: profile?.status === "DRAFT" ? "not_started" : "submitted",
-          current_step: profile?.current_step || talentData.current_step || 1,
-          profile_completion: profile?.completion_percent || talentData.profile_completion || 0,
+          current_step: profile?.current_step || (talentData as any).current_step || 1,
+          profile_completion: profile?.completion_percent || (talentData as any).profile_completion || 0,
           assigned_manager_name: managerName
-        } as any : null,
+        } : null,
         stats: {
-          applications: applicationsRes.count || 0,
-          activeAssignments: contractsRes.count || 0,
-          pendingTimesheets: timesheetsRes.count || 0,
-          unreadMessages: messagesRes.count || 0,
-          openTickets: ticketsRes.count || 0,
+          applications: (applicationsRes as any).count || 0,
+          activeAssignments: (contractsRes as any).count || 0,
+          pendingTimesheets: (timesheetsRes as any).count || 0,
+          unreadMessages: (messagesRes as any).count || 0,
+          openTickets: (ticketsRes as any).count || 0,
         } as DashboardStats,
         notifications: (notificationsRes.data as Notification[]) || [],
         profile: profile,
+        baseProfile: baseProfile,
         sections: sections
       };
     },
@@ -193,13 +198,48 @@ const TalentDashboard = () => {
     staleTime: 1000 * 60 * 1, // 1 minute cache
   });
  
-  const { talent, stats, notifications, profile, sections } = data || {
+  const { talent, stats, notifications, profile, baseProfile, sections } = (data as any) || {
     talent: null,
     stats: { applications: 0, activeAssignments: 0, pendingTimesheets: 0, unreadMessages: 0, openTickets: 0 },
     notifications: [],
     profile: null,
+    baseProfile: null,
     sections: []
   };
+
+  const verificationTriggered = useRef(false);
+
+  useEffect(() => {
+    const triggerVerificationSuccess = async () => {
+      if (verificationTriggered.current) return;
+      
+      // Check if user is verified but we haven't sent the success email
+      if (user?.email_confirmed_at && baseProfile && !(baseProfile as any).email_verified_sent) {
+        verificationTriggered.current = true;
+        try {
+          console.log("Triggering verification success email...");
+          await sendTalentEmailVerifiedEmail(
+            user.email || "",
+            talent?.first_name || user.user_metadata?.first_name || "User"
+          );
+          
+          // Mark as sent in DB
+          await (supabase
+            .from('profiles')
+            .update({ email_verified_sent: true } as any)
+            .eq('user_id', user.id) as any);
+            
+        } catch (err) {
+          console.error("Failed to send verification success email:", err);
+          verificationTriggered.current = false;
+        }
+      }
+    };
+
+    if (user && baseProfile && talent) {
+      triggerVerificationSuccess();
+    }
+  }, [user, baseProfile, talent]);
 
 
   if (error) {

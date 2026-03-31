@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { z } from "zod";
 import { getFriendlyErrorMessage } from "@/utils/errorHandling";
-import { sendClientWelcomeEmail, sendTalentWelcomeEmail } from "@/lib/email/triggers";
+import { sendClientWelcomeEmail, sendTalentWelcomeEmail, sendTalentAccountCreatedEmail, sendTalentVerificationEmail } from "@/lib/email/triggers";
 
 const clientSignupSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters").max(100),
@@ -93,16 +93,33 @@ const Signup = () => {
 
       if (error) throw error;
 
-      // Send welcome email after successful signup
+      // Send email notifications after successful signup
       if (data.user) {
         try {
           if (isTalent) {
+            // 1. Account Created Notification
+            await sendTalentAccountCreatedEmail(
+              formData.email, 
+              formData.firstName, 
+              redirectUrl
+            );
+
+            // 2. Verification Required (if not auto-confirmed)
+            if (!data.session) {
+              await sendTalentVerificationEmail(
+                formData.email,
+                formData.firstName,
+                redirectUrl
+              );
+            }
+            
+            // 3. Immersive Onboarding Welcome
             await sendTalentWelcomeEmail({
               email: formData.email,
               firstName: formData.firstName,
-              talentId: 'new', // Will be assigned by trigger
             });
           } else {
+            // Client Flow
             await sendClientWelcomeEmail({
               email: formData.email,
               contactName: formData.fullName,
@@ -110,8 +127,7 @@ const Signup = () => {
             });
           }
         } catch (emailError) {
-          console.error('Failed to send welcome email:', emailError);
-          // Don't block signup if email fails
+          console.error('Failed to send notifications:', emailError);
         }
       }
 

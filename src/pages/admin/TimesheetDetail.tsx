@@ -19,6 +19,7 @@ import {
     FileText,
     ExternalLink
 } from "lucide-react";
+import { sendTimesheetApprovedEmail, sendTimesheetRejectedEmail } from "@/lib/email/triggers";
 import {
     Table,
     TableBody,
@@ -104,14 +105,14 @@ const AdminTimesheetDetail = () => {
                         time_tracking_required,
                         client_gross_amount,
                         client:clients (company_name),
-                        talent:talents (first_name, last_name, user_id)
+                        talent:talents (first_name, last_name, user_id, profiles(email))
                     )
                 `)
                 .eq("id", id)
                 .single();
 
             if (error) throw error;
-            setTimesheet(data);
+            setTimesheet(data as any);
 
             const { data: entriesData, error: entriesError } = await supabase
                 .from("timesheet_entries")
@@ -140,7 +141,21 @@ const AdminTimesheetDetail = () => {
 
             if (error) throw error;
 
-            toast({ title: "Approved", description: "Timesheet has been approved and moved to billing queue." });
+            // Trigger Email
+            try {
+                const talent = (timesheet as any)?.contract?.talent;
+                if (talent?.profiles?.email) {
+                    await sendTimesheetApprovedEmail({
+                        email: talent.profiles.email,
+                        firstName: talent.first_name,
+                        periodEnd: new Date(timesheet!.week_end).toLocaleDateString()
+                    });
+                }
+            } catch (emailErr) {
+                console.error("Failed to send timesheet approval email:", emailErr);
+            }
+
+            toast({ title: "Approved", description: "Timesheet approved and notification sent." });
             setIsApproveSheetOpen(false);
             fetchTimesheetDetails();
         } catch (error: any) {
@@ -164,7 +179,22 @@ const AdminTimesheetDetail = () => {
 
             if (error) throw error;
 
-            toast({ title: "Rejected", description: "Timesheet returned to talent for correction." });
+            // Trigger Email
+            try {
+                const talent = (timesheet as any)?.contract?.talent;
+                if (talent?.profiles?.email) {
+                    await sendTimesheetRejectedEmail({
+                        email: talent.profiles.email,
+                        firstName: talent.first_name,
+                        periodEnd: new Date(timesheet!.week_end).toLocaleDateString(),
+                        reason: rejectionReason
+                    });
+                }
+            } catch (emailErr) {
+                console.error("Failed to send timesheet rejection email:", emailErr);
+            }
+
+            toast({ title: "Rejected", description: "Timesheet returned to talent and notification sent." });
             setIsRejectSheetOpen(false);
             setRejectionReason("");
             fetchTimesheetDetails();

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { sendVettingRejectedEmail } from "@/lib/email/triggers";
 
 interface RejectTalentDrawerProps {
   open: boolean;
@@ -36,6 +37,29 @@ const RejectTalentDrawer = ({ open, onOpenChange, talent, onSuccess }: RejectTal
         .eq("id", talent.id);
 
       if (error) throw error;
+
+      // Send rejection email if notify toggle is on
+      if (notifyTalent) {
+        try {
+          // @ts-ignore - profiles table may not be in generated types
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("email, first_name")
+            .eq("user_id", talent.user_id)
+            .single();
+
+          if (profile?.email) {
+            await sendVettingRejectedEmail({
+              email: profile.email,
+              firstName: profile.first_name || talent.first_name || 'there',
+              rejectionReasons: reason,
+            });
+          }
+        } catch (emailError) {
+          console.error('Failed to send rejection email:', emailError);
+          // Don't block rejection if email fails
+        }
+      }
       
       toast.success("Talent vetting rejected");
       onSuccess();

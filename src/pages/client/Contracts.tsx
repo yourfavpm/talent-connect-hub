@@ -24,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
+import { sendClientContractSignedEmail, sendAdminContractFullySignedEmail } from "@/lib/email/triggers";
 
 interface Contract {
   id: string;
@@ -217,6 +218,49 @@ const Contracts = () => {
           related_id: contractId,
           read: false
         });
+      }
+
+      // Send email to client confirming signature
+      try {
+        await sendClientContractSignedEmail({
+          clientEmail: user?.email || '',
+          clientName: user?.user_metadata?.full_name || 'Client',
+          talentName: selectedContract?.talentName || 'Talent',
+          contractId: selectedContract?.contract_number || contractId,
+        });
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+      }
+
+      // Check if talent has already signed, if so send admin notification
+      if (selectedContract?.talent_signed_at) {
+        try {
+          // Fetch admin email
+          const { data: adminUsers } = await supabase
+            .from('user_roles')
+            .select('user_id')
+            .eq('role', 'super_admin')
+            .limit(1);
+
+          if (adminUsers && adminUsers.length > 0) {
+            const { data: adminProfile } = await supabase
+              .from('profiles')
+              .select('email')
+              .eq('id', adminUsers[0].user_id)
+              .single();
+
+            if (adminProfile?.email) {
+              await sendAdminContractFullySignedEmail({
+                adminEmail: adminProfile.email,
+                contractId: selectedContract?.contract_number || contractId,
+                clientName: user?.user_metadata?.full_name || 'Client',
+                talentName: selectedContract?.talentName || 'Talent',
+              });
+            }
+          }
+        } catch (emailError) {
+          console.error('Error sending admin notification:', emailError);
+        }
       }
 
       toast({

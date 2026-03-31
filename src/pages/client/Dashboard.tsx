@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { sendClientEmailVerifiedEmail } from "@/lib/email/triggers";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -17,8 +18,10 @@ import {
 
 const ClientDashboard = () => {
   const [client, setClient] = useState<any>(null);
+  const [baseProfile, setBaseProfile] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const verificationTriggered = useRef(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -36,11 +39,53 @@ const ClientDashboard = () => {
         if (clientData) {
           setClient(clientData);
         }
+
+        const { data: profileData } = await (supabase
+          .from("profiles" as any)
+          .select("*")
+          .eq("user_id", authData.user.id)
+          .maybeSingle() as any);
+        
+        if (profileData) {
+          setBaseProfile(profileData);
+        }
       }
       setLoading(false);
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const triggerVerificationSuccess = async () => {
+      if (verificationTriggered.current) return;
+      
+      // Check if user is verified but we haven't sent the success email
+      if (user?.email_confirmed_at && baseProfile && !baseProfile.email_verified_sent) {
+        verificationTriggered.current = true;
+        try {
+          console.log("Triggering client verification success email...");
+          await sendClientEmailVerifiedEmail(
+            user.email || "",
+            client?.company_name || user.user_metadata?.full_name || "Client"
+          );
+          
+          // Mark as sent in DB
+          await (supabase
+            .from('profiles' as any)
+            .update({ email_verified_sent: true } as any)
+            .eq('user_id', user.id) as any);
+            
+        } catch (err) {
+          console.error("Failed to send verification success email:", err);
+          verificationTriggered.current = false;
+        }
+      }
+    };
+
+    if (user && baseProfile && client) {
+      triggerVerificationSuccess();
+    }
+  }, [user, baseProfile, client]);
 
   const copyToClipboard = () => {
     if (client?.client_id) {

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { sendTalentPasswordChangedEmail } from "@/lib/email/triggers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,6 +90,17 @@ const TalentSettings = () => {
     try {
       const { error } = await supabase.auth.updateUser({ password: passwords.new });
       if (error) throw error;
+      
+      // Trigger Email Notification
+      try {
+        await sendTalentPasswordChangedEmail(
+          user?.email || "",
+          user?.user_metadata?.first_name || "User"
+        );
+      } catch (emailErr) {
+        console.error("Failed to send password changed email:", emailErr);
+      }
+
       toast({ title: "Password Updated", description: "Your password has been changed successfully" });
       setPasswords({ current: "", new: "", confirm: "" });
       setSaveStatus("saved");

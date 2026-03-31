@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { sendVettingApprovedEmail } from "@/lib/email/triggers";
 
 interface ApproveTalentDrawerProps {
   open: boolean;
@@ -61,6 +62,26 @@ const ApproveTalentDrawer = ({ open, onOpenChange, talent, onSuccess }: ApproveT
           action_type: "APPROVE_TALENT",
           notes: "Talent approved through final checklist"
         });
+
+      // 4. Send vetting approval email
+      try {
+        // @ts-ignore - profiles table may not be in generated types
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("email, first_name")
+          .eq("user_id", talent.user_id)
+          .single();
+
+        if (profile?.email) {
+          await sendVettingApprovedEmail({
+            email: profile.email,
+            firstName: profile.first_name || talent.first_name || 'there',
+          });
+        }
+      } catch (emailError) {
+        console.error('Failed to send approval email:', emailError);
+        // Don't block approval if email fails
+      }
       
       toast.success("Talent vetting approved. Profile is now active.");
       onSuccess();

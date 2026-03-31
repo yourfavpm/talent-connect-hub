@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Mail } from "lucide-react";
+import { sendTalentPasswordResetEmail, sendClientPasswordResetEmail } from "@/lib/email/triggers";
 
 const ResetPassword = () => {
   const [email, setEmail] = useState("");
@@ -22,11 +23,17 @@ const ResetPassword = () => {
     try {
       const redirectUrl = `${window.location.origin}/auth/update-password?portal=${portal}`;
       
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectUrl,
-      });
-
-      if (error) throw error;
+      console.log(`Requesting password reset for ${email} in ${portal} portal`);
+      
+      if (portal === 'talent') {
+        // Fetch talent name first if possible (optional, use placeholder if not found)
+        const { data: profile } = await supabase.from('profiles').select('first_name').eq('email', email).maybeSingle();
+        await sendTalentPasswordResetEmail(email, profile?.first_name || "Talent", redirectUrl);
+      } else {
+        // Client portal
+        const { data: client } = await supabase.from('clients').select('company_name').eq('primary_contact_email', email).maybeSingle() as any;
+        await sendClientPasswordResetEmail(email, client?.company_name || "Client", redirectUrl);
+      }
 
       setSent(true);
       toast({

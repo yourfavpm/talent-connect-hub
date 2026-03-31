@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Briefcase, Calendar, MapPin, DollarSign, Users, CheckCircle, XCircle, FileText, Globe, Clock, UserCheck, Search, Info } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { sendTalentApplicationShortlistedEmail, sendTalentInterviewRequestedEmail } from "@/lib/email/triggers";
 import {
     Sheet,
     SheetContent,
@@ -65,12 +66,12 @@ const AdminJobDetail = () => {
         queryFn: async () => {
             const { data, error } = await supabase
                 .from('jobs')
-                .select('*, client:clients(*)')
+                .select('*, client:clients(*, profiles(email))')
                 .eq('id', id)
                 .single();
             if (error) throw error;
-            setAdminNotes(data.admin_notes || "");
-            return data;
+            setAdminNotes((data as any).admin_notes || "");
+            return data as any;
         },
         enabled: !!id
     });
@@ -79,12 +80,12 @@ const AdminJobDetail = () => {
     const { data: applications, isLoading: appsLoading } = useQuery({
         queryKey: ['job_applications', id],
         queryFn: async () => {
-            const { data, error } = await supabase
-                .from('job_applications')
-                .select('*, talent:talents(*)')
+            const { data, error } = await (supabase
+                .from('job_applications') as any)
+                .select('*, talent:talents(*, profiles(email))')
                 .eq('job_id', id);
             if (error) throw error;
-            return data;
+            return data as any[];
         },
         enabled: !!id
     });
@@ -92,33 +93,30 @@ const AdminJobDetail = () => {
     const { data: contracts, isLoading: contractsLoading } = useQuery({
         queryKey: ['job_contracts', id],
         queryFn: async () => {
-            // Note: Contracts table assumes job_id links exist.
-            const response = await supabase
-                .from('contracts')
+            const response = await (supabase
+                .from('contracts') as any)
                 .select('*, talent:talents(first_name, last_name)')
                 .eq('job_id', id);
-            const data = response.data as unknown[];
+            const data = response.data;
             const error = response.error;
             
-            // If job_id isn't directly on contracts, we might need a different join. 
-            // For now assume job_id is standard or we suppress errors.
             if (error && error.code !== 'PGRST116') {
                console.error("Contracts fetch error", error);
                return [];
             }
-            return data || [];
+            return (data || []) as any[];
         },
         enabled: !!id
     });
 
     const updateJobStatusMutation = useMutation({
         mutationFn: async (status: 'published' | 'closed' | 'submitted' | 'draft' | 'under_review' | 'filled' | 'approved') => {
-            const { error } = await supabase.from('jobs').update({ status }).eq('id', id);
+            const { error } = await (supabase.from('jobs') as any).update({ status }).eq('id', id);
             if (error) throw error;
             
             // Notify client if published or closed
             if (status === 'published' || status === 'closed') {
-                await supabase.from('notifications').insert({
+                await (supabase.from('notifications') as any).insert({
                     user_id: job?.client?.user_id,
                     title: `Job ${status === 'published' ? 'Published' : 'Closed'}`,
                     message: `Your job "${job.title}" has been ${status}.`,
@@ -131,16 +129,16 @@ const AdminJobDetail = () => {
             queryClient.invalidateQueries({ queryKey: ['job', id] });
             toast({ title: "Job Updated" });
         },
-        onError: (err: unknown) => toast({ title: "Error", description: err.message, variant: "destructive" })
+        onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" })
     });
 
     const saveAdminNotes = async () => {
         setSavingNotes(true);
         try {
-            await supabase.from('jobs').update({ admin_notes: adminNotes }).eq('id', id);
+            await (supabase.from('jobs') as any).update({ admin_notes: adminNotes }).eq('id', id);
             toast({ title: "Notes Saved" });
             queryClient.invalidateQueries({ queryKey: ['job', id] });
-        } catch (error: unknown) {
+        } catch (error: any) {
             toast({ title: "Error", description: error.message, variant: "destructive" });
         } finally {
             setSavingNotes(false);
@@ -149,11 +147,27 @@ const AdminJobDetail = () => {
 
     const updateAppStatusMutation = useMutation({
         mutationFn: async ({ appId, status }: { appId: string, status: string }) => {
-            const { error } = await supabase
-                .from('job_applications')
+            const { error } = await (supabase
+                .from('job_applications') as any)
                 .update({ status })
                 .eq('id', appId);
             if (error) throw error;
+
+            // Trigger Email if Shortlisted
+            if (status === 'shortlisted') {
+                try {
+                    const app = applications?.find((a: any) => a.id === appId);
+                    if (app?.talent?.profiles?.email) {
+                        await sendTalentApplicationShortlistedEmail({
+                            email: app.talent.profiles.email,
+                            firstName: app.talent.first_name,
+                            jobTitle: job.title
+                        });
+                    }
+                } catch (emailErr) {
+                    console.error('Failed to send shortlist email:', emailErr);
+                }
+            }
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['job_applications', id] });
@@ -164,10 +178,11 @@ const AdminJobDetail = () => {
     const createOfferMutation = useMutation({
         mutationFn: async () => {
             if (!selectedApp || !job || !user) return;
-            const { error: offerError } = await supabase.from('offers').insert({
+            const talent = (selectedApp as any).talent;
+            const { error: offerError } = await (supabase.from('offers') as any).insert({
                 job_id: job.id,
                 client_id: job.client_id,
-                talent_id: selectedApp.talent_id,
+                talent_id: (selectedApp as any).talent_id,
                 role_title: job.title,
                 hourly_rate: parseFloat(offerRate),
                 weekly_hours: parseFloat(offerHours),
@@ -177,14 +192,14 @@ const AdminJobDetail = () => {
             });
             if (offerError) throw offerError;
 
-            const { error: appError } = await supabase
-                .from('job_applications')
+            const { error: appError } = await (supabase
+                .from('job_applications') as any)
                 .update({ status: 'offer_extended' })
-                .eq('id', selectedApp.id);
+                .eq('id', (selectedApp as any).id);
             if (appError) throw appError;
 
-            await supabase.from('notifications').insert({
-                user_id: selectedApp.talent.user_id,
+            await (supabase.from('notifications') as any).insert({
+                user_id: talent.user_id,
                 title: "Offer Received",
                 message: `You have received an offer for ${job.title}!`,
                 type: 'offer',
@@ -200,15 +215,30 @@ const AdminJobDetail = () => {
 
     const scheduleInterviewMutation = useMutation({
         mutationFn: async () => {
-            const { error } = await supabase
-                .from('job_applications')
-                .update({ status: 'interview_scheduled' }) // Keep existing or add logic to store date
-                .eq('id', selectedApp.id);
+            const appId = (selectedApp as any).id;
+            const talent = (selectedApp as any).talent;
+            const { error } = await (supabase
+                .from('job_applications') as any)
+                .update({ status: 'interview_scheduled' }) 
+                .eq('id', appId);
             if (error) throw error;
             
-            // Assume we create a message thread or timeline event for interview Link
-            await supabase.from('notifications').insert({
-                user_id: selectedApp.talent.user_id,
+            // Trigger Email
+            try {
+                if (talent?.profiles?.email) {
+                    await sendTalentInterviewRequestedEmail({
+                        email: talent.profiles.email,
+                        firstName: talent.first_name,
+                        jobTitle: job.title,
+                        clientName: job.client?.company_name || 'Client'
+                    });
+                }
+            } catch (emailErr) {
+                console.error('Failed to send interview requested email:', emailErr);
+            }
+
+            await (supabase.from('notifications') as any).insert({
+                user_id: talent.user_id,
                 title: "Interview Scheduled",
                 message: `An interview has been scheduled for ${new Date(interviewDate).toLocaleString()} via: ${interviewLink}`,
                 type: 'interview',
@@ -402,7 +432,7 @@ const AdminJobDetail = () => {
                                 <div className="divide-y divide-gray-100">
                                     {directApps.length === 0 ? (
                                         <div className="p-12 text-center text-gray-500 text-sm">No new applicants.</div>
-                                    ) : directApps.map((app: Record<string, unknown>) => (
+                                    ) : directApps.map((app: any) => (
                                         <div key={app.id as string} className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors">
                                             <div className="flex items-center gap-4">
                                                 <Avatar className="h-10 w-10 border border-gray-200 shadow-sm">
@@ -436,7 +466,7 @@ const AdminJobDetail = () => {
                                 <div className="divide-y divide-gray-100">
                                     {shortlist.length === 0 ? (
                                         <div className="p-12 text-center text-gray-500 text-sm">No candidates shortlisted yet.</div>
-                                    ) : shortlist.map((app: Record<string, unknown>) => (
+                                    ) : shortlist.map((app: any) => (
                                         <div key={app.id as string} className="p-5 flex justify-between items-center hover:bg-gray-50">
                                             <div className="flex items-center gap-4">
                                                 <Avatar className="h-10 w-10 border border-gray-200 shadow-sm">
@@ -468,7 +498,7 @@ const AdminJobDetail = () => {
                                 <div className="divide-y divide-gray-100">
                                     {interviews.length === 0 ? (
                                         <div className="p-12 text-center text-gray-500 text-sm">No interviews scheduled.</div>
-                                    ) : interviews.map((app: Record<string, unknown>) => (
+                                    ) : interviews.map((app: any) => (
                                         <div key={app.id as string} className="p-5 flex justify-between items-center hover:bg-gray-50">
                                             <div className="flex items-center gap-4">
                                                 <Avatar className="h-10 w-10 border border-gray-200 shadow-sm">
@@ -502,7 +532,7 @@ const AdminJobDetail = () => {
                                 <div className="divide-y divide-gray-100">
                                     {offers.length === 0 ? (
                                         <div className="p-12 text-center text-gray-500 text-sm">No offers extended yet.</div>
-                                    ) : offers.map((app: Record<string, unknown>) => (
+                                    ) : offers.map((app: any) => (
                                         <div key={app.id as string} className="p-5 flex justify-between items-center hover:bg-gray-50">
                                             <div className="flex items-center gap-4">
                                                 <Avatar className="h-10 w-10 border border-gray-200 shadow-sm">
@@ -532,7 +562,7 @@ const AdminJobDetail = () => {
                                 <div className="divide-y divide-gray-100">
                                     {!contracts || contracts.length === 0 ? (
                                         <div className="p-12 text-center text-gray-500 text-sm">No contracts generated for this job yet.</div>
-                                    ) : contracts.map((c: Record<string, unknown>) => (
+                                    ) : contracts.map((c: any) => (
                                         <div key={c.id as string} className="p-5 flex justify-between items-center hover:bg-gray-50">
                                             <div>
                                                 <p className="font-medium text-sm text-gray-900">Contract #{c.id.slice(0, 8)}</p>
@@ -559,8 +589,8 @@ const AdminJobDetail = () => {
                         </SheetTitle>
                         <SheetDescription className="text-gray-500 mt-1">
                             {actionType === 'sourcing' && "Find and match vetted talent to this job requirement."}
-                            {actionType === 'interview' && `Request availability or lock-in a time for ${selectedApp?.talent?.first_name}.`}
-                            {actionType === 'offer' && `Configure standard offer terms to send to ${selectedApp?.talent?.first_name}.`}
+                            {actionType === 'interview' && `Request availability or lock-in a time for ${(selectedApp as any)?.talent?.first_name}.`}
+                            {actionType === 'offer' && `Configure standard offer terms to send to ${(selectedApp as any)?.talent?.first_name}.`}
                         </SheetDescription>
                     </SheetHeader>
 

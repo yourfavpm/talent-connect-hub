@@ -20,11 +20,13 @@ import {
     MoreHorizontal,
     FileText,
     Shield,
-    Trash2
+    Trash2,
+    RotateCcw
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { sendSupportRepliedEmail } from "@/lib/email/triggers";
 
 type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -55,6 +57,7 @@ interface TicketRecord {
         email: string;
         first_name: string;
         last_name: string;
+        role: string;
     };
 }
 
@@ -113,11 +116,11 @@ const AdminSupportDetail = () => {
 
     const fetchTicket = async () => {
         try {
-            const { data: ticketData, error } = await supabase
-                .from("support_tickets")
+            const { data: ticketData, error } = await (supabase
+                .from("support_tickets") as any)
                 .select(`
                     *,
-                    user:profiles (id, email, first_name, last_name)
+                    user:profiles (id, email, first_name, last_name, role)
                 `)
                 .eq("id", id)
                 .single();
@@ -151,8 +154,8 @@ const AdminSupportDetail = () => {
     };
 
     const markAsRead = async () => {
-        await supabase
-            .from("support_tickets")
+        await (supabase
+            .from("support_tickets") as any)
             .update({ unread_by_admin: false })
             .eq("id", id);
     };
@@ -170,21 +173,34 @@ const AdminSupportDetail = () => {
                     user_id: adminUser?.id,
                     message: replyText,
                     is_admin_reply: true
-                }) as any);
+                } as any) as any);
 
             if (replyError) throw replyError;
 
+            // Trigger Email to User
+            try {
+                if (ticket?.user?.email) {
+                    await sendSupportRepliedEmail({
+                        email: ticket.user.email,
+                        ticketId: ticket.id,
+                        isTalent: ticket.user.role === 'talent'
+                    });
+                }
+            } catch (emailErr) {
+                console.error("Failed to send support reply email:", emailErr);
+            }
+
             // Auto-update status to In Progress on reply
             if (ticket?.status === 'open') {
-                await supabase
-                    .from("support_tickets")
-                    .update({ status: 'in_progress' })
-                    .eq("id", id);
+                await (supabase
+                    .from("support_tickets" as any)
+                    .update({ status: 'in_progress' } as any)
+                    .eq("id", id) as any);
                 setStatusUpdate('in_progress');
             }
 
             setReplyText("");
-            toast.success("Reply sent");
+            toast.success("Reply sent and user notified");
         } catch (error: any) {
             toast.error("Failed to send reply: " + error.message);
         } finally {
@@ -194,13 +210,13 @@ const AdminSupportDetail = () => {
 
     const handleUpdateMetadata = async () => {
         try {
-            const { error } = await supabase
-                .from("support_tickets")
+            const { error } = await (supabase
+                .from("support_tickets" as any)
                 .update({ 
                     status: statusUpdate,
                     internal_notes: internalNotes
-                })
-                .eq("id", id);
+                } as any)
+                .eq("id", id) as any);
 
             if (error) throw error;
             toast.success("Ticket updated successfully");

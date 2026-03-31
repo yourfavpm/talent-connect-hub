@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Search, FileText, DollarSign, ArrowRight, AlertCircle, Briefcase } from "lucide-react";
 import { ContractConfigurationModal } from "@/components/admin/ContractConfigurationModal";
 import InternalJobModal from "@/components/admin/InternalJobModal";
+import { sendTalentOfferEmail, sendClientContractReadyEmail } from "@/lib/email/triggers";
 
 const OPSLYHR_MARGIN = 20; // 20% margin
 
@@ -92,6 +93,30 @@ const AdminOffers = () => {
         .from("offers")
         .update({ status: "contract_generated" })
         .eq("id", offer.id);
+
+      // Send emails to talent and client
+      try {
+        await sendTalentOfferEmail({
+          talentEmail: offer.talents.email,
+          talentName: offer.talents.first_name,
+          clientName: offer.clients.company_name,
+          jobTitle: offer.role_title,
+          rate: `$${offer.hourly_rate}/hr`,
+          startDate: offer.start_date,
+          offerId: offer.id,
+        });
+
+        await sendClientContractReadyEmail({
+          clientEmail: offer.clients.primary_contact_email || offer.clients.email,
+          clientName: offer.clients.primary_contact_name || offer.clients.company_name,
+          talentName: `${offer.talents.first_name} ${offer.talents.last_name}`,
+          jobTitle: offer.role_title,
+          contractId: contractNumber,
+        });
+      } catch (emailError) {
+        console.error('Error sending emails:', emailError);
+        // Don't block the flow if emails fail
+      }
 
       toast({
         title: "Contract Generated",

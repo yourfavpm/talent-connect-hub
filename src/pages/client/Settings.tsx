@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { sendClientPasswordChangedEmail } from "@/lib/email/triggers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +75,17 @@ const ClientSettings = () => {
     try {
       const { error } = await supabase.auth.updateUser({ password: passwords.new });
       if (error) throw error;
+
+      // Trigger Email Notification
+      try {
+        await sendClientPasswordChangedEmail(
+          user?.email || "",
+          user?.user_metadata?.full_name || "User"
+        );
+      } catch (emailErr) {
+        console.error("Failed to send password changed email:", emailErr);
+      }
+
       toast({ title: "Password Updated", description: "Your password has been changed successfully" });
       setPasswords({ current: "", new: "", confirm: "" });
     } catch (error: any) {

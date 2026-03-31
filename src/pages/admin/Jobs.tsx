@@ -12,6 +12,7 @@ import {
   Search, Briefcase, Users, Calendar, Clock,
   CheckCircle, ArrowRight, XCircle, AlertCircle
 } from "lucide-react";
+import { sendJobPublishedEmail, sendClientJobLiveEmail } from "@/lib/email/triggers";
 
 export default function AdminJobs() {
   const { toast } = useToast();
@@ -19,8 +20,8 @@ export default function AdminJobs() {
   const [loading, setLoading] = useState(true);
 
   // Data states
-  const [jobs, setJobs] = useState<Record<string, unknown>[]>([]);
-  const [applications, setApplications] = useState<Record<string, unknown>[]>([]);
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
   
   // Filter states for All Jobs
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,9 +34,9 @@ export default function AdminJobs() {
       const [jobsRes, appsRes] = await Promise.all([
         supabase.from("jobs").select(`
           *,
-          clients(company_name)
+          clients(contact_name, company_name, profiles(email))
         `).order("created_at", { ascending: false }),
-        supabase.from("job_applications").select(`
+        (supabase.from("job_applications") as any).select(`
           id, job_id, status, talents(first_name, last_name)
         `)
       ]);
@@ -86,8 +87,24 @@ export default function AdminJobs() {
   const handleApproveJob = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await supabase.from("jobs").update({ status: "published", published_at: new Date().toISOString() }).eq("id", id);
-      toast({ title: "Job Approved" });
+      const job = jobs.find(j => j.id === id);
+      await (supabase.from("jobs") as any).update({ status: "published", published_at: new Date().toISOString() }).eq("id", id);
+      
+      // Trigger Client Email
+      try {
+        if (job?.clients?.profiles?.email) {
+          await sendClientJobLiveEmail({
+            email: job.clients.profiles.email,
+            contactName: job.clients.contact_name || 'there',
+            jobTitle: job.title,
+            jobId: id
+          });
+        }
+      } catch (emailError) {
+        console.error('Failed to send job approval email:', emailError);
+      }
+
+      toast({ title: "Job Approved & Notification Sent" });
       fetchDashboardData();
     } catch (error: unknown) {
       const err = error as Error;

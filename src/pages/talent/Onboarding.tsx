@@ -34,6 +34,7 @@ import {
 import clsx from "clsx";
 import { RoleSelector } from "@/components/talent/onboarding/RoleSelector";
 import { TimezoneSelector } from "@/components/talent/onboarding/TimezoneSelector";
+import { sendVettingSubmittedEmail } from "@/lib/email/triggers";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -411,6 +412,18 @@ const TalentOnboarding = () => {
       const { error } = await (supabase.rpc as any)("submit_talent_onboarding");
       if (error) throw error;
       
+      // 3. Send Notification Email
+      try {
+        if (formData.email) {
+          await sendVettingSubmittedEmail({
+            email: formData.email,
+            firstName: formData.firstName || 'there',
+          });
+        }
+      } catch (emailError) {
+        console.error('Failed to send vetting submission email:', emailError);
+      }
+
       setIsSubmitted(true);
       toast({ title: "Profile Submitted", description: "Your profile has been sent for vetting." });
     } catch (error: any) {
