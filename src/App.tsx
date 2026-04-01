@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { getCurrentZone, Zone } from "@/utils/subdomain";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -5,118 +6,137 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { FEATURES } from "@/config/features";
+import { useVettingVersion } from "./hooks/useVettingVersion";
+import { useAuth } from "@/hooks/useAuth";
+import { getZoneUrl } from "@/utils/subdomain";
+import OpslyLoader from "@/components/OpslyLoader";
+
+// Layouts and Core Components
 import WebsiteLayout from "./components/website/WebsiteLayout";
 import ScrollToTop from "./components/ScrollToTop";
-import Index from "./pages/Index";
-import ForCompanies from "./pages/ForCompanies";
-import ForProfessionals from "./pages/ForProfessionals";
-import ServiceModels from "./pages/ServiceModels";
-import Pricing from "./pages/Pricing";
-import BookConsultation from "./pages/BookConsultation";
-import Insights from "./pages/Insights";
-import About from "./pages/About";
-import DirectHire from "./pages/DirectHire";
-import TrialToHire from "./pages/TrialToHire";
-import ProjectEngagement from "./pages/ProjectEngagement";
-import OffshoreHiring from "./pages/OffshoreHiring";
-import VettingProcess from "./pages/VettingProcess";
-import Careers from "./pages/Careers";
-import Login from "./pages/auth/Login";
-import Signup from "./pages/auth/Signup";
-import AdminSignup from "./pages/auth/AdminSignup";
-import ResetPassword from "./pages/auth/ResetPassword";
-import CheckEmail from "./pages/auth/CheckEmail";
 import ClientLayout from "./components/client/ClientLayout";
-import ClientOnboarding from "@/pages/client/Onboarding";
-import ClientDashboard from "@/pages/client/Dashboard";
-import BrowseTalents from "@/pages/client/BrowseTalents";
-import ClientTalentProfile from "@/pages/client/TalentProfile";
-import Jobs from "@/pages/client/Jobs";
-import CreateJob from "@/pages/client/CreateJob";
-import ClientJobDetail from "@/pages/client/JobDetail";
-import Contracts from "@/pages/client/Contracts";
-import Invoices from "@/pages/client/Invoices";
-import ClientPayments from "@/pages/client/Payments";
-import ClientTimesheets from "@/pages/client/Timesheets";
-import Team from "@/pages/client/Team";
-import ClientSupport from "@/pages/client/Support";
-import ClientSettings from "@/pages/client/Settings";
-import { FEATURES } from "@/config/features";
-import HireRequestsList from "@/pages/client/HireRequests/HireRequestsList";
-import CreateHireRequest from "@/pages/client/HireRequests/CreateHireRequest";
-import HireRequestDetail from "@/pages/client/HireRequests/HireRequestDetail";
-
 import TalentLayout from "./components/talent/TalentLayout";
-import TalentOnboarding from "./pages/talent/Onboarding";
-import TalentDashboard from "./pages/talent/Dashboard";
-import TalentProfile from "./pages/talent/Profile";
-import TalentJobs from "./pages/talent/Jobs";
-import TalentContracts from "./pages/talent/Contracts";
-import TalentOffers from "./pages/talent/Offers";
-import TalentJobDetail from "./pages/talent/JobDetail";
-import TalentApplications from "./pages/talent/Applications";
-import TalentInterviews from "./pages/talent/Interviews";
-import TalentAssignments from "./pages/talent/Assignments";
-import TalentTimesheets from "./pages/talent/Timesheets";
-import TimesheetForm from "./pages/talent/TimesheetForm";
-import TalentMessages from "./pages/talent/Messages";
-import MessageThread from "./pages/talent/MessageThread";
-import TalentSupport from "./pages/talent/Support";
-import SupportTicketForm from "./pages/talent/SupportTicketForm";
-import TicketDetail from "./pages/talent/TicketDetail";
-import TalentSettings from "./pages/talent/Settings";
-import TalentPayments from "./pages/talent/Payments";
-import TalentTeam from "./pages/talent/Team";
 import AdminLayout from "./components/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/Dashboard";
-import AdminTalents from "./pages/admin/Talents";
-import AdminTalentDetail from "./pages/admin/TalentDetail";
-import VettingWorkspace from "./pages/admin/TalentVetting/VettingWorkspace";
-import AdminClients from "@/pages/admin/Clients";
-import AdminClientDetail from "@/pages/admin/ClientDetail";
-import AdminJobs from "@/pages/admin/Jobs";
-import AdminJobDetail from "@/pages/admin/JobDetail";
-import AdminOffers from "@/pages/admin/Offers";
-import AdminContracts from "@/pages/admin/Contracts";
-import AdminInvoices from "@/pages/admin/Invoices";
-import AdminSupport from "@/pages/admin/Support";
-import AdminSupportDetail from "@/pages/admin/SupportDetail";
-import AdminInvoiceDetail from "@/pages/admin/InvoiceDetail";
-import AdminTeam from "@/pages/admin/Team";
-import AdminDetail from "@/pages/admin/Team/AdminDetail";
-import RolesPermissions from "@/pages/admin/Team/RolesPermissions";
-import AuditLog from "@/pages/admin/Team/AuditLog";
-import AdminSettings from "@/pages/admin/Settings";
-import AdminConsultations from "@/pages/admin/Consultations";
-import AdminConsultationDetail from "@/pages/admin/ConsultationDetail";
-import AdminOfferConfig from "@/pages/admin/OfferConfiguration";
-import AgreementTemplates from "@/pages/admin/AgreementTemplates";
-import AdminTimesheets from "@/pages/admin/Timesheets";
-import AdminTimesheetDetail from "@/pages/admin/TimesheetDetail";
-import AdminPayments from "@/pages/admin/Payments";
 import SettingsLayout from "@/pages/admin/Settings/SettingsLayout";
-import OrganizationSettings from "@/pages/admin/Settings/sections/Organization";
-import ServiceModelsSettings from "@/pages/admin/Settings/sections/ServiceModels";
-import ContractsSettings from "@/pages/admin/Settings/sections/Contracts";
-import FinanceSettings from "@/pages/admin/Settings/sections/Finance";
-import WorkflowSettings from "@/pages/admin/Settings/sections/Workflows";
-import NotificationSettings from "@/pages/admin/Settings/sections/Notifications";
-import SecuritySettings from "@/pages/admin/Settings/sections/Security";
-import BrandingSettings from "@/pages/admin/Settings/sections/Branding";
-import IntegrationsSettings from "@/pages/admin/Settings/sections/Integrations";
-import DataSettings from "@/pages/admin/Settings/sections/Data";
-import SettingsAuditLog from "@/pages/admin/Settings/sections/AuditLogs";
-import PublicJobs from "./pages/PublicJobs";
-import NotFound from "./pages/NotFound";
-import { useVettingVersion } from "./hooks/useVettingVersion";
-import OnboardingV2 from "./pages/talent/OnboardingV2";
-import ProfileV2 from "./pages/talent/ProfileV2";
-import VettingQueueV2 from "./pages/admin/VettingQueueV2";
-import VettingWorkspaceV2 from "./pages/admin/VettingWorkspaceV2";
-import AdminTalentDirectory from "./pages/admin/TalentDirectory/AdminTalentDirectory";
-import AdminTalentProfileView from "./pages/admin/TalentDirectory/AdminTalentProfileView";
-import AdminHireRequestsList from "./pages/admin/HireRequests/AdminHireRequestsList";
-import AdminHireRequestDetail from "./pages/admin/HireRequests/AdminHireRequestDetail";
+
+// --- Lazy Loading Pages ---
+
+// Marketing
+const Index = lazy(() => import("./pages/Index"));
+const ForCompanies = lazy(() => import("./pages/ForCompanies"));
+const ForProfessionals = lazy(() => import("./pages/ForProfessionals"));
+const ServiceModels = lazy(() => import("./pages/ServiceModels"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const BookConsultation = lazy(() => import("./pages/BookConsultation"));
+const Insights = lazy(() => import("./pages/Insights"));
+const About = lazy(() => import("./pages/About"));
+const Careers = lazy(() => import("./pages/Careers"));
+const DirectHire = lazy(() => import("./pages/DirectHire"));
+const TrialToHire = lazy(() => import("./pages/TrialToHire"));
+const ProjectEngagement = lazy(() => import("./pages/ProjectEngagement"));
+const OffshoreHiring = lazy(() => import("./pages/OffshoreHiring"));
+const VettingProcess = lazy(() => import("./pages/VettingProcess"));
+const PublicJobs = lazy(() => import("./pages/PublicJobs"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Auth
+const Login = lazy(() => import("./pages/auth/Login"));
+const Signup = lazy(() => import("./pages/auth/Signup"));
+const AdminSignup = lazy(() => import("./pages/auth/AdminSignup"));
+const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
+const CheckEmail = lazy(() => import("./pages/auth/CheckEmail"));
+const VerifyEmail = lazy(() => import("./pages/auth/VerifyEmail"));
+
+// Client
+const ClientOnboarding = lazy(() => import("@/pages/client/Onboarding"));
+const ClientDashboard = lazy(() => import("@/pages/client/Dashboard"));
+const BrowseTalents = lazy(() => import("@/pages/client/BrowseTalents"));
+const ClientTalentProfile = lazy(() => import("@/pages/client/TalentProfile"));
+const Jobs = lazy(() => import("@/pages/client/Jobs"));
+const CreateJob = lazy(() => import("@/pages/client/CreateJob"));
+const ClientJobDetail = lazy(() => import("@/pages/client/JobDetail"));
+const Contracts = lazy(() => import("@/pages/client/Contracts"));
+const Invoices = lazy(() => import("@/pages/client/Invoices"));
+const ClientPayments = lazy(() => import("@/pages/client/Payments"));
+const ClientTimesheets = lazy(() => import("@/pages/client/Timesheets"));
+const Team = lazy(() => import("@/pages/client/Team"));
+const ClientSupport = lazy(() => import("@/pages/client/Support"));
+const ClientSettings = lazy(() => import("@/pages/client/Settings"));
+const HireRequestsList = lazy(() => import("@/pages/client/HireRequests/HireRequestsList"));
+const CreateHireRequest = lazy(() => import("@/pages/client/HireRequests/CreateHireRequest"));
+const HireRequestDetail = lazy(() => import("@/pages/client/HireRequests/HireRequestDetail"));
+
+// Talent
+const TalentOnboarding = lazy(() => import("./pages/talent/Onboarding"));
+const TalentDashboard = lazy(() => import("./pages/talent/Dashboard"));
+const TalentProfile = lazy(() => import("./pages/talent/Profile"));
+const TalentJobs = lazy(() => import("./pages/talent/Jobs"));
+const TalentContracts = lazy(() => import("./pages/talent/Contracts"));
+const TalentOffers = lazy(() => import("./pages/talent/Offers"));
+const TalentJobDetail = lazy(() => import("./pages/talent/JobDetail"));
+const TalentApplications = lazy(() => import("./pages/talent/Applications"));
+const TalentInterviews = lazy(() => import("./pages/talent/Interviews"));
+const TalentAssignments = lazy(() => import("./pages/talent/Assignments"));
+const TalentTimesheets = lazy(() => import("./pages/talent/Timesheets"));
+const TimesheetForm = lazy(() => import("./pages/talent/TimesheetForm"));
+const TalentMessages = lazy(() => import("./pages/talent/Messages"));
+const MessageThread = lazy(() => import("./pages/talent/MessageThread"));
+const TalentSupport = lazy(() => import("./pages/talent/Support"));
+const SupportTicketForm = lazy(() => import("./pages/talent/SupportTicketForm"));
+const TicketDetail = lazy(() => import("./pages/talent/TicketDetail"));
+const TalentSettings = lazy(() => import("./pages/talent/Settings"));
+const TalentPayments = lazy(() => import("./pages/talent/Payments"));
+const TalentTeam = lazy(() => import("./pages/talent/Team"));
+const OnboardingV2 = lazy(() => import("./pages/talent/OnboardingV2"));
+const ProfileV2 = lazy(() => import("./pages/talent/ProfileV2"));
+
+// Admin
+const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const AdminTalents = lazy(() => import("./pages/admin/Talents"));
+const AdminTalentDetail = lazy(() => import("./pages/admin/TalentDetail"));
+const VettingWorkspace = lazy(() => import("./pages/admin/TalentVetting/VettingWorkspace"));
+const AdminClients = lazy(() => import("@/pages/admin/Clients"));
+const AdminClientDetail = lazy(() => import("@/pages/admin/ClientDetail"));
+const AdminJobs = lazy(() => import("@/pages/admin/Jobs"));
+const AdminJobDetail = lazy(() => import("@/pages/admin/JobDetail"));
+const AdminOffers = lazy(() => import("@/pages/admin/Offers"));
+const AdminContracts = lazy(() => import("@/pages/admin/Contracts"));
+const AdminInvoices = lazy(() => import("@/pages/admin/Invoices"));
+const AdminSupport = lazy(() => import("@/pages/admin/Support"));
+const AdminSupportDetail = lazy(() => import("@/pages/admin/SupportDetail"));
+const AdminInvoiceDetail = lazy(() => import("@/pages/admin/InvoiceDetail"));
+const AdminTeam = lazy(() => import("@/pages/admin/Team"));
+const AdminDetail = lazy(() => import("@/pages/admin/Team/AdminDetail"));
+const RolesPermissions = lazy(() => import("@/pages/admin/Team/RolesPermissions"));
+const AuditLog = lazy(() => import("@/pages/admin/Team/AuditLog"));
+const AdminSettings = lazy(() => import("@/pages/admin/Settings"));
+const AdminConsultations = lazy(() => import("@/pages/admin/Consultations"));
+const AdminConsultationDetail = lazy(() => import("@/pages/admin/ConsultationDetail"));
+const AdminOfferConfig = lazy(() => import("@/pages/admin/OfferConfiguration"));
+const AgreementTemplates = lazy(() => import("@/pages/admin/AgreementTemplates"));
+const AdminTimesheets = lazy(() => import("@/pages/admin/Timesheets"));
+const AdminTimesheetDetail = lazy(() => import("@/pages/admin/TimesheetDetail"));
+const AdminPayments = lazy(() => import("@/pages/admin/Payments"));
+const VettingQueueV2 = lazy(() => import("./pages/admin/VettingQueueV2"));
+const VettingWorkspaceV2 = lazy(() => import("./pages/admin/VettingWorkspaceV2"));
+const AdminTalentDirectory = lazy(() => import("./pages/admin/TalentDirectory/AdminTalentDirectory"));
+const AdminTalentProfileView = lazy(() => import("./pages/admin/TalentDirectory/AdminTalentProfileView"));
+const AdminHireRequestsList = lazy(() => import("./pages/admin/HireRequests/AdminHireRequestsList"));
+const AdminHireRequestDetail = lazy(() => import("./pages/admin/HireRequests/AdminHireRequestDetail"));
+
+// Admin Settings Sections
+const OrganizationSettings = lazy(() => import("@/pages/admin/Settings/sections/Organization"));
+const ServiceModelsSettings = lazy(() => import("@/pages/admin/Settings/sections/ServiceModels"));
+const ContractsSettings = lazy(() => import("@/pages/admin/Settings/sections/Contracts"));
+const FinanceSettings = lazy(() => import("@/pages/admin/Settings/sections/Finance"));
+const WorkflowSettings = lazy(() => import("@/pages/admin/Settings/sections/Workflows"));
+const NotificationSettings = lazy(() => import("@/pages/admin/Settings/sections/Notifications"));
+const SecuritySettings = lazy(() => import("@/pages/admin/Settings/sections/Security"));
+const BrandingSettings = lazy(() => import("@/pages/admin/Settings/sections/Branding"));
+const IntegrationsSettings = lazy(() => import("@/pages/admin/Settings/sections/Integrations"));
+const DataSettings = lazy(() => import("@/pages/admin/Settings/sections/Data"));
+const SettingsAuditLog = lazy(() => import("@/pages/admin/Settings/sections/AuditLogs"));
 
 const OnboardingRouter = () => {
   const { version, isLoading } = useVettingVersion();
@@ -153,10 +173,6 @@ const queryClient = new QueryClient({
   },
 });
 
-import { useAuth } from "@/hooks/useAuth";
-import { getZoneUrl } from "@/utils/subdomain";
-import VerifyEmail from "@/pages/auth/VerifyEmail";
-
 /**
  * Ensures the user is in the correct zone and is authenticated if required.
  */
@@ -173,14 +189,7 @@ const ZoneGuard = ({
   const currentZone = getCurrentZone();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-slate-400 bg-[#0A0A0B]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
-          <span className="text-xs font-medium tracking-widest uppercase opacity-50">Initializing Portal</span>
-        </div>
-      </div>
-    );
+    return <OpslyLoader />;
   }
 
   // 1. If not in the allowed zone for this route set, don't render it
@@ -225,7 +234,8 @@ const App = () => {
           <BrowserRouter>
             <ScrollToTop />
             <DevZoneIndicator zone={zone} />
-            <Routes>
+            <Suspense fallback={<OpslyLoader />}>
+              <Routes>
               {/* Marketing Zone (opslyhr.com) */}
               {zone === Zone.MARKETING && (
                 <Route element={<WebsiteLayout />}>
@@ -393,7 +403,8 @@ const App = () => {
                   </Routes>
                 </ZoneGuard>
               } />
-            </Routes>
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

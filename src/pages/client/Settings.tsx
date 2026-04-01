@@ -169,8 +169,8 @@ const ClientSettings = () => {
                   </div>
                 </CardContent>
               </Card>
-              <div className="flex justify-end sticky bottom-6">
-                <Button type="submit" className="bg-brand-primary text-white shadow-sm">Save Changes</Button>
+              <div className="flex justify-end sticky bottom-6 z-10">
+                <Button type="submit" className="bg-brand-primary text-white shadow-lg px-8 h-10 text-[13px] font-bold">Save Company Profile</Button>
               </div>
             </form>
           </div>
@@ -303,8 +303,8 @@ const ClientSettings = () => {
                   ))}
                </CardContent>
             </Card>
-            <div className="flex justify-end sticky bottom-6">
-               <Button onClick={handleSaveNotifications} className="bg-brand-primary text-white shadow-sm">Save Preferences</Button>
+            <div className="flex justify-end sticky bottom-6 z-10">
+               <Button onClick={handleSaveNotifications} className="bg-brand-primary text-white shadow-lg px-8 h-10 text-[13px] font-bold">Save Preferences</Button>
             </div>
           </div>
         );
@@ -428,20 +428,24 @@ const ClientSettings = () => {
 
       <div className="flex flex-col md:flex-row gap-8 items-start">
         {/* Left Navigation Panel */}
-        <div className="w-full md:w-64 shrink-0 flex flex-col md:sticky md:top-6">
-           <nav className="flex md:flex-col gap-1 overflow-x-auto pb-4 md:pb-0 scrollbar-none">
+        <div className="w-full md:w-64 shrink-0 flex flex-col md:sticky md:top-6 z-10 bg-[#FAFAFA] md:bg-transparent">
+           <nav className="flex md:flex-col gap-1 overflow-x-auto pb-4 md:pb-0 scrollbar-none border-b border-gray-100 md:border-none -mx-4 px-4 md:mx-0 md:px-0 mb-4 md:mb-0">
               {SECTIONS.map((section) => (
                  <button
                     key={section.id}
                     onClick={() => setActiveTab(section.id)}
                     className={clsx(
-                       "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
+                       "flex items-center gap-3 px-4 md:px-3 py-2.5 md:py-2 rounded-full md:rounded-md text-[13px] md:text-sm font-medium transition-colors whitespace-nowrap border md:border-none",
                        activeTab === section.id 
-                          ? section.danger ? "bg-red-50 text-red-700" : "bg-gray-100 text-gray-900"
-                          : section.danger ? "text-red-600 hover:bg-red-50/50" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          ? section.danger 
+                            ? "bg-red-50 text-red-700 border-red-100" 
+                            : "bg-gray-100 text-gray-900 border-gray-200 shadow-sm md:shadow-none"
+                          : section.danger 
+                            ? "text-red-600 hover:bg-red-50/50 border-transparent" 
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent"
                     )}
                  >
-                    <section.icon className={clsx("h-4 w-4", activeTab === section.id && !section.danger ? "text-gray-900" : "")} />
+                    <section.icon className={clsx("h-4 w-4", activeTab === section.id && !section.danger ? "text-gray-900" : "text-gray-400")} />
                     {section.label}
                  </button>
               ))}

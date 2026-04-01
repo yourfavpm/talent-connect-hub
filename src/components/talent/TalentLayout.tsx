@@ -17,7 +17,7 @@ const TalentLayout = () => {
   useEffect(() => {
     const checkOnboarding = async () => {
       if (!user?.id) return;
-      const { data } = await supabase.from("talents").select("onboarding_completed").eq("user_id", user.id).maybeSingle();
+      const { data } = await supabase.from("talents").select("onboarding_completed").eq("user_id", user.id).maybeSingle() as { data: { onboarding_completed: boolean } | null };
       setNeedsOnboarding(!data || !data.onboarding_completed);
     };
     checkOnboarding();
@@ -40,7 +40,7 @@ const TalentLayout = () => {
             onMenuClick={() => setSidebarOpen(true)}
             onLogout={() => signOut()}
           />
-          <main className="flex-1 overflow-y-auto w-full relative">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden w-full relative">
             <div className="p-4 sm:p-6 lg:p-8 mx-auto w-full max-w-7xl animate-fade-in pb-20">
               <Outlet />
             </div>

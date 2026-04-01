@@ -5,8 +5,44 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
 // Section data is stored as JSONB in talent_profile_sections, not separate tables
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SectionData = Record<string, any>;
+type SectionData = {
+  country?: string;
+  timezone?: string;
+  preferred_working_hours?: string;
+  primaryRole?: string;
+  roleCategory?: string;
+  availability?: string;
+  yearsOfExperience?: string;
+  headline?: string;
+  shortBio?: string;
+  industry_focus?: string[];
+  functional_areas?: string[];
+  secondarySkills?: string[];
+  toolsFamiliarWith?: string[];
+  languagesSpoken?: string[];
+  workHistory?: any[]; // Keep as any[] for now as it's complex nested JSON
+  education?: any[];
+  certifications?: any[];
+  references?: any[];
+  projects?: any[];
+  [key: string]: any;
+};
+
+interface VettingStats {
+  applications: number;
+  activeAssignments: number;
+  pendingTimesheets: number;
+  unreadMessages: number;
+  openTickets: number;
+}
+
+interface ManagerProfile {
+  user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+  email?: string | null;
+}
 
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -70,13 +106,15 @@ const TalentProfile = () => {
       if (!user?.id) return null;
 
       const { data: profile } = await supabase.from("talent_profiles").select("*").eq("user_id", user.id).maybeSingle();
-      const { data: sections } = await supabase.from("talent_profile_sections").select("*").eq("user_id", user.id);
+      const { data: sections } = await supabase.from("talent_profile_sections").select("*").eq("user_id", user.id) as { data: any[] | null };
       
-      const mergedData: any = {};
+      const mergedData: SectionData = {};
       const sectionStatuses: Record<string, string> = {};
       if (sections) {
         sections.forEach(s => {
-          Object.assign(mergedData, s.data);
+          if (s.data && typeof s.data === 'object') {
+            Object.assign(mergedData, s.data as SectionData);
+          }
           sectionStatuses[s.section_key] = s.status;
         });
       }
@@ -97,38 +135,37 @@ const TalentProfile = () => {
         supabase.from("messages").select("*", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
         supabase.from("support_tickets").select("*", { count: "exact", head: true }).eq("user_id", user.id).in("status", ["open", "in_progress"]),
         supabase.from("notifications").select("*").eq("user_id", user.id).order('created_at', { ascending: false }).limit(5),
-      ]);
+      ]) as any[];
   
       return {
-        profile,
-        legacyTalent,
+        profile: profile as Database["public"]["Tables"]["talent_profiles"]["Row"] | null,
+        legacyTalent: legacyTalent as Database["public"]["Tables"]["talents"]["Row"] | null,
         mergedData,
         sectionStatuses,
-        changedSections: sections?.filter(s => s.status === 'CHANGES_REQUESTED').map(s => s.section_key) || [],
+        changedSections: (sections?.filter(s => s.status === 'CHANGES_REQUESTED').map(s => s.section_key) as SectionKey[]) || [],
         stats: {
           applications: applicationsRes.count || 0,
           activeAssignments: contractsRes.count || 0,
           pendingTimesheets: timesheetsRes.count || 0,
           unreadMessages: messagesRes.count || 0,
           openTickets: ticketsRes.count || 0,
-        },
-        notifications: notificationsRes?.data || [],
-        manager: managerRes,
+        } as VettingStats,
+        notifications: (notificationsRes?.data || []) as any[],
+        manager: managerRes as ManagerProfile | null,
       };
     },
     enabled: !!user?.id,
   });
 
   // ── Derived Data ───────────────────────────────────────────────────────────
-  // Note: Hooks must be at the top level
-  const talent: any = data?.profile || data?.legacyTalent || {};
-  const mergedData = data?.mergedData || {};
+  const talent = data?.profile || data?.legacyTalent || ({} as any);
+  const mergedData = data?.mergedData || ({} as SectionData);
   const sectionStatuses = data?.sectionStatuses || {};
   const changedSections = data?.changedSections || [];
   const manager = data?.manager;
   const vetting = talent; 
-  const profileStatus = talent.status; 
-  const extendedData = mergedData; // Alias for legacy UI code
+  const profileStatus = (talent as any).status; 
+  const extendedData = mergedData; 
 
   const workHistory = mergedData.workHistory || [];
   const education = mergedData.education || [];
@@ -144,10 +181,10 @@ const TalentProfile = () => {
   const completionPercentage = talent.completion_percent || 0;
 
   // ── Section Editing Forms ──────────────────────────────────────────────────
-  const [basicForm, setBasicForm] = useState<any>(null);
-  const [proForm, setProForm] = useState<any>(null);
-  const [skillsForm, setSkillsForm] = useState<any>(null);
-  const [projectsForm, setProjectsForm] = useState<any>(null);
+  const [basicForm, setBasicForm] = useState<{ country: string; timezone: string; preferred_working_hours: string } | null>(null);
+  const [proForm, setProForm] = useState<Partial<SectionData> | null>(null);
+  const [skillsForm, setSkillsForm] = useState<{ secondary_skills: string[]; tools_familiar_with: string[]; languages_spoken: string[] } | null>(null);
+  const [projectsForm, setProjectsForm] = useState<any[] | null>(null);
   const [newSkill, setNewSkill] = useState("");
   const [newTool, setNewTool] = useState("");
   const [newLang, setNewLang] = useState("");
@@ -783,8 +820,8 @@ const TalentProfile = () => {
 
       {/* Sheet / Drawer (Legacy implementation preserved for review submission) */}
       <Sheet open={reviewDrawerOpen} onOpenChange={setReviewDrawerOpen}>
-        <SheetContent className="sm:max-w-md flex flex-col h-full bg-white p-0 overflow-hidden font-inter">
-          <SheetHeader className="p-8 border-b border-slate-100 bg-slate-50/50">
+        <SheetContent className="w-[90vw] sm:max-w-md flex flex-col h-full bg-white p-0 overflow-hidden font-inter">
+          <SheetHeader className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
             <div className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-white text-blue-600 border border-slate-200 uppercase tracking-widest mb-3 shadow-sm w-fit">
                RE-VERIFICATION
             </div>
@@ -852,14 +889,14 @@ interface SectionCardProps {
 const SectionCard = ({ sectionKey, icon, collapsed, onToggle, editing, onEdit, locked, children, redesign }: SectionCardProps) => (
   <Card className={cn("border-slate-200 shadow-[0_2px_4px_rgba(0,0,0,0.01)] overflow-hidden bg-white", redesign && "rounded-xl border")}>
     <div
-      className="flex items-center justify-between px-8 py-5 cursor-pointer hover:bg-slate-50/50 transition-colors"
+      className="flex items-center justify-between px-4 md:px-8 py-4 md:py-5 cursor-pointer hover:bg-slate-50/50 transition-colors"
       onClick={onToggle}
     >
-      <div className="flex items-center gap-4">
-        <div className="h-8 w-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
+      <div className="flex items-center gap-3 md:gap-4">
+        <div className="h-8 w-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shrink-0">
            {icon}
         </div>
-        <h3 className="text-base font-bold text-slate-900">{SECTION_LABELS[sectionKey]}</h3>
+        <h3 className="text-sm md:text-base font-bold text-slate-900 truncate">{SECTION_LABELS[sectionKey]}</h3>
       </div>
       <div className="flex items-center gap-4">
         {!editing && !locked && onEdit.toString() !== "() => {}" && (
@@ -878,7 +915,7 @@ const SectionCard = ({ sectionKey, icon, collapsed, onToggle, editing, onEdit, l
       </div>
     </div>
     {!collapsed && (
-      <CardContent className="px-8 pb-8 pt-2">
+      <CardContent className="px-4 md:px-8 pb-6 md:pb-8 pt-2">
         {children}
       </CardContent>
     )}
@@ -933,11 +970,11 @@ const EmptyState = ({ icon, label, cta }: { icon: any, label: string, cta?: stri
 );
 
 const EditFooter = ({ redesign, onSave, onCancel, saving }: { redesign?: boolean, onSave: () => void; onCancel: () => void; saving: boolean }) => (
-  <div className="flex items-center justify-end gap-3 pt-8 mt-6 border-t border-slate-100">
-    <Button variant="ghost" size="sm" className="h-10 text-xs font-bold text-slate-500 hover:bg-slate-50" onClick={onCancel}>
+  <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 md:pt-8 mt-6 border-t border-slate-100">
+    <Button variant="ghost" size="sm" className="h-10 w-full sm:w-auto text-xs font-bold text-slate-500 hover:bg-slate-50" onClick={onCancel}>
        Discard Changes
     </Button>
-    <Button size="sm" className="h-10 text-xs font-bold gap-2 bg-slate-950 text-white hover:bg-slate-900 shadow-sm" onClick={onSave} disabled={saving}>
+    <Button size="sm" className="h-10 w-full sm:w-auto text-xs font-bold gap-2 bg-slate-950 text-white hover:bg-slate-900 shadow-sm" onClick={onSave} disabled={saving}>
       {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
       Save Draft Update
     </Button>

@@ -44,7 +44,7 @@ const ClientLayout = () => {
             onMenuClick={() => setSidebarOpen(true)}
             onLogout={handleLogout}
           />
-          <main className="flex-1 overflow-y-auto w-full relative">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden w-full relative">
             <div className="p-4 sm:p-6 lg:p-8 mx-auto w-full max-w-7xl animate-fade-in pb-20">
               <Outlet />
             </div>

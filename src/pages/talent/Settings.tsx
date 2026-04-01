@@ -154,9 +154,9 @@ const TalentSettings = () => {
   // ── Layout Components ────────────────────────────────────────────────────────
 
   const SectionHeader = ({ title, description }: { title: string; description: string }) => (
-    <div className="mb-10 pb-6 border-b border-slate-100">
-      <h2 className="text-[18px] font-bold text-slate-900 tracking-tight leading-none mb-2">{title}</h2>
-      <p className="text-[14px] text-slate-500 leading-relaxed max-w-2xl">{description}</p>
+    <div className="mb-6 md:mb-10 pb-6 border-b border-slate-100">
+      <h2 className="text-[17px] md:text-[18px] font-bold text-slate-900 tracking-tight leading-none mb-2">{title}</h2>
+      <p className="text-[13px] md:text-[14px] text-slate-500 leading-relaxed max-w-2xl">{description}</p>
     </div>
   );
 
@@ -168,27 +168,27 @@ const TalentSettings = () => {
   );
 
   const SaveBar = ({ onSave }: { onSave: () => void }) => (
-    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-full max-w-[720px] px-6 z-50">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-200/50 p-4 flex items-center justify-between gap-6 overflow-hidden">
-        <div className="flex items-center gap-3 px-2">
-          <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-          <span className="text-[12px] font-bold text-slate-600 uppercase tracking-widest">Unsaved Changes</span>
+    <div className="fixed bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 w-full max-w-[720px] px-4 md:px-6 z-50">
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-200/50 p-2 md:p-4 flex items-center justify-between gap-2 md:gap-6 overflow-hidden">
+        <div className="flex items-center gap-2 px-1 md:px-2 min-w-0">
+          <div className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-blue-500 animate-pulse shrink-0" />
+          <span className="text-[9px] md:text-[12px] font-bold text-slate-600 uppercase tracking-widest truncate">Unsaved</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3 shrink-0">
            <Button 
             variant="ghost" 
             onClick={() => window.location.reload()}
-            className="h-10 px-6 text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl"
+            className="h-8 md:h-10 px-3 md:px-6 text-[9px] md:text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl"
            >
              Cancel
            </Button>
            <Button 
             onClick={onSave}
             disabled={loading}
-            className="h-10 px-8 bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-slate-900/10 transition-all rounded-xl"
+            className="h-8 md:h-10 px-4 md:px-8 bg-slate-900 hover:bg-slate-800 text-white text-[9px] md:text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-slate-900/10 transition-all rounded-xl"
            >
-             {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Save className="h-3.5 w-3.5 mr-2" />}
-             Save Changes
+             {loading ? <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> : <Save className="h-3 w-3 mr-1.5 md:mr-2" />}
+             Save
            </Button>
         </div>
       </div>
@@ -629,7 +629,7 @@ const TalentSettings = () => {
         </aside>
 
         {/* ── RIGHT COLUMN: Content Panel ───────────────────────────────── */}
-        <main className="flex-1 w-full max-w-[720px] min-w-0 bg-white border border-slate-100 rounded-2xl p-8 shadow-sm">
+        <main className="flex-1 w-full max-w-[720px] min-w-0 bg-white border border-slate-100 rounded-2xl p-4 md:p-8 shadow-sm">
            {renderContent()}
         </main>
 
