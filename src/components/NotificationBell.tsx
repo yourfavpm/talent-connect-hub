@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { Bell, CheckCheck, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +28,7 @@ const NotificationBell = ({ variant = "dark" }: NotificationBellProps) => {
       markAsRead(notification.id);
     }
     if (notification.action_url) {
-      navigate(notification.action_url);
+      navigate(getInternalPath(notification.action_url));
       setOpen(false);
     }
   };

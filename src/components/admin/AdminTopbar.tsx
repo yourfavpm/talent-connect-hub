@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,13 +65,13 @@ const AdminTopbar = ({ onMenuClick, onLogout }: AdminTopbarProps) => {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-               <Link to="/admin/settings" className="cursor-pointer text-gray-700">
+               <Link to={getInternalPath("/admin/settings")} className="cursor-pointer text-gray-700">
                  <User className="mr-2 h-4 w-4" />
                  <span>My Profile</span>
                </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-               <Link to="/admin/settings" className="cursor-pointer text-gray-700">
+               <Link to={getInternalPath("/admin/settings")} className="cursor-pointer text-gray-700">
                  <Settings className="mr-2 h-4 w-4" />
                  <span>Settings</span>
                </Link>

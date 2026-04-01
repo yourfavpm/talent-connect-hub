@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCounts } from "@/hooks/useUnreadCounts";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { FEATURES } from "@/config/features";
+import { getInternalPath } from "@/utils/subdomain";
 
 const navigation = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: ["super_admin", "operations_admin", "vetting_admin", "finance_admin", "support_admin"] },
@@ -59,7 +60,7 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
   const { userRole, user } = useAuth();
   const counts = useUnreadCounts();
 
-  // Mobile layout ignores the \`collapsed\` prop to show a full-width drawer when open
+  // Mobile layout ignores the `collapsed` prop to show a full-width drawer when open
   const isCollapsed = collapsed && !mobileOpen;
 
   const filteredNavigation = navigation.filter(item =>
@@ -78,12 +79,12 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
 
   const renderNavItems = (items: typeof navigation) => {
     return items.map((item) => {
-      const isActive = location.pathname.startsWith(item.href);
+      const isActive = location.pathname.startsWith(getInternalPath(item.href));
       const badgeCount = getBadgeCount(item.badgeKey);
 
       const navLink = (
         <NavLink
-          to={item.href}
+          to={getInternalPath(item.href)}
           onClick={() => setMobileOpen(false)}
           className={cn(
             "flex items-center gap-3 rounded-md transition-colors outline-none",
@@ -152,12 +153,14 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
         {/* Logo Header */}
         <div className="flex items-center justify-between px-5 h-20 shrink-0 pt-4">
           {!isCollapsed ? (
-            <div className="flex flex-col">
+            <Link to="/" className="flex flex-col">
               <img src="/images/logoplain.png" alt="OPSlyHR" className="h-28 w-auto animate-fade-in" />
               <span className="text-[10px] font-semibold text-gray-400 tracking-wider uppercase mt-1 ml-0.5">Admin Portal</span>
-            </div>
+            </Link>
           ) : (
-             <img src="/images/logoplain.png" alt="T" className="h-6 w-auto mx-auto animate-fade-in" />
+             <Link to="/">
+               <img src="/images/logoplain.png" alt="T" className="h-6 w-auto mx-auto animate-fade-in" />
+             </Link>
           )}
         </div>
 

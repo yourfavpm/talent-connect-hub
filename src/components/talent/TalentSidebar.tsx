@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
+import { getInternalPath } from "@/utils/subdomain";
 
 const navigation = [
   { label: "Dashboard", href: "/talent/dashboard", icon: LayoutDashboard, iconColor: "text-blue-600", bgColor: "bg-blue-50" },
@@ -136,7 +137,7 @@ const TalentSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
 
   const renderNavItems = (items: NavItem[]) => {
     return items.map((item) => {
-      const isActive = location.pathname.startsWith(item.href);
+      const isActive = location.pathname.startsWith(getInternalPath(item.href));
       
       let badgeCount = 0;
       if (item.badgeKey === "messages") badgeCount = unreadMessages;
@@ -145,7 +146,7 @@ const TalentSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
       const NavLinkContent = (
         <NavLink
           key={item.label}
-          to={item.href}
+          to={getInternalPath(item.href)}
           className={cn(
             "flex items-center gap-3 px-3 py-2 rounded-md transition-colors duration-150 relative group outline-none",
             isActive
@@ -206,12 +207,14 @@ const TalentSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
         {/* Logo Header */}
         <div className="flex items-center justify-between px-5 h-20 shrink-0 pt-4">
           {!isCollapsed ? (
-            <div className="flex flex-col">
+            <Link to="/" className="flex flex-col">
               <img src="/images/logoplain.png" alt="OPSlyHR" className="h-28 w-auto animate-fade-in" />
               <span className="text-[10px] font-semibold text-gray-400 tracking-wider uppercase mt-1 ml-0.5">Talent Portal</span>
-            </div>
+            </Link>
           ) : (
-             <img src="/images/logoplain.png" alt="T" className="h-6 w-auto mx-auto animate-fade-in" />
+             <Link to="/">
+               <img src="/images/logoplain.png" alt="T" className="h-6 w-auto mx-auto animate-fade-in" />
+             </Link>
           )}
         </div>
 

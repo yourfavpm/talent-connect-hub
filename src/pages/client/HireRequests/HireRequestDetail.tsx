@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -98,7 +99,7 @@ export default function HireRequestDetail() {
         <AlertCircle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
         <h2 className="text-xl font-bold text-slate-900 mb-2">Request Not Found</h2>
         <p className="text-slate-500 mb-6">This hire request doesn't exist or you don't have permission to view it.</p>
-        <Button onClick={() => navigate("/client/hire-requests")}>Back to Requests</Button>
+        <Button onClick={() => navigate(getInternalPath("/client/hire-requests"))}>Back to Requests</Button>
       </div>
     );
   }
@@ -108,7 +109,7 @@ export default function HireRequestDetail() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/client/hire-requests")} className="text-slate-500 rounded-full hover:bg-slate-100 shrink-0">
+          <Button variant="ghost" size="icon" onClick={() => navigate(getInternalPath("/client/hire-requests"))} className="text-slate-500 rounded-full hover:bg-slate-100 shrink-0">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
@@ -206,7 +207,7 @@ export default function HireRequestDetail() {
                 if (!profile) return null;
                 const hasInterview = interviews.some((i) => i.talent_user_id === candidate.talent_user_id);
                 return (
-                  <div key={candidate.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col group cursor-pointer" onClick={() => navigate(`/client/talents/${candidate.talent_user_id}`)}>
+                  <div key={candidate.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col group cursor-pointer" onClick={() => navigate(getInternalPath(`/client/talents/${candidate.talent_user_id}`))}>
                     <div className="p-6 flex-grow">
                       <div className="flex items-center gap-3 mb-4">
                         <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-semibold text-lg shrink-0">

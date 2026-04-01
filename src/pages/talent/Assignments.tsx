@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -407,7 +408,7 @@ const TalentAssignments = () => {
                           <p className="text-sm text-gray-500 mt-0.5">Log your hours to ensure timely payment.</p>
                         </div>
                         <Button asChild className="shrink-0 bg-brand-primary hover:bg-brand-primary/90">
-                           <Link to="/talent/timesheets/new">Log Time</Link>
+                           <Link to={getInternalPath("/talent/timesheets/new")}>Log Time</Link>
                         </Button>
                      </div>
                    </section>

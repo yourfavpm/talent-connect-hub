@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -81,7 +82,7 @@ const TicketDetail = () => {
         <Ticket className="h-8 w-8 text-gray-300 mx-auto mb-3" />
         <h3 className="text-lg font-medium text-gray-900">Ticket not found</h3>
         <p className="text-gray-500 mt-1 mb-6">The support ticket you are looking for does not exist or you do not have permission to view it.</p>
-        <Link to="/talent/support">
+        <Link to={getInternalPath("/talent/support")}>
           <Button variant="outline">Back to Support</Button>
         </Link>
       </div>
@@ -95,7 +96,7 @@ const TicketDetail = () => {
     <div className="space-y-6 max-w-5xl mx-auto pb-20 animate-fade-in">
       
       {/* Header Breadcrumb */}
-      <Link to="/talent/support" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">
+      <Link to={getInternalPath("/talent/support")} className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">
         <ArrowLeft className="h-4 w-4 mr-1.5" />
         Back to Support
       </Link>

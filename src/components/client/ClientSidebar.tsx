@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, Link } from "react-router-dom";
 import { FEATURES } from "@/config/features";
 import {
   LayoutDashboard,
@@ -21,6 +21,7 @@ import { useUnreadCounts } from "@/hooks/useUnreadCounts";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getInternalPath } from "@/utils/subdomain";
 
 const navigation = [
   { name: "Dashboard", href: "/client/dashboard", icon: LayoutDashboard, iconColor: "text-blue-600", bgColor: "bg-blue-50" },
@@ -30,7 +31,6 @@ const navigation = [
     : { name: "Jobs", href: "/client/jobs", icon: Briefcase, iconColor: "text-emerald-600", bgColor: "bg-emerald-50" },
   { name: "Contracts", href: "/client/contracts", icon: FileText, iconColor: "text-amber-600", bgColor: "bg-amber-50" },
   { name: "Invoices", href: "/client/invoices", icon: Receipt, iconColor: "text-rose-600", bgColor: "bg-rose-50" },
-  // { name: "Timesheets", href: "/client/timesheets", icon: Clock }, // Kept hidden or matched to existing nav
   { name: "My Team", href: "/client/team", icon: UserCheck, iconColor: "text-purple-600", bgColor: "bg-purple-50" },
 ];
 
@@ -79,7 +79,7 @@ const ClientSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
 
   const renderNavItems = (items: { name: string; href: string; icon: any; iconColor: string; bgColor: string }[]) => {
     return items.map((item) => {
-      const isActive = location.pathname.startsWith(item.href);
+      const isActive = location.pathname.startsWith(getInternalPath(item.href));
       
       let badgeCount = 0;
       if (item.name === "Contracts") badgeCount = counts.clientContracts;
@@ -87,7 +87,7 @@ const ClientSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
       const NavLinkContent = (
         <NavLink
           key={item.name}
-          to={item.href}
+          to={getInternalPath(item.href)}
           className={cn(
             "flex items-center gap-3 px-3 py-2 rounded-md transition-colors duration-150 relative group outline-none",
             isActive
@@ -148,12 +148,14 @@ const ClientSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
         {/* Logo Header */}
         <div className="flex items-center justify-between px-5 h-20 shrink-0 pt-4">
           {!isCollapsed ? (
-            <div className="flex flex-col">
+            <Link to="/" className="flex flex-col">
               <img src="/images/logoplain.png" alt="OPSlyHR" className="h-28 w-auto animate-fade-in" />
               <span className="text-[10px] font-semibold text-gray-400 tracking-wider uppercase mt-1 ml-0.5">Client Portal</span>
-            </div>
+            </Link>
           ) : (
-             <img src="/images/logoplain.png" alt="T" className="h-6 w-auto mx-auto animate-fade-in" />
+             <Link to="/">
+               <img src="/images/logoplain.png" alt="T" className="h-6 w-auto mx-auto animate-fade-in" />
+             </Link>
           )}
         </div>
 
@@ -186,7 +188,7 @@ const ClientSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button onClick={copyId} className="w-full flex justify-center p-2 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors">
+                    <button onClick={copyId} className="w-full flex justify-center p-2 rounded-md hover:bg-100 text-gray-400 hover:text-gray-900 transition-colors">
                       {copied ? <Check className="w-4.5 h-4.5 text-green-600" /> : <Copy className="w-4.5 h-4.5" />}
                     </button>
                   </TooltipTrigger>

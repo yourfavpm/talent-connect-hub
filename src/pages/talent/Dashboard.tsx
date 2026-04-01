@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { ProfileStatusBanner } from "@/components/talent/ProfileStatusBanner";
 import { sendTalentEmailVerifiedEmail } from "@/lib/email/triggers";
 import { useEffect, useRef } from "react";
+import { getInternalPath } from "@/utils/subdomain";
 
 
 interface TalentData {
@@ -278,7 +279,7 @@ const TalentDashboard = () => {
         </div>
         
         <div className="flex items-center gap-3">
-          <Link to="/talent/profile" className="h-10 px-5 bg-white border border-slate-200 hover:border-slate-900 rounded-xl flex items-center gap-2 text-[12px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-all shadow-sm">
+          <Link to={getInternalPath("/talent/profile")} className="h-10 px-5 bg-white border border-slate-200 hover:border-slate-900 rounded-xl flex items-center gap-2 text-[12px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-all shadow-sm">
             View My Profile <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -357,7 +358,7 @@ const TalentDashboard = () => {
         <div className="bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-sm flex flex-col h-full">
           <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
             <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest leading-none">Contracts</h3>
-            <Link to="/talent/contracts" className="h-8 px-4 bg-slate-50 hover:bg-slate-900 border border-slate-100 hover:border-slate-900 rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-all">View All</Link>
+            <Link to={getInternalPath("/talent/contracts")} className="h-8 px-4 bg-slate-50 hover:bg-slate-900 border border-slate-100 hover:border-slate-900 rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-all">View All</Link>
           </div>
           <div className="flex-1 flex flex-col">
             {stats.activeAssignments > 0 ? (
@@ -371,7 +372,7 @@ const TalentDashboard = () => {
                  </div>
                  <div className="pt-2">
                    <Button variant="outline" className="h-10 border-slate-200 rounded-xl text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-all" asChild>
-                     <Link to="/talent/contracts">Open Workspace</Link>
+                     <Link to={getInternalPath("/talent/contracts")}>Open Workspace</Link>
                    </Button>
                  </div>
                </div>
@@ -394,7 +395,7 @@ const TalentDashboard = () => {
         <div className="bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-sm flex flex-col h-full">
           <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
             <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest leading-none">Interviews</h3>
-            <Link to="/talent/interviews" className="h-8 px-4 bg-slate-50 hover:bg-slate-900 border border-slate-100 hover:border-slate-900 rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-all">Schedule</Link>
+            <Link to={getInternalPath("/talent/interviews")} className="h-8 px-4 bg-slate-50 hover:bg-slate-900 border border-slate-100 hover:border-slate-900 rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-all">Schedule</Link>
           </div>
           <div className="flex-1 flex flex-col">
             <div className="px-8 py-16 text-center space-y-4">
@@ -414,7 +415,7 @@ const TalentDashboard = () => {
         <div className="bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-sm flex flex-col h-full">
           <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
             <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest leading-none">Pipeline</h3>
-            <Link to="/talent/applications" className="h-8 px-4 bg-slate-50 hover:bg-slate-900 border border-slate-100 hover:border-slate-900 rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-all">View All</Link>
+            <Link to={getInternalPath("/talent/applications")} className="h-8 px-4 bg-slate-50 hover:bg-slate-900 border border-slate-100 hover:border-slate-900 rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-all">View All</Link>
           </div>
           <div className="flex-1 flex flex-col">
             {stats.applications > 0 ? (
@@ -436,7 +437,7 @@ const TalentDashboard = () => {
                     <p className="text-[13px] text-slate-500 font-medium">Your career hunt begins here.</p>
                   </div>
                   <Button className="h-11 px-8 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-500/10" asChild>
-                    <Link to="/talent/jobs">Find Opportunities</Link>
+                    <Link to={getInternalPath("/talent/jobs")}>Find Opportunities</Link>
                   </Button>
                 </div>
             )}
@@ -468,7 +469,7 @@ const TalentDashboard = () => {
                       <p className="text-[12px] text-slate-500 font-medium line-clamp-1 group-hover:line-clamp-none transition-all">{notif.message}</p>
                     </div>
                     {notif.action_url && (
-                      <Link to={notif.action_url} className="mt-1 flex-shrink-0 h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 hover:text-slate-900 border border-slate-100 transition-all">
+                      <Link to={getInternalPath(notif.action_url)} className="mt-1 flex-shrink-0 h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 hover:text-slate-900 border border-slate-100 transition-all">
                         <ChevronRight className="h-5 w-5" />
                       </Link>
                     )}

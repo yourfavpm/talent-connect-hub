@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -199,7 +200,7 @@ const TalentTimesheets = () => {
           <p className="text-sm text-gray-500 mt-1">Log your hours and track approvals.</p>
         </div>
         <Button asChild className="bg-brand-primary">
-          <Link to="/talent/timesheets/new">
+          <Link to={getInternalPath("/talent/timesheets/new")}>
             <Plus className="h-4 w-4 mr-2" /> Log Hours
           </Link>
         </Button>
@@ -263,7 +264,7 @@ const TalentTimesheets = () => {
                 <p className="text-sm text-gray-500 mt-1">Start tracking your hours for this week.</p>
              </div>
              <Button asChild variant="outline" className="bg-white hover:bg-gray-50 shrink-0">
-               <Link to="/talent/timesheets/new">Log Hours Now</Link>
+               <Link to={getInternalPath("/talent/timesheets/new")}>Log Hours Now</Link>
              </Button>
           </CardContent>
         </Card>
@@ -296,7 +297,7 @@ const TalentTimesheets = () => {
                      </div>
                      <div className="flex-1 p-5 flex items-center justify-center">
                         <Button asChild size="sm" variant={ts.status === "draft" ? "default" : "outline"} className={ts.status === "draft" ? "bg-brand-primary shrink-0" : "bg-white shrink-0"}>
-                          <Link to={`/talent/timesheets/${ts.id}`}>{ts.status === "draft" ? "Edit" : "View"}</Link>
+                          <Link to={getInternalPath(`/talent/timesheets/${ts.id}`)}>{ts.status === "draft" ? "Edit" : "View"}</Link>
                         </Button>
                      </div>
                    </div>
@@ -380,7 +381,7 @@ const TalentTimesheets = () => {
                          <h4 className="text-sm font-semibold text-red-900 mb-1">Rejection Feedback</h4>
                          <p className="text-sm text-red-800 leading-relaxed mb-3">{selectedTimesheet.rejection_reason}</p>
                          <Button asChild size="sm" variant="outline" className="bg-white border-red-200 text-red-700 hover:bg-red-50">
-                           <Link to={`/talent/timesheets/${selectedTimesheet.id}`}>Edit & Resubmit</Link>
+                           <Link to={getInternalPath(`/talent/timesheets/${selectedTimesheet.id}`)}>Edit & Resubmit</Link>
                          </Button>
                        </div>
                      </div>
@@ -408,7 +409,7 @@ const TalentTimesheets = () => {
                        Detailed day-by-day logs are available in the editor.
                     </p>
                     <Button asChild variant="outline" size="sm" className="mt-3 text-xs w-full bg-white">
-                      <Link to={`/talent/timesheets/${selectedTimesheet.id}`}>View Full Entry Form</Link>
+                      <Link to={getInternalPath(`/talent/timesheets/${selectedTimesheet.id}`)}>View Full Entry Form</Link>
                     </Button>
                   </div>
                 </div>

@@ -9,7 +9,7 @@ import { Eye, EyeOff, Star, Shield, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { getFriendlyErrorMessage } from "@/utils/errorHandling";
-import { Zone, redirectToZone } from "@/utils/subdomain";
+import { Zone, redirectToZone, getCurrentZone } from "@/utils/subdomain";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -18,7 +18,30 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
-  const portal = searchParams.get("portal") || "client";
+  const zone = getCurrentZone();
+  
+  // Smart Portal Detection:
+  // 1. Check URL param (highest priority)
+  // 2. Check current zone (if on talent.opslyhr.com, default to talent)
+  // 3. Fallback to client
+  const getInitialPortal = () => {
+    const param = searchParams.get("portal");
+    if (param && ["talent", "client", "admin"].includes(param)) return param;
+    
+    if (zone === Zone.TALENT) return "talent";
+    if (zone === Zone.ADMIN) return "admin";
+    if (zone === Zone.CLIENT) return "client";
+    
+    // If we are on AUTH zone (app.opslyhr.com), check referrer
+    const referrer = document.referrer.toLowerCase();
+    if (referrer.includes("talent.")) return "talent";
+    if (referrer.includes("admin.")) return "admin";
+    
+    return "client"; // Default fallback
+  };
+
+  const portal = getInitialPortal();
+
   const navigate = useNavigate();
   const { toast } = useToast();
 

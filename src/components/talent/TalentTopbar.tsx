@@ -2,6 +2,7 @@ import { Menu, Search, HelpCircle, ChevronRight, LogOut, User } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import NotificationBell from "@/components/NotificationBell";
 import { useLocation, Link } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,7 +58,7 @@ const TalentTopbar = ({ onMenuClick, onLogout }: TalentTopbarProps) => {
           />
         </div>
 
-        <Link to="/talent/support" className="hidden sm:flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+        <Link to={getInternalPath("/talent/support")} className="hidden sm:flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors">
           <HelpCircle className="h-4.5 w-4.5" />
         </Link>
 
@@ -85,13 +86,13 @@ const TalentTopbar = ({ onMenuClick, onLogout }: TalentTopbarProps) => {
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-gray-100" />
             <DropdownMenuItem asChild className="cursor-pointer focus:bg-gray-50 focus:text-gray-900 text-gray-600">
-              <Link to="/talent/profile">
+              <Link to={getInternalPath("/talent/profile")}>
                 <User className="mr-2 h-4 w-4" />
                 <span>My Profile</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="cursor-pointer focus:bg-gray-50 focus:text-gray-900 text-gray-600">
-              <Link to="/talent/support">
+              <Link to={getInternalPath("/talent/support")}>
                 <HelpCircle className="mr-2 h-4 w-4" />
                 <span>Support Tickets</span>
               </Link>

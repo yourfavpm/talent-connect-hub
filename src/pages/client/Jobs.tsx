@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -126,7 +127,7 @@ const Jobs = () => {
             <tr 
               key={job.id} 
               className="hover:bg-gray-50/50 transition-colors group cursor-pointer"
-              onClick={() => navigate(`/client/jobs/${job.id}`)}
+              onClick={() => navigate(getInternalPath(`/client/jobs/${job.id}`))}
             >
               <td className="px-6 py-4">
                 <div className="font-medium text-gray-900">{job.title}</div>
@@ -160,11 +161,11 @@ const Jobs = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-[160px]">
-                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/client/jobs/${job.id}`); }}>
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/client/jobs/${job.id}`)); }}>
                       <Eye className="mr-2 h-4 w-4" /> View Details
                     </DropdownMenuItem>
                     {getJobGroup(job) === "needs_changes" && (
-                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/client/jobs/${job.id}`); }}>
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/client/jobs/${job.id}`)); }}>
                         <FileText className="mr-2 h-4 w-4" /> Edit & Resubmit
                       </DropdownMenuItem>
                     )}
@@ -184,7 +185,7 @@ const Jobs = () => {
         <div 
           key={job.id}
           className="bg-white border border-gray-200 rounded-xl p-4 active:scale-[0.98] transition-all"
-          onClick={() => navigate(`/client/jobs/${job.id}`)}
+          onClick={() => navigate(getInternalPath(`/client/jobs/${job.id}`))}
         >
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-medium text-gray-900 leading-tight">{job.title}</h3>
@@ -228,7 +229,7 @@ const Jobs = () => {
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Jobs</h1>
           <p className="text-sm text-gray-500 mt-1">Manage your job postings and applicants.</p>
         </div>
-        <Button onClick={() => navigate("/client/jobs/new")}>
+        <Button onClick={() => navigate(getInternalPath("/client/jobs/new"))}>
           <Plus className="h-4 w-4 mr-2" />
           Post Job
         </Button>
@@ -331,7 +332,7 @@ const Jobs = () => {
               Reset Filters
             </Button>
           ) : (
-            <Button onClick={() => navigate("/client/jobs/new")}>
+            <Button onClick={() => navigate(getInternalPath("/client/jobs/new"))}>
               <Plus className="h-4 w-4 mr-2" />
               Post your first job
             </Button>

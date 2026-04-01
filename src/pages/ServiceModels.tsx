@@ -51,9 +51,9 @@ const ServiceModels = () => {
                 <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        animate={{ opacity: 0.8, y: 0 }}
                         transition={{ duration: 0.8 }}
-                        className="flex flex-col items-start text-left"
+                        className="flex flex-col items-center text-center lg:items-start lg:text-left"
                     >
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
                             Engagement Structure
@@ -66,11 +66,11 @@ const ServiceModels = () => {
                             From permanent leadership placements to managed trial engagements and milestone-based projects — each model aligns risk, cost, and control to your stage of growth.
                         </p>
                         
-                        <div className="flex flex-col sm:flex-row items-start justify-start gap-8 mb-12 w-full sm:w-auto">
+                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 mb-12 w-full sm:w-auto">
                             <Button 
                                 size="lg" 
                                 variant="outline"
-                                className="h-16 px-10 text-base rounded-xl border-[1.5px] border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold transition-all duration-300 shadow-none w-full sm:w-auto" 
+                                className="h-16 px-10 text-base rounded-xl border-[1.5px] border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold transition-all duration-300 shadow-none w-full sm:w-auto text-center" 
                                 asChild
                             >
                                 <Link to="#engagement-models">Explore Engagement Models</Link>
@@ -85,7 +85,7 @@ const ServiceModels = () => {
                         </div>
 
                         {/* Financial Clarity Row */}
-                        <div className="flex flex-wrap items-start justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-100 w-full">
+                        <div className="flex flex-col sm:flex-row flex-wrap items-center lg:items-start justify-center lg:justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-100 w-full">
                             {[
                                 { label: "Direct Hire", value: "15%" },
                                 { label: "Trial", value: "20%" },

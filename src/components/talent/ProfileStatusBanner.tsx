@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Clock, CheckCircle2, User, Send, Info } from "lucide-react";
 import clsx from "clsx";
+import { getInternalPath } from "@/utils/subdomain";
 
 export interface ProfileStatusBannerProps {
   status: string;
@@ -90,24 +91,24 @@ export const ProfileStatusBanner = ({
   // 3. Incomplete Profile (Action Required)
   if (progressPercent < 100 && (status === "draft" || status === "in_progress")) {
     return (
-      <Card className="border-blue-200 bg-blue-50/50 border-l-4 border-l-blue-500 shadow-sm rounded-r-[32px] overflow-hidden group">
-        <CardContent className="p-4 md:p-8 flex flex-col md:flex-row items-center gap-4 md:gap-8 transition-all">
-          <div className="h-10 w-10 md:h-20 md:w-20 rounded-[12px] md:rounded-[24px] bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 border border-blue-200">
+      <Card className="border-blue-200 bg-blue-50/50 border-l-4 border-l-blue-500 shadow-sm rounded-r-[16px] md:rounded-r-[32px] overflow-hidden group">
+        <CardContent className="p-3 md:p-8 flex flex-col md:flex-row items-center gap-3 md:gap-8 transition-all">
+          <div className="hidden sm:flex h-10 w-10 md:h-20 md:w-20 rounded-[12px] md:rounded-[24px] bg-blue-100 items-center justify-center text-blue-600 shrink-0 border border-blue-200">
             <User className="h-5 w-5 md:h-10 md:w-10" />
           </div>
-          <div className="flex-1 space-y-2 md:space-y-4 text-center md:text-left">
-            <div className="space-y-1">
-              <h3 className="text-base md:text-xl font-bold text-slate-900 tracking-tight leading-tight">Complete your professional profile</h3>
+          <div className="flex-1 space-y-1 md:space-y-4 text-center md:text-left w-full">
+            <div className="space-y-0.5 md:space-y-1">
+              <h3 className="text-[13px] md:text-xl font-bold text-slate-900 tracking-tight leading-tight">Complete your professional profile</h3>
               <p className="hidden md:block text-sm md:text-[15px] text-slate-500 font-medium max-w-[500px]">
                 Finish setting up your profile to get vetted and matched with global opportunities.
               </p>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-blue-600">
-                <span>Profile Completion</span>
+            <div className="space-y-1 md:space-y-2">
+              <div className="flex items-center justify-between text-[9px] md:text-[11px] font-bold uppercase tracking-widest text-blue-600">
+                <span>Progress</span>
                 <span>{progressPercent}%</span>
               </div>
-              <div className="h-1.5 md:h-2 w-full bg-blue-100 rounded-full overflow-hidden p-0.5">
+              <div className="h-1 md:h-2 w-full bg-blue-100 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-blue-600 rounded-full transition-all duration-1000 ease-out" 
                   style={{ width: `${progressPercent}%` }} 
@@ -116,8 +117,8 @@ export const ProfileStatusBanner = ({
             </div>
           </div>
           <div className="shrink-0 w-full md:w-auto">
-            <Button className="h-11 md:h-14 px-8 md:px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-xl md:rounded-2xl text-[11px] md:text-[12px] font-bold uppercase tracking-widest shadow-xl shadow-blue-500/10 transition-all active:scale-[0.98] w-full" asChild>
-              <Link to="/talent/profile">Complete Profile Now</Link>
+            <Button className="h-9 md:h-14 px-6 md:px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg md:rounded-2xl text-[10px] md:text-[12px] font-bold uppercase tracking-widest shadow-lg shadow-blue-500/10 transition-all active:scale-[0.98] w-full" asChild>
+              <Link to={getInternalPath("/talent/profile")}>Complete Now</Link>
             </Button>
           </div>
         </CardContent>
@@ -144,7 +145,7 @@ export const ProfileStatusBanner = ({
             </div>
           </div>
           <Button variant="outline" className="h-10 px-6 border-slate-200 bg-white hover:bg-slate-50 text-slate-900 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm" asChild>
-            <Link to="/talent/profile">Track Progress</Link>
+            <Link to={getInternalPath("/talent/profile")}>Track Progress</Link>
           </Button>
         </CardContent>
       </Card>
@@ -168,7 +169,7 @@ export const ProfileStatusBanner = ({
             </div>
           </div>
           <Button className="h-11 px-8 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-500/10" asChild>
-            <Link to="/talent/jobs">Explore Opportunities</Link>
+            <Link to={getInternalPath("/talent/jobs")}>Explore Opportunities</Link>
           </Button>
         </CardContent>
       </Card>

@@ -83,7 +83,20 @@ serve(async (req) => {
     let finalSubject: string
     let bodyHtml: string
     let bodyText: string
-    let finalVariables = { ...(variables || {}) }
+    
+    // Inject standard branding defaults
+    const BRAND_DEFAULTS = {
+      brand_color: '#0f2147', // Deep OPSly Blue
+      brand_logo: 'https://opslyhr.com/images/logoplain.png',
+      brand_name: 'OPSlyHR',
+      brand_website: 'https://opslyhr.com',
+      social_linkedin: 'https://linkedin.com/company/opslyhr',
+      social_twitter: 'https://twitter.com/opslyhr',
+      social_instagram: 'https://instagram.com/opslyhr',
+      social_facebook: 'https://facebook.com/opslyhr',
+    };
+
+    let finalVariables = { ...BRAND_DEFAULTS, ...(variables || {}) }
 
     if (htmlTemplate && subject) {
       // ── New path: Use provided branded HTML template ────────────

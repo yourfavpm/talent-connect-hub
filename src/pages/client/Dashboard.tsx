@@ -15,6 +15,7 @@ import {
   Inbox,
   HelpCircle,
 } from "lucide-react";
+import { getInternalPath } from "@/utils/subdomain";
 
 const ClientDashboard = () => {
   const [client, setClient] = useState<any>(null);
@@ -125,7 +126,7 @@ const ClientDashboard = () => {
             Here's what's happening with your hiring today.
           </p>
         </div>
-        <Link to="/client/jobs">
+        <Link to={getInternalPath("/client/jobs")}>
           <Button className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             Post Job
@@ -169,7 +170,7 @@ const ClientDashboard = () => {
           <Card className="rounded-xl border border-gray-200 shadow-sm bg-white overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-sm font-medium text-gray-900">Recent Job Posts</h2>
-              <Link to="/client/jobs">
+              <Link to={getInternalPath("/client/jobs")}>
                 <Button variant="ghost" size="sm" className="h-8 text-gray-500 hover:text-gray-900 text-xs font-medium">
                   View All Jobs
                 </Button>
@@ -217,7 +218,7 @@ const ClientDashboard = () => {
               </div>
             </div>
             <div className="p-4 bg-gray-50/50 border-t border-gray-100">
-              <Link to="/client/invoices" className="block">
+              <Link to={getInternalPath("/client/invoices")} className="block">
                 <Button variant="outline" className="w-full bg-white text-gray-700 border-gray-200 hover:bg-gray-50">
                   View Invoices
                 </Button>
@@ -256,12 +257,12 @@ const ClientDashboard = () => {
               Get in touch with our team for dedicated assistance.
             </p>
             <div className="space-y-2">
-              <Link to="/client/support" className="block">
+              <Link to={getInternalPath("/client/support")} className="block">
                 <Button className="w-full text-sm h-9">
                   Contact Support
                 </Button>
               </Link>
-              <Link to="/client/support" className="block text-center mt-2">
+              <Link to={getInternalPath("/client/support")} className="block text-center mt-2">
                 <span className="text-xs text-brand-primary hover:underline font-medium cursor-pointer">
                   View Support Tickets
                 </span>

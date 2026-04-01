@@ -1,5 +1,6 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { getInternalPath, getZoneUrl, Zone } from "@/utils/subdomain";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -33,7 +34,9 @@ const ProtectedRoute = ({ children, allowedRoles, portalType }: ProtectedRoutePr
 
   // Redirect to login if not authenticated
   if (!user) {
-    return <Navigate to={`/auth/login?portal=${portalType}`} state={{ from: location }} replace />;
+    const loginUrl = getZoneUrl(Zone.AUTH, `/auth/login?portal=${portalType}`);
+    window.location.href = loginUrl;
+    return null;
   }
 
   // Role-based access control
@@ -44,10 +47,20 @@ const ProtectedRoute = ({ children, allowedRoles, portalType }: ProtectedRoutePr
     if (userRole) {
       const hasAccess = allowedRoles.includes(userRole);
       if (!hasAccess) {
-        if (userRole === "talent") return <Navigate to="/talent/dashboard" replace />;
-        if (userRole === "client") return <Navigate to="/client/dashboard" replace />;
-        if (userRole.includes("admin")) return <Navigate to="/admin/dashboard" replace />;
-        return <Navigate to={`/auth/login?portal=${portalType}`} replace />;
+        if (userRole === "talent") {
+            window.location.href = getZoneUrl(Zone.TALENT, "/dashboard");
+            return null;
+        }
+        if (userRole === "client") {
+            window.location.href = getZoneUrl(Zone.CLIENT, "/dashboard");
+            return null;
+        }
+        if (userRole.includes("admin")) {
+            window.location.href = getZoneUrl(Zone.ADMIN, "/dashboard");
+            return null;
+        }
+        window.location.href = getZoneUrl(Zone.AUTH, `/auth/login?portal=${portalType}`);
+        return null;
       }
     } else {
       // 2) No role yet: for client/talent portals, allow access (onboarding is optional).
@@ -58,7 +71,8 @@ const ProtectedRoute = ({ children, allowedRoles, portalType }: ProtectedRoutePr
       }
 
       // 3) Admin portal: no role means no access.
-      return <Navigate to={`/auth/login?portal=${portalType}`} replace />;
+      window.location.href = getZoneUrl(Zone.AUTH, `/auth/login?portal=${portalType}`);
+      return null;
     }
   }
 

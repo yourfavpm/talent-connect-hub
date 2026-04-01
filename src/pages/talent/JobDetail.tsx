@@ -1,5 +1,6 @@
 
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -110,7 +111,7 @@ const TalentJobDetail = () => {
     return (
         <div className="space-y-6 max-w-5xl mx-auto p-6 animate-fade-in">
             <Button variant="ghost" size="sm" asChild className="mb-4">
-                <Link to="/talent/jobs"><ArrowLeft className="h-4 w-4 mr-2" /> Back to Jobs</Link>
+                <Link to={getInternalPath("/talent/jobs")}><ArrowLeft className="h-4 w-4 mr-2" /> Back to Jobs</Link>
             </Button>
 
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">

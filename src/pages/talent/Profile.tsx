@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -302,7 +303,7 @@ const TalentProfile = () => {
             </div>
             <div className="flex items-center gap-6 w-full md:w-auto">
               <Progress value={completionPercentage} className="w-32 h-1.5 bg-white/10 hidden sm:block" />
-              <Link to="/talent/onboarding" className="w-full md:w-auto">
+              <Link to={getInternalPath("/talent/onboarding")} className="w-full md:w-auto">
                 <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-9 px-4 w-full md:w-auto whitespace-nowrap">
                   Complete Profile
                 </Button>
@@ -405,7 +406,7 @@ const TalentProfile = () => {
                           <p className="text-[10px] text-slate-500 truncate">{manager.email}</p>
                         </div>
                       </div>
-                      <Link to="/talent/support/new" className="block mt-3 px-1">
+                      <Link to={getInternalPath("/talent/support/new")} className="block mt-3 px-1">
                          <Button variant="outline" size="sm" className="w-full text-[11px] h-8 font-bold border-slate-200 hover:bg-slate-50">
                             Support Ticket
                          </Button>

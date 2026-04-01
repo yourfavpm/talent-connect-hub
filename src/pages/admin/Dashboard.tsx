@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { getInternalPath } from "@/utils/subdomain";
 import type { Database } from "@/integrations/supabase/types";
 
 type Job = Database["public"]["Tables"]["jobs"]["Row"] & {
@@ -241,7 +242,7 @@ const AdminDashboard = () => {
 
       {/* Stat Cards Row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Link to="/admin/talents" className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
+        <Link to={getInternalPath("/admin/talents")} className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
           <div className="flex items-center justify-between mb-3">
             <UserCheck className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
           </div>
@@ -249,7 +250,7 @@ const AdminDashboard = () => {
           <p className="text-2xl font-semibold text-gray-900">{stats.pendingVetting}</p>
         </Link>
 
-        <Link to="/admin/jobs" className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
+        <Link to={getInternalPath("/admin/jobs")} className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
           <div className="flex items-center justify-between mb-3">
             <Briefcase className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
           </div>
@@ -257,7 +258,7 @@ const AdminDashboard = () => {
           <p className="text-2xl font-semibold text-gray-900">{stats.pendingJobs}</p>
         </Link>
 
-        <Link to="/admin/contracts" className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
+        <Link to={getInternalPath("/admin/contracts")} className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
           <div className="flex items-center justify-between mb-3">
             <FileText className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
           </div>
@@ -265,7 +266,7 @@ const AdminDashboard = () => {
           <p className="text-2xl font-semibold text-gray-900">{stats.activeContracts}</p>
         </Link>
         
-        <Link to="/admin/invoices" className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
+        <Link to={getInternalPath("/admin/invoices")} className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
           <div className="flex items-center justify-between mb-3">
             <Receipt className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
           </div>
@@ -273,7 +274,7 @@ const AdminDashboard = () => {
           <p className="text-2xl font-semibold text-gray-900">{stats.outstandingInvoices}</p>
         </Link>
 
-        <Link to="/admin/support" className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
+        <Link to={getInternalPath("/admin/support")} className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
           <div className="flex items-center justify-between mb-3">
             <MessageSquare className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
           </div>
@@ -302,7 +303,7 @@ const AdminDashboard = () => {
                 <Users className="h-4 w-4 text-gray-500" />
                 Talent Vetting Queue
               </CardTitle>
-              <Link to="/admin/vetting">
+              <Link to={getInternalPath("/admin/vetting")}>
                 <Button variant="ghost" size="sm" className="h-8 text-xs text-gray-600 hover:text-gray-900">
                   View All <ArrowRight className="h-3 w-3 ml-1" />
                 </Button>
@@ -330,7 +331,7 @@ const AdminDashboard = () => {
                         <TableCell className="py-3 text-sm text-gray-600">{new Date(t.created_at || '').toLocaleDateString()}</TableCell>
                         <TableCell className="py-3">{getStatusBadge(t.vetting_status || 'unvetted')}</TableCell>
                         <TableCell className="py-3 text-right">
-                          <Link to={vettingVersion === "v2" ? `/admin/vetting/${t.id}` : `/admin/talents/${t.id}`}>
+                          <Link to={getInternalPath(vettingVersion === "v2" ? `/admin/vetting/${t.id}` : `/admin/talents/${t.id}`)}>
                             <Button variant="secondary" size="sm" className="h-7 px-3 text-xs">Review</Button>
                           </Link>
                         </TableCell>
@@ -349,7 +350,7 @@ const AdminDashboard = () => {
                 <Briefcase className="h-4 w-4 text-gray-500" />
                 Job Approval Queue
               </CardTitle>
-              <Link to="/admin/jobs">
+              <Link to={getInternalPath("/admin/jobs")}>
                 <Button variant="ghost" size="sm" className="h-8 text-xs text-gray-600 hover:text-gray-900">
                   View All <ArrowRight className="h-3 w-3 ml-1" />
                 </Button>
@@ -377,7 +378,7 @@ const AdminDashboard = () => {
                         <TableCell className="py-3 text-sm text-gray-600 capitalize">{j.service_model?.replace('_', ' ')}</TableCell>
                         <TableCell className="py-3 text-sm text-gray-600">{new Date(j.created_at || '').toLocaleDateString()}</TableCell>
                         <TableCell className="py-3 text-right flex justify-end gap-2">
-                          <Link to={`/admin/jobs/${j.id}`}>
+                          <Link to={getInternalPath(`/admin/jobs/${j.id}`)}>
                             <Button variant="outline" size="sm" className="h-7 px-3 text-xs">Review</Button>
                           </Link>
                           <Button variant="default" size="sm" className="h-7 px-3 text-xs" onClick={() => handleApproveJob(j.id)}>Approve</Button>
@@ -397,7 +398,7 @@ const AdminDashboard = () => {
                 <AlertCircle className="h-4 w-4 text-gray-500" />
                 Active Support Tickets
               </CardTitle>
-              <Link to="/admin/support">
+              <Link to={getInternalPath("/admin/support")}>
                 <Button variant="ghost" size="sm" className="h-8 text-xs text-gray-600 hover:text-gray-900">
                   View All <ArrowRight className="h-3 w-3 ml-1" />
                 </Button>
@@ -423,7 +424,7 @@ const AdminDashboard = () => {
                         <TableCell className="py-3 text-sm text-gray-600 capitalize">{ticket.priority}</TableCell>
                         <TableCell className="py-3">{getStatusBadge(ticket.status || 'open')}</TableCell>
                         <TableCell className="py-3 text-right">
-                          <Link to={`/admin/support/${ticket.id}`}>
+                          <Link to={getInternalPath(`/admin/support/${ticket.id}`)}>
                             <Button variant="secondary" size="sm" className="h-7 px-3 text-xs">Resolve</Button>
                           </Link>
                         </TableCell>
@@ -451,7 +452,7 @@ const AdminDashboard = () => {
                   <UserCheck className="mr-2 h-4 w-4 text-gray-400" />
                   Add Talent
                 </Button>
-                <Link to="/admin/jobs/new">
+                <Link to={getInternalPath("/admin/jobs/new")}>
                   <Button variant="outline" className="justify-start w-full h-9 text-sm font-normal text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-none">
                     <Briefcase className="mr-2 h-4 w-4 text-gray-400" />
                     Post Job
@@ -481,7 +482,7 @@ const AdminDashboard = () => {
                 <p className="text-3xl font-semibold">${stats.invoiceTotal.toLocaleString()}</p>
                 <span className="text-sm font-medium text-warning mb-1">{stats.outstandingInvoices} Pending</span>
               </div>
-              <Link to="/admin/invoices">
+              <Link to={getInternalPath("/admin/invoices")}>
                 <Button variant="outline" size="sm" className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white shadow-none">
                   Go to Finance <ArrowRight className="h-3 w-3 ml-1" />
                 </Button>

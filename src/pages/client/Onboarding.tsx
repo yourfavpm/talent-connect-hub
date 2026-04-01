@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +35,7 @@ const ClientOnboarding = () => {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate("/auth/login?portal=client");
+      navigate(getInternalPath("/auth/login?portal=client"));
     }
   }, [user, authLoading, navigate]);
 
@@ -128,7 +129,7 @@ const ClientOnboarding = () => {
         description: "Your account is pending approval. We'll notify you once approved.",
       });
 
-      navigate("/client/dashboard");
+      navigate(getInternalPath("/client/dashboard"));
     } catch (error: any) {
       console.error("Onboarding error:", error);
       toast({

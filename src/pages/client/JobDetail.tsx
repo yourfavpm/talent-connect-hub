@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -147,7 +148,7 @@ const ClientJobDetail = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" asChild className="h-9 w-9 border-gray-200">
-            <Link to="/client/jobs"><ArrowLeft className="h-4 w-4 text-gray-700" /></Link>
+            <Link to={getInternalPath("/client/jobs")}><ArrowLeft className="h-4 w-4 text-gray-700" /></Link>
           </Button>
           <div>
             <div className="flex flex-wrap items-center gap-3">

@@ -34,7 +34,7 @@ const ForCompanies = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
-                        className="flex flex-col items-start text-left"
+                        className="flex flex-col items-center text-center lg:items-start lg:text-left"
                     >
                         <h1 className="text-3xl md:text-5xl lg:text-[52px] font-semibold mb-6 md:mb-6 tracking-tight text-slate-900 leading-[1.2] md:leading-[1.1]">
                             Operations Talent, <span className="text-slate-900/40 block">Structured for Scale</span>
@@ -42,17 +42,17 @@ const ForCompanies = () => {
                         <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium">
                             Access rigorously vetted operations professionals — matched, contracted, and managed through a structured platform designed for scale.
                         </p>
-                        <div className="flex flex-col sm:flex-row items-start justify-start gap-4 mb-12 w-full">
+                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-12 w-full">
                             <Button size="lg" className="h-14 px-8 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-none w-full sm:w-auto" asChild>
                                 <Link to="/book-consultation">Book an Operations Consultation</Link>
                             </Button>
-                            <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-600 hover:text-slate-900 rounded-full font-bold flex items-center justify-start gap-2 w-full sm:w-auto" asChild>
+                            <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-600 hover:text-slate-900 rounded-full font-bold flex items-center justify-center lg:justify-start gap-2 w-full sm:w-auto" asChild>
                                 <Link to="/service-models">View Engagement Models <ArrowRight className="w-4 h-4" /></Link>
                             </Button>
                         </div>
                         
                         {/* System Status Indicators */}
-                        <div className="flex flex-col sm:flex-row items-start justify-start gap-y-4 sm:gap-x-8 pt-8 border-t border-slate-200/60 w-full mb-8 lg:mb-0">
+                        <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-y-4 sm:gap-x-8 pt-8 border-t border-slate-200/60 w-full mb-8 lg:mb-0">
                             {[
                                 { label: "Vetting Completed", icon: UserCheck },
                                 { label: "Contract Model Selected", icon: Shield },

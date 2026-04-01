@@ -1,26 +1,38 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Clock, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { getZoneUrl, Zone } from "@/utils/subdomain";
 
 const VerifyEmail = () => {
     const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
     const status = searchParams.get("status");
+    const portal = (searchParams.get("portal") || "client") as "client" | "talent" | "admin";
     const [loading, setLoading] = useState(true);
+    const [logoError, setLogoError] = useState(false);
+
+    const handleContinue = () => {
+        // Always redirect through the Auth Hub for login
+        const loginUrl = getZoneUrl(Zone.AUTH, `/auth/login?portal=${portal}`);
+        window.location.href = loginUrl;
+    };
 
     useEffect(() => {
+        console.log("VerifyEmail: Status =", status, "Portal =", portal);
         // If there's no status, it might be an automated redirect from a legacy system
         // but our new flow redirects to Edge Function first which then redirects here with a status.
         if (status) {
             setLoading(false);
         } else {
-            // Wait a bit just in case
-            const timer = setTimeout(() => setLoading(false), 1500);
+            // Wait a bit just in case — sometimes redirects are fast
+            const timer = setTimeout(() => {
+                console.log("VerifyEmail: No status after timeout, showing default.");
+                setLoading(false);
+            }, 2000);
             return () => clearTimeout(timer);
         }
-    }, [status]);
+    }, [status, portal]);
 
     const renderContent = () => {
         switch (status) {
@@ -37,12 +49,12 @@ const VerifyEmail = () => {
                             </motion.div>
                         </div>
                         <h1 className="text-3xl font-semibold text-slate-900 mb-4">Email Verified!</h1>
-                        <p className="text-slate-600 mb-8 max-w-md mx-auto">
+                        <p className="text-slate-600 mb-8 max-w-md mx-auto font-medium">
                             Thank you for verifying your email address. Your account is now fully activated and ready for use.
                         </p>
                         <Button 
-                            onClick={() => navigate("/auth/login")} 
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 h-auto text-lg rounded-xl shadow-lg shadow-emerald-200 transition-all hover:scale-105"
+                            onClick={handleContinue} 
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 h-auto text-lg rounded-xl shadow-lg shadow-emerald-100 transition-all hover:scale-105 active:scale-95"
                         >
                             Continue to Login
                         </Button>
@@ -56,12 +68,12 @@ const VerifyEmail = () => {
                         </div>
                         <h1 className="text-3xl font-semibold text-slate-900 mb-4">Link Expired</h1>
                         <p className="text-slate-600 mb-8 max-w-md mx-auto">
-                            For your security, verification links expire after 24 hours. Please request a new verification email.
+                            For your security, verification links expire after 24 hours. Please request a new verification email from the login page.
                         </p>
                         <Button 
-                            onClick={() => navigate("/auth/login")} 
+                            onClick={handleContinue} 
                             variant="outline"
-                            className="px-8 py-6 h-auto text-lg rounded-xl border-2 hover:bg-slate-50 transition-all"
+                            className="px-8 py-6 h-auto rounded-xl border-2 hover:bg-slate-50 transition-all font-bold uppercase tracking-widest text-[13px]"
                         >
                             Back to Login
                         </Button>
@@ -78,10 +90,10 @@ const VerifyEmail = () => {
                             This email has already been verified. You can proceed to the dashboard.
                         </p>
                         <Button 
-                            onClick={() => navigate("/auth/login")} 
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 h-auto text-lg rounded-xl transition-all"
+                            onClick={handleContinue} 
+                            className="bg-brand-primary hover:bg-brand-secondary text-white px-8 py-6 h-auto text-lg rounded-xl transition-all"
                         >
-                            Go to Dashboard
+                            Go to Login
                         </Button>
                     </div>
                 );
@@ -97,11 +109,11 @@ const VerifyEmail = () => {
                             We couldn't verify your email with this link. It may be broken or previously used.
                         </p>
                         <Button 
-                            onClick={() => navigate("/auth/login")} 
+                            onClick={handleContinue} 
                             variant="outline"
-                            className="px-8 py-6 h-auto text-lg rounded-xl border-2 transition-all"
+                            className="px-8 py-6 h-auto rounded-xl border-2 transition-all font-bold uppercase tracking-widest text-[13px]"
                         >
-                            Return Home
+                            Return to Login
                         </Button>
                     </div>
                 );
@@ -109,40 +121,44 @@ const VerifyEmail = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 sm:p-24">
+        <div className="min-h-screen bg-[#FDFDFD] flex flex-col items-center justify-center p-6 sm:p-24">
             <div className="w-full max-w-lg">
-                <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-xl shadow-slate-200 border border-slate-100 flex flex-col items-center">
+                <div className="bg-white rounded-[48px] p-8 sm:p-12 shadow-2xl shadow-slate-200/50 border border-slate-100 flex flex-col items-center">
                     <div className="mb-12">
-                        <img 
-                            src="/logo.png" 
-                            alt="OPSlyHR" 
-                            className="h-10 object-contain opacity-90"
-                            onError={(e) => {
-                                // Fallback if logo doesn't exist
-                                e.currentTarget.style.display = 'none';
-                                const parent = e.currentTarget.parentElement;
-                                if (parent) {
-                                    const dev = document.createElement('div');
-                                    dev.className = "text-emerald-600 font-bold text-3xl tracking-tight";
-                                    dev.innerText = "OPSlyHR";
-                                    parent.appendChild(dev);
-                                }
-                            }}
-                        />
+                        {!logoError ? (
+                            <img 
+                                src="/images/logoplain.png" 
+                                alt="OPSlyHR" 
+                                className="h-12 object-contain"
+                                onError={() => setLogoError(true)}
+                            />
+                        ) : (
+                            <div className="text-brand-primary font-black text-3xl tracking-tighter">
+                                OPSly<span className="text-slate-900">HR</span>
+                            </div>
+                        )}
                     </div>
 
                     {loading ? (
-                        <div className="flex flex-col items-center py-12">
-                            <Loader2 className="w-12 h-12 text-emerald-600 animate-spin mb-4" />
-                            <p className="text-slate-500 animate-pulse">Processing your verification...</p>
+                        <div className="flex flex-col items-center py-12 gap-6">
+                            <div className="relative">
+                                <Loader2 className="w-16 h-16 text-brand-primary animate-spin" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-2 h-2 bg-brand-primary rounded-full animate-ping" />
+                                </div>
+                            </div>
+                            <div className="space-y-2 text-center">
+                                <p className="text-slate-900 font-bold tracking-widest uppercase text-[11px]">Syncing Credentials</p>
+                                <p className="text-slate-400 text-sm animate-pulse">Initializing your secure workspace...</p>
+                            </div>
                         </div>
                     ) : (
                         renderContent()
                     )}
                 </div>
                 
-                <p className="mt-12 text-center text-slate-400 text-sm">
-                    &copy; {new Date().getFullYear()} OPSlyHR. All rights reserved.
+                <p className="mt-12 text-center text-slate-300 text-[11px] font-bold uppercase tracking-[0.2em]">
+                    &copy; {new Date().getFullYear()} OPSlyHR &bull; Strategic Human Resources
                 </p>
             </div>
         </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -113,7 +114,7 @@ export default function CreateHireRequest() {
         description: "Your request has been submitted to OPSlyHR Admins for review.",
       });
 
-      navigate(`/client/hire-requests/${newId}`);
+      navigate(getInternalPath(`/client/hire-requests/${newId}`));
 
     } catch (error: any) {
       console.error("Submission error:", error);
@@ -162,7 +163,7 @@ export default function CreateHireRequest() {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 font-sans pb-32">
       {/* Header */}
       <div className="flex items-center mb-8 gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/client/hire-requests")} className="text-slate-500 rounded-full hover:bg-slate-100">
+        <Button variant="ghost" size="icon" onClick={() => navigate(getInternalPath("/client/hire-requests"))} className="text-slate-500 rounded-full hover:bg-slate-100">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { ClientTalentProfileData } from "@/types/talent";
 import { TalentProfileHeader } from "@/components/client/talent-profile/TalentProfileHeader";
@@ -81,7 +82,7 @@ const ClientTalentProfile = () => {
           description: "Could not load talent profile. They may not be fully vetted yet.",
           variant: "destructive",
         });
-        navigate("/client/browse-talents");
+        navigate(getInternalPath("/client/browse-talents"));
       } finally {
         setLoading(false);
       }
@@ -143,7 +144,7 @@ const ClientTalentProfile = () => {
           <TalentActionPanel 
             talent={talent} 
             onInvite={handleInvite}
-            onMessage={() => navigate(`/client/messages`)}
+            onMessage={() => navigate(getInternalPath(`/client/messages`))}
           />
           
           <div className="mt-4">

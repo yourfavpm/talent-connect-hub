@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -121,7 +122,7 @@ const AdminJobDetail = () => {
                     title: `Job ${status === 'published' ? 'Published' : 'Closed'}`,
                     message: `Your job "${job.title}" has been ${status}.`,
                     type: 'job_update',
-                    action_url: `/client/jobs/${id}`
+                    action_url: getInternalPath(`/client/jobs/${id}`)
                 });
             }
         },
@@ -203,7 +204,7 @@ const AdminJobDetail = () => {
                 title: "Offer Received",
                 message: `You have received an offer for ${job.title}!`,
                 type: 'offer',
-                action_url: `/talent/offers`
+                action_url: getInternalPath(`/talent/offers`)
             });
         },
         onSuccess: () => {
@@ -242,7 +243,7 @@ const AdminJobDetail = () => {
                 title: "Interview Scheduled",
                 message: `An interview has been scheduled for ${new Date(interviewDate).toLocaleString()} via: ${interviewLink}`,
                 type: 'interview',
-                action_url: `/talent/interviews`
+                action_url: getInternalPath(`/talent/interviews`)
             });
         },
         onSuccess: () => {
@@ -440,7 +441,7 @@ const AdminJobDetail = () => {
                                                     <AvatarFallback className="bg-brand-primary/10 text-brand-primary font-medium">{app.talent?.first_name?.[0]}</AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <Link to={`/admin/talents/${app.talent?.id}`} className="font-medium text-sm text-gray-900 hover:text-brand-primary transition-colors">
+                                                    <Link to={getInternalPath(`/admin/talents/${app.talent?.id}`)} className="font-medium text-sm text-gray-900 hover:text-brand-primary transition-colors">
                                                         {app.talent?.first_name} {app.talent?.last_name}
                                                     </Link>
                                                     <p className="text-xs text-gray-500 mt-0.5">{app.talent?.primary_role}</p>
@@ -474,7 +475,7 @@ const AdminJobDetail = () => {
                                                     <AvatarFallback className="bg-brand-primary/10 text-brand-primary font-medium">{app.talent?.first_name?.[0]}</AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <Link to={`/admin/talents/${app.talent?.id}`} className="font-medium text-sm text-gray-900 hover:text-brand-primary transition-colors">
+                                                    <Link to={getInternalPath(`/admin/talents/${app.talent?.id}`)} className="font-medium text-sm text-gray-900 hover:text-brand-primary transition-colors">
                                                         {app.talent?.first_name} {app.talent?.last_name}
                                                     </Link>
                                                     <p className="text-xs text-gray-500 mt-0.5">{app.talent?.primary_role}</p>
@@ -506,7 +507,7 @@ const AdminJobDetail = () => {
                                                     <AvatarFallback className="bg-purple-100 text-purple-700 font-medium">{app.talent?.first_name?.[0]}</AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <Link to={`/admin/talents/${app.talent?.id}`} className="font-medium text-sm text-gray-900 hover:text-brand-primary transition-colors">
+                                                    <Link to={getInternalPath(`/admin/talents/${app.talent?.id}`)} className="font-medium text-sm text-gray-900 hover:text-brand-primary transition-colors">
                                                         {app.talent?.first_name} {app.talent?.last_name}
                                                     </Link>
                                                     <Badge variant="outline" className="ml-2 text-[10px] bg-purple-50 text-purple-700 border-purple-200">Interviewing</Badge>

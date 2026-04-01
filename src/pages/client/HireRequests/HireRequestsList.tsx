@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -109,7 +110,7 @@ export default function HireRequestsList() {
             <tr 
               key={req.id} 
               className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
-              onClick={() => navigate(`/client/hire-requests/${req.id}`)}
+              onClick={() => navigate(getInternalPath(`/client/hire-requests/${req.id}`))}
             >
               <td className="px-6 py-4">
                 <div className="font-semibold text-slate-900">{req.title}</div>
@@ -138,11 +139,11 @@ export default function HireRequestsList() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-[160px]">
-                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/client/hire-requests/${req.id}`); }}>
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/client/hire-requests/${req.id}`)); }}>
                       <Eye className="mr-2 h-4 w-4" /> View Details
                     </DropdownMenuItem>
                     {req.status === "draft" && (
-                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/client/hire-requests/${req.id}`); }}>
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/client/hire-requests/${req.id}`)); }}>
                         <FileText className="mr-2 h-4 w-4" /> Edit & Submit
                       </DropdownMenuItem>
                     )}
@@ -196,7 +197,7 @@ export default function HireRequestsList() {
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Hire Requests</h1>
           <p className="text-sm text-slate-500 mt-1">Submit requirements to our Admin team and review shortlisted candidates.</p>
         </div>
-        <Button onClick={() => navigate("/client/hire-requests/new")} className="bg-slate-900 text-white hover:bg-slate-800">
+        <Button onClick={() => navigate(getInternalPath("/client/hire-requests/new"))} className="bg-slate-900 text-white hover:bg-slate-800">
           <Plus className="h-4 w-4 mr-2" />
           New Hire Request
         </Button>
@@ -250,7 +251,7 @@ export default function HireRequestsList() {
               Clear Filters
             </Button>
           ) : (
-            <Button size="sm" onClick={() => navigate("/client/hire-requests/new")} className="bg-slate-900 text-white">
+            <Button size="sm" onClick={() => navigate(getInternalPath("/client/hire-requests/new"))} className="bg-slate-900 text-white">
               <Plus className="h-4 w-4 mr-2" />
               New Hire Request
             </Button>

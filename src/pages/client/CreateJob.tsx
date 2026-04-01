@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -152,9 +153,9 @@ const CreateJob = () => {
 
       // Redirect to the new job's detail page
       if (data?.id) {
-        navigate(`/client/jobs/${data.id}`);
+        navigate(getInternalPath(`/client/jobs/${data.id}`));
       } else {
-        navigate("/client/jobs");
+        navigate(getInternalPath("/client/jobs"));
       }
     } catch (error: any) {
       console.error("Submission error:", error);
@@ -203,7 +204,7 @@ const CreateJob = () => {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 font-sans pb-32">
       {/* Header */}
       <div className="flex items-center mb-8 gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/client/jobs")} className="text-gray-500 rounded-full hover:bg-gray-100">
+        <Button variant="ghost" size="icon" onClick={() => navigate(getInternalPath("/client/jobs"))} className="text-gray-500 rounded-full hover:bg-gray-100">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>

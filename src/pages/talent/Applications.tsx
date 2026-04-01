@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -264,7 +265,7 @@ const TalentApplications = () => {
             </div>
             {applications.length === 0 && (
               <div className="pt-4">
-                <Button onClick={() => navigate('/talent/jobs')} className="h-11 px-8 bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-bold uppercase tracking-widest rounded-xl transition-all">
+                <Button onClick={() => navigate(getInternalPath('/talent/jobs'))} className="h-11 px-8 bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-bold uppercase tracking-widest rounded-xl transition-all">
                   Browse Roles
                 </Button>
               </div>
@@ -379,7 +380,7 @@ const TalentApplications = () => {
                    
                    <div className="pt-2">
                      <Button variant="outline" className="h-11 px-6 border-slate-200 text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 rounded-xl transition-all" asChild>
-                       <Link to={`/talent/jobs?id=${selectedApp.job_id}`}>
+                       <Link to={getInternalPath(`/talent/jobs?id=${selectedApp.job_id}`)}>
                          View Full Job Briefing
                          <ArrowRight className="h-3.5 w-3.5 ml-2" />
                        </Link>
@@ -402,12 +403,12 @@ const TalentApplications = () => {
                 <div className="sticky bottom-0 left-0 w-full p-8 bg-white/80 backdrop-blur-md border-t border-slate-100 flex items-center gap-4 z-20">
                   {selectedApp.status === "interview_scheduled" && (
                     <Button className="flex-1 h-14 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-[12px] font-bold uppercase tracking-widest shadow-xl shadow-slate-900/10 transition-all active:scale-[0.98]" asChild>
-                      <Link to="/talent/interviews">View Interview Details</Link>
+                      <Link to={getInternalPath("/talent/interviews")}>View Interview Details</Link>
                     </Button>
                   )}
                   {(selectedApp.status === "offer_sent" || selectedApp.status === "offer_initiated") && (
                     <Button className="flex-1 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[12px] font-bold uppercase tracking-widest shadow-xl shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]" asChild>
-                      <Link to="/talent/offers">Review Final Offer</Link>
+                      <Link to={getInternalPath("/talent/offers")}>Review Final Offer</Link>
                     </Button>
                   )}
                 </div>

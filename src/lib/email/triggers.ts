@@ -3,7 +3,10 @@
 
 import { queueEmail, requestVerificationEmail } from './emailService';
 
-const APP_URL = import.meta.env.VITE_APP_URL || 'https://app.opslyhr.com';
+const AUTH_URL = import.meta.env.VITE_APP_URL || 'https://app.opslyhr.com';
+const TALENT_URL = 'https://talent.opslyhr.com';
+const CLIENT_URL = 'https://client.opslyhr.com';
+const ADMIN_URL = 'https://admin.opslyhr.com';
 
 // --- AUTH & ACCOUNT TRIGGERS ---
 
@@ -61,7 +64,7 @@ export const sendTalentEmailVerifiedEmail = async (email: string, firstName: str
         templateKey: 'talent_auth_verified_success',
         variables: {
             first_name: firstName,
-            dashboard_link: `${APP_URL}/talent/dashboard`,
+            dashboard_link: `${TALENT_URL}/dashboard`,
         },
     });
 };
@@ -76,7 +79,7 @@ export const sendTalentPasswordResetEmail = async (email: string, firstName: str
         templateKey: 'talent_auth_password_reset',
         variables: {
             first_name: firstName,
-            reset_link: redirectTo || `${APP_URL}/auth/update-password?portal=talent`,
+            reset_link: redirectTo || `${AUTH_URL}/auth/update-password?portal=talent`,
         },
     });
 };
@@ -105,7 +108,7 @@ export const sendClientPasswordResetEmail = async (email: string, contactName: s
         templateKey: 'client_auth_password_reset',
         variables: {
             first_name: contactName,
-            reset_link: redirectTo || `${APP_URL}/auth/update-password?portal=client`,
+            reset_link: redirectTo || `${AUTH_URL}/auth/update-password?portal=client`,
         },
     });
 };
@@ -134,7 +137,7 @@ export const sendClientEmailVerifiedEmail = async (email: string, contactName: s
         templateKey: 'client_auth_verified_success',
         variables: {
             first_name: contactName,
-            dashboard_link: `${APP_URL}/client/dashboard`,
+            dashboard_link: `${CLIENT_URL}/dashboard`,
         },
     });
 };
@@ -154,7 +157,7 @@ export const sendTalentWelcomeEmail = async (talent: {
         templateKey: 'talent_onboarding_welcome',
         variables: {
             first_name: talent.firstName,
-            profile_link: `${APP_URL}/talent/onboarding`,
+            profile_link: `${TALENT_URL}/onboarding`,
         },
     });
 };
@@ -174,7 +177,7 @@ export const sendClientWelcomeEmail = async (client: {
         variables: {
             first_name: client.contactName,
             company_name: client.companyName,
-            dashboard_link: `${APP_URL}/client/dashboard`,
+            dashboard_link: `${CLIENT_URL}/dashboard`,
         },
     });
 };
@@ -213,7 +216,7 @@ export const sendVettingChangesRequestedEmail = async (talent: {
         variables: {
             first_name: talent.firstName,
             feedback: talent.feedback,
-            vetting_link: `${APP_URL}/talent/vetting`,
+            vetting_link: `${TALENT_URL}/vetting`,
         },
     });
 };
@@ -232,7 +235,7 @@ export const sendVettingApprovedEmail = async (talent: {
         variables: {
             talent_name: talent.firstName,
             approval_date: new Date().toLocaleDateString(),
-            jobs_link: `${APP_URL}/talent/jobs`,
+            jobs_link: `${TALENT_URL}/jobs`,
         },
     });
 };
@@ -252,7 +255,7 @@ export const sendVettingRejectedEmail = async (talent: {
         variables: {
             talent_name: talent.firstName,
             reasons: talent.rejectionReasons,
-            resubmit_link: `${APP_URL}/talent/vetting`,
+            resubmit_link: `${TALENT_URL}/vetting`,
         },
     });
 };
@@ -295,7 +298,7 @@ export const sendJobRecommendationEmail = async (talent: {
         variables: {
             job_title: talent.jobTitle,
             client_name: talent.clientName,
-            job_link: `${APP_URL}/talent/jobs/${talent.jobId}`,
+            job_link: `${TALENT_URL}/jobs/${talent.jobId}`,
         },
     });
 };
@@ -315,7 +318,7 @@ export const sendInvitedToApplyEmail = async (invitation: {
         templateKey: 'talent_job_invited_to_apply',
         variables: {
             job_title: invitation.jobTitle,
-            job_link: `${APP_URL}/talent/jobs/${invitation.jobId}`,
+            job_link: `${TALENT_URL}/jobs/${invitation.jobId}`,
         },
     });
 };
@@ -334,7 +337,7 @@ export const sendJobPublishedEmail = async (talent: {
         templateKey: 'talent_job_published',
         variables: {
             job_title: talent.jobTitle,
-            job_link: `${APP_URL}/talent/jobs/${talent.jobId}`,
+            job_link: `${TALENT_URL}/jobs/${talent.jobId}`,
         },
     });
 };
@@ -354,7 +357,7 @@ export const sendClientJobLiveEmail = async (client: {
         variables: {
             contact_name: client.contactName,
             job_title: client.jobTitle,
-            job_link: `${APP_URL}/client/jobs/${client.jobId}`,
+            job_link: `${CLIENT_URL}/jobs/${client.jobId}`,
         },
     });
 };
@@ -413,7 +416,7 @@ export const sendTalentContractReceivedEmail = async (contract: {
         templateKey: 'talent_contract_received',
         variables: {
             contract_id: contract.contractId,
-            contract_link: `${APP_URL}/talent/contracts/${contract.contractId}`,
+            contract_link: `${TALENT_URL}/contracts/${contract.contractId}`,
         },
     });
 };
@@ -491,7 +494,7 @@ export const sendTimesheetReminderEmail = async (talent: {
         templateKey: 'talent_timesheet_reminder',
         variables: {
             period_end: talent.periodEnd,
-            submit_link: `${APP_URL}/talent/timesheets`,
+            submit_link: `${TALENT_URL}/timesheets`,
         },
     });
 };
@@ -625,7 +628,7 @@ export const sendSupportRepliedEmail = async (ticket: {
         templateKey: ticket.isTalent ? 'talent_support_replied' : 'client_support_replied',
         variables: {
             ticket_id: ticket.ticketId,
-            ticket_link: `${APP_URL}/${ticket.isTalent ? 'talent' : 'client'}/support/${ticket.ticketId}`,
+            ticket_link: `${ticket.isTalent ? TALENT_URL : CLIENT_URL}/support/${ticket.ticketId}`,
         },
     });
 };
@@ -647,7 +650,7 @@ export const sendAdminVettingSubmissionEmail = async (vetting: {
         variables: {
             talent_name: vetting.talentName,
             talent_id: vetting.talentId,
-            review_link: `${APP_URL}/admin/vetting/${vetting.vettingId}`,
+            review_link: `${ADMIN_URL}/vetting/${vetting.vettingId}`,
         },
     });
 };
@@ -668,7 +671,7 @@ export const sendAdminContractFullySignedEmail = async (contract: {
             contract_id: contract.contractId,
             client_name: contract.clientName,
             talent_name: contract.talentName,
-            contract_link: `${APP_URL}/admin/contracts/${contract.contractId}`,
+            contract_link: `${ADMIN_URL}/contracts/${contract.contractId}`,
         },
     });
 };
@@ -694,7 +697,7 @@ export const sendTalentOfferEmail = async (offer: {
             job_title: offer.jobTitle,
             rate: offer.rate,
             start_date: offer.startDate,
-            offer_link: `${APP_URL}/talent/offers/${offer.offerId}`,
+            offer_link: `${TALENT_URL}/offers/${offer.offerId}`,
         },
     });
 };
@@ -717,7 +720,7 @@ export const sendClientContractReadyEmail = async (contract: {
             client_name: contract.clientName,
             talent_name: contract.talentName,
             job_title: contract.jobTitle,
-            contract_link: `${APP_URL}/client/contracts`,
+            contract_link: `${CLIENT_URL}/contracts`,
         },
     });
 };
@@ -762,7 +765,7 @@ export const sendClientInvoiceGeneratedEmail = async (invoice: {
             invoice_id: invoice.invoiceId,
             amount: invoice.amount,
             due_date: invoice.dueDate,
-            invoice_link: `${APP_URL}/client/invoices/${invoice.invoiceId}`,
+            invoice_link: `${CLIENT_URL}/invoices/${invoice.invoiceId}`,
         },
     });
 };

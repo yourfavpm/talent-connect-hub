@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -522,7 +523,7 @@ const AdminTalents = () => {
                         // Don't navigate if clicking checkbox or kebab
                         const target = e.target as HTMLElement;
                         if (target.closest("[data-no-navigate]")) return;
-                        navigate(`/admin/talents/${t.id}/vetting`);
+                        navigate(getInternalPath(`/admin/talents/${t.id}/vetting`));
                       }}
                     >
                       {/* Checkbox */}
@@ -670,7 +671,7 @@ const AdminTalents = () => {
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/admin/talents/${t.id}/vetting`);
+                                navigate(getInternalPath(`/admin/talents/${t.id}/vetting`));
                               }}
                               className="text-xs gap-2"
                             >

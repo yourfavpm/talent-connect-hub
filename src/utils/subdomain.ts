@@ -70,6 +70,29 @@ export const getCookieDomain = (): string | undefined => {
 };
 
 /**
+ * Strips portal prefixes (/talent, /client, /admin) from a path if we are in a subdomain zone.
+ * This ensures internal links work relative to the current domain.
+ */
+export const getInternalPath = (path: string): string => {
+  const currentZone = getCurrentZone();
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+
+  // If we are in any portal zone (TALENT, CLIENT, ADMIN),
+  // we want to allow relative paths that don''t include the portal prefix.
+  // Example: On talent.opslyhr.com, ''/talent/dashboard'' should become ''/dashboard''.
+  if ([Zone.TALENT, Zone.CLIENT, Zone.ADMIN].includes(currentZone)) {
+    const prefixes = ["/talent", "/client", "/admin"];
+    for (const prefix of prefixes) {
+      if (cleanPath.startsWith(prefix)) {
+        return cleanPath.substring(prefix.length) || "/";
+      }
+    }
+  }
+
+  return cleanPath;
+};
+
+/**
  * Generates an absolute URL for a specific zone.
  */
 export const getZoneUrl = (zone: Zone, path: string = "/"): string => {
@@ -77,9 +100,15 @@ export const getZoneUrl = (zone: Zone, path: string = "/"): string => {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
 
   if (isDev) {
-    // For local dev, we use the zone query param to maintain context
-    const baseUrl = "http://localhost:5173";
-    return `${baseUrl}${cleanPath}${cleanPath.includes("?") ? "&" : "?"}zone=${zone}`;
+    // For local dev, we use the current host (port included) to maintain context
+    // This handles both 5173 and 8080 automatically.
+    const baseUrl = `${window.location.protocol}//${window.location.host}`;
+    
+    // Add zone parameter if not already present in the source URLs
+    if (path.includes("zone=")) return `${baseUrl}${cleanPath}`;
+    
+    const connector = cleanPath.includes("?") ? "&" : "?";
+    return `${baseUrl}${cleanPath}${connector}zone=${zone}`;
   }
 
   const protocol = "https://";
@@ -102,3 +131,4 @@ export const getZoneUrl = (zone: Zone, path: string = "/"): string => {
 export const redirectToZone = (zone: Zone, path: string = "/"): void => {
   window.location.href = getZoneUrl(zone, path);
 };
+

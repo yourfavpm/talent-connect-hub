@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Search, Home, LayoutDashboard, Mail } from "lucide-react";
@@ -65,7 +66,7 @@ const NotFound = () => {
                                 className="h-12 px-8 text-sm rounded-lg bg-slate-900 text-white hover:bg-slate-800 font-bold transition-all shadow-none w-full sm:w-auto"
                                 asChild
                             >
-                                <Link to="/client/dashboard">
+                                <Link to={getInternalPath("/")}>
                                    <LayoutDashboard className="mr-2 h-4 w-4" /> Go to Dashboard
                                 </Link>
                             </Button>

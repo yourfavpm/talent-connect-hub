@@ -53,6 +53,19 @@ export const requestVerificationEmail = async (
 
 export const queueEmail = async (options: QueueEmailOptions): Promise<string> => {
     try {
+        // Inject standard branding variables into every email
+        const brandVariables = {
+            brand_color: '#0f2147', // Deep OPSly Blue
+            brand_logo: 'https://opslyhr.com/images/logoplain.png',
+            brand_name: 'OPSlyHR',
+            brand_website: 'https://opslyhr.com',
+            social_linkedin: 'https://linkedin.com/company/opslyhr',
+            social_twitter: 'https://twitter.com/opslyhr',
+            social_instagram: 'https://instagram.com/opslyhr',
+            social_facebook: 'https://facebook.com/opslyhr',
+            ...options.variables || {}
+        };
+
         const { data, error } = await supabase.functions.invoke('send-email', {
             body: {
                 templateKey: options.templateKey,
@@ -60,7 +73,7 @@ export const queueEmail = async (options: QueueEmailOptions): Promise<string> =>
                 subject: options.subject,
                 to: options.to,
                 toName: options.toName,
-                variables: options.variables || {},
+                variables: brandVariables,
                 priority: options.priority,
             },
         });
@@ -127,10 +140,10 @@ export const updateEmailStatus = async (
         }
 
 
-        await supabase
+        await (supabase
             .from('email_logs')
-            .update(updates)
-            .eq('provider_message_id', messageId);
+            .update(updates as any)
+            .eq('provider_message_id', messageId) as any);
 
         console.log(`Email status updated: ${messageId} -> ${status}`);
     } catch (error) {
