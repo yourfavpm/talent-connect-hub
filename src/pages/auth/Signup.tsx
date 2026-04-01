@@ -148,16 +148,12 @@ const Signup = () => {
         }
       }
 
-      if (data.user && !data.session) {
-        navigate("/auth/check-email");
-      } else {
+      if (data.user) {
         toast({
           title: "Account created!",
-          description: `Welcome to OPSlyHR, ${isTalent ? formData.firstName : formData.fullName}! Your account has been created successfully.`,
+          description: `Welcome to OPSlyHR, ${isTalent ? formData.firstName : formData.fullName}! Please check your email to verify your account.`,
         });
-        
-        // Redirect to the correct portal zone
-        redirectToZone(isTalent ? Zone.TALENT : Zone.CLIENT, "/dashboard");
+        navigate("/auth/check-email");
       }
     } catch (err: unknown) {
       toast({

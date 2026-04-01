@@ -25,7 +25,6 @@ import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import AdminSignup from "./pages/auth/AdminSignup";
 import ResetPassword from "./pages/auth/ResetPassword";
-import VerifyEmail from "./pages/auth/VerifyEmail";
 import CheckEmail from "./pages/auth/CheckEmail";
 import ClientLayout from "./components/client/ClientLayout";
 import ClientOnboarding from "@/pages/client/Onboarding";
@@ -156,6 +155,7 @@ const queryClient = new QueryClient({
 
 import { useAuth } from "@/hooks/useAuth";
 import { getZoneUrl } from "@/utils/subdomain";
+import VerifyEmail from "@/pages/auth/VerifyEmail";
 
 /**
  * Ensures the user is in the correct zone and is authenticated if required.
@@ -173,12 +173,19 @@ const ZoneGuard = ({
   const currentZone = getCurrentZone();
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-slate-400 bg-[#0A0A0B]">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-400 bg-[#0A0A0B]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
+          <span className="text-xs font-medium tracking-widest uppercase opacity-50">Initializing Portal</span>
+        </div>
+      </div>
+    );
   }
 
-  // 1. If not in the allowed zone for this route set, don't render it (Routes will fall through to NotFound)
+  // 1. If not in the allowed zone for this route set, don't render it
   if (currentZone !== allowedZone) {
-    return null;
+    return <Navigate to="/404" replace />;
   }
 
   // 2. If it's a protected portal zone and user is NOT logged in, redirect to Auth Hub
@@ -200,7 +207,7 @@ const DevZoneIndicator = ({ zone }: { zone: Zone }) => {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-[9999] px-3 py-1 bg-black/80 backdrop-blur border border-white/10 rounded-full text-[10px] font-mono text-white/50 pointer-events-none">
+    <div className="fixed bottom-4 right-4 z-[9999] px-3 py-1 bg-black/80 backdrop-blur border border-white/10 rounded-full text-[10px] font-mono text-white/50 pointer-events-none select-none">
       ZONE: <span className="text-blue-400 font-bold">{zone}</span>
     </div>
   );
@@ -220,169 +227,168 @@ const App = () => {
             <DevZoneIndicator zone={zone} />
             <Routes>
               {/* Marketing Zone (opslyhr.com) */}
-              <Route path="/*" element={
-                <ZoneGuard allowedZone={Zone.MARKETING}>
-                  <Routes>
-                    <Route element={<WebsiteLayout />}>
-                      <Route path="/" element={<Index />} />
-                      <Route path="for-companies" element={<ForCompanies />} />
-                      <Route path="for-professionals" element={<ForProfessionals />} />
-                      <Route path="service-models" element={<ServiceModels />} />
-                      <Route path="pricing" element={<Pricing />} />
-                      <Route path="book-consultation" element={<BookConsultation />} />
-                      <Route path="insights" element={<Insights />} />
-                      <Route path="about" element={<About />} />
-                      <Route path="careers" element={<Careers />} />
-                      <Route path="direct-hire" element={<DirectHire />} />
-                      <Route path="trial-to-hire" element={<TrialToHire />} />
-                      <Route path="project-engagement" element={<ProjectEngagement />} />
-                      <Route path="offshore-hiring" element={<OffshoreHiring />} />
-                      <Route path="vetting-process" element={<VettingProcess />} />
-                      <Route path="jobs" element={<PublicJobs />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Route>
-                  </Routes>
-                </ZoneGuard>
-              } />
+              {zone === Zone.MARKETING && (
+                <Route element={<WebsiteLayout />}>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/for-companies" element={<ForCompanies />} />
+                  <Route path="/for-professionals" element={<ForProfessionals />} />
+                  <Route path="/service-models" element={<ServiceModels />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/book-consultation" element={<BookConsultation />} />
+                  <Route path="/insights" element={<Insights />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/careers" element={<Careers />} />
+                  <Route path="/direct-hire" element={<DirectHire />} />
+                  <Route path="/trial-to-hire" element={<TrialToHire />} />
+                  <Route path="/project-engagement" element={<ProjectEngagement />} />
+                  <Route path="/offshore-hiring" element={<OffshoreHiring />} />
+                  <Route path="/vetting-process" element={<VettingProcess />} />
+                  <Route path="/jobs" element={<PublicJobs />} />
+                  <Route path="/404" element={<NotFound />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              )}
 
               {/* Auth Hub Zone (app.opslyhr.com) */}
-              <Route path="/*" element={
-                <ZoneGuard allowedZone={Zone.AUTH}>
-                  <Routes>
-                    <Route index element={<Navigate to="/auth/login" replace />} />
-                    <Route path="auth/login" element={<Login />} />
-                    <Route path="auth/signup" element={<Signup />} />
-                    <Route path="auth/check-email" element={<CheckEmail />} />
-                    <Route path="auth/verify-email" element={<VerifyEmail />} />
-                    <Route path="auth/admin-signup" element={<AdminSignup />} />
-                    <Route path="auth/reset-password" element={<ResetPassword />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </ZoneGuard>
-              } />
+              {zone === Zone.AUTH && (
+                <>
+                  <Route index element={<Navigate to="/auth/login" replace />} />
+                  <Route path="/auth/login" element={<Login />} />
+                  <Route path="/auth/signup" element={<Signup />} />
+                  <Route path="/auth/check-email" element={<CheckEmail />} />
+                  <Route path="/auth/verify-email" element={<VerifyEmail />} />
+                  <Route path="/auth/admin-signup" element={<AdminSignup />} />
+                  <Route path="/auth/reset-password" element={<ResetPassword />} />
+                  <Route path="/404" element={<NotFound />} />
+                  <Route path="*" element={<Navigate to="/auth/login" replace />} />
+                </>
+              )}
 
-              {/* Client Portal Zone (client.opslyhr.com) */}
+              {/* Protected Portal Zones (Shared Path handling via absolute redirects) */}
               <Route path="/*" element={
-                <ZoneGuard allowedZone={Zone.CLIENT} protected>
+                <ZoneGuard 
+                  allowedZone={zone} 
+                  protected={zone === Zone.TALENT || zone === Zone.CLIENT || zone === Zone.ADMIN}
+                >
                   <Routes>
-                    <Route index element={<Navigate to="/dashboard" replace />} />
-                    <Route path="onboarding" element={<ClientOnboarding />} />
-                    <Route element={<ClientLayout />}>
-                      <Route path="dashboard" element={<ClientDashboard />} />
-                      <Route path="browse-talents" element={<BrowseTalents />} />
-                      <Route path="browse-talents/:talentId" element={<ClientTalentProfile />} />
-                      
-                      {FEATURES.hire_request_v2_enabled ? (
-                        <>
-                          <Route path="hire-requests" element={<HireRequestsList />} />
-                          <Route path="hire-requests/new" element={<CreateHireRequest />} />
-                          <Route path="hire-requests/:id" element={<HireRequestDetail />} />
-                          <Route path="jobs/*" element={<Navigate to="/hire-requests" replace />} />
-                        </>
-                      ) : (
-                        <>
-                          <Route path="jobs" element={<Jobs />} />
-                          <Route path="jobs/new" element={<CreateJob />} />
-                          <Route path="jobs/:id" element={<ClientJobDetail />} />
-                        </>
-                      )}
+                    {/* Client Portal Zone */}
+                    {zone === Zone.CLIENT && (
+                      <>
+                        <Route index element={<Navigate to="/dashboard" replace />} />
+                        <Route path="onboarding" element={<ClientOnboarding />} />
+                        <Route element={<ClientLayout />}>
+                          <Route path="dashboard" element={<ClientDashboard />} />
+                          <Route path="browse-talents" element={<BrowseTalents />} />
+                          <Route path="browse-talents/:talentId" element={<ClientTalentProfile />} />
+                          
+                          {FEATURES.hire_request_v2_enabled ? (
+                            <>
+                              <Route path="hire-requests" element={<HireRequestsList />} />
+                              <Route path="hire-requests/new" element={<CreateHireRequest />} />
+                              <Route path="hire-requests/:id" element={<HireRequestDetail />} />
+                              <Route path="jobs/*" element={<Navigate to="/hire-requests" replace />} />
+                            </>
+                          ) : (
+                            <>
+                              <Route path="jobs" element={<Jobs />} />
+                              <Route path="jobs/new" element={<CreateJob />} />
+                              <Route path="jobs/:id" element={<ClientJobDetail />} />
+                            </>
+                          )}
 
-                      <Route path="contracts" element={<Contracts />} />
-                      <Route path="timesheets" element={<ClientTimesheets />} />
-                      <Route path="invoices" element={<Invoices />} />
-                      <Route path="payments" element={<ClientPayments />} />
-                      <Route path="team" element={<Team />} />
-                      <Route path="support" element={<ClientSupport />} />
-                      <Route path="settings" element={<ClientSettings />} />
-                    </Route>
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </ZoneGuard>
-              } />
+                          <Route path="contracts" element={<Contracts />} />
+                          <Route path="timesheets" element={<ClientTimesheets />} />
+                          <Route path="invoices" element={<Invoices />} />
+                          <Route path="payments" element={<ClientPayments />} />
+                          <Route path="team" element={<Team />} />
+                          <Route path="support" element={<ClientSupport />} />
+                          <Route path="settings" element={<ClientSettings />} />
+                        </Route>
+                      </>
+                    )}
 
-              {/* Talent Portal Zone (talent.opslyhr.com) */}
-              <Route path="/*" element={
-                <ZoneGuard allowedZone={Zone.TALENT} protected>
-                  <Routes>
-                    <Route index element={<Navigate to="/dashboard" replace />} />
-                    <Route element={<TalentLayout />}>
-                      <Route path="onboarding" element={<OnboardingRouter />} />
-                      <Route path="dashboard" element={<TalentDashboard />} />
-                      <Route path="profile" element={<ProfileRouter />} />
-                      <Route path="jobs" element={<TalentJobs />} />
-                      <Route path="jobs/:id" element={<TalentJobDetail />} />
-                      <Route path="offers" element={<TalentOffers />} />
-                      <Route path="applications" element={<TalentApplications />} />
-                      <Route path="interviews" element={<TalentInterviews />} />
-                      <Route path="assignments" element={<TalentAssignments />} />
-                      <Route path="contracts" element={<TalentContracts />} />
-                      <Route path="timesheets" element={<TalentTimesheets />} />
-                      <Route path="timesheets/new" element={<TimesheetForm />} />
-                      <Route path="timesheets/:id" element={<TimesheetForm />} />
-                      <Route path="messages" element={<TalentMessages />} />
-                      <Route path="messages/:id" element={<MessageThread />} />
-                      <Route path="support" element={<TalentSupport />} />
-                      <Route path="support/new" element={<SupportTicketForm />} />
-                      <Route path="support/:id" element={<TicketDetail />} />
-                      <Route path="settings" element={<TalentSettings />} />
-                      <Route path="payments" element={<TalentPayments />} />
-                      <Route path="team" element={<TalentTeam />} />
-                    </Route>
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </ZoneGuard>
-              } />
+                    {/* Talent Portal Zone */}
+                    {zone === Zone.TALENT && (
+                      <>
+                        <Route index element={<Navigate to="/dashboard" replace />} />
+                        <Route element={<TalentLayout />}>
+                          <Route path="onboarding" element={<OnboardingRouter />} />
+                          <Route path="dashboard" element={<TalentDashboard />} />
+                          <Route path="profile" element={<ProfileRouter />} />
+                          <Route path="jobs" element={<TalentJobs />} />
+                          <Route path="jobs/:id" element={<TalentJobDetail />} />
+                          <Route path="offers" element={<TalentOffers />} />
+                          <Route path="applications" element={<TalentApplications />} />
+                          <Route path="interviews" element={<TalentInterviews />} />
+                          <Route path="assignments" element={<TalentAssignments />} />
+                          <Route path="contracts" element={<TalentContracts />} />
+                          <Route path="timesheets" element={<TalentTimesheets />} />
+                          <Route path="timesheets/new" element={<TimesheetForm />} />
+                          <Route path="timesheets/:id" element={<TimesheetForm />} />
+                          <Route path="messages" element={<TalentMessages />} />
+                          <Route path="messages/:id" element={<MessageThread />} />
+                          <Route path="support" element={<TalentSupport />} />
+                          <Route path="support/new" element={<SupportTicketForm />} />
+                          <Route path="support/:id" element={<TicketDetail />} />
+                          <Route path="settings" element={<TalentSettings />} />
+                          <Route path="payments" element={<TalentPayments />} />
+                          <Route path="team" element={<TalentTeam />} />
+                        </Route>
+                      </>
+                    )}
 
-              {/* Admin Portal Zone (admin.opslyhr.com) */}
-              <Route path="/*" element={
-                <ZoneGuard allowedZone={Zone.ADMIN} protected>
-                  <Routes>
-                    <Route index element={<Navigate to="/dashboard" replace />} />
-                    <Route element={<AdminLayout />}>
-                      <Route path="dashboard" element={<AdminDashboard />} />
-                      <Route path="vetting" element={<AdminVettingQueueRouter />} />
-                      <Route path="vetting/:id" element={<AdminVettingWorkspaceRouter />} />
-                      <Route path="talents" element={<AdminTalentDirectory />} />
-                      <Route path="talents/:id" element={<AdminTalentProfileView />} />
-                      <Route path="clients" element={<AdminClients />} />
-                      <Route path="clients/:id" element={<AdminClientDetail />} />
-                      <Route path="jobs" element={<AdminJobs />} />
-                      <Route path="jobs/:id" element={<AdminJobDetail />} />
-                      <Route path="hire-requests" element={<AdminHireRequestsList />} />
-                      <Route path="hire-requests/:id" element={<AdminHireRequestDetail />} />
-                      <Route path="offers" element={<AdminOffers />} />
-                      <Route path="offers/:offerId/configure" element={<AdminOfferConfig />} />
-                      <Route path="legal/agreements" element={<AgreementTemplates />} />
-                      <Route path="contracts" element={<AdminContracts />} />
-                      <Route path="invoices" element={<AdminInvoices />} />
-                      <Route path="payments" element={<AdminPayments />} />
-                      <Route path="timesheets" element={<AdminTimesheets />} />
-                      <Route path="timesheets/:id" element={<AdminTimesheetDetail />} />
-                      <Route path="consultations" element={<AdminConsultations />} />
-                      <Route path="consultations/:id" element={<AdminConsultationDetail />} />
-                      <Route path="support" element={<AdminSupport />} />
-                      <Route path="support/:id" element={<AdminSupportDetail />} />
-                      <Route path="team">
-                        <Route index element={<AdminTeam />} />
-                        <Route path="admins/:id" element={<AdminDetail />} />
-                        <Route path="roles" element={<RolesPermissions />} />
-                        <Route path="audit" element={<AuditLog />} />
-                      </Route>
-                      <Route path="settings" element={<SettingsLayout />}>
-                        <Route index element={<Navigate to="organization" replace />} />
-                        <Route path="organization" element={<OrganizationSettings />} />
-                        <Route path="service-models" element={<ServiceModelsSettings />} />
-                        <Route path="contracts" element={<ContractsSettings />} />
-                        <Route path="finance" element={<FinanceSettings />} />
-                        <Route path="workflows" element={<WorkflowSettings />} />
-                        <Route path="notifications" element={<NotificationSettings />} />
-                        <Route path="security" element={<SecuritySettings />} />
-                        <Route path="branding" element={<BrandingSettings />} />
-                        <Route path="integrations" element={<IntegrationsSettings />} />
-                        <Route path="data" element={<DataSettings />} />
-                        <Route path="audit" element={<SettingsAuditLog />} />
-                      </Route>
-                    </Route>
+                    {/* Admin Portal Zone */}
+                    {zone === Zone.ADMIN && (
+                      <>
+                        <Route index element={<Navigate to="/dashboard" replace />} />
+                        <Route element={<AdminLayout />}>
+                          <Route path="dashboard" element={<AdminDashboard />} />
+                          <Route path="vetting" element={<AdminVettingQueueRouter />} />
+                          <Route path="vetting/:id" element={<AdminVettingWorkspaceRouter />} />
+                          <Route path="talents" element={<AdminTalentDirectory />} />
+                          <Route path="talents/:id" element={<AdminTalentProfileView />} />
+                          <Route path="clients" element={<AdminClients />} />
+                          <Route path="clients/:id" element={<AdminClientDetail />} />
+                          <Route path="jobs" element={<AdminJobs />} />
+                          <Route path="jobs/:id" element={<AdminJobDetail />} />
+                          <Route path="hire-requests" element={<AdminHireRequestsList />} />
+                          <Route path="hire-requests/:id" element={<AdminHireRequestDetail />} />
+                          <Route path="offers" element={<AdminOffers />} />
+                          <Route path="offers/:offerId/configure" element={<AdminOfferConfig />} />
+                          <Route path="legal/agreements" element={<AgreementTemplates />} />
+                          <Route path="contracts" element={<AdminContracts />} />
+                          <Route path="invoices" element={<AdminInvoices />} />
+                          <Route path="payments" element={<AdminPayments />} />
+                          <Route path="timesheets" element={<AdminTimesheets />} />
+                          <Route path="timesheets/:id" element={<AdminTimesheetDetail />} />
+                          <Route path="consultations" element={<AdminConsultations />} />
+                          <Route path="consultations/:id" element={<AdminConsultationDetail />} />
+                          <Route path="support" element={<AdminSupport />} />
+                          <Route path="support/:id" element={<AdminSupportDetail />} />
+                          <Route path="team">
+                            <Route index element={<AdminTeam />} />
+                            <Route path="admins/:id" element={<AdminDetail />} />
+                            <Route path="roles" element={<RolesPermissions />} />
+                            <Route path="audit" element={<AuditLog />} />
+                          </Route>
+                          <Route path="settings" element={<SettingsLayout />}>
+                            <Route index element={<Navigate to="organization" replace />} />
+                            <Route path="organization" element={<OrganizationSettings />} />
+                            <Route path="service-models" element={<ServiceModelsSettings />} />
+                            <Route path="contracts" element={<ContractsSettings />} />
+                            <Route path="finance" element={<FinanceSettings />} />
+                            <Route path="workflows" element={<WorkflowSettings />} />
+                            <Route path="notifications" element={<NotificationSettings />} />
+                            <Route path="security" element={<SecuritySettings />} />
+                            <Route path="branding" element={<BrandingSettings />} />
+                            <Route path="integrations" element={<IntegrationsSettings />} />
+                            <Route path="data" element={<DataSettings />} />
+                            <Route path="audit" element={<SettingsAuditLog />} />
+                          </Route>
+                        </Route>
+                      </>
+                    )}
+                    
                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                   </Routes>
                 </ZoneGuard>
