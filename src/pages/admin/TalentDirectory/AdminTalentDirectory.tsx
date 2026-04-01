@@ -221,7 +221,7 @@ const AdminTalentDirectory = () => {
                   <TableRow 
                     key={tp.id} 
                     className="group hover:bg-slate-50/50 cursor-pointer"
-                    onClick={() => navigate(`/admin/talents/${tp.id}`)}
+                    onClick={() => navigate(`/talents/${tp.id}`)}
                   >
                     <TableCell className="py-4">
                       <div className="flex items-center gap-3">

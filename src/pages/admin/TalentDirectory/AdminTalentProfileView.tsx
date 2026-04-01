@@ -164,8 +164,8 @@ const AdminTalentProfileView = () => {
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 pb-8">
         <div className="flex items-start gap-5">
-           <Button variant="outline" size="icon" onClick={() => navigate("/admin/talents")} className="h-10 w-10 rounded-xl shadow-none border-slate-200">
-             <ArrowLeft className="h-5 w-5 text-slate-600" />
+           <Button variant="ghost" onClick={() => navigate("/talents")} className="gap-2 text-slate-500 hover:text-slate-900 transition-colors">
+             <ArrowLeft className="h-4 w-4" /> Back to Directory
            </Button>
            <div className="space-y-1">
               <div className="flex items-center gap-3">

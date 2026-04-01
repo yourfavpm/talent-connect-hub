@@ -20,6 +20,32 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 
+interface V2Profile {
+  id: string;
+  user_id: string;
+  talent_id: string | null;
+  status: string;
+  vetting_level: number | null;
+  submitted_at: string | null;
+  vetted_at: string | null;
+  progress_percent: number;
+  locked_onboarding: boolean;
+  visible_to_clients: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface V2Section {
+  id: string;
+  user_id: string;
+  section_key: string;
+  status: string;
+  data: any;
+  last_saved_at: string | null;
+  submitted_at: string | null;
+  approved_at: string | null;
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────
 
 const OnboardingV2 = () => {
@@ -66,7 +92,10 @@ const OnboardingV2 = () => {
         await supabase.from("v2_talent_profiles").upsert({ user_id: user.id }, { onConflict: "user_id" });
 
         const { data: profile } = await supabase
-          .from("v2_talent_profiles").select("*").eq("user_id", user.id).single();
+          .from("v2_talent_profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .single() as { data: V2Profile | null };
 
         if (profile?.locked_onboarding && profile.status !== "changes_requested") {
           navigate("/talent/profile");
@@ -79,7 +108,9 @@ const OnboardingV2 = () => {
 
         // Load sections and hydrate form
         const { data: sections } = await supabase
-          .from("v2_profile_sections").select("*").eq("user_id", user.id);
+          .from("v2_profile_sections")
+          .select("*")
+          .eq("user_id", user.id) as { data: V2Section[] | null };
 
         if (sections && sections.length > 0) {
           const merged: Record<string, unknown> = {};
@@ -119,11 +150,12 @@ const OnboardingV2 = () => {
       const { data: result, error } = await supabase.rpc("v2_save_section_data", {
         p_section_key: sectionKey,
         p_data: payload as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-      });
+      }) as { data: { progress_percent: number } | null; error: any };
+      
       if (error) throw error;
       // Update local progress from RPC response
-      if (result && typeof result === "object" && "progress_percent" in (result as any)) {
-        setProgressPercent((result as any).progress_percent);
+      if (result && typeof result === "object" && "progress_percent" in result) {
+        setProgressPercent(result.progress_percent);
       }
       setSectionStatuses(prev => ({ ...prev, [sectionKey]: "in_progress" }));
     } catch (err: any) {
@@ -306,7 +338,7 @@ const OnboardingV2 = () => {
                     <ChevronLeft className="h-4 w-4" /> Back
                   </Button>
 
-                  <div className="flex gap-3">
+                    <div className="flex gap-3">
                     <Button
                       variant="outline"
                       onClick={saveCurrentStep}
@@ -316,7 +348,7 @@ const OnboardingV2 = () => {
                       <Save className="h-4 w-4" /> Save
                     </Button>
 
-                    {isLastStep ? (
+                    {currentStep >= 3 && (
                       <Button
                         onClick={handleSubmit}
                         disabled={submitting || saving}
@@ -325,7 +357,9 @@ const OnboardingV2 = () => {
                         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                         Submit for Review
                       </Button>
-                    ) : (
+                    )}
+
+                    {!isLastStep && (
                       <Button
                         onClick={nextStep}
                         disabled={saving}

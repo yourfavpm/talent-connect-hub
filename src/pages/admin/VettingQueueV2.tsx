@@ -133,7 +133,7 @@ const VettingQueueV2 = () => {
       if (!inSearch) return false;
 
       // Tab filter
-      if (tab === "pending") return ["submitted", "resubmitted", "revett_pending"].includes(r.status);
+      if (tab === "pending") return ["submitted", "resubmitted", "revett_pending"].includes(r.status) || (r.status === "draft" && r.progress === 100);
       if (tab === "in_review") return r.status === "in_review";
       if (tab === "changes") return ["changes_requested", "revett_required"].includes(r.status);
       if (tab === "vetted") return r.status === "vetted";
@@ -274,7 +274,7 @@ const VettingQueueV2 = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => navigate(`/admin/talents/${r.profileId}`)}
+                            onClick={() => navigate(`/talents/${r.profileId}`)}
                             className="font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                           >
                             View Profile
@@ -282,7 +282,7 @@ const VettingQueueV2 = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => navigate(`/admin/vetting/${r.profileId}`)}
+                            onClick={() => navigate(`/vetting/${r.profileId}`)}
                             className="font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-100 transition-colors"
                           >
                             Review <ArrowRight className="h-4 w-4 ml-1.5" />

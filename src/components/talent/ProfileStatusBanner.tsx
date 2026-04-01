@@ -88,8 +88,10 @@ export const ProfileStatusBanner = ({
     );
   }
 
-  // 3. Incomplete Profile (Action Required)
-  if (progressPercent < 100 && (status === "draft" || status === "in_progress")) {
+  // 3. Incomplete / Draft Profile (Action Required)
+  if (status === "draft" || status === "in_progress" || progressPercent < 100) {
+    const isReadyToSubmit = progressPercent >= 40; // Roughly Steps 1-3 completed
+
     return (
       <Card className="border-blue-200 bg-blue-50/50 border-l-4 border-l-blue-500 shadow-sm rounded-r-[16px] md:rounded-r-[32px] overflow-hidden group">
         <CardContent className="p-3 md:p-8 flex flex-col md:flex-row items-center gap-3 md:gap-8 transition-all">
@@ -98,9 +100,14 @@ export const ProfileStatusBanner = ({
           </div>
           <div className="flex-1 space-y-1 md:space-y-4 text-center md:text-left w-full">
             <div className="space-y-0.5 md:space-y-1">
-              <h3 className="text-[13px] md:text-xl font-bold text-slate-900 tracking-tight leading-tight">Complete your professional profile</h3>
+              <h3 className="text-[13px] md:text-xl font-bold text-slate-900 tracking-tight leading-tight">
+                {progressPercent === 100 ? "Profile Complete! Ready for Vetting" : "Complete your professional profile"}
+              </h3>
               <p className="hidden md:block text-sm md:text-[15px] text-slate-500 font-medium max-w-[500px]">
-                Finish setting up your profile to get vetted and matched with global opportunities.
+                {progressPercent === 100 
+                  ? "Your profile is fully detailed. Submit it now to start the OPSlyHR vetting process."
+                  : "Finish setting up your profile to get vetted and matched with global opportunities."
+                }
               </p>
             </div>
             <div className="space-y-1 md:space-y-2">
@@ -116,9 +123,21 @@ export const ProfileStatusBanner = ({
               </div>
             </div>
           </div>
-          <div className="shrink-0 w-full md:w-auto">
-            <Button className="h-9 md:h-14 px-6 md:px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg md:rounded-2xl text-[10px] md:text-[12px] font-bold uppercase tracking-widest shadow-lg shadow-blue-500/10 transition-all active:scale-[0.98] w-full" asChild>
-              <Link to={getInternalPath("/talent/profile")}>Complete Now</Link>
+          <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full md:w-auto">
+            {isReadyToSubmit && (
+              <Button 
+                onClick={onResubmit} 
+                disabled={isResubmitting}
+                className="h-9 md:h-14 px-6 md:px-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg md:rounded-2xl text-[10px] md:text-[12px] font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/10 transition-all active:scale-[0.98] w-full md:w-auto"
+              >
+                {isResubmitting ? <Clock className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+                Submit for Vetting
+              </Button>
+            )}
+            <Button className="h-9 md:h-14 px-6 md:px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg md:rounded-2xl text-[10px] md:text-[12px] font-bold uppercase tracking-widest shadow-lg shadow-blue-500/10 transition-all active:scale-[0.98] w-full md:w-auto" asChild>
+              <Link to={getInternalPath("/talent/onboarding")}>
+                {progressPercent === 100 ? "View Details" : "Complete Now"}
+              </Link>
             </Button>
           </div>
         </CardContent>
