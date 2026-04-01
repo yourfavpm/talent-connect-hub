@@ -28,7 +28,7 @@ const ForCompanies = () => {
     return (
         <div className="bg-white min-h-screen text-foreground selection:bg-primary selection:text-white pb-0 overflow-hidden">
             {/* 1. PAGE HERO (REDESIGNED FOR OPERATIONS) */}
-            <section className="relative pt-40 pb-16 md:pt-40 md:pb-16 px-6 bg-[#F8F9FA] font-inter overflow-hidden">
+            <section className="relative pt-40 pb-16 md:pt-40 md:pb-16 px-4 md:px-6 bg-[#F8F9FA] font-inter overflow-hidden">
                 <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
@@ -58,7 +58,7 @@ const ForCompanies = () => {
                                 { label: "Contract Model Selected", icon: Shield },
                                 { label: "Ops Manager Assigned", icon: Target }
                             ].map((item, i) => (
-                                <div key={i} className="flex items-center gap-2.5 text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">
+                                <div key={i} className="flex items-center gap-2.5 text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-widest sm:whitespace-nowrap">
                                     <item.icon className="h-4 w-4 text-blue-600 shrink-0" />
                                     <span>{item.label}</span>
                                 </div>

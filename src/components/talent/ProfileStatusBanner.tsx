@@ -91,23 +91,23 @@ export const ProfileStatusBanner = ({
   if (progressPercent < 100 && (status === "draft" || status === "in_progress")) {
     return (
       <Card className="border-blue-200 bg-blue-50/50 border-l-4 border-l-blue-500 shadow-sm rounded-r-[32px] overflow-hidden group">
-        <CardContent className="p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 md:gap-8">
-          <div className="h-16 w-16 md:h-20 md:w-20 rounded-[24px] bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 border border-blue-200">
-            <User className="h-8 w-8 md:h-10 md:w-10" />
+        <CardContent className="p-4 md:p-8 flex flex-col md:flex-row items-center gap-4 md:gap-8 transition-all">
+          <div className="h-10 w-10 md:h-20 md:w-20 rounded-[12px] md:rounded-[24px] bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 border border-blue-200">
+            <User className="h-5 w-5 md:h-10 md:w-10" />
           </div>
-          <div className="flex-1 space-y-4 text-center md:text-left">
+          <div className="flex-1 space-y-2 md:space-y-4 text-center md:text-left">
             <div className="space-y-1">
-              <h3 className="text-lg md:text-xl font-bold text-slate-900 tracking-tight">Complete your professional profile</h3>
-              <p className="text-sm md:text-[15px] text-slate-500 font-medium max-w-[500px]">
+              <h3 className="text-base md:text-xl font-bold text-slate-900 tracking-tight leading-tight">Complete your professional profile</h3>
+              <p className="hidden md:block text-sm md:text-[15px] text-slate-500 font-medium max-w-[500px]">
                 Finish setting up your profile to get vetted and matched with global opportunities.
               </p>
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest text-blue-600">
+              <div className="flex items-center justify-between text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-blue-600">
                 <span>Profile Completion</span>
                 <span>{progressPercent}%</span>
               </div>
-              <div className="h-2 w-full bg-blue-100 rounded-full overflow-hidden p-0.5">
+              <div className="h-1.5 md:h-2 w-full bg-blue-100 rounded-full overflow-hidden p-0.5">
                 <div 
                   className="h-full bg-blue-600 rounded-full transition-all duration-1000 ease-out" 
                   style={{ width: `${progressPercent}%` }} 
@@ -115,8 +115,8 @@ export const ProfileStatusBanner = ({
               </div>
             </div>
           </div>
-          <div className="shrink-0">
-            <Button className="h-12 md:h-14 px-8 md:px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[12px] font-bold uppercase tracking-widest shadow-xl shadow-blue-500/10 transition-all active:scale-[0.98]" asChild>
+          <div className="shrink-0 w-full md:w-auto">
+            <Button className="h-11 md:h-14 px-8 md:px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-xl md:rounded-2xl text-[11px] md:text-[12px] font-bold uppercase tracking-widest shadow-xl shadow-blue-500/10 transition-all active:scale-[0.98] w-full" asChild>
               <Link to="/talent/profile">Complete Profile Now</Link>
             </Button>
           </div>
