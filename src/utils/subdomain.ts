@@ -11,34 +11,37 @@ export enum Zone {
   ADMIN = "ADMIN",
 }
 
-const PRODUCTION_DOMAIN = "opslyhr.com";
+export const PRODUCTION_DOMAIN = "opslyhr.com";
 
 /**
  * Identifies the current zone based on the hostname.
  */
 export const getCurrentZone = (): Zone => {
-  const hostname = window.location.hostname;
+  const fullHostname = window.location.hostname.toLowerCase();
+  
+  // Remove 'www.' prefix for consistent matching
+  const hostname = fullHostname.startsWith("www.") 
+    ? fullHostname.substring(4) 
+    : fullHostname;
 
   // Development / Localhost Handling
-  if (hostname === "localhost" || hostname === "127.0.0.1") {
-    // During local dev, we can use a query param 'zone' to switch contexts 
-    // or default to AUTH to allow navigation.
+  if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost")) {
     const params = new URLSearchParams(window.location.search);
     const zoneParam = params.get("zone")?.toUpperCase();
     if (zoneParam && Object.values(Zone).includes(zoneParam as Zone)) {
       return zoneParam as Zone;
     }
-    return Zone.AUTH; // Default to Auth Hub for dev entry
-  }
-
-  // Handle local subdomains if configured (e.g., admin.localhost)
-  if (hostname.endsWith(".localhost")) {
-    const sub = hostname.split(".")[0].toLowerCase();
-    if (sub === "admin") return Zone.ADMIN;
-    if (sub === "talent") return Zone.TALENT;
-    if (sub === "client") return Zone.CLIENT;
-    if (sub === "app") return Zone.AUTH;
-    return Zone.MARKETING;
+    
+    // Support local subdomains if configured (e.g., admin.localhost)
+    if (hostname.includes(".")) {
+      const sub = hostname.split(".")[0];
+      if (sub === "admin") return Zone.ADMIN;
+      if (sub === "talent") return Zone.TALENT;
+      if (sub === "client") return Zone.CLIENT;
+      if (sub === "app") return Zone.AUTH;
+    }
+    
+    return Zone.AUTH; 
   }
 
   // Production Handling (opslyhr.com)
@@ -49,6 +52,21 @@ export const getCurrentZone = (): Zone => {
   if (hostname.startsWith("app.")) return Zone.AUTH;
 
   return Zone.MARKETING; // Fallback to Marketing
+};
+
+/**
+ * Returns the domain for cross-subdomain cookies.
+ * In production, returns '.opslyhr.com'.
+ * In development, returns undefined to use default host-only cookies.
+ */
+export const getCookieDomain = (): string | undefined => {
+  const hostname = window.location.hostname.toLowerCase();
+  
+  if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost")) {
+    return undefined;
+  }
+  
+  return `.${PRODUCTION_DOMAIN}`;
 };
 
 /**
