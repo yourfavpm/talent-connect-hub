@@ -9,6 +9,7 @@ import { Eye, EyeOff, Star, Shield, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { getFriendlyErrorMessage } from "@/utils/errorHandling";
+import { Zone, redirectToZone } from "@/utils/subdomain";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -113,8 +114,14 @@ const Login = () => {
         description: "You have been signed in successfully.",
       });
 
-      // Use window.location for guaranteed navigation
-      window.location.href = redirectPath;
+      // Use Zone-based redirection for subdomains
+      if (portal === "admin") {
+        redirectToZone(Zone.ADMIN, "/dashboard");
+      } else if (portal === "talent") {
+        redirectToZone(Zone.TALENT, "/dashboard");
+      } else {
+        redirectToZone(Zone.CLIENT, "/dashboard");
+      }
     } catch (err: unknown) {
       setError(getFriendlyErrorMessage(err));
       setLoading(false);
@@ -177,12 +184,8 @@ const Login = () => {
           </Link>
 
           <div className="max-w-md">
-            <div className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-white text-slate-400 border border-slate-200 uppercase tracking-widest mb-6 shadow-sm">
-              {portal === "admin" ? "ADMINISTRATIVE ACCESS" : portal === "talent" ? "TALENT PORTAL" : "CLIENT PORTAL"}
-            </div>
-            
-            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 leading-[1.15] mb-6 tracking-tight">
-              {portal === "talent" ? "Welcome Back, Operator." : "Welcome Back."}
+            <h2 className="text-2xl lg:text-3xl font-semibold text-slate-900 leading-tight mb-4 tracking-tight">
+              Welcome back.
             </h2>
             
             <p className="text-slate-500 text-lg font-medium leading-relaxed mb-10">
@@ -228,11 +231,8 @@ const Login = () => {
           <Link to="/" className="mb-6">
             <img src="/images/logoplain.png" alt="OPSlyHR" className="h-24" />
           </Link>
-          <div className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-50 text-slate-400 border border-slate-200 uppercase tracking-widest mb-6">
-            {portal === "admin" ? "ADMIN ACCESS" : portal === "talent" ? "TALENT PORTAL" : "CLIENT PORTAL"}
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight leading-tight mb-4">
-            {portal === "talent" ? "Welcome Back, Operator." : "Welcome Back."}
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight leading-tight mb-3">
+            Welcome back.
           </h1>
           <p className="text-slate-500 text-base font-medium leading-relaxed">
             {portal === "talent" 
@@ -244,20 +244,36 @@ const Login = () => {
         </div>
 
         <div className="max-w-[440px] w-full mx-auto">
-          {/* Subtle Portal Badge for Desktop Form Area */}
-          <div className="hidden lg:flex justify-end mb-4">
-            <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full border ${
-              portal === 'talent' 
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
-                : 'bg-blue-50 text-blue-700 border-blue-100'
-            } uppercase tracking-tighter`}>
-              {portal === 'talent' ? 'Professional' : portal === 'admin' ? 'Admin' : 'Client'} Access
-            </span>
+          {/* PORTAL SWITCH AT TOP */}
+          <div className="flex bg-slate-50 p-1 rounded-xl mb-8 border border-slate-100">
+            <button
+              onClick={() => navigate("/auth/login?portal=talent")}
+              className={`flex-1 py-1.5 text-[10px] font-semibold rounded-lg transition-all ${
+                portal === 'talent' ? "bg-white text-blue-600 shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              Professional
+            </button>
+            <button
+              onClick={() => navigate("/auth/login?portal=client")}
+              className={`flex-1 py-1.5 text-[10px] font-semibold rounded-lg transition-all ${
+                portal === 'client' ? "bg-white text-blue-600 shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              Company
+            </button>
+            {portal === 'admin' && (
+              <button
+                className="flex-1 py-1.5 text-[10px] font-semibold rounded-lg bg-slate-900 text-white"
+              >
+                Admin
+              </button>
+            )}
           </div>
 
-          <div className="bg-white border border-slate-100 rounded-[14px] p-8 md:p-10 shadow-sm shadow-slate-200/50 relative">
-            <div className="hidden lg:block mb-10">
-              <h1 className="text-3xl font-bold text-slate-950 tracking-tight mb-2">Sign In</h1>
+          <div className="bg-white border border-slate-100 rounded-2xl p-8 md:p-10 shadow-sm shadow-slate-200/40 relative">
+            <div className="hidden lg:block mb-6">
+              <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-1">Sign In</h1>
               <p className="text-slate-500 text-sm font-medium">Enter your credentials to continue.</p>
             </div>
 
@@ -265,16 +281,16 @@ const Login = () => {
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg flex items-center gap-3"
+                className="mb-6 p-3 bg-red-50 border border-red-50 rounded-lg flex items-center gap-3"
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                <p className="text-xs font-bold text-red-600 leading-tight">{error}</p>
+                <div className="w-1 h-1 rounded-full bg-red-500" />
+                <p className="text-xs font-semibold text-red-600 leading-tight">{error}</p>
               </motion.div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">Email Address</Label>
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">Email Address</Label>
                 <Input
                   ref={firstInputRef}
                   id="email"
@@ -283,16 +299,16 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-slate-50/30 text-slate-900 placeholder:text-slate-400 transition-all"
+                  className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800 placeholder:text-slate-300 transition-all"
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">Password</Label>
+                  <Label htmlFor="password" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">Password</Label>
                   <Link
                     to={`/auth/reset-password?portal=${portal}`}
-                    className="text-[12px] font-bold text-blue-600 hover:text-blue-700 underline underline-offset-4 decoration-2"
+                    className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 underline underline-offset-4 decoration-1"
                   >
                     Forgot password?
                   </Link>
@@ -305,7 +321,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="h-12 pr-14 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-slate-50/30 text-slate-900 placeholder:text-slate-400 transition-all"
+                    className="h-11 pr-12 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800 placeholder:text-slate-300 transition-all"
                   />
                   <button
                     type="button"
@@ -319,7 +335,7 @@ const Login = () => {
 
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-all duration-300 gap-2 mt-4 shadow-md shadow-blue-600/10" 
+                className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-all duration-300 gap-2 mt-2 shadow-sm" 
                 disabled={loading}
               >
                 {loading ? (
@@ -333,40 +349,22 @@ const Login = () => {
               </Button>
             </form>
 
-            <div className="mt-10 pt-8 border-t border-slate-100">
+            <div className="mt-8 pt-8 border-t border-slate-50">
               <p className="text-center text-sm text-slate-500 font-medium">
                 Don't have an account?{" "}
-                <Link to={`/auth/signup?portal=${portal}`} className="text-blue-600 font-bold hover:text-blue-700 underline underline-offset-4 decoration-2">
+                <Link to={`/auth/signup?portal=${portal}`} className="text-blue-600 font-semibold hover:text-blue-700 underline underline-offset-4 decoration-1">
                   Sign up
                 </Link>
               </p>
             </div>
           </div>
 
-          <div className="mt-10 flex flex-col items-center gap-6">
-            <div className="flex items-center gap-3 w-full">
-              <div className="h-px bg-slate-100 flex-grow" />
-              <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest shrink-0">Switch Portal</span>
-              <div className="h-px bg-slate-100 flex-grow" />
-            </div>
-
-            <div className="flex gap-4">
-              {portal !== "client" && (
-                <Link to="/auth/login?portal=client" className="text-xs font-bold text-slate-400 hover:text-blue-600 transition-colors">
-                  Switch to Client Login
-                </Link>
-              )}
-              {portal !== "talent" && (
-                <Link to="/auth/login?portal=talent" className="text-xs font-bold text-slate-400 hover:text-blue-600 transition-colors">
-                  Switch to Talent Login
-                </Link>
-              )}
-              {portal !== "admin" && (
-                <Link to="/auth/login?portal=admin" className="text-xs font-bold text-slate-300 hover:text-slate-500 transition-colors">
-                  Admin Access
-                </Link>
-              )}
-            </div>
+          <div className="mt-8 flex flex-col items-center gap-4">
+            {portal !== "admin" && (
+              <Link to="/auth/login?portal=admin" className="text-[10px] font-semibold text-slate-300 hover:text-slate-500 transition-colors">
+                Admin Access
+              </Link>
+            )}
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { Zone, redirectToZone } from "@/utils/subdomain";
 
 // Module-level cache: role/permissions are fetched ONCE per user per session
 const roleCache = new Map<string, { role: string | null; permissions: string[] }>();
@@ -119,6 +120,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(null);
     setUserRole(null);
     setPermissions([]);
+    
+    // Redirect to Auth Hub after logout
+    redirectToZone(Zone.AUTH, "/auth/login");
   };
 
   return (

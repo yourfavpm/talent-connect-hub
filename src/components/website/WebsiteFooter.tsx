@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Linkedin, Instagram, Mail, MapPin } from "lucide-react";
+import { Zone, getZoneUrl } from "@/utils/subdomain";
 
 const WebsiteFooter = () => {
   return (
@@ -60,16 +61,22 @@ const WebsiteFooter = () => {
               <h4 className="text-[11px] font-bold text-slate-950 uppercase tracking-widest">For Professionals</h4>
               <ul className="space-y-3">
                 {[
-                  { label: "Apply as Talent", to: "/auth/signup?portal=talent" },
+                  { label: "Apply as Talent", href: getZoneUrl(Zone.AUTH, "/auth/signup?portal=talent") },
                   { label: "Vetting Process", to: "/vetting-process" },
-                  { label: "Talent Dashboard", to: "/auth/login?portal=talent" },
-                  { label: "Opportunities", to: "/auth/signup?portal=talent" },
+                  { label: "Talent Dashboard", href: getZoneUrl(Zone.AUTH, "/auth/login?portal=talent") },
+                  { label: "Opportunities", href: getZoneUrl(Zone.AUTH, "/auth/signup?portal=talent") },
                   { label: "Support", to: "/contact" }
                 ].map((link, i) => (
                   <li key={i}>
-                    <Link to={link.to} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
-                      {link.label}
-                    </Link>
+                    {link.href ? (
+                      <a href={link.href} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link to={link.to!} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

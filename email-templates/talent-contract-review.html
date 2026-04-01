@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Please Review Your Contract</title>
+    <style type="text/css">
+        * { margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: #111827;
+            background-color: #ffffff;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .header {
+            background-color: #ffffff;
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .logo {
+            height: 48px;
+            margin-bottom: 16px;
+        }
+        .content {
+            padding: 30px 25px;
+        }
+        .greeting {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        .intro {
+            font-size: 16px;
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .success-badge {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+            margin: 16px 0;
+        }
+        .info-block {
+            background-color: #f9fafb;
+            border-left: 4px solid #059669;
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .info-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #111827;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #059669;
+            color: #ffffff;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 24px 0;
+            border: none;
+            cursor: pointer;
+        }
+        .cta-button:hover {
+            background-color: #047857;
+        }
+        .secondary-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 20px;
+        }
+        .footer {
+            background-color: #f9fafb;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #9ca3af;
+            margin: 0;
+        }
+        .footer-link {
+            color: #059669;
+            text-decoration: none;
+        }
+        @media (max-width: 480px) {
+            .header {
+                padding: 20px 15px;
+            }
+            .content {
+                padding: 20px 15px;
+            }
+            .greeting {
+                font-size: 18px;
+            }
+            .intro {
+                font-size: 14px;
+            }
+            .cta-button {
+                display: block;
+                width: 100%;
+                text-align: center;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <img src="https://www.opslyhr.com/images/logoplain.png" alt="OPSlyHR" class="logo">
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <p class="greeting">Please Review Your Contract</p>
+        
+        <p class="intro">Hi {{FIRST_NAME}},</p>
+        
+        <p class="intro">{{CLIENT_NAME}} has prepared your contract for review and signature. This is an important document—please read it carefully.</p>
+        
+        <div class="success-badge">Contract Ready for Review</div>
+        
+        <div class="info-block">
+            <div class="info-label">Position</div>
+            <div class="info-value">{{JOB_TITLE}}</div>
+        </div>
+        
+        <div class="info-block">
+            <div class="info-label">Contract ID</div>
+            <div class="info-value">{{CONTRACT_ID}}</div>
+        </div>
+        
+        <div class="info-block">
+            <div class="info-label">Start Date</div>
+            <div class="info-value">{{START_DATE}}</div>
+        </div>
+        
+        <p class="intro" style="margin-top: 24px;"><strong>What You Need to Do:</strong></p>
+        <p style="font-size: 14px; color: #374151; margin: 8px 0; padding-left: 20px;">1. Review the contract carefully</p>
+        <p style="font-size: 14px; color: #374151; margin: 8px 0; padding-left: 20px;">2. Note any questions or concerns</p>
+        <p style="font-size: 14px; color: #374151; margin: 8px 0; padding-left: 20px;">3. Sign electronically in your dashboard</p>
+        
+        <p class="intro">Everything is handled securely. You can sign with one click—no printing or scanning needed.</p>
+        
+        <p class="intro"><strong>Timeline:</strong> Once you sign, {{CLIENT_NAME}} will countersign within 24-48 hours.</p>
+        
+        <a href="{{CONTRACT_LINK}}" class="cta-button">Review & Sign Contract</a>
+        
+        <p class="secondary-text">Have questions about contract terms? Our contracts team is available to help.</p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p class="footer-text">OPSlyHR | Securing Your Future<br>
+        <a href="mailto:success@opslyhr.com" class="footer-link">success@opslyhr.com</a><br>
+        © 2026 OPSlyHR. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

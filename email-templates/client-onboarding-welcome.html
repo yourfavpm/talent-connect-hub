@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your OPSlyHR Hiring Dashboard is Ready</title>
+    <style type="text/css">
+        * { margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: #111827;
+            background-color: #ffffff;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .header {
+            background-color: #ffffff;
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .logo {
+            height: 48px;
+        }
+        .content {
+            padding: 30px 25px;
+        }
+        .greeting {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        .intro {
+            font-size: 16px;
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .feature-box {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 12px 0;
+            font-size: 14px;
+            color: #374151;
+        }
+        .feature-title {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #059669;
+            color: #ffffff;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 20px 0;
+            border: none;
+            cursor: pointer;
+        }
+        .cta-button:hover {
+            background-color: #047857;
+        }
+        .secondary-cta {
+            color: #059669;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin: 32px 0;
+            height: 0;
+        }
+        .footer {
+            background-color: #f9fafb;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #9ca3af;
+            margin: 0;
+        }
+        .footer-link {
+            color: #059669;
+            text-decoration: none;
+        }
+        @media (max-width: 480px) {
+            .header {
+                padding: 20px 15px;
+            }
+            .content {
+                padding: 20px 15px;
+            }
+            .greeting {
+                font-size: 18px;
+            }
+            .intro {
+                font-size: 14px;
+            }
+            .cta-button {
+                display: block;
+                width: 100%;
+                text-align: center;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <img src="https://www.opslyhr.com/images/logoplain.png" alt="OPSlyHR" class="logo">
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <p class="greeting">Your OPSlyHR Hiring Dashboard is Ready</p>
+        
+        <p class="intro">Hi {{COMPANY_NAME}},</p>
+        
+        <p class="intro">Thank you for joining OPSlyHR. You now have access to our global network of vetted operations professionals. Let's build your team.</p>
+        
+        <p class="intro"><strong>What You Can Do Right Now:</strong></p>
+        
+        <div class="feature-box">
+            <div class="feature-title">Browse Our Network</div>
+            Explore pre-vetted professionals across operations, finance, HR, and more. Filter by experience, location, and skills.
+        </div>
+        
+        <div class="feature-box">
+            <div class="feature-title">Post Your First Role</div>
+            Tell us what you're looking for. We'll match you with the best-fit professionals within 24 hours.
+        </div>
+        
+        <div class="feature-box">
+            <div class="feature-title">Build Your Team</div>
+            Whether you need one specialist or a full department, we handle vetting, contracts, and payments.
+        </div>
+        
+        <p class="intro">Your dedicated account manager is ready to help. We'll work closely with you to understand your needs and find the right fit.</p>
+        
+        <a href="{{DASHBOARD_LINK}}" class="cta-button">View Available Talent</a>
+        
+        <p class="intro"><strong>First Steps:</strong> Your first consultation is free. Our team will help you define your hiring needs and introduce you to qualified candidates within 48 hours.</p>
+        
+        <hr class="divider">
+        
+        <p style="font-size: 12px; color: #6b7280; margin-top: 24px;">Have questions? <a href="mailto:success@opslyhr.com" class="secondary-cta">Contact our team</a></p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p class="footer-text">OPSlyHR | Global Hiring for Operations Professionals<br>
+        <a href="mailto:success@opslyhr.com" class="footer-link">success@opslyhr.com</a><br>
+        © 2026 OPSlyHR. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

@@ -1,14 +1,28 @@
 // Email Trigger Helper Functions
 // Centralized functions to trigger emails for various events
 
-import { queueEmail } from './emailService';
+import { queueEmail, requestVerificationEmail } from './emailService';
 
 const APP_URL = import.meta.env.VITE_APP_URL || 'https://app.opslyhr.com';
 
 // --- AUTH & ACCOUNT TRIGGERS ---
 
 /**
- * Send talent verification required email
+ * Send talent verification required email (Secure Custom Flow)
+ */
+export const requestTalentVerification = async (userId: string, email: string, firstName: string) => {
+    return await requestVerificationEmail(userId, email, firstName);
+};
+
+/**
+ * Send client verification required email (Secure Custom Flow)
+ */
+export const requestClientVerification = async (userId: string, email: string, contactName: string) => {
+    return await requestVerificationEmail(userId, email, contactName);
+};
+
+/**
+ * Legacy: Send talent verification required email
  */
 export const sendTalentVerificationEmail = async (email: string, firstName: string, verificationLink: string) => {
     await queueEmail({

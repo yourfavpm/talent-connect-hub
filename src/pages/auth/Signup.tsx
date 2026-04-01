@@ -10,7 +10,14 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { z } from "zod";
 import { getFriendlyErrorMessage } from "@/utils/errorHandling";
-import { sendClientWelcomeEmail, sendTalentWelcomeEmail, sendTalentAccountCreatedEmail, sendTalentVerificationEmail } from "@/lib/email/triggers";
+import { Zone, redirectToZone } from "@/utils/subdomain";
+import { 
+  sendClientWelcomeEmail, 
+  sendTalentWelcomeEmail, 
+  sendTalentAccountCreatedEmail, 
+  requestTalentVerification,
+  requestClientVerification
+} from "@/lib/email/triggers";
 
 const clientSignupSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters").max(100),
@@ -104,12 +111,12 @@ const Signup = () => {
               redirectUrl
             );
 
-            // 2. Verification Required (if not auto-confirmed)
+            // 2. Secure Verification Flow (Custom Backend Logic)
             if (!data.session) {
-              await sendTalentVerificationEmail(
+              await requestTalentVerification(
+                data.user.id,
                 formData.email,
-                formData.firstName,
-                redirectUrl
+                formData.firstName
               );
             }
             
@@ -120,6 +127,16 @@ const Signup = () => {
             });
           } else {
             // Client Flow
+            // 1. Secure Verification Flow
+            if (!data.session) {
+              await requestClientVerification(
+                data.user.id,
+                formData.email,
+                formData.fullName
+              );
+            }
+
+            // 2. Welcome Email
             await sendClientWelcomeEmail({
               email: formData.email,
               contactName: formData.fullName,
@@ -131,12 +148,17 @@ const Signup = () => {
         }
       }
 
-      toast({
-        title: "Account created!",
-        description: `Welcome to OPSlyHR, ${isTalent ? formData.firstName : formData.fullName}! Your account has been created successfully.`,
-      });
-
-      navigate(`/${portal}/dashboard`);
+      if (data.user && !data.session) {
+        navigate("/auth/check-email");
+      } else {
+        toast({
+          title: "Account created!",
+          description: `Welcome to OPSlyHR, ${isTalent ? formData.firstName : formData.fullName}! Your account has been created successfully.`,
+        });
+        
+        // Redirect to the correct portal zone
+        redirectToZone(isTalent ? Zone.TALENT : Zone.CLIENT, "/dashboard");
+      }
     } catch (err: unknown) {
       toast({
         title: "Signup failed",
@@ -210,11 +232,8 @@ const Signup = () => {
           </Link>
 
           <div className="max-w-md">
-            <div className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-white text-blue-600 border border-slate-200 uppercase tracking-widest mb-6 shadow-sm">
-              {isTalent ? "TALENT NETWORK" : "CLIENT ACCESS"}
-            </div>
-            <h2 className="text-3xl lg:text-5xl font-bold text-slate-900 leading-[1.15] mb-8 tracking-tight">
-              {isTalent ? "Accelerate Your Career Outcomes." : "Build Your Operations Team Structurally."}
+            <h2 className="text-2xl lg:text-3xl font-semibold text-slate-900 leading-tight mb-4 tracking-tight">
+              {isTalent ? "Apply as Talent" : "Get Started"}
             </h2>
             <p className="text-slate-500 text-lg font-medium leading-relaxed mb-12">
               {isTalent
@@ -258,11 +277,8 @@ const Signup = () => {
           <Link to="/" className="mb-6">
             <img src="/images/logoplain.png" alt="OPSlyHR" className="h-24" />
           </Link>
-          <div className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-50 text-blue-600 border border-slate-200 uppercase tracking-widest mb-6">
-            {isTalent ? "TALENT NETWORK" : "CLIENT ACCESS"}
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight leading-tight mb-4">
-            {isTalent ? "Accelerate Your Career Outcomes." : "Build Your Operations Team Structurally."}
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight leading-tight mb-3">
+            {isTalent ? "Apply as Talent" : "Get Started"}
           </h1>
           <p className="text-slate-500 text-base font-medium leading-relaxed">
             {isTalent 
@@ -272,22 +288,42 @@ const Signup = () => {
         </div>
 
         <div className="max-w-md w-full mx-auto">
-          <div className="hidden lg:block mb-10 text-left">
-            <h1 className="text-3xl font-bold text-slate-950 tracking-tight lg:text-4xl mb-3">
+          {/* PORTAL SWITCH AT TOP (Above Mobile Fold) */}
+          <div className="flex bg-slate-50 p-1 rounded-xl mb-10 border border-slate-100">
+            <button
+              onClick={() => navigate("/auth/signup?portal=talent")}
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+                isTalent ? "bg-white text-blue-600 shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              Professional
+            </button>
+            <button
+              onClick={() => navigate("/auth/signup?portal=client")}
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+                !isTalent ? "bg-white text-blue-600 shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              Company
+            </button>
+          </div>
+
+          <div className="hidden lg:block mb-6 text-left">
+            <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-1.5">
               {isTalent ? "Apply as Talent" : "Get Started"}
             </h1>
-            <p className="text-slate-500 text-lg font-medium">
+            <p className="text-slate-500 text-base font-medium">
               {isTalent
                 ? "Create your profile to join our curated network."
                 : "Manage your talent pipeline with precision."}
             </p>
           </div>
 
-          <form onSubmit={handleSignup} className="space-y-5">
+          <form onSubmit={handleSignup} className="space-y-4">
             {isTalent ? (
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">First Name</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="firstName" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">First Name</Label>
                   <Input
                     ref={firstNameRef}
                     id="firstName"
@@ -297,12 +333,12 @@ const Signup = () => {
                     value={formData.firstName}
                     onChange={handleChange}
                     required
-                    className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-slate-50/30 text-slate-900"
+                    className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                   />
-                  {errors.firstName && <p className="text-xs text-red-600 font-bold">{errors.firstName}</p>}
+                  {errors.firstName && <p className="text-xs text-red-500 font-medium">{errors.firstName}</p>}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">Last Name</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="lastName" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">Last Name</Label>
                   <Input
                     id="lastName"
                     name="lastName"
@@ -311,15 +347,15 @@ const Signup = () => {
                     value={formData.lastName}
                     onChange={handleChange}
                     required
-                    className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-slate-50/30 text-slate-900"
+                    className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                   />
-                  {errors.lastName && <p className="text-xs text-red-600 font-bold">{errors.lastName}</p>}
+                  {errors.lastName && <p className="text-xs text-red-500 font-medium">{errors.lastName}</p>}
                 </div>
               </div>
             ) : (
               <>
-                <div className="space-y-2">
-                  <Label htmlFor="companyName" className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">Company Name</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="companyName" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">Company Name</Label>
                   <Input
                     ref={companyNameRef}
                     id="companyName"
@@ -329,12 +365,12 @@ const Signup = () => {
                     value={formData.companyName}
                     onChange={handleChange}
                     required
-                    className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-slate-50/30 text-slate-900"
+                    className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                   />
-                  {errors.companyName && <p className="text-xs text-red-600 font-bold">{errors.companyName}</p>}
+                  {errors.companyName && <p className="text-xs text-red-500 font-medium">{errors.companyName}</p>}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">Full Name</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="fullName" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">Full Name</Label>
                   <Input
                     id="fullName"
                     name="fullName"
@@ -343,15 +379,15 @@ const Signup = () => {
                     value={formData.fullName}
                     onChange={handleChange}
                     required
-                    className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-slate-50/30 text-slate-900"
+                    className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                   />
-                  {errors.fullName && <p className="text-xs text-red-600 font-bold">{errors.fullName}</p>}
+                  {errors.fullName && <p className="text-xs text-red-500 font-medium">{errors.fullName}</p>}
                 </div>
               </>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">{isTalent ? "Email Address" : "Work Email"}</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">{isTalent ? "Email Address" : "Work Email"}</Label>
               <Input
                 id="email"
                 name="email"
@@ -360,13 +396,13 @@ const Signup = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-slate-50/30 text-slate-900"
+                className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
               />
-              {errors.email && <p className="text-xs text-red-600 font-bold">{errors.email}</p>}
+              {errors.email && <p className="text-xs text-red-500 font-medium">{errors.email}</p>}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">Password</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -376,7 +412,7 @@ const Signup = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="h-12 pr-10 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-slate-50/30 text-slate-900"
+                  className="h-11 pr-10 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                 />
                 <button
                   type="button"
@@ -386,34 +422,24 @@ const Signup = () => {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {errors.password && <p className="text-xs text-red-600 font-bold">{errors.password}</p>}
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 px-1">Must be at least 8 characters</p>
+              {errors.password && <p className="text-xs text-red-500 font-medium">{errors.password}</p>}
             </div>
 
             <Button 
               type="submit" 
-              className="w-full h-12 bg-slate-950 hover:bg-blue-700 text-white rounded-lg font-bold transition-all duration-300 gap-2 mt-4" 
+              className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-all duration-300 gap-2 mt-2" 
               disabled={loading}
             >
-              {loading ? "Creating Account..." : "Create Account →"}
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 
-          <p className="text-center mt-10 text-sm text-slate-500 font-medium">
+          <p className="text-center mt-8 text-sm text-slate-500 font-medium">
             Already have an account?{" "}
-            <Link to={`/auth/login?portal=${portal}`} className="text-blue-600 font-bold hover:text-blue-700 underline underline-offset-4">
+            <Link to={`/auth/login?portal=${portal}`} className="text-blue-600 font-semibold hover:text-blue-700 underline underline-offset-4 decoration-1">
               Sign in
             </Link>
           </p>
-
-          <div className="mt-10 pt-8 border-t border-slate-100 flex flex-col items-center">
-             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Are you a {isTalent ? "Company" : "Professional"}?</p>
-             <Link to={`/auth/signup?portal=${isTalent ? "client" : "talent"}`}>
-                <Button variant="outline" className="rounded-full border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 transition-all font-bold text-xs">
-                  {isTalent ? "Register as Client" : "Apply as Talent"} →
-                </Button>
-             </Link>
-          </div>
         </div>
       </div>
       {/* Sticky Mobile CTA */}

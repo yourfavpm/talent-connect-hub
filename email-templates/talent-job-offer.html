@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Invitation</title>
+    <style type="text/css">
+        * { margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: #111827;
+            background-color: #ffffff;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        .header {
+            background-color: #ffffff;
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .logo {
+            height: 48px;
+            margin-bottom: 16px;
+        }
+        .content {
+            padding: 30px 25px;
+        }
+        .greeting {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        .intro {
+            font-size: 16px;
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .highlight-card {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .highlight-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #166534;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .highlight-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #059669;
+            margin-bottom: 12px;
+        }
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #bbf7d0;
+        }
+        .details-row:last-child {
+            border-bottom: none;
+        }
+        .details-label {
+            color: #6b7280;
+        }
+        .details-value {
+            color: #111827;
+            font-weight: 500;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #059669;
+            color: #ffffff;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 24px;
+            border: none;
+            cursor: pointer;
+        }
+        .cta-button:hover {
+            background-color: #047857;
+        }
+        .secondary-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 20px;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin: 32px 0;
+            height: 0;
+        }
+        .footer {
+            background-color: #f9fafb;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #9ca3af;
+            margin: 0;
+        }
+        .footer-link {
+            color: #059669;
+            text-decoration: none;
+        }
+        @media (max-width: 480px) {
+            .header {
+                padding: 20px 15px;
+            }
+            .content {
+                padding: 20px 15px;
+            }
+            .greeting {
+                font-size: 18px;
+            }
+            .intro {
+                font-size: 14px;
+            }
+            .details-row {
+                flex-direction: column;
+            }
+            .details-label,
+            .details-value {
+                display: block;
+                margin: 4px 0;
+            }
+            .cta-button {
+                display: block;
+                width: 100%;
+                text-align: center;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <img src="https://www.opslyhr.com/images/logoplain.png" alt="OPSlyHR" class="logo">
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <p class="greeting">{{CLIENT_NAME}} Has Invited You to Apply</p>
+        
+        <p class="intro">Hi {{FIRST_NAME}},</p>
+        
+        <p class="intro">{{CLIENT_NAME}} has reviewed your profile and would like to learn more about you for a specific role.</p>
+        
+        <div class="highlight-card">
+            <div class="highlight-label">Position</div>
+            <div class="highlight-value">{{JOB_TITLE}}</div>
+            
+            <div class="details-row">
+                <span class="details-label">Type:</span>
+                <span class="details-value">{{CONTRACT_TYPE}}</span>
+            </div>
+            
+            <div class="details-row">
+                <span class="details-label">Rate:</span>
+                <span class="details-value">{{RATE}}</span>
+            </div>
+            
+            <div class="details-row">
+                <span class="details-label">Location:</span>
+                <span class="details-value">{{LOCATION}}</span>
+            </div>
+            
+            <div class="details-row">
+                <span class="details-label">Duration:</span>
+                <span class="details-value">{{DURATION}}</span>
+            </div>
+        </div>
+        
+        <p class="intro"><strong>Why They Chose You:</strong> They're looking for someone with your specific expertise in operations management. Your background was a strong match.</p>
+        
+        <p class="intro"><strong>Next Steps:</strong></p>
+        <p style="font-size: 14px; color: #374151; margin: 8px 0; padding-left: 20px;">1. Review the full role details</p>
+        <p style="font-size: 14px; color: #374151; margin: 8px 0; padding-left: 20px;">2. Decide if you're interested</p>
+        <p style="font-size: 14px; color: #374151; margin: 8px 0; padding-left: 20px;">3. Submit your application</p>
+        
+        <p class="intro">This invitation is reserved for you through {{EXPIRATION_DATE}}.</p>
+        
+        <a href="{{APPLY_LINK}}" class="cta-button">View & Apply</a>
+        
+        <p class="secondary-text">Have questions? Reply to this email or contact our support team.</p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p class="footer-text">OPSlyHR | Your Opportunities Await<br>
+        <a href="mailto:support@opslyhr.com" class="footer-link">support@opslyhr.com</a><br>
+        © 2026 OPSlyHR. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

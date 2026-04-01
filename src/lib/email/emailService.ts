@@ -3,8 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 interface EmailOptions {
     to: string;
     toName?: string;
-    templateKey: string;
-    variables: Record<string, string | number | boolean>;
+    templateKey?: string;
+    variables?: Record<string, string | number | boolean>;
+    htmlTemplate?: string;
+    subject?: string;
     priority?: 'high' | 'normal';
 }
 
@@ -16,15 +18,49 @@ interface QueueEmailOptions extends EmailOptions {
  * Send email via the Supabase Edge Function (server-side).
  * This replaces the old browser-side Resend SDK approach which was
  * blocked by CORS — Resend only accepts server-side API calls.
+ * 
+ * Now supports both:
+ * - Old method: templateKey + variables (uses database templates)
+ * - New method: htmlTemplate + subject (uses branded HTML templates)
  */
+/**
+ * Request a custom verification email for a user
+ * This triggers the auth-verification edge function to generate
+ * a secure token and send the branded email.
+ */
+export const requestVerificationEmail = async (
+    userId: string,
+    email: string,
+    firstName: string,
+    portal: 'talent' | 'client' = 'talent'
+): Promise<boolean> => {
+    try {
+        const { error } = await supabase.functions.invoke('auth-verification/request', {
+            body: { userId, email, firstName, portal },
+        });
+
+        if (error) {
+            console.error('Error requesting verification email:', error);
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Unexpected error requesting verification email:', error);
+        return false;
+    }
+};
+
 export const queueEmail = async (options: QueueEmailOptions): Promise<string> => {
     try {
         const { data, error } = await supabase.functions.invoke('send-email', {
             body: {
                 templateKey: options.templateKey,
+                htmlTemplate: options.htmlTemplate,
+                subject: options.subject,
                 to: options.to,
                 toName: options.toName,
-                variables: options.variables,
+                variables: options.variables || {},
                 priority: options.priority,
             },
         });
@@ -39,7 +75,7 @@ export const queueEmail = async (options: QueueEmailOptions): Promise<string> =>
             return '';
         }
 
-        console.log(`Email queued: ${options.templateKey} to ${options.to}`);
+        console.log(`Email queued: ${options.htmlTemplate ? 'HTML template' : options.templateKey} to ${options.to}`);
         return data?.messageId || '';
     } catch (error: unknown) {
         console.error('Error sending email:', error);

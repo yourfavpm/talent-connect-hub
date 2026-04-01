@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown, ArrowRight, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Zone, getZoneUrl } from "@/utils/subdomain";
 
 const WebsiteNavbar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -161,24 +162,24 @@ const WebsiteNavbar = () => {
 
                 {/* Right: CTAs */}
                 <div className="hidden lg:flex items-center gap-6">
-                    <Link 
-                        to="/auth/signup?portal=talent#form"
+                    <a 
+                        href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=talent#form")}
                         className="text-[13px] font-semibold text-slate-500 hover:text-slate-900 transition-colors"
                     >
                         Apply as Talent
-                    </Link>
-                    <Link 
-                        to="/auth/login?portal=client#form"
+                    </a>
+                    <a 
+                        href={getZoneUrl(Zone.AUTH, "/auth/login?portal=client#form")}
                         className="px-5 py-2.5 border border-slate-200 text-slate-900 text-[13px] font-semibold rounded-lg hover:border-slate-900 transition-all font-inter"
                     >
                         Login
-                    </Link>
-                    <Link 
-                        to="/auth/signup?portal=client#form"
+                    </a>
+                    <a 
+                        href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=client#form")}
                         className="px-6 py-2.5 bg-slate-900 text-white text-[13px] font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-sm font-inter"
                     >
                         Request Talent
-                    </Link>
+                    </a>
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -344,24 +345,24 @@ const WebsiteNavbar = () => {
                             {/* Sticky Action Section */}
                             <div className="mt-auto px-6 py-8 border-t border-slate-100 bg-white">
                                 <div className="space-y-4">
-                                    <Link 
-                                        to="/auth/signup?portal=client#form"
+                                    <a 
+                                        href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=client#form")}
                                         className="flex items-center justify-center w-full py-3.5 bg-slate-900 text-white font-bold rounded-xl text-sm shadow-sm hover:bg-blue-700 transition-all"
                                     >
                                         Request Talent →
-                                    </Link>
-                                    <Link 
-                                        to="/auth/signup?portal=talent#form"
+                                    </a>
+                                    <a 
+                                        href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=talent#form")}
                                         className="flex items-center justify-center w-full py-3.5 border border-slate-200 text-slate-900 font-bold rounded-xl text-sm hover:border-slate-900 transition-all"
                                     >
                                         Apply as Talent →
-                                    </Link>
-                                    <Link 
-                                        to="/auth/login?portal=client#form"
+                                    </a>
+                                    <a 
+                                        href={getZoneUrl(Zone.AUTH, "/auth/login?portal=client#form")}
                                         className="block w-full py-2 text-slate-500 font-bold text-center text-[13px] hover:text-slate-900 transition-colors"
                                     >
                                         Login
-                                    </Link>
+                                    </a>
                                 </div>
                                 <div className="mt-6 flex flex-col items-center gap-1">
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
