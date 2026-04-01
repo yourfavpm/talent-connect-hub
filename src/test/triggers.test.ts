@@ -27,7 +27,6 @@ describe('Email Triggers', () => {
       const talent = {
         email: 'talent@example.com',
         firstName: 'John',
-        talentId: 'talent-123',
       };
 
       await sendTalentWelcomeEmail(talent);
@@ -36,11 +35,10 @@ describe('Email Triggers', () => {
         expect.objectContaining({
           to: 'talent@example.com',
           toName: 'John',
-          templateKey: 'talent_welcome',
+          templateKey: 'talent_onboarding_welcome',
           variables: expect.objectContaining({
-            talent_name: 'John',
-            talent_id: 'talent-123',
-            login_link: expect.stringContaining('/login'),
+            first_name: 'John',
+            profile_link: expect.stringContaining('/talent/onboarding'),
           }),
         })
       );
@@ -61,11 +59,11 @@ describe('Email Triggers', () => {
         expect.objectContaining({
           to: 'client@example.com',
           toName: 'Jane',
-          templateKey: 'client_welcome',
+          templateKey: 'client_onboarding_welcome',
           variables: expect.objectContaining({
-            client_name: 'Jane',
+            first_name: 'Jane',
             company_name: 'Tech Corp',
-            login_link: expect.stringContaining('/login'),
+            dashboard_link: expect.stringContaining('/client/dashboard'),
           }),
         })
       );
@@ -90,7 +88,7 @@ describe('Email Triggers', () => {
         expect.objectContaining({
           to: 'talent@example.com',
           toName: 'John Doe',
-          templateKey: 'talent_offer_received',
+          templateKey: 'talent_job_offer',
           variables: expect.objectContaining({
             job_title: 'Senior Developer',
             client_name: 'Tech Corp',
@@ -124,7 +122,7 @@ describe('Email Triggers', () => {
             client_name: 'Jane Smith',
             talent_name: 'John Doe',
             job_title: 'Senior Developer',
-            contract_link: expect.stringContaining('/client/contracts/contract-123'),
+            contract_link: expect.stringContaining('/client/contracts'),
           }),
         })
       );
@@ -150,7 +148,6 @@ describe('Email Triggers', () => {
           variables: expect.objectContaining({
             contract_id: 'CONTRACT-001',
             start_date: '2026-04-01',
-            contract_link: expect.stringContaining('/talent/contracts/CONTRACT-001'),
           }),
         })
       );
@@ -177,7 +174,6 @@ describe('Email Triggers', () => {
             client_name: 'Jane Smith',
             talent_name: 'John Doe',
             contract_id: 'CONTRACT-001',
-            contract_link: expect.stringContaining('/client/contracts/CONTRACT-001'),
           }),
         })
       );

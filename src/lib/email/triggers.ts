@@ -427,15 +427,18 @@ export const sendClientContractAcceptedEmail = async (client: {
  * Send contract fully signed notification to talent
  */
 export const sendTalentContractSignedEmail = async (talent: {
-    email: string;
-    firstName: string;
+    talentEmail: string;
+    talentName: string;
     contractId: string;
+    startDate?: string;
 }) => {
     await queueEmail({
-        to: talent.email,
+        to: talent.talentEmail,
+        toName: talent.talentName,
         templateKey: 'talent_contract_signed',
         variables: {
             contract_id: talent.contractId,
+            start_date: talent.startDate || '',
         },
     });
 };
@@ -722,6 +725,30 @@ export const sendClientContractSignedEmail = async (contract: {
             client_name: contract.clientName,
             talent_name: contract.talentName,
             contract_id: contract.contractId,
+        },
+    });
+};
+
+/**
+ * Send invoice generated email to client
+ */
+export const sendClientInvoiceGeneratedEmail = async (invoice: {
+    clientEmail: string;
+    clientName: string;
+    invoiceId: string;
+    amount: string;
+    dueDate: string;
+}) => {
+    await queueEmail({
+        to: invoice.clientEmail,
+        toName: invoice.clientName,
+        templateKey: 'client_invoice_generated',
+        variables: {
+            client_name: invoice.clientName,
+            invoice_id: invoice.invoiceId,
+            amount: invoice.amount,
+            due_date: invoice.dueDate,
+            invoice_link: `${APP_URL}/client/invoices/${invoice.invoiceId}`,
         },
     });
 };
