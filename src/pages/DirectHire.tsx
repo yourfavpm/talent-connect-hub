@@ -28,7 +28,7 @@ const DirectHire = () => {
                 OPSlyHR connects you with rigorously vetted product and operations leaders for permanent internal placement — backed by structured screening and replacement guarantees.
               </p>
               
-              <div className="flex flex-col sm:flex-row items-center gap-8">
+              <div className="flex flex-col sm:flex-row items-start justify-start gap-8">
                 <Button 
                     size="lg" 
                     variant="outline"

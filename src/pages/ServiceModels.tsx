@@ -66,7 +66,7 @@ const ServiceModels = () => {
                             From permanent leadership placements to managed trial engagements and milestone-based projects — each model aligns risk, cost, and control to your stage of growth.
                         </p>
                         
-                        <div className="flex flex-col sm:flex-row items-center justify-start gap-8 mb-12 w-full sm:w-auto">
+                        <div className="flex flex-col sm:flex-row items-start justify-start gap-8 mb-12 w-full sm:w-auto">
                             <Button 
                                 size="lg" 
                                 variant="outline"
@@ -85,7 +85,7 @@ const ServiceModels = () => {
                         </div>
 
                         {/* Financial Clarity Row */}
-                        <div className="flex flex-wrap items-center justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-100 w-full">
+                        <div className="flex flex-wrap items-start justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-100 w-full">
                             {[
                                 { label: "Direct Hire", value: "15%" },
                                 { label: "Trial", value: "20%" },

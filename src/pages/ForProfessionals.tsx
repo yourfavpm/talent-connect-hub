@@ -21,7 +21,7 @@ const ForProfessionals = () => {
                         <p className="text-base md:text-xl text-slate-600 mb-10 md:mb-12 leading-relaxed max-w-xl font-medium">
                             Work with ambitious companies through structured, vetted engagements — with contracts, compliance, and payments handled centrally.
                         </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-start gap-8 w-full sm:w-auto">
+                        <div className="flex flex-col sm:flex-row items-start justify-start gap-8 w-full sm:w-auto">
                             <Button 
                                 size="lg" 
                                 variant="outline"

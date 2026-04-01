@@ -17,7 +17,7 @@ const VettingProcess = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6 }}
-                            className="max-w-4xl"
+                            className="max-w-4xl flex flex-col items-start text-left"
                         >
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
                                 Vetting Standard
@@ -29,7 +29,7 @@ const VettingProcess = () => {
                                 Every professional admitted into the OPSlyHR network undergoes a multi-stage assessment designed to evaluate execution depth, operational judgment, and long-term impact.
                             </p>
                             
-                            <div className="flex flex-col sm:flex-row items-center gap-8">
+                            <div className="flex flex-col sm:flex-row items-start justify-start gap-8">
                                 <Button 
                                     size="lg" 
                                     variant="outline"

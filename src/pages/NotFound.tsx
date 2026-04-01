@@ -26,6 +26,7 @@ const NotFound = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
+                        className="flex flex-col items-start"
                     >
                         {/* Visual Element: Minimal Network Diagram */}
                         <div className="mb-12 flex justify-start">

@@ -42,7 +42,7 @@ const ForCompanies = () => {
                         <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium">
                             Access rigorously vetted operations professionals — matched, contracted, and managed through a structured platform designed for scale.
                         </p>
-                        <div className="flex flex-col sm:flex-row justify-start gap-4 mb-12 w-full">
+                        <div className="flex flex-col sm:flex-row items-start justify-start gap-4 mb-12 w-full">
                             <Button size="lg" className="h-14 px-8 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-none w-full sm:w-auto" asChild>
                                 <Link to="/book-consultation">Book an Operations Consultation</Link>
                             </Button>
@@ -52,7 +52,7 @@ const ForCompanies = () => {
                         </div>
                         
                         {/* System Status Indicators */}
-                        <div className="flex flex-col sm:flex-row items-center justify-start gap-y-4 sm:gap-x-8 pt-8 border-t border-slate-200/60 w-full mb-8 lg:mb-0">
+                        <div className="flex flex-col sm:flex-row items-start justify-start gap-y-4 sm:gap-x-8 pt-8 border-t border-slate-200/60 w-full mb-8 lg:mb-0">
                             {[
                                 { label: "Vetting Completed", icon: UserCheck },
                                 { label: "Contract Model Selected", icon: Shield },

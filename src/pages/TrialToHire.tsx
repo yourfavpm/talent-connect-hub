@@ -16,7 +16,7 @@ const TrialToHire = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6 }}
-                            className="max-w-4xl"
+                            className="max-w-4xl flex flex-col items-start"
                         >
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
                                 Flexible Engagement
@@ -28,7 +28,7 @@ const TrialToHire = () => {
                                 Launch under a managed engagement structure. Convert to full-time when performance is proven.
                             </p>
                             
-                            <div className="flex flex-col sm:flex-row items-center gap-8">
+                            <div className="flex flex-col sm:flex-row items-start justify-start gap-8">
                                 <Button 
                                     size="lg" 
                                     className="h-14 px-10 text-base rounded-xl bg-slate-900 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-sm" 

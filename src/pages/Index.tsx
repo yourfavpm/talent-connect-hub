@@ -87,7 +87,7 @@ const Index = () => {
         
         <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
           {/* Left Side: Content & Trust Indicators */}
-          <div className="animate-slide-up flex flex-col items-start text-left">
+          <div className="animate-slide-up flex flex-col items-start text-left w-full">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
               Hire Vetted Remote Operations Experts — Built for Global Teams
             </h1>
@@ -96,14 +96,14 @@ const Index = () => {
               We match you with pre-screened professionals ready to handle operations, support, project work, and team management — no recruitment burden.
             </p>
 
-            <div className="flex flex-col sm:flex-row justify-start gap-4 mb-14 w-full">
+            <div className="flex flex-col sm:flex-row items-start justify-start gap-4 mb-14 w-full">
               <Link to="/auth/login" className="w-full sm:w-auto">
                 <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/10 transition-all font-semibold w-full">
                   Get Matched With Talent
                 </Button>
               </Link>
               <Link to="/book-consultation" className="w-full sm:w-auto">
-                <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-700 hover:bg-slate-100/80 rounded-full font-semibold flex items-center justify-start gap-2 w-full">
+                <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-700 hover:bg-slate-100/80 rounded-full font-semibold flex items-center justify-start gap-2 w-full sm:w-auto">
                   Book a Strategy Call <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
