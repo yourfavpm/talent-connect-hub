@@ -148,7 +148,7 @@ const TalentSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
           key={item.label}
           to={getInternalPath(item.href)}
           className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-md transition-colors duration-150 relative group outline-none",
+            "flex items-center gap-2.5 px-2.5 py-1.5 rounded-md transition-colors duration-150 relative group outline-none",
             isActive
               ? "bg-[#EFF6FF] text-[#0f2147] font-medium"
               : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
@@ -231,31 +231,7 @@ const TalentSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
 
         {/* Footer actions */}
         <div className="mt-auto px-3 pb-4">
-          <div className="border-t border-gray-200 pt-4 mb-2 space-y-2">
-            {!isCollapsed ? (
-              <div className="px-3 py-2 bg-gray-50 rounded-lg border border-gray-100 mb-4 animate-fade-in">
-                <p className="text-[10px] uppercase font-semibold text-gray-500 tracking-wider mb-1">Talent ID</p>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-mono text-gray-700 truncate" title={talentInfo?.talent_id || user?.id}>{talentInfo?.talent_id || user?.id?.substring(0, 12) + "..."}</p>
-                  <button onClick={copyId} className="text-gray-400 hover:text-gray-900 p-1 rounded-md hover:bg-gray-200 transition-colors">
-                    {copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button onClick={copyId} className="w-full flex justify-center p-2 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors">
-                      {copied ? <Check className="w-4.5 h-4.5 text-green-600" /> : <Copy className="w-4.5 h-4.5" />}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="bg-gray-900 text-white text-xs border-none ml-2">
-                    Copy Talent ID
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
+          <div className="border-t border-gray-200 pt-4 mb-2 space-y-1">
 
             {isCollapsed ? (
                <TooltipProvider delayDuration={0}>

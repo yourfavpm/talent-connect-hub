@@ -154,41 +154,41 @@ const TalentSettings = () => {
   // ── Layout Components ────────────────────────────────────────────────────────
 
   const SectionHeader = ({ title, description }: { title: string; description: string }) => (
-    <div className="mb-6 md:mb-10 pb-6 border-b border-slate-100">
-      <h2 className="text-[17px] md:text-[18px] font-bold text-slate-900 tracking-tight leading-none mb-2">{title}</h2>
-      <p className="text-[13px] md:text-[14px] text-slate-500 leading-relaxed max-w-2xl">{description}</p>
+    <div className="mb-6 md:mb-8 pb-5 border-b border-slate-50">
+      <h2 className="text-[16px] md:text-[17px] font-semibold text-slate-900 tracking-tight leading-none mb-1.5">{title}</h2>
+      <p className="text-[12px] md:text-[13px] text-slate-400 leading-relaxed max-w-2xl font-light">{description}</p>
     </div>
   );
 
 
   const FormSectionTitle = ({ title }: { title: string }) => (
-    <div className="pt-10 pb-6">
-      <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">{title}</h3>
+    <div className="pt-8 pb-4">
+      <h3 className="text-[10px] font-medium text-slate-400 uppercase tracking-widest pl-0.5">{title}</h3>
     </div>
   );
 
   const SaveBar = ({ onSave }: { onSave: () => void }) => (
-    <div className="fixed bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 w-full max-w-[720px] px-4 md:px-6 z-50">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-200/50 p-2 md:p-4 flex items-center justify-between gap-2 md:gap-6 overflow-hidden">
-        <div className="flex items-center gap-2 px-1 md:px-2 min-w-0">
-          <div className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-blue-500 animate-pulse shrink-0" />
-          <span className="text-[9px] md:text-[12px] font-bold text-slate-600 uppercase tracking-widest truncate">Unsaved</span>
+    <div className="fixed bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 w-full max-w-[640px] px-4 md:px-6 z-50">
+      <div className="bg-white border border-slate-200/60 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-2 md:p-3 flex items-center justify-between gap-2 md:gap-4 overflow-hidden backdrop-blur-md bg-white/90">
+        <div className="flex items-center gap-2 px-2 min-w-0">
+          <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse shrink-0" />
+          <span className="text-[10px] font-medium text-slate-500 uppercase tracking-widest truncate">Unsaved Changes</span>
         </div>
-        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
            <Button 
             variant="ghost" 
             onClick={() => window.location.reload()}
-            className="h-8 md:h-10 px-3 md:px-6 text-[9px] md:text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl"
+            className="h-8 md:h-9 px-3 md:px-5 text-[10px] font-medium uppercase tracking-wider text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all"
            >
-             Cancel
+             Discard
            </Button>
            <Button 
             onClick={onSave}
             disabled={loading}
-            className="h-8 md:h-10 px-4 md:px-8 bg-slate-900 hover:bg-slate-800 text-white text-[9px] md:text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-slate-900/10 transition-all rounded-xl"
+            className="h-8 md:h-9 px-4 md:px-7 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold uppercase tracking-wider shadow-sm transition-all rounded-xl"
            >
              {loading ? <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> : <Save className="h-3 w-3 mr-1.5 md:mr-2" />}
-             Save
+             Save Changes
            </Button>
         </div>
       </div>
@@ -204,8 +204,8 @@ const TalentSettings = () => {
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     placeholder?: string;
   }) => (
-    <div className="space-y-2.5">
-      <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-0.5">
+    <div className="space-y-1.5">
+      <Label className="text-[10px] font-medium text-slate-400 uppercase tracking-widest px-0.5">
         {label}
       </Label>
       <div className="relative">
@@ -216,14 +216,14 @@ const TalentSettings = () => {
           readOnly={readOnly}
           placeholder={placeholder}
           className={clsx(
-            "h-12 border-slate-200 rounded-lg text-[14px] focus:ring-0 focus:border-slate-900 transition-all placeholder:text-slate-300",
+            "h-10 border-slate-200 rounded-lg text-[13px] font-light focus:ring-0 focus:border-slate-800 transition-all placeholder:text-slate-200",
             readOnly && "bg-slate-50/50 border-slate-100 text-slate-400 cursor-not-allowed pr-12"
           )}
         />
         {readOnly && (
           <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-            <span className="text-[9px] font-bold text-slate-300 uppercase tracking-tight">Read-only</span>
-            <Lock className="h-3.5 w-3.5 text-slate-300" />
+            <span className="text-[9px] font-medium text-slate-300 uppercase tracking-tight">System</span>
+            <Lock className="h-3 w-3 text-slate-200" />
           </div>
         )}
       </div>

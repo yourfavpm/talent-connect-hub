@@ -235,19 +235,27 @@ const TalentDashboard = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-10 animate-fade-in min-h-screen">
-      {/* ── Page Header Strip ─────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
-        <div className="space-y-1">
-          <h1 className="text-[28px] font-bold text-slate-900 tracking-tight leading-none">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fade-in font-light">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-semibold text-slate-900 tracking-tight">
             Welcome back, {talent?.first_name || "User"}
           </h1>
-          <p className="text-[15px] text-slate-500 font-medium">Here's an overview of your work on OPSlyHR.</p>
+          <p className="text-xs text-slate-400 mt-0.5 font-light">
+            You have <span className="text-slate-900 font-medium">{stats.unreadMessages || 0} unread messages</span> and <span className="text-slate-900 font-medium">{stats.openTickets || 0} active support tickets</span>.
+          </p>
         </div>
-        
-        <div className="flex items-center gap-3">
-          <Link to={getInternalPath("/talent/profile")} className="h-10 px-5 bg-white border border-slate-200 hover:border-slate-900 rounded-xl flex items-center gap-2 text-[12px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-all shadow-sm">
-            View My Profile <ArrowRight className="h-4 w-4" />
+        <div className="flex items-center gap-2">
+           <Link to={getInternalPath("/talent/profile")}>
+            <Button variant="outline" className="h-9 gap-2 text-[12px] font-medium border-slate-200">
+              <User className="h-3.5 w-3.5" /> View Profile
+            </Button>
+          </Link>
+          <Link to={getInternalPath("/talent/jobs")}>
+            <Button className="h-9 gap-2 bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-bold shadow-sm">
+              <Briefcase className="h-3.5 w-3.5" /> Browse Jobs
+            </Button>
           </Link>
         </div>
       </div>
@@ -280,42 +288,22 @@ const TalentDashboard = () => {
 
       {/* ── KPI Numeric Strip ─────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-8 bg-white border border-slate-100 rounded-[32px] space-y-4 shadow-sm group hover:border-slate-300 transition-all">
-             <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
-               <FileText className="h-5 w-5" />
+        {[
+          { label: "Active Contracts", value: stats.activeAssignments, icon: FileText, color: "blue" },
+          { label: "Pending Timesheets", value: stats.pendingTimesheets, icon: Clock, color: "indigo" },
+          { label: "Job Applications", value: stats.applications, icon: Briefcase, color: "emerald" },
+          { label: "Unread Messages", value: stats.unreadMessages, icon: MessageSquare, color: "cyan" },
+        ].map((kpi) => (
+          <div key={kpi.label} className="p-5 bg-white border border-slate-100/50 rounded-2xl space-y-3 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)] transition-all hover:border-slate-200">
+             <div className={`h-8 w-8 rounded-lg bg-${kpi.color}-50 flex items-center justify-center text-${kpi.color}-600 border border-${kpi.color}-100/50`}>
+               <kpi.icon className="h-4 w-4" />
              </div>
              <div className="space-y-0.5">
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Contracts</p>
-               <p className="text-[32px] font-black text-slate-900 leading-none">{stats.activeAssignments}</p>
+               <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest pl-0.5">{kpi.label}</p>
+               <p className="text-xl font-semibold text-slate-900 leading-none">{kpi.value || 0}</p>
              </div>
           </div>
-          <div className="p-8 bg-white border border-slate-100 rounded-[32px] space-y-4 shadow-sm group hover:border-slate-300 transition-all">
-             <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
-               <Video className="h-5 w-5" />
-             </div>
-             <div className="space-y-0.5">
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live Interviews</p>
-               <p className="text-[32px] font-black text-slate-900 leading-none">0</p>
-             </div>
-          </div>
-          <div className="p-8 bg-white border border-slate-100 rounded-[32px] space-y-4 shadow-sm group hover:border-slate-300 transition-all">
-             <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
-               <Clock className="h-5 w-5" />
-             </div>
-             <div className="space-y-0.5">
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Timesheet Tasks</p>
-               <p className="text-[32px] font-black text-slate-900 leading-none">{stats.pendingTimesheets}</p>
-             </div>
-          </div>
-          <div className="p-8 bg-white border border-slate-100 rounded-[32px] space-y-4 shadow-sm group hover:border-slate-300 transition-all">
-             <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100">
-               <MessageSquare className="h-5 w-5" />
-             </div>
-             <div className="space-y-0.5">
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Unread Messages</p>
-               <p className="text-[32px] font-black text-slate-900 leading-none">{stats.unreadMessages}</p>
-             </div>
-          </div>
+        ))}
       </div>
 
 

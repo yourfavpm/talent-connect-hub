@@ -262,19 +262,19 @@ const OnboardingV2 = () => {
         <div className="flex min-h-screen">
           {/* ── Sidebar stepper ──────────────────────────────────────── */}
           <aside className={clsx(
-            "w-72 bg-white border-r border-slate-100 p-6 space-y-2 shrink-0",
+            "w-64 bg-white border-r border-slate-100 p-5 space-y-1.5 shrink-0",
             "fixed inset-y-0 left-0 z-40 lg:relative lg:z-auto",
             mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
             "transition-transform duration-200"
           )}>
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-slate-900">Onboarding</h2>
+            <div className="mb-5 px-1">
+              <h2 className="text-base font-semibold text-slate-800 tracking-tight">Onboarding</h2>
               <div className="mt-3">
-                <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1 font-medium uppercase tracking-wider">
                   <span>Progress</span>
-                  <span className="font-bold">{progressPercent}%</span>
+                  <span>{progressPercent}%</span>
                 </div>
-                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                   <div className="h-full bg-slate-900 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
                 </div>
               </div>
@@ -288,20 +288,20 @@ const OnboardingV2 = () => {
                   key={s.id}
                   onClick={() => goToStep(s.id)}
                   className={clsx(
-                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-medium transition-all",
+                    "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left text-[13px] transition-all",
                     isActive
-                      ? "bg-slate-900 text-white shadow-lg"
-                      : "text-slate-600 hover:bg-slate-50"
+                      ? "bg-slate-900 text-white shadow-md font-medium"
+                      : "text-slate-500 hover:bg-slate-50 font-light"
                   )}
                 >
                   <div className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center text-xs font-black shrink-0",
+                    "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 transitions-colors",
                     isActive ? "bg-white text-slate-900"
-                      : status === "approved" ? "bg-emerald-100 text-emerald-700"
-                      : ["in_progress", "submitted", "resubmitted"].includes(status) ? "bg-blue-100 text-blue-700"
-                      : "bg-slate-100 text-slate-400"
+                      : status === "approved" ? "bg-emerald-100 text-emerald-600"
+                      : ["in_progress", "submitted", "resubmitted"].includes(status) ? "bg-blue-100 text-blue-600"
+                      : "bg-slate-50 text-slate-300 border border-slate-100"
                   )}>
-                    {status === "approved" ? <CheckCircle2 className="h-4 w-4" /> : s.id}
+                    {status === "approved" ? <CheckCircle2 className="h-3.5 w-3.5" /> : s.id}
                   </div>
                   <span className="truncate">{s.title}</span>
                 </button>
@@ -310,52 +310,54 @@ const OnboardingV2 = () => {
           </aside>
 
           {/* ── Main content ─────────────────────────────────────────── */}
-          <main className="flex-1 p-6 lg:p-12 max-w-3xl mx-auto w-full">
-            <Card className="bg-white shadow-sm border-slate-100">
-              <CardContent className="p-8">
-                <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Step {currentStep} of {STEPS.length}</p>
-                    <h1 className="text-2xl font-bold text-slate-900 mt-1">{step?.title}</h1>
+          <main className="flex-1 p-4 lg:p-12 max-w-3xl mx-auto w-full">
+            <Card className="bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.02)] border-slate-100/50 rounded-2xl overflow-hidden">
+              <CardContent className="p-5 md:p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="min-w-0 pr-4">
+                    <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest pl-0.5">Step {currentStep} of {STEPS.length}</p>
+                    <h1 className="text-xl font-semibold text-slate-900 mt-0.5 truncate">{step?.title}</h1>
                   </div>
                   {saving && (
-                    <Badge variant="outline" className="gap-1.5 text-blue-600 border-blue-200">
-                      <Cloud className="h-3 w-3 animate-pulse" /> Saving...
-                    </Badge>
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-blue-50 text-blue-500 text-[10px] font-medium animate-fade-in border border-blue-100/50">
+                      <Cloud className="h-3 w-3 animate-pulse" /> Saving
+                    </div>
                   )}
                 </div>
 
-                {renderStepContent()}
+                <div className="space-y-6">
+                  {renderStepContent()}
+                </div>
 
                 {/* ── Footer buttons ───────────────────────────────────── */}
-                <div className="flex items-center justify-between mt-10 pt-6 border-t border-slate-100">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-8 pt-6 border-t border-slate-50 gap-3">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     onClick={prevStep}
                     disabled={currentStep <= 1 || saving}
-                    className="gap-2"
+                    className="h-9 gap-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-50 text-[12px] font-medium px-4"
                   >
-                    <ChevronLeft className="h-4 w-4" /> Back
+                    <ChevronLeft className="h-3.5 w-3.5" /> Back
                   </Button>
 
-                    <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Button
                       variant="outline"
                       onClick={saveCurrentStep}
                       disabled={saving}
-                      className="gap-2"
+                      className="h-9 gap-1.5 border-slate-200 text-slate-600 hover:bg-slate-50 text-[12px] font-medium px-4"
                     >
-                      <Save className="h-4 w-4" /> Save
+                      <Save className="h-3.5 w-3.5" /> Save Progress
                     </Button>
 
                     {currentStep >= 3 && (
                       <Button
                         onClick={handleSubmit}
                         disabled={submitting || saving}
-                        className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg"
+                        className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold px-4 shadow-sm"
                       >
-                        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                        Submit for Review
+                        {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                        Submit
                       </Button>
                     )}
 
@@ -363,9 +365,9 @@ const OnboardingV2 = () => {
                       <Button
                         onClick={nextStep}
                         disabled={saving}
-                        className="gap-2 bg-slate-900 hover:bg-slate-700 text-white font-bold"
+                        className="h-9 gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-bold px-4 shadow-sm"
                       >
-                        Save & Continue <ChevronRight className="h-4 w-4" />
+                        Continue <ChevronRight className="h-3.5 w-3.5" />
                       </Button>
                     )}
                   </div>

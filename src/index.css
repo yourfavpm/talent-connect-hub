@@ -125,11 +125,11 @@
   }
 
   html {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased font-light;
     font-family:
       "Inter",
       system-ui,
@@ -143,35 +143,35 @@
 
   /* Typography Hierarchy - Design Bible */
   h1 {
-    @apply text-3xl font-bold tracking-tight;
-    /* Reduced for app density */
-  }
-
-  h2 {
     @apply text-2xl font-semibold tracking-tight;
     /* Reduced for app density */
   }
 
+  h2 {
+    @apply text-xl font-medium tracking-tight;
+    /* Reduced for app density */
+  }
+
   h3 {
-    @apply text-xl font-semibold tracking-tight;
+    @apply text-lg font-medium tracking-tight;
     /* Reduced for app density */
   }
 
   h4,
   h5,
   h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-medium tracking-tight;
   }
 
   p {
-    @apply leading-relaxed;
+    @apply leading-relaxed font-light;
     /* Line height 1.6-1.75 */
   }
 
   /* Reduce opacity of placeholders globally */
   input::placeholder,
   textarea::placeholder {
-    opacity: 0.5;
+    opacity: 0.4;
     /* Reduced opacity */
     color: var(--muted-foreground);
   }
@@ -180,7 +180,7 @@
 @layer components {
   /* Card styling - Soft shadow, no heavy borders */
   .opslyhr-card {
-    @apply bg-card rounded-xl border border-border/50 shadow-sm transition-shadow duration-200;
+    @apply bg-card rounded-xl border border-border/30 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.02)] transition-shadow duration-200;
   }
 
   .opslyhr-card:hover {
