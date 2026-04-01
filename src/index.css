@@ -125,7 +125,7 @@
   }
 
   html {
-    font-size: 13px;
+    font-size: 11px;
   }
 
   body {
@@ -139,33 +139,30 @@
     /* Inter stylistic alternates */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
   }
 
-  /* Typography Hierarchy - Design Bible */
+  /* Typography Hierarchy - Drastically Reduced for Minimalism */
   h1 {
-    @apply text-2xl font-semibold tracking-tight;
-    /* Reduced for app density */
+    @apply text-lg font-semibold tracking-tight;
   }
 
   h2 {
-    @apply text-xl font-medium tracking-tight;
-    /* Reduced for app density */
+    @apply text-base font-medium tracking-tight;
   }
 
   h3 {
-    @apply text-lg font-medium tracking-tight;
-    /* Reduced for app density */
+    @apply text-sm font-medium tracking-tight;
   }
 
   h4,
   h5,
   h6 {
-    @apply font-medium tracking-tight;
+    @apply text-xs font-semibold tracking-tight uppercase;
   }
 
   p {
-    @apply leading-relaxed font-light;
-    /* Line height 1.6-1.75 */
+    @apply leading-relaxed font-light text-slate-500;
   }
 
   /* Reduce opacity of placeholders globally */

@@ -89,20 +89,20 @@ const ClientSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
           key={item.name}
           to={getInternalPath(item.href)}
           className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-md transition-colors duration-150 relative group outline-none",
+            "flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-colors duration-150 relative group outline-none",
             isActive
               ? "bg-[#EFF6FF] text-[#0f2147] font-medium"
-              : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+              : "text-gray-400 hover:bg-gray-50 hover:text-gray-900"
           )}
         >
-          <div className={cn("p-1.5 rounded-md transition-colors", isActive ? item.bgColor : "bg-transparent group-hover:bg-gray-200/50")}>
-            <item.icon className={cn("h-4 w-4 flex-shrink-0 stroke-[2.5px]", isActive ? item.iconColor : "text-gray-400 group-hover:text-gray-600")} />
+          <div className={cn("p-1 rounded-md transition-colors", isActive ? item.bgColor : "bg-transparent group-hover:bg-gray-100")}>
+            <item.icon className={cn("h-3.5 w-3.5 flex-shrink-0 stroke-[2.5px]", isActive ? item.iconColor : "text-gray-300 group-hover:text-gray-500")} />
           </div>
           {!isCollapsed && (
-             <div className="flex-1 flex items-center justify-between text-[13px] tracking-wide relative top-[1px]">
+             <div className="flex-1 flex items-center justify-between text-[11px] tracking-tight relative top-[0.5px]">
                <span>{item.name}</span>
                {badgeCount > 0 && (
-                 <span className="bg-gray-200 text-gray-700 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center justify-center min-w-[20px]">
+                 <span className="bg-gray-100 text-gray-500 text-[9px] font-semibold px-1.5 py-0.5 rounded-full inline-flex items-center justify-center min-w-[18px]">
                    {badgeCount}
                  </span>
                )}

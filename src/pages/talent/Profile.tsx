@@ -302,20 +302,20 @@ const TalentProfile = () => {
 
   const getVettingBadge = () => {
     const statusMap: Record<string, { label: string, color: string, icon: any }> = {
-      DRAFT: { label: "Draft", color: "bg-slate-100 text-slate-500 border-slate-200", icon: Pencil },
-      SUBMITTED: { label: "Pending Review", color: "bg-blue-50 text-blue-700 border-blue-100", icon: Clock },
-      VETTING_IN_PROGRESS: { label: "Vetting in Progress", color: "bg-indigo-50 text-indigo-700 border-indigo-100", icon: Shield },
-      CHANGES_REQUESTED: { label: "Action Required", color: "bg-amber-50 text-amber-700 border-amber-100", icon: AlertCircle },
-      RESUBMITTED: { label: "Resubmitted", color: "bg-blue-50 text-blue-700 border-blue-100", icon: Clock },
-      VETTED: { label: "Vetted & Approved", color: "bg-emerald-50 text-emerald-700 border-emerald-100", icon: CheckCircle2 },
-      REJECTED: { label: "Application Rejected", color: "bg-red-50 text-red-700 border-red-100", icon: X },
-      SUSPENDED: { label: "Account Suspended", color: "bg-slate-900 text-white border-slate-800", icon: Lock },
+      DRAFT: { label: "Draft", color: "bg-slate-50 text-slate-400 border-slate-100", icon: Pencil },
+      SUBMITTED: { label: "Reviewing", color: "bg-blue-50/50 text-blue-500 border-blue-100/50", icon: Clock },
+      VETTING_IN_PROGRESS: { label: "Vetting", color: "bg-indigo-50/50 text-indigo-500 border-indigo-100/50", icon: Shield },
+      CHANGES_REQUESTED: { label: "Needs Action", color: "bg-amber-50/50 text-amber-500 border-amber-100/50", icon: AlertCircle },
+      RESUBMITTED: { label: "Resubmitted", color: "bg-blue-50/50 text-blue-500 border-blue-100/50", icon: Clock },
+      VETTED: { label: "Verified", color: "bg-emerald-50/50 text-emerald-500 border-emerald-100/50", icon: CheckCircle2 },
+      REJECTED: { label: "Rejected", color: "bg-red-50/50 text-red-500 border-red-100/50", icon: X },
+      SUSPENDED: { label: "Suspended", color: "bg-slate-900 text-white border-slate-800", icon: Lock },
     };
-    const config = statusMap[vettingStatus] || { label: vettingStatus, color: "bg-slate-100 text-slate-500", icon: Info };
+    const config = statusMap[vettingStatus] || { label: vettingStatus, color: "bg-slate-50 text-slate-400", icon: Info };
     const Icon = config.icon;
     return (
-      <Badge className={cn("px-2 py-1 gap-1.5 border font-semibold", config.color)}>
-        <Icon className="h-3 w-3" /> {config.label}
+      <Badge className={cn("px-1.5 py-0.5 gap-1 border font-medium text-[9px] uppercase tracking-wider shadow-none", config.color)}>
+        <Icon className="h-2.5 w-2.5" /> {config.label}
       </Badge>
     );
   };
@@ -323,7 +323,7 @@ const TalentProfile = () => {
   // ── Render Helpers ──────────────────────────────────────────────────────────
 
   return (
-    <div className="max-w-[1400px] mx-auto pb-20 pt-6 px-4 md:px-6 font-inter">
+    <div className="max-w-[1200px] mx-auto pb-20 pt-6 px-3 md:px-6 font-inter">
 
       {/* ── Status Banners ─────────────────────────────────────────────────── */}
       <div className="space-y-3 mb-6">
@@ -889,33 +889,33 @@ interface SectionCardProps {
 const SectionCard = ({ sectionKey, icon, collapsed, onToggle, editing, onEdit, locked, children, redesign }: SectionCardProps) => (
   <Card className={cn("border-slate-200 shadow-[0_2px_4px_rgba(0,0,0,0.01)] overflow-hidden bg-white", redesign && "rounded-xl border")}>
     <div
-      className="flex items-center justify-between px-4 md:px-8 py-4 md:py-5 cursor-pointer hover:bg-slate-50/50 transition-colors"
+      className="flex items-center justify-between px-3 md:px-8 py-3.5 md:py-5 cursor-pointer hover:bg-slate-50/50 transition-colors"
       onClick={onToggle}
     >
-      <div className="flex items-center gap-3 md:gap-4">
-        <div className="h-8 w-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+      <div className="flex items-center gap-2.5 md:gap-4">
+        <div className="h-7 w-7 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shrink-0">
            {icon}
         </div>
-        <h3 className="text-sm md:text-base font-bold text-slate-900 truncate">{SECTION_LABELS[sectionKey]}</h3>
+        <h3 className="text-[13px] md:text-base font-semibold text-slate-900 truncate">{SECTION_LABELS[sectionKey]}</h3>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         {!editing && !locked && onEdit.toString() !== "() => {}" && (
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 text-[11px] font-bold text-blue-600 hover:bg-blue-50 bg-white border border-transparent hover:border-blue-100 gap-1.5 transition-all"
+            className="h-7 text-[10px] font-bold text-blue-600 hover:bg-blue-50 bg-white border border-transparent hover:border-blue-100 gap-1.5 transition-all px-2"
             onClick={(e) => { e.stopPropagation(); onEdit(); }}
           >
-            <Pencil className="h-3 w-3" /> Edit Section
+            <Pencil className="h-2.5 w-2.5" /> Edit
           </Button>
         )}
-        <div className="h-8 w-8 flex items-center justify-center text-slate-300">
-           {collapsed ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+        <div className="h-7 w-7 flex items-center justify-center text-slate-300">
+           {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
         </div>
       </div>
     </div>
     {!collapsed && (
-      <CardContent className="px-4 md:px-8 pb-6 md:pb-8 pt-2">
+      <CardContent className="px-3 md:px-8 pb-6 md:pb-8 pt-2">
         {children}
       </CardContent>
     )}
@@ -970,13 +970,13 @@ const EmptyState = ({ icon, label, cta }: { icon: any, label: string, cta?: stri
 );
 
 const EditFooter = ({ redesign, onSave, onCancel, saving }: { redesign?: boolean, onSave: () => void; onCancel: () => void; saving: boolean }) => (
-  <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 md:pt-8 mt-6 border-t border-slate-100">
-    <Button variant="ghost" size="sm" className="h-10 w-full sm:w-auto text-xs font-bold text-slate-500 hover:bg-slate-50" onClick={onCancel}>
+  <div className="flex flex-col sm:flex-row items-center justify-end gap-2 pt-6 md:pt-8 mt-6 border-t border-slate-100">
+    <Button variant="ghost" size="sm" className="h-8 w-full sm:w-auto text-[10px] font-bold text-slate-400 hover:bg-slate-50" onClick={onCancel}>
        Discard Changes
     </Button>
-    <Button size="sm" className="h-10 w-full sm:w-auto text-xs font-bold gap-2 bg-slate-950 text-white hover:bg-slate-900 shadow-sm" onClick={onSave} disabled={saving}>
-      {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-      Save Draft Update
+    <Button size="sm" className="h-8 w-full sm:w-auto text-[10px] font-bold gap-2 bg-slate-900 text-white hover:bg-slate-800 shadow-sm" onClick={onSave} disabled={saving}>
+      {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+      Save Draft
     </Button>
   </div>
 );

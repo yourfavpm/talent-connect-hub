@@ -13,7 +13,7 @@ const WebsiteFooter = () => {
             <Link to="/" className="inline-block">
               <img src="/images/logoplain.png" alt="OPSlyHR" className="h-24 w-auto" />
             </Link>
-            <p className="text-base text-slate-500 leading-relaxed font-medium max-w-sm">
+            <p className="text-sm text-slate-400 leading-relaxed font-light max-w-sm">
               OPSlyHR connects vetted product and operations professionals across EMEA with growth-focused companies globally.
             </p>
             <div className="flex gap-4">

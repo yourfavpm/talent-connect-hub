@@ -344,30 +344,25 @@ const WebsiteNavbar = () => {
 
                             {/* Sticky Action Section */}
                             <div className="mt-auto px-6 py-8 border-t border-slate-100 bg-white">
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     <a 
                                         href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=client#form")}
-                                        className="flex items-center justify-center w-full py-3.5 bg-slate-900 text-white font-bold rounded-xl text-sm shadow-sm hover:bg-blue-700 transition-all"
+                                        className="flex items-center justify-center w-full py-3 border border-slate-900 text-slate-900 font-semibold rounded-lg text-[13px] hover:bg-slate-50 transition-all"
                                     >
-                                        Request Talent →
+                                        Request Talent
                                     </a>
                                     <a 
                                         href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=talent#form")}
-                                        className="flex items-center justify-center w-full py-3.5 border border-slate-200 text-slate-900 font-bold rounded-xl text-sm hover:border-slate-900 transition-all"
+                                        className="flex items-center justify-center w-full py-3 border border-slate-200 text-slate-500 font-semibold rounded-lg text-[13px] hover:border-slate-400 hover:text-slate-900 transition-all"
                                     >
-                                        Apply as Talent →
+                                        Apply as Talent
                                     </a>
                                     <a 
                                         href={getZoneUrl(Zone.AUTH, "/auth/login?portal=client#form")}
-                                        className="block w-full py-2 text-slate-500 font-bold text-center text-[13px] hover:text-slate-900 transition-colors"
+                                        className="block w-full py-2 text-slate-400 font-semibold text-center text-[12px] hover:text-slate-900 transition-colors uppercase tracking-widest"
                                     >
                                         Login
                                     </a>
-                                </div>
-                                <div className="mt-6 flex flex-col items-center gap-1">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
-                                        Structured engagements. Transparent pricing.
-                                    </p>
                                 </div>
                             </div>
                         </motion.div>

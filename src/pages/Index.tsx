@@ -88,17 +88,17 @@ const Index = () => {
         <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
           {/* Left Side: Content & Trust Indicators */}
           <div className="animate-slide-up flex flex-col items-start text-left w-full">
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
               Hire Vetted Remote Operations Experts — Built for Global Teams
             </h1>
 
-            <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium">
+            <p className="text-sm md:text-base text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-light">
               We match you with pre-screened professionals ready to handle operations, support, project work, and team management — no recruitment burden.
             </p>
 
             <div className="flex flex-col sm:flex-row items-start justify-start gap-4 mb-14 w-full">
               <Link to="/auth/login" className="w-full sm:w-auto">
-                <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/10 transition-all font-semibold w-full">
+                <Button size="lg" className="h-12 px-8 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/10 transition-all font-semibold w-full">
                   Get Matched With Talent
                 </Button>
               </Link>
@@ -203,8 +203,8 @@ const Index = () => {
                   </div>
                   <div className="flex-grow">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <div className="font-bold text-slate-900 text-lg">{talent.name}</div>
-                      <div className="w-2 h-2 rounded-full bg-green-500" title="Available" />
+                      <div className="font-bold text-slate-900 text-base">{talent.name}</div>
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500" title="Available" />
                     </div>
                     <div className="text-slate-500 text-sm font-semibold">{talent.role}</div>
                   </div>
@@ -277,10 +277,10 @@ const Index = () => {
         <div className="container max-w-[1200px] mx-auto">
           {/* Header */}
           <div className="mb-16 md:mb-20 animate-slide-up">
-            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-4 leading-tight tracking-tight">
+            <h2 className="text-2xl md:text-3xl font-semibold text-slate-900 mb-4 leading-tight tracking-tight">
               No Search. No Guesswork. No Hiring Headaches.
             </h2>
-            <p className="text-base md:text-lg text-slate-500 font-light max-w-2xl">
+            <p className="text-sm md:text-base text-slate-500 font-light max-w-2xl">
               We handle sourcing, vetting, compliance, and ongoing support — so you don’t have to.
             </p>
           </div>
