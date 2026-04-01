@@ -14,7 +14,7 @@ const OffshoreHiring = () => {
                     <Globe className="w-full h-full scale-[1.5] translate-x-1/4 -translate-y-1/4" />
                 </div>
 
-                <div className="container max-w-[1200px] mx-auto relative z-10">
+                <div className="container max-w-7xl mx-auto relative z-10">
                     <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
                         {/* Left Content */}
                         <motion.div

@@ -29,30 +29,30 @@ const ForCompanies = () => {
         <div className="bg-white min-h-screen text-foreground selection:bg-primary selection:text-white pb-0 overflow-hidden">
             {/* 1. PAGE HERO (REDESIGNED FOR OPERATIONS) */}
             <section className="relative pt-40 pb-16 md:pt-40 md:pb-16 px-6 bg-[#F8F9FA] font-inter overflow-hidden">
-                <div className="container max-w-[1200px] mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
+                <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
-                        className="flex flex-col items-center text-center lg:items-start lg:text-left"
+                        className="flex flex-col items-start text-left"
                     >
                         <h1 className="text-3xl md:text-5xl lg:text-[52px] font-semibold mb-6 md:mb-6 tracking-tight text-slate-900 leading-[1.2] md:leading-[1.1]">
                             Operations Talent, <span className="text-slate-900/40 block">Structured for Scale</span>
                         </h1>
-                        <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium mx-auto lg:mx-0">
+                        <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium">
                             Access rigorously vetted operations professionals — matched, contracted, and managed through a structured platform designed for scale.
                         </p>
-                        <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-12 w-full">
+                        <div className="flex flex-col sm:flex-row justify-start gap-4 mb-12 w-full">
                             <Button size="lg" className="h-14 px-8 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-none w-full sm:w-auto" asChild>
                                 <Link to="/book-consultation">Book an Operations Consultation</Link>
                             </Button>
-                            <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-600 hover:text-slate-900 rounded-full font-bold flex items-center justify-center lg:justify-start gap-2 w-full sm:w-auto" asChild>
+                            <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-600 hover:text-slate-900 rounded-full font-bold flex items-center justify-start gap-2 w-full sm:w-auto" asChild>
                                 <Link to="/service-models">View Engagement Models <ArrowRight className="w-4 h-4" /></Link>
                             </Button>
                         </div>
                         
                         {/* System Status Indicators */}
-                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-y-4 sm:gap-x-8 pt-8 border-t border-slate-200/60 w-full mb-8 lg:mb-0">
+                        <div className="flex flex-col sm:flex-row items-center justify-start gap-y-4 sm:gap-x-8 pt-8 border-t border-slate-200/60 w-full mb-8 lg:mb-0">
                             {[
                                 { label: "Vetting Completed", icon: UserCheck },
                                 { label: "Contract Model Selected", icon: Shield },

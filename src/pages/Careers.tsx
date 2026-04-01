@@ -18,7 +18,7 @@ const Careers = () => {
         <div className="bg-white font-inter text-slate-900">
             {/* 1. HERO SECTION */}
             <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6">
-                <div className="container max-w-[1200px] mx-auto text-center">
+                <div className="container max-w-7xl mx-auto">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -27,13 +27,13 @@ const Careers = () => {
                         <div className="inline-flex items-center px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
                             CAREERS AT OPSLYHR
                         </div>
-                        <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1] max-w-5xl mx-auto">
+                        <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1] max-w-5xl">
                             Help Build the Infrastructure Behind Modern Operations Teams.
                         </h1>
-                        <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-3xl mx-auto">
+                        <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-3xl">
                             OPSlyHR is building structured systems for how companies hire and manage product and operations talent globally. We're looking for thoughtful, high-ownership individuals to help us scale that vision.
                         </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                        <div className="flex flex-col sm:flex-row items-center justify-start gap-6">
                             <Button 
                                 variant="outline"
                                 className="h-14 px-8 text-base rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none shrink-0"

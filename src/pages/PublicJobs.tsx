@@ -131,11 +131,11 @@ const PublicJobs = () => {
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Hero Section */}
-                <div className="text-center mb-12">
+                <div className="text-left mb-12">
                     <h2 className="text-4xl font-bold text-gray-900 mb-4">
                         Find Your Next Opportunity
                     </h2>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                    <p className="text-xl text-gray-600 max-w-2xl">
                         Browse {jobs.length} open positions from top companies
                     </p>
                 </div>

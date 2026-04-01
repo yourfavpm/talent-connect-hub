@@ -9,8 +9,8 @@ const ForProfessionals = () => {
 
             {/* Header / Hero - Enterprise SaaS Style */}
             <section className="relative pt-40 pb-12 md:pt-40 md:pb-16 flex flex-col justify-center px-6 bg-slate-50/50 overflow-hidden">
-                <div className="container max-w-[1200px] mx-auto relative z-20 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                    <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+                <div className="container max-w-7xl mx-auto relative z-20 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                    <div className="flex flex-col items-start text-left">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
                             For Operations Professionals
                         </div>
@@ -18,10 +18,10 @@ const ForProfessionals = () => {
                             Join a Curated <br className="hidden md:block" />
                             Network of <span className="text-blue-600">High-Impact</span> Operators
                         </h1>
-                        <p className="text-base md:text-xl text-slate-600 mb-10 md:mb-12 leading-relaxed max-w-xl font-medium mx-auto lg:mx-0">
+                        <p className="text-base md:text-xl text-slate-600 mb-10 md:mb-12 leading-relaxed max-w-xl font-medium">
                             Work with ambitious companies through structured, vetted engagements — with contracts, compliance, and payments handled centrally.
                         </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 w-full sm:w-auto">
+                        <div className="flex flex-col sm:flex-row items-center justify-start gap-8 w-full sm:w-auto">
                             <Button 
                                 size="lg" 
                                 variant="outline"
@@ -33,7 +33,7 @@ const ForProfessionals = () => {
                             
                             <Link 
                                 to="#"
-                                className="inline-flex items-center text-slate-900 font-semibold hover:text-blue-600 transition-colors justify-center lg:justify-start"
+                                className="inline-flex items-center text-slate-900 font-semibold hover:text-blue-600 transition-colors justify-start"
                             >
                                 View Open Roles <ArrowRight className="ml-2 h-4 w-4" />
                             </Link>

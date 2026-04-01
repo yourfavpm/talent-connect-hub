@@ -48,12 +48,12 @@ const ServiceModels = () => {
 
             {/* 1. HERO (REDESIGNED ENTERPRISE SaaS STYLE) */}
             <section className="relative pt-40 pb-16 md:pt-40 md:pb-24 px-6 bg-white border-b border-slate-100 font-inter overflow-hidden">
-                <div className="container max-w-[1200px] mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
+                <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
-                        className="flex flex-col items-center text-center lg:items-start lg:text-left"
+                        className="flex flex-col items-start text-left"
                     >
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
                             Engagement Structure
@@ -62,11 +62,11 @@ const ServiceModels = () => {
                             Structured Engagement <br className="hidden md:block" />
                             Models. <span className="text-slate-900/40">Clear Tradeoffs.</span>
                         </h1>
-                        <p className="text-base md:text-lg text-slate-600 mb-10 md:mb-12 leading-relaxed max-w-xl font-medium mx-auto lg:mx-0">
+                        <p className="text-base md:text-lg text-slate-600 mb-10 md:mb-12 leading-relaxed max-w-xl font-medium">
                             From permanent leadership placements to managed trial engagements and milestone-based projects — each model aligns risk, cost, and control to your stage of growth.
                         </p>
                         
-                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-8 mb-12 w-full sm:w-auto">
+                        <div className="flex flex-col sm:flex-row items-center justify-start gap-8 mb-12 w-full sm:w-auto">
                             <Button 
                                 size="lg" 
                                 variant="outline"
@@ -85,7 +85,7 @@ const ServiceModels = () => {
                         </div>
 
                         {/* Financial Clarity Row */}
-                        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-100 w-full">
+                        <div className="flex flex-wrap items-center justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-100 w-full">
                             {[
                                 { label: "Direct Hire", value: "15%" },
                                 { label: "Trial", value: "20%" },

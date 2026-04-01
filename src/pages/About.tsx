@@ -9,7 +9,7 @@ const About = () => {
         <div className="bg-white font-inter">
             {/* HERO SECTION */}
             <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6">
-                <div className="container max-w-[1200px] mx-auto text-center">
+                <div className="container max-w-7xl mx-auto">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -18,10 +18,10 @@ const About = () => {
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
                             About OPSlyHR
                         </div>
-                        <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1] max-w-5xl mx-auto">
+                        <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1] max-w-5xl">
                             Building the Infrastructure Behind <br className="hidden md:block" /> Modern Operations Teams.
                         </h1>
-                        <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-3xl mx-auto">
+                        <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-3xl">
                             OPSlyHR connects vetted product and operations professionals with growth-focused companies — through structured, transparent, and managed engagement models.
                             <br /><span className="mt-4 block text-slate-900 font-bold">We are not a marketplace. We are operational infrastructure.</span>
                         </p>

@@ -21,14 +21,14 @@ const NotFound = () => {
             </div>
 
             <main className="flex-grow flex items-center justify-center px-6 py-20 relative z-10">
-                <div className="container max-w-[800px] mx-auto text-center">
+                <div className="container max-w-[800px] mx-auto text-left">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
                     >
                         {/* Visual Element: Minimal Network Diagram */}
-                        <div className="mb-12 flex justify-center">
+                        <div className="mb-12 flex justify-start">
                             <motion.div 
                                 animate={{ y: [0, -10, 0] }}
                                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -55,11 +55,11 @@ const NotFound = () => {
                         <h1 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">
                             404 — This Page Drifted Off Course.
                         </h1>
-                        <p className="text-lg text-slate-600 mb-12 font-medium leading-relaxed max-w-lg mx-auto">
+                        <p className="text-lg text-slate-600 mb-12 font-medium leading-relaxed max-w-lg">
                             Even well-structured systems have dead ends. Let’s get you back on track.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+                        <div className="flex flex-col sm:flex-row items-center justify-start gap-4 mb-16">
                             <Button 
                                 className="h-12 px-8 text-sm rounded-lg bg-slate-900 text-white hover:bg-slate-800 font-bold transition-all shadow-none w-full sm:w-auto"
                                 asChild
@@ -86,7 +86,7 @@ const NotFound = () => {
                         </div>
 
                         {/* Smart Touch: Minimal Search */}
-                        <div className="max-w-sm mx-auto">
+                        <div className="max-w-sm">
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Looking for something specific?</p>
                             <div className="relative group">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />

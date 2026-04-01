@@ -44,7 +44,7 @@ const Pricing = () => {
 
             {/* 1. HERO SECTION */}
             <section className="pt-40 pb-24 px-6 relative overflow-hidden">
-                <div className="container max-w-[1200px] mx-auto text-center relative z-10">
+                <div className="container max-w-7xl mx-auto relative z-10">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -57,15 +57,15 @@ const Pricing = () => {
                             Transparent Engagement Pricing. <br className="hidden md:block" />
                             <span className="text-slate-400">Built for Scale.</span>
                         </h1>
-                        <p className="text-lg md:text-xl text-slate-600 font-medium leading-relaxed max-w-3xl mx-auto mb-12">
+                        <p className="text-lg md:text-xl text-slate-600 font-medium leading-relaxed max-w-3xl mb-12">
                             Our pricing aligns with your engagement model — whether you’re building long-term leadership capacity, testing talent before committing, or executing high-impact projects.
                         </p>
                         
-                        <div className="flex flex-col items-center gap-6">
+                        <div className="flex flex-col items-start gap-6">
                             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">
                                 No hidden fees. No subscription traps. Just structured costs.
                             </p>
-                            <div className="flex flex-col sm:flex-row items-center gap-8">
+                            <div className="flex flex-col sm:flex-row items-start gap-8">
                                 <Link 
                                     to="/book-consultation"
                                     className="px-8 py-4 border-1.5 border-slate-900 text-slate-900 font-bold rounded-lg hover:bg-slate-900 hover:text-white transition-all duration-300 flex items-center gap-2"
@@ -128,7 +128,7 @@ const Pricing = () => {
                         <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">Choose the Right Model for Your Stage</h2>
                     </div>
 
-                    <div className="grid lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 border border-slate-200 bg-white rounded-2xl overflow-hidden overflow-hidden">
+                    <div className="grid lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 border border-slate-200 bg-white rounded-2xl overflow-hidden">
                         {/* COLUMN 1 */}
                         <div className="p-8 md:p-12 flex flex-col items-start hover:bg-slate-50/50 transition-colors group">
                             <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">Permanent</div>
@@ -227,7 +227,7 @@ const Pricing = () => {
 
                             <div className="mt-auto pt-8 border-t border-slate-100 w-full mb-10">
                                 <div className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Typical Range</div>
-                                <div className="text-3xl font-bold text-slate-900 tracking-tight text-xl">Defined per Scope</div>
+                                <div className="text-3xl font-bold text-slate-900 tracking-tight">Defined per Scope</div>
                                 <div className="text-xs font-medium text-slate-500 mt-1">based on complexity</div>
                             </div>
 
@@ -379,7 +379,7 @@ const Pricing = () => {
 
             {/* 8. DECISION SUPPORT SECTION */}
             <section className="py-24 px-6 bg-white border-b border-slate-100">
-                <div className="container max-w-[800px] mx-auto text-center">
+                <div className="container max-w-[800px] mx-auto text-left">
                     <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 tracking-tight">Not Sure Which Model Fits?</h2>
                     <p className="text-base text-slate-600 font-medium leading-relaxed mb-10">
                         Every organization has unique operational requirements. Speak with our engagement experts to determine the most cost-effective and risk-aligned model for your team.
