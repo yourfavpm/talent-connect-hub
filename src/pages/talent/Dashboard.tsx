@@ -72,9 +72,10 @@ const TalentDashboard = () => {
     return sessionStorage.getItem('hide_profile_banner_session') === 'true';
   });
 
-  const { data, isLoading, error } = useQuery({
+  const { data: dashboardData, isLoading, error } = useQuery({
     queryKey: ['talentDashboard', user?.id],
     queryFn: async () => {
+      // ... previous logic ...
       if (!user?.id) return null;
 
       let { data: talentData } = await (supabase
@@ -199,7 +200,7 @@ const TalentDashboard = () => {
     staleTime: 1000 * 60 * 1, // 1 minute cache
   });
  
-  const { talent, stats, notifications, profile, baseProfile, sections } = (data as any) || {
+  const { talent, stats, notifications, profile, baseProfile, sections } = (dashboardData as any) || {
     talent: null,
     stats: { applications: 0, activeAssignments: 0, pendingTimesheets: 0, unreadMessages: 0, openTickets: 0 },
     notifications: [],
@@ -207,40 +208,6 @@ const TalentDashboard = () => {
     baseProfile: null,
     sections: []
   };
-
-  const verificationTriggered = useRef(false);
-
-  useEffect(() => {
-    const triggerVerificationSuccess = async () => {
-      if (verificationTriggered.current) return;
-      
-      // Check if user is verified but we haven't sent the success email
-      if (user?.email_confirmed_at && baseProfile && !(baseProfile as any).email_verified_sent) {
-        verificationTriggered.current = true;
-        try {
-          console.log("Triggering verification success email...");
-          await sendTalentEmailVerifiedEmail(
-            user.email || "",
-            talent?.first_name || user.user_metadata?.first_name || "User"
-          );
-          
-          // Mark as sent in DB
-          await (supabase
-            .from('profiles')
-            .update({ email_verified_sent: true } as any)
-            .eq('user_id', user.id) as any);
-            
-        } catch (err) {
-          console.error("Failed to send verification success email:", err);
-          verificationTriggered.current = false;
-        }
-      }
-    };
-
-    if (user && baseProfile && talent) {
-      triggerVerificationSuccess();
-    }
-  }, [user, baseProfile, talent]);
 
 
   if (error) {

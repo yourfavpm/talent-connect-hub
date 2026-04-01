@@ -145,15 +145,69 @@ serve(async (req) => {
         .update({ used_at: new Date().toISOString() })
         .eq('id', record.id)
 
-      // 4. Update Profile
+      // 4. Fetch Profile & Role for notifications
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('first_name, email, email_verified_sent')
+        .eq('user_id', record.user_id)
+        .single()
+
+      const { data: roleData } = await supabaseAdmin
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', record.user_id)
+        .limit(1)
+        .maybeSingle()
+
+      const role = roleData?.role || 'talent'
+      const firstName = profile?.first_name || 'User'
+      const email = profile?.email || '' // Assume email is in profiles based on type def
+
+      // 5. Update Profile
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
-        .update({ email_verified_at: new Date().toISOString() })
+        .update({ 
+          email_verified_at: new Date().toISOString(),
+          email_verified_sent: true 
+        })
         .eq('user_id', record.user_id)
 
       if (profileError) throw profileError
 
-      // 5. Success Redirect
+      // 6. Send Notifications (Success & Welcome)
+      if (profile && !profile.email_verified_sent && email) {
+        const isTalent = role === 'talent'
+        
+        // Notification 1: Verification Success
+        await supabaseAdmin.functions.invoke('send-email', {
+          body: {
+            to: email,
+            toName: firstName,
+            templateKey: isTalent ? 'talent_auth_verified_success' : 'client_auth_verified_success',
+            variables: {
+              first_name: firstName,
+              dashboard_link: isTalent ? 'https://talent.opslyhr.com/dashboard' : 'https://client.opslyhr.com/dashboard',
+            },
+          },
+        })
+
+        // Notification 2: Welcome to the Network
+        await supabaseAdmin.functions.invoke('send-email', {
+          body: {
+            to: email, 
+            toName: firstName,
+            templateKey: isTalent ? 'talent_onboarding_welcome' : 'client_onboarding_welcome',
+            variables: {
+              first_name: firstName,
+              profile_link: isTalent ? 'https://talent.opslyhr.com/onboarding' : 'https://client.opslyhr.com/dashboard',
+              dashboard_link: 'https://client.opslyhr.com/dashboard', // for client welcome
+              company_name: 'Your Company', // Fallback for client welcome
+            },
+          },
+        })
+      }
+
+      // 7. Success Redirect
       return Response.redirect(`${APP_URL}/auth/verify-email?status=success`, 303)
     }
 
