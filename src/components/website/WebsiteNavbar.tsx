@@ -226,142 +226,91 @@ const WebsiteNavbar = () => {
                                 <div className="space-y-10">
                                     {/* Primary Navigation */}
                                     <div>
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-1">Navigation</div>
-                                        <div className="space-y-1">
+                                    <div>
+                                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-1">Navigation</div>
+                                        <div className="flex flex-col gap-1">
                                             {NavLinks.map((link) => (
                                                 <Link
                                                     key={link.name}
                                                     to={link.path}
-                                                    className="flex items-center justify-between py-3 text-[17px] font-medium text-slate-900 hover:bg-slate-50 px-3 rounded-lg transition-colors"
+                                                    className="flex items-center justify-between py-2.5 text-[13px] font-medium text-slate-900 hover:text-blue-600 transition-colors"
                                                 >
                                                     {link.name}
                                                 </Link>
                                             ))}
-
-                                            {/* Expandable Solutions */}
-                                            <div className="space-y-1">
-                                                <button 
-                                                    onClick={() => setMobileSolutionsOpen(!mobileSolutionsOpen)}
-                                                    className="flex items-center justify-between w-full py-3 text-[17px] font-medium text-slate-900 hover:bg-slate-50 px-3 rounded-lg transition-colors"
-                                                >
-                                                    Solutions
-                                                    <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${mobileSolutionsOpen ? 'rotate-90' : ''}`} />
-                                                </button>
-                                                <AnimatePresence>
-                                                    {mobileSolutionsOpen && (
-                                                        <motion.div 
-                                                            initial={{ height: 0, opacity: 0 }}
-                                                            animate={{ height: "auto", opacity: 1 }}
-                                                            exit={{ height: 0, opacity: 0 }}
-                                                            className="overflow-hidden pl-4 space-y-1"
-                                                        >
-                                                            {SolutionLinks.map((link) => (
-                                                                <Link
-                                                                    key={link.name}
-                                                                    to={link.path}
-                                                                    className="block py-2.5 px-4 text-sm font-medium text-slate-600 hover:text-blue-600 rounded-lg transition-colors"
-                                                                >
-                                                                    {link.name}
-                                                                </Link>
-                                                            ))}
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
-                                            </div>
-
+                                            
                                             <Link
                                                 to="/pricing"
-                                                className="flex items-center justify-between py-3 text-[17px] font-medium text-slate-900 hover:bg-slate-50 px-3 rounded-lg transition-colors"
+                                                className="flex items-center justify-between py-2.5 text-[13px] font-medium text-slate-900 hover:text-blue-600 transition-colors"
                                             >
                                                 Pricing
                                             </Link>
-
-                                            {/* Expandable Resources */}
-                                            <div className="space-y-1">
-                                                <button 
-                                                    onClick={() => setMobileResourcesOpen(!mobileResourcesOpen)}
-                                                    className="flex items-center justify-between w-full py-3 text-[17px] font-medium text-slate-900 hover:bg-slate-50 px-3 rounded-lg transition-colors"
+ 
+                                            <div className="py-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-4">Solutions</div>
+                                            {SolutionLinks.map((link) => (
+                                                <Link
+                                                    key={link.name}
+                                                    to={link.path}
+                                                    className="block py-2 text-[13px] font-medium text-slate-600 hover:text-blue-600 transition-colors"
                                                 >
-                                                    Resources
-                                                    <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${mobileResourcesOpen ? 'rotate-90' : ''}`} />
-                                                </button>
-                                                <AnimatePresence>
-                                                    {mobileResourcesOpen && (
-                                                        <motion.div 
-                                                            initial={{ height: 0, opacity: 0 }}
-                                                            animate={{ height: "auto", opacity: 1 }}
-                                                            exit={{ height: 0, opacity: 0 }}
-                                                            className="overflow-hidden pl-4 space-y-1"
-                                                        >
-                                                            {ResourceLinks.map((link) => (
-                                                                <Link
-                                                                    key={link.name}
-                                                                    to={link.path}
-                                                                    className="block py-2.5 px-4 text-sm font-medium text-slate-600 hover:text-blue-600 rounded-lg transition-colors"
-                                                                >
-                                                                    {link.name}
-                                                                </Link>
-                                                            ))}
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
-                                            </div>
-
+                                                    {link.name}
+                                                </Link>
+                                            ))}
+ 
+                                            <div className="py-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-4">Resources</div>
+                                            {ResourceLinks.map((link) => (
+                                                <Link
+                                                    key={link.name}
+                                                    to={link.path}
+                                                    className="block py-2 text-[13px] font-medium text-slate-600 hover:text-blue-600 transition-colors"
+                                                >
+                                                    {link.name}
+                                                </Link>
+                                            ))}
+ 
+                                            <div className="py-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-4">Company</div>
                                             <Link
                                                 to="/about"
-                                                className="flex items-center justify-between py-3 text-[17px] font-medium text-slate-900 hover:bg-slate-50 px-3 rounded-lg transition-colors"
+                                                className="block py-2 text-[13px] font-medium text-slate-600 hover:text-blue-600 transition-colors"
                                             >
                                                 About
                                             </Link>
                                             <Link
                                                 to="/careers"
-                                                className="flex items-center justify-between py-3 text-[17px] font-medium text-slate-900 hover:bg-slate-50 px-3 rounded-lg transition-colors"
+                                                className="block py-2 text-[13px] font-medium text-slate-600 hover:text-blue-600 transition-colors"
                                             >
                                                 Careers
                                             </Link>
                                         </div>
                                     </div>
-
-                                    <div className="h-[1px] bg-slate-100" />
-
-                                    {/* Services Section */}
-                                    <div>
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-1">Services</div>
-                                        <div className="space-y-1">
-                                            {SolutionLinks.map((link) => (
-                                                <Link
-                                                    key={link.name}
-                                                    to={link.path}
-                                                    className="block py-2.5 px-4 text-[14px] font-medium text-slate-500 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
-                                                >
-                                                    {link.name}
-                                                </Link>
-                                            ))}
-                                        </div>
                                     </div>
+
                                 </div>
                             </div>
 
                             {/* Sticky Action Section */}
                             <div className="mt-auto px-6 py-8 border-t border-slate-100 bg-white">
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     <a 
                                         href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=client#form")}
-                                        className="flex items-center justify-center w-full py-3 border border-slate-900 text-slate-900 font-semibold rounded-lg text-[13px] hover:bg-slate-50 transition-all"
+                                        className="flex items-center justify-between w-full py-2 border-b border-slate-900 text-slate-900 font-bold text-[12px] group"
                                     >
-                                        Request Talent
+                                        <span>Request Talent</span>
+                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                     </a>
                                     <a 
                                         href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=talent#form")}
-                                        className="flex items-center justify-center w-full py-3 border border-slate-200 text-slate-500 font-semibold rounded-lg text-[13px] hover:border-slate-400 hover:text-slate-900 transition-all"
+                                        className="flex items-center justify-between w-full py-2 border-b border-slate-100 text-slate-500 font-medium text-[12px] group"
                                     >
-                                        Apply as Talent
+                                        <span>Apply as Talent</span>
+                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                     </a>
                                     <a 
                                         href={getZoneUrl(Zone.AUTH, "/auth/login?portal=client#form")}
-                                        className="block w-full py-2 text-slate-400 font-semibold text-center text-[12px] hover:text-slate-900 transition-colors uppercase tracking-widest"
+                                        className="flex items-center justify-between w-full py-2 border-b border-slate-50 text-slate-400 font-medium text-[12px] group"
                                     >
-                                        Login
+                                        <span>Login</span>
+                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                     </a>
                                 </div>
                             </div>

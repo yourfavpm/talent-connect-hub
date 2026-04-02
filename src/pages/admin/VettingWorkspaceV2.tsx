@@ -11,8 +11,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Loader2, CheckCircle2, AlertCircle, ChevronLeft, Download,
-  Shield, Clock, FileText, Send, UserPlus
+  Shield, Clock, FileText, Send, UserPlus, Mail, MessageSquare
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { getBrandedEmailHtml } from "@/utils/getEmailBranding";
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -87,6 +99,7 @@ const ACTION_COLORS: Record<string, string> = {
   ASSIGN_MANAGER: "bg-indigo-100 text-indigo-700",
   REVOKED_FOR_EDIT: "bg-rose-100 text-rose-700",
   REQUEST_REVETTING: "bg-orange-100 text-orange-700",
+  VETTING_NOTE_SENT: "bg-slate-900 text-white",
 };
 
 const LEVEL_OPTIONS = ["Junior", "Mid", "Senior", "Lead", "Expert"];
@@ -113,6 +126,11 @@ const VettingWorkspaceV2 = () => {
   const [selectedManagerId, setSelectedManagerId] = useState<string>("unassigned");
   const [actionPending, setActionPending] = useState(false);
   const [activeTab, setActiveTab] = useState<"data" | "timeline">("data");
+  
+  // Vetting Note Modal State
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [noteSubject, setNoteSubject] = useState("Update regarding your OPSlyHR Profile");
+  const [noteBody, setNoteBody] = useState("");
 
   // ── Fetch data ─────────────────────────────────────────────────────
 
@@ -278,6 +296,49 @@ const VettingWorkspaceV2 = () => {
     }
   }
 
+  const sendVettingNote = async () => {
+    if (!profile || !noteBody.trim() || !noteSubject.trim()) {
+      toast({ title: "Subject and body are required", variant: "destructive" });
+      return;
+    }
+    setActionPending(true);
+    try {
+      const brandedHtml = getBrandedEmailHtml(noteBody, noteSubject);
+      
+      const { data, error } = await supabase.functions.invoke("send-email", {
+        body: {
+          to: talentInfo.email,
+          subject: noteSubject,
+          htmlTemplate: brandedHtml,
+        }
+      });
+
+      if (error) throw error;
+
+      // Log the action manually since it's a social action, not an RPC state change
+      const { error: logError } = await supabase
+        .from("v2_vetting_actions")
+        .insert({
+          user_id: profile.user_id,
+          admin_id: user?.id,
+          action: "VETTING_NOTE_SENT",
+          note: noteBody,
+          meta: { subject: noteSubject }
+        });
+
+      if (logError) console.error("Failed to log note action:", logError);
+
+      toast({ title: "Email Sent", description: `Message has been delivered to ${talentInfo.email}` });
+      setIsNoteModalOpen(false);
+      setNoteBody("");
+      fetchData();
+    } catch (err: any) {
+      toast({ title: "Failed to send email", description: err.message, variant: "destructive" });
+    } finally {
+      setActionPending(false);
+    }
+  };
+
   // ── Download doc helper ────────────────────────────────────────────
 
   const downloadFile = async (path: string, label: string) => {
@@ -307,10 +368,14 @@ const VettingWorkspaceV2 = () => {
   const currentSection = sections.find(s => s.section_key === selectedSection);
   const profileStatusCfg = STATUS_CONFIGS[profile.status] || STATUS_CONFIGS.draft;
   
-  // Basic Info implicitly approved since it's identity. If it's missing, require other 6.
-  const requiredSections = SECTION_ORDER.filter(s => s !== "basic_info");
-  const allApproved = requiredSections.every(key => sections.find(s => s.section_key === key)?.status === "approved");
-  const canFinalize = allApproved && !!vettingLevelText;
+  // Mandatory sections check: Basic Info, Pro Details, Work History
+  const mandatoryKeys = ["basic_info", "professional_details", "work_history"];
+  const allMandatorySubmitted = mandatoryKeys.every(key => {
+    const s = sections.find(sec => sec.section_key === key);
+    return s && ["approved", "submitted", "resubmitted"].includes(s.status);
+  });
+  
+  const canFinalize = allMandatorySubmitted && !!vettingLevelText;
 
   // ── Render ──────────────────────────────────────────────────────────
 
@@ -378,7 +443,56 @@ const VettingWorkspaceV2 = () => {
 
           {/* Level Assignment & Vetting Finalization */}
           <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-slate-700 whitespace-nowrap">Target Level:</span>
+            {/* NEW: Send Note Tool */}
+            <Dialog open={isNoteModalOpen} onOpenChange={setIsNoteModalOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="gap-2 h-9 border-slate-200 text-slate-600 hover:bg-slate-50 font-bold px-4">
+                  <Mail className="h-4 w-4" /> Send Note
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Send Vetting Note</DialogTitle>
+                  <DialogDescription>
+                    This will trigger a branded email to {talentInfo.name}. Use this for custom feedback or instructions.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="subject" className="text-xs font-bold uppercase text-slate-500">Email Subject</Label>
+                    <Input 
+                      id="subject" 
+                      value={noteSubject} 
+                      onChange={(e) => setNoteSubject(e.target.value)}
+                      placeholder="Enter subject..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="message" className="text-xs font-bold uppercase text-slate-500">Message to Talent</Label>
+                    <Textarea 
+                      id="message" 
+                      value={noteBody} 
+                      onChange={(e) => setNoteBody(e.target.value)}
+                      placeholder="Type your message here..."
+                      className="min-h-[150px]"
+                    />
+                  </div>
+                </div>
+                <DialogFooter className="sm:justify-end gap-2">
+                  <Button variant="ghost" onClick={() => setIsNoteModalOpen(false)} disabled={actionPending}>Cancel</Button>
+                  <Button 
+                    onClick={sendVettingNote} 
+                    disabled={actionPending || !noteBody.trim()} 
+                    className="gap-2 bg-slate-900 text-white font-bold"
+                  >
+                    {actionPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    Send Branded Email
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            <span className="text-sm font-semibold text-slate-700 whitespace-nowrap ml-4">Target Level:</span>
             <Select value={vettingLevelText} onValueChange={setVettingLevelText} disabled={actionPending}>
               <SelectTrigger className="w-[140px] h-9 border-slate-200 text-sm font-medium">
                 <SelectValue placeholder="Select Level" />
@@ -389,7 +503,7 @@ const VettingWorkspaceV2 = () => {
                 ))}
               </SelectContent>
             </Select>
-
+ 
             <Button
               onClick={finalizeVetting}
               disabled={!canFinalize || actionPending || profile.status === "vetted"}
@@ -400,9 +514,9 @@ const VettingWorkspaceV2 = () => {
             </Button>
           </div>
         </div>
-        {!allApproved && profile.status !== "vetted" && (
+        {!allMandatorySubmitted && profile.status !== "vetted" && (
             <div className="px-6 pb-4 bg-white flex justify-end">
-               <span className="text-xs font-semibold text-rose-500">All required sections must be approved first.</span>
+               <span className="text-xs font-semibold text-rose-500">Mandatory sections (Basic, Pro, Work) must be submitted or approved.</span>
             </div>
         )}
       </Card>

@@ -125,9 +125,9 @@
   }
 
   html {
-    font-size: 11px;
+    font-size: 10px;
   }
-
+ 
   body {
     @apply bg-background text-foreground antialiased font-light;
     font-family:
@@ -141,26 +141,26 @@
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: -0.01em;
   }
-
+ 
   /* Typography Hierarchy - Drastically Reduced for Minimalism */
   h1 {
-    @apply text-lg font-semibold tracking-tight;
+    @apply text-base font-semibold tracking-tight;
   }
-
+ 
   h2 {
-    @apply text-base font-medium tracking-tight;
-  }
-
-  h3 {
     @apply text-sm font-medium tracking-tight;
   }
-
+ 
+  h3 {
+    @apply text-xs font-medium tracking-tight;
+  }
+ 
   h4,
   h5,
   h6 {
-    @apply text-xs font-semibold tracking-tight uppercase;
+    @apply text-[10px] font-semibold tracking-tight uppercase;
   }
-
+ 
   p {
     @apply leading-relaxed font-light text-slate-500;
   }

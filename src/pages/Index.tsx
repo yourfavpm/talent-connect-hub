@@ -81,30 +81,30 @@ const Index = () => {
     <div className="bg-background min-h-screen text-foreground overflow-x-hidden selection:bg-primary selection:text-white font-sans">
 
       {/* 2. ENTERPRISE HERO SECTION (REDESIGNED) */}
-      <section className="relative pt-36 pb-16 md:pt-36 md:pb-32 px-6 overflow-hidden bg-slate-50 font-inter">
+      <section className="relative pt-24 pb-12 md:pt-28 md:pb-20 px-6 overflow-hidden bg-slate-50 font-inter">
         {/* Subtle background decoration */}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-white/50 to-transparent pointer-events-none"></div>
         
         <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
           {/* Left Side: Content & Trust Indicators */}
           <div className="animate-slide-up flex flex-col items-start text-left w-full">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
               Hire Vetted Remote Operations Experts — Built for Global Teams
             </h1>
-
-            <p className="text-sm md:text-base text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-light">
+ 
+            <p className="text-xs md:text-sm text-slate-600 mb-8 md:mb-10 max-w-md leading-relaxed font-light">
               We match you with pre-screened professionals ready to handle operations, support, project work, and team management — no recruitment burden.
             </p>
-
-            <div className="flex flex-col sm:flex-row items-start justify-start gap-4 mb-14 w-full">
+ 
+            <div className="flex flex-col sm:flex-row items-start justify-start gap-4 mb-10 w-full">
               <Link to="/auth/login" className="w-full sm:w-auto">
-                <Button size="lg" className="h-12 px-8 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/10 transition-all font-semibold w-full">
+                <Button size="lg" className="h-10 px-6 text-[11px] bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/5 transition-all font-bold w-full uppercase tracking-wider">
                   Get Matched With Talent
                 </Button>
               </Link>
               <Link to="/book-consultation" className="w-full sm:w-auto">
-                <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-700 hover:bg-slate-100/80 rounded-full font-semibold flex items-center justify-start gap-2 w-full sm:w-auto">
-                  Book a Strategy Call <ArrowRight className="w-4 h-4" />
+                <Button variant="ghost" size="lg" className="h-10 px-6 text-[11px] text-slate-700 hover:bg-slate-100/80 rounded-full font-bold flex items-center justify-start gap-2 w-full sm:w-auto uppercase tracking-wider">
+                  Book Strategy Call <ArrowRight className="w-3 h-3" />
                 </Button>
               </Link>
             </div>
@@ -273,14 +273,14 @@ const Index = () => {
       </section>
 
       {/* NEW TRUST-BUILDING SECTION (STRATEGIC POSITIONING) */}
-      <section className="py-24 px-6 bg-slate-50 font-inter border-b border-slate-200">
+      <section className="py-16 px-6 bg-slate-50 font-inter border-b border-slate-200">
         <div className="container max-w-[1200px] mx-auto">
           {/* Header */}
-          <div className="mb-16 md:mb-20 animate-slide-up">
-            <h2 className="text-2xl md:text-3xl font-semibold text-slate-900 mb-4 leading-tight tracking-tight">
+          <div className="mb-12 md:mb-16 animate-slide-up">
+            <h2 className="text-xl md:text-2xl font-semibold text-slate-900 mb-3 leading-tight tracking-tight">
               No Search. No Guesswork. No Hiring Headaches.
             </h2>
-            <p className="text-sm md:text-base text-slate-500 font-light max-w-2xl">
+            <p className="text-xs md:text-sm text-slate-500 font-light max-w-xl">
               We handle sourcing, vetting, compliance, and ongoing support — so you don’t have to.
             </p>
           </div>
@@ -377,14 +377,14 @@ const Index = () => {
       </section>
 
       {/* VETTING ENGINE SECTION (ENTERPRISE GRADE) */}
-      <section className="py-24 px-6 bg-white font-inter border-b border-slate-200 overflow-hidden">
+      <section className="py-16 px-6 bg-white font-inter border-b border-slate-200 overflow-hidden">
         <div className="container max-w-[1200px] mx-auto">
           {/* Header */}
-          <div className="mb-16 animate-slide-up">
-            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-4 tracking-tight">
+          <div className="mb-12 animate-slide-up">
+            <h2 className="text-2xl md:text-3xl font-semibold text-slate-900 mb-3 tracking-tight">
               The OPSlyHR Vetting Engine
             </h2>
-            <p className="text-base md:text-lg text-slate-500 font-light max-w-2xl">
+            <p className="text-xs md:text-sm text-slate-500 font-light max-w-2xl">
               A structured multi-layer quality system designed to ensure every professional meets global operational standards.
             </p>
           </div>
@@ -577,22 +577,22 @@ const Index = () => {
                 {[
                   { 
                     val: "48 Hours", 
-                    label: "Average Time to Shortlist", 
-                    sub: "From approved job to curated candidates." 
+                    label: "Average Shortlist", 
+                    sub: "From approved job to candidates." 
                   },
                   { 
                     val: "98%", 
-                    label: "Successful Placement Rate", 
+                    label: "Placement Rate", 
                     sub: "Trial-to-hire conversion success." 
                   },
                   { 
                     val: "3.5x Faster", 
-                    label: "Efficiency Multiplier", 
+                    label: "Efficiency Rate", 
                     sub: "Compared to internal hiring cycles." 
                   },
                   { 
-                    val: "EMEA Coverage", 
-                    label: "20+ countries represented", 
+                    val: "EMEA Region", 
+                    label: "20+ Countries", 
                     sub: "Dedicated regional expertise." 
                   },
                   { 
@@ -602,18 +602,18 @@ const Index = () => {
                   },
                   { 
                     val: "Automated", 
-                    label: "Agreement Generation", 
-                    sub: "Service-type driven contract automation." 
+                    label: "Agreements", 
+                    sub: "Driven contract automation." 
                   }
                 ].map((stat, i) => (
                   <motion.div 
                     key={i}
                     whileHover={{ y: -2 }}
-                    className="p-5 bg-slate-50/50 rounded-[12px] border border-slate-200 border-l-2 border-l-blue-600/20 hover:border-l-blue-600 transition-all duration-300"
+                    className="p-4 bg-slate-50/50 rounded-[12px] border border-slate-200 border-l-2 border-l-blue-600/20 hover:border-l-blue-600 transition-all duration-300"
                   >
-                    <div className="text-lg font-bold text-slate-950 mb-1">{stat.val}</div>
-                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">{stat.label}</div>
-                    <p className="text-[12px] text-slate-500 leading-snug font-medium">{stat.sub}</p>
+                    <div className="text-base font-bold text-slate-950 mb-0.5">{stat.val}</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-1">{stat.label}</div>
+                    <p className="text-[10px] text-slate-500 leading-snug font-medium line-clamp-1">{stat.sub}</p>
                   </motion.div>
                 ))}
               </div>
