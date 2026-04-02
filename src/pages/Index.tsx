@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle, Clock, Globe, Shield, Users, Zap, Briefcase, Layout, CreditCard, Search, UserCheck, ChevronRight, TrendingUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
+import SEO from "@/components/SEO";
 
 const Index = () => {
   const [activeStep, setActiveStep] = useState(1);
@@ -79,6 +80,11 @@ const Index = () => {
 
   return (
     <div className="bg-background min-h-screen text-foreground overflow-x-hidden selection:bg-primary selection:text-white font-sans">
+      <SEO 
+        title="Hire Top Vetted African Operations Professionals"
+        description="The leading platform to hire vetted African operations professionals and remote experts. Access top-tier product and operations talent across EMEA for global teams."
+        keywords="African Operations Professionals, Remote Hiring Africa, Vetted Operations Talent, EMEA Operations Experts, Remote Work EMEA, Product Management Africa"
+      />
 
       {/* 2. ENTERPRISE HERO SECTION (REDESIGNED) */}
       <section className="relative pt-24 pb-12 md:pt-28 md:pb-20 px-6 overflow-hidden bg-slate-50 font-inter">

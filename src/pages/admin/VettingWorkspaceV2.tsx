@@ -164,7 +164,7 @@ const VettingWorkspaceV2 = () => {
 
       // Auto-start review if strictly submitted/resubmitted or revett_pending
       if (["submitted", "resubmitted", "revett_pending"].includes(profileData.status)) {
-        await supabase.rpc("v2_admin_start_review", { p_talent_user_id: profileData.user_id });
+        await (supabase.rpc as any)("v2_admin_start_review", { p_talent_user_id: profileData.user_id });
         const { data: updated } = await supabase
           .from("v2_talent_profiles").select("*").eq("id", id).single();
         if (updated) setProfile(updated as unknown as V2Profile);
@@ -216,7 +216,7 @@ const VettingWorkspaceV2 = () => {
     if (!profile) return;
     setActionPending(true);
     try {
-      const { error } = await supabase.rpc("v2_admin_approve_section", {
+      const { error } = await (supabase.rpc as any)("v2_admin_approve_section", {
         p_talent_user_id: profile.user_id,
         p_section_key: sectionKey,
       });
@@ -237,8 +237,8 @@ const VettingWorkspaceV2 = () => {
     }
     setActionPending(true);
     try {
-      const fields = changeFields.split(",").map(f => f.trim()).filter(Boolean);
-      const { error } = await supabase.rpc("v2_admin_request_changes", {
+      const { fields } = { fields: changeFields.split(",").map(f => f.trim()).filter(Boolean) };
+      const { error } = await (supabase.rpc as any)("v2_admin_request_changes", {
         p_talent_user_id: profile.user_id,
         p_section_key: sectionKey,
         p_note: changeNote,
@@ -263,10 +263,10 @@ const VettingWorkspaceV2 = () => {
     }
     setActionPending(true);
     try {
-      const { error } = await supabase.rpc("v2_admin_finalize_vetting", {
+      const { error } = await (supabase.rpc as any)("v2_admin_finalize_vetting", {
         p_talent_user_id: profile.user_id,
         p_vetting_level_text: vettingLevelText,
-      } as any);
+      });
       if (error) throw error;
       toast({ title: "Talent Vetted!", description: "Profile is now visible to clients." });
       fetchData();
@@ -281,7 +281,7 @@ const VettingWorkspaceV2 = () => {
     if (!profile || managerId === "unassigned") return;
     setActionPending(true);
     try {
-      const { error } = await supabase.rpc("v2_admin_assign_manager", {
+      const { error } = await (supabase.rpc as any)("v2_admin_assign_manager", {
         p_talent_user_id: profile.user_id,
         p_manager_admin_id: managerId
       });
@@ -303,9 +303,18 @@ const VettingWorkspaceV2 = () => {
     }
     setActionPending(true);
     try {
+      // 1. Call the new RPC to log the action & create internal notification
+      const { error: rpcError } = await (supabase.rpc as any)("v2_admin_send_vetting_note", {
+        p_talent_user_id: profile.user_id,
+        p_subject: noteSubject,
+        p_body: noteBody
+      });
+
+      if (rpcError) throw rpcError;
+
+      // 2. Trigger the external email via Edge Function
       const brandedHtml = getBrandedEmailHtml(noteBody, noteSubject);
-      
-      const { data, error } = await supabase.functions.invoke("send-email", {
+      const { error: emailError } = await supabase.functions.invoke("send-email", {
         body: {
           to: talentInfo.email,
           subject: noteSubject,
@@ -313,27 +322,22 @@ const VettingWorkspaceV2 = () => {
         }
       });
 
-      if (error) throw error;
-
-      // Log the action manually since it's a social action, not an RPC state change
-      const { error: logError } = await supabase
-        .from("v2_vetting_actions")
-        .insert({
-          user_id: profile.user_id,
-          admin_id: user?.id,
-          action: "VETTING_NOTE_SENT",
-          note: noteBody,
-          meta: { subject: noteSubject }
+      if (emailError) {
+        console.error("External email failed to send, but note was logged internally:", emailError);
+        toast({ 
+          title: "Note Logged", 
+          description: "Internal notification created, but external email failed to send. Check console for details.",
+          variant: "destructive" 
         });
+      } else {
+        toast({ title: "Email Sent Successfully", description: `Branded note delivered to ${talentInfo.email}` });
+      }
 
-      if (logError) console.error("Failed to log note action:", logError);
-
-      toast({ title: "Email Sent", description: `Message has been delivered to ${talentInfo.email}` });
       setIsNoteModalOpen(false);
       setNoteBody("");
       fetchData();
     } catch (err: any) {
-      toast({ title: "Failed to send email", description: err.message, variant: "destructive" });
+      toast({ title: "Action Failed", description: err.message, variant: "destructive" });
     } finally {
       setActionPending(false);
     }

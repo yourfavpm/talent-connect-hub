@@ -1,14 +1,11 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# robots.txt for OPSlyHR
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /talent/
+Disallow: /client/
+Disallow: /auth/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://opslyhr.com/sitemap.xml

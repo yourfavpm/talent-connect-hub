@@ -1,12 +1,17 @@
-
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Globe, ShieldCheck, Zap, Users, Shield, Target, CheckCircle2 } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const About = () => {
     return (
         <div className="bg-white font-inter">
+            <SEO 
+                title="About Us | Managed Operational Infrastructure"
+                description="Learn about OPSlyHR's mission to build the infrastructure behind modern operations teams. We connect vetted African operations professionals with global teams through managed engagement models."
+                keywords="About OPSlyHR, Operations Infrastructure, African Operations Experts, Remote Work Mission, Vetted Talent Network"
+            />
             {/* HERO SECTION */}
             <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6">
                 <div className="container max-w-7xl mx-auto">

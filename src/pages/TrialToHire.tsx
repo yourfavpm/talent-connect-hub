@@ -1,12 +1,17 @@
-
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, ShieldCheck, Zap, Users, BarChart3 } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const TrialToHire = () => {
     return (
         <div className="bg-white font-inter">
+            <SEO 
+                title="Trial-to-Hire | Risk-Managed African Operations Talent"
+                description="Evaluate top-tier African operations professionals before committing to a full-time hire. Our 90-day managed trial model ensures perfect cultural and operational fit for your growing team."
+                keywords="Trial to Hire Operations, Remote Talent Evaluation, Hire African Ops Professionals Trial, Risk-Managed Remote Hiring, African Operations Talent Vetting"
+            />
             {/* HERO SECTION */}
             <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
                 <div className="container max-w-[1200px] mx-auto">

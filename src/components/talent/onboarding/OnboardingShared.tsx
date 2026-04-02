@@ -16,7 +16,7 @@ import { TagInput } from "@/components/ui/tag-input";
 
 // ── Reusable primitives ────────────────────────────────────────────────────
 
-export const OB_INPUT_CLASS = "h-8 rounded-lg border border-slate-100 bg-white focus:border-slate-800 focus:ring-1 focus:ring-slate-800 text-[12px] font-light placeholder:text-slate-300 disabled:opacity-50 disabled:bg-slate-50 transition-all";
+import { STEPS, SECTION_KEYS, OB_INPUT_CLASS } from "./onboarding_config";
 
 export const FieldGroup = ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
   <div className="space-y-0.5">
@@ -74,20 +74,6 @@ export const FileUploadRow = ({ label, hint, accept, uploaded, uploading, disabl
     </div>
   </div>
 );
-
-// ── Steps definition ───────────────────────────────────────────────────────
-
-export const STEPS = [
-  { id: 1, title: "Basic Information",    key: "basic_info" },
-  { id: 2, title: "Professional Details", key: "professional_details" },
-  { id: 3, title: "Work History",         key: "work_history" },
-  { id: 4, title: "Documents",            key: "documents" },
-  { id: 5, title: "Education",            key: "education" },
-  { id: 6, title: "Certifications",       key: "certifications" },
-  { id: 7, title: "References",           key: "references" },
-];
-
-export const SECTION_KEYS = STEPS.map(s => s.key);
 
 // ── Zod Schema (same fields as V1/V2) ────────────────────────────────────────
 

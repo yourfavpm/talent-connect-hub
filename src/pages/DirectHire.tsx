@@ -1,12 +1,17 @@
-
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const DirectHire = () => {
-  return (
-    <div className="bg-white font-inter">
+    return (
+        <div className="bg-white font-inter">
+            <SEO 
+                title="Direct Hire | Permanent African Operations Leadership"
+                description="Secure vetted African operations leaders for permanent placement. OPSlyHR manages the search, vetting, and guarantees, ensuring long-term operational success for your team."
+                keywords="Direct Hire Operations, Permanent Ops Placement Africa, Hire African Operations Leaders, Structured Operational Hiring, Remote Permanent Talent Africa"
+            />
       {/* HERO SECTION */}
       <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
         <div className="container max-w-7xl mx-auto">

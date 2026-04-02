@@ -1,9 +1,9 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check, ArrowRight, Building2, Globe, Clock, Shield, Users, Zap, Briefcase, Layout, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import SEO from "@/components/SEO";
 
 const AccordionItem = ({ question, answer }: { question: string; answer: string }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -45,6 +45,11 @@ const AccordionItem = ({ question, answer }: { question: string; answer: string 
 const ServiceModels = () => {
     return (
         <div className="bg-background min-h-screen text-foreground selection:bg-primary selection:text-white pb-0">
+            <SEO 
+                title="Service Models | Flexible Hiring for African Operations Talent"
+                description="Choose the engagement model that fits your growth. From Direct Hire to Managed Trials and Project-Based execution, explore how to scale with vetted African operations professionals."
+                keywords="Service Models, Hiring African Talent, Remote Operations Engagement, Directed Placement, Project Based Talent Africa"
+            />
 
             {/* 1. HERO (REDESIGNED ENTERPRISE SaaS STYLE) */}
             <section className="relative pt-40 pb-16 md:pt-40 md:pb-24 px-4 md:px-6 bg-white border-b border-slate-100 font-inter overflow-hidden">

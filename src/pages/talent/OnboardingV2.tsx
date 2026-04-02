@@ -1,9 +1,10 @@
 import {
-  OnboardFormValues, onboardSchema, getSectionData, STEPS,
+  OnboardFormValues, onboardSchema, getSectionData,
   BasicInfoForm, ProfessionalDetailsForm, WorkHistoryForm,
   EducationForm, CertificationsForm, ReferencesForm,
-  DocumentsForm, OB_INPUT_CLASS
+  DocumentsForm
 } from "@/components/talent/onboarding/OnboardingShared";
+import { STEPS, OB_INPUT_CLASS } from "@/components/talent/onboarding/onboarding_config";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -248,6 +249,12 @@ const OnboardingV2 = () => {
 
   const step = STEPS[currentStep - 1];
   const isLastStep = currentStep === STEPS.length;
+  
+  const mandatoryKeys = ["basic_info", "professional_details", "work_history"];
+  const allMandatorySubmitted = mandatoryKeys.every(key => {
+    const status = sectionStatuses[key];
+    return status && ["submitted", "resubmitted", "approved", "in_progress"].includes(status);
+  });
 
   return (
     <FormProvider {...methods}>
@@ -359,14 +366,14 @@ const OnboardingV2 = () => {
                       <Save className="h-3.5 w-3.5" /> Save
                     </Button>
                     
-                    {isLastStep && (
+                    {((isLastStep) || (currentStep >= 3 && currentStep < STEPS.length && allMandatorySubmitted)) && (
                       <Button
                         onClick={handleSubmit}
                         disabled={submitting || saving}
                         className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold px-4 shadow-sm"
                       >
                         {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                        Submit
+                        Submit for Vetting
                       </Button>
                     )}
 

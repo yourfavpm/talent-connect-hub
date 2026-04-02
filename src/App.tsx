@@ -222,20 +222,23 @@ const DevZoneIndicator = ({ zone }: { zone: Zone }) => {
   );
 };
 
+import { HelmetProvider } from "react-helmet-async";
+
 const App = () => {
   const zone = getCurrentZone();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
-            <DevZoneIndicator zone={zone} />
-            <Suspense fallback={<OpslyLoader />}>
-              <Routes>
+      <HelmetProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ScrollToTop />
+              <DevZoneIndicator zone={zone} />
+              <Suspense fallback={<OpslyLoader />}>
+                <Routes>
               {/* Marketing Zone (opslyhr.com) */}
               {zone === Zone.MARKETING && (
                 <Route element={<WebsiteLayout />}>
@@ -408,8 +411,9 @@ const App = () => {
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
-    </QueryClientProvider>
-  );
+    </HelmetProvider>
+  </QueryClientProvider>
+);
 };
 
 export default App;

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check, Clock, Globe, Shield, Zap, Search, UserCheck, Layout, CreditCard, Award, TrendingUp, Users, ArrowRight, Star, Target, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import SEO from "@/components/SEO";
 
 const ForCompanies = () => {
     const [showComparison, setShowComparison] = useState(false);
@@ -27,6 +28,11 @@ const ForCompanies = () => {
 
     return (
         <div className="bg-white min-h-screen text-foreground selection:bg-primary selection:text-white pb-0 overflow-hidden">
+            <SEO 
+                title="Hire Vetted African Operations Professionals | Structured Scale"
+                description="Access rigorously vetted African operations specialists — matched, contracted, and managed through a structured platform designed for scale. Build your distributed team with confidence."
+                keywords="Hire African Operations, Vetted African Talent, Operational Leadership, Scale Operations, Remote Operations Professionals Africa"
+            />
             {/* 1. PAGE HERO (REDESIGNED FOR OPERATIONS) */}
             <section className="relative pt-40 pb-16 md:pt-40 md:pb-16 px-4 md:px-6 bg-[#F8F9FA] font-inter overflow-hidden">
                 <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">

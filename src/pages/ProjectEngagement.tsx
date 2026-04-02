@@ -1,12 +1,17 @@
-
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Target, Clock, Users, Shield, Zap, Layout, Terminal } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const ProjectEngagement = () => {
-  return (
-    <div className="bg-white font-inter">
+    return (
+        <div className="bg-white font-inter">
+            <SEO 
+                title="Project Engagement | Vetted African Operations Specialists"
+                description="Deploy vetted African operations professionals for specialized milestone-based projects. Get high-impact execution in CRM implementation, automation, and core systems without long-term overhead."
+                keywords="Project Based Operations, Hire African Ops Specialists, Remote Operations Projects, Vetted Managed Projects, Operational Infrastructure Setup"
+            />
       {/* HERO SECTION */}
       <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
         <div className="container max-w-7xl mx-auto">

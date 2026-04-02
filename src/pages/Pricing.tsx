@@ -1,8 +1,8 @@
-
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, Plus, Minus } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const AccordionItem = ({ question, answer }: { question: string; answer: string }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -41,6 +41,11 @@ const AccordionItem = ({ question, answer }: { question: string; answer: string 
 const Pricing = () => {
     return (
         <div className="bg-white min-h-screen text-slate-900 font-inter selection:bg-slate-900 selection:text-white pb-0">
+            <SEO 
+                title="Transparent Pricing for African Operations Talent"
+                description="Explore flexible engagement models for hiring vetted African operations professionals. Transparent pricing for direct hire, structured trials, and project-based support."
+                keywords="African Operations Talent Pricing, Remote Hiring Costs, Vetted Talent Fees, EMEA Operations Hiring, Hire African Experts Cost"
+            />
 
             {/* 1. HERO SECTION */}
             <section className="pt-40 pb-24 px-6 relative overflow-hidden">

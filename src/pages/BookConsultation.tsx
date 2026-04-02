@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +9,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import SEO from "@/components/SEO";
 
 const BookConsultation = () => {
     const { toast } = useToast();
@@ -44,7 +44,7 @@ const BookConsultation = () => {
                 details: formData.details,
                 preferred_date: formData.preferredDate || null,
                 preferred_time: formData.preferredTime || null,
-            });
+            } as any);
 
             if (error) throw error;
 
@@ -119,6 +119,11 @@ const BookConsultation = () => {
 
     return (
         <div className="min-h-screen bg-white selection:bg-slate-100 selection:text-slate-900 font-inter relative">
+            <SEO 
+                title="Book a Consultation | Hire Vetted African Operations Leaders"
+                description="Request a consultation to define your next operational hire. OPSlyHR connects growth-stage companies with vetted African operations professionals through a structured matching process."
+                keywords="Hire African Operations, Operations Talent Consultation, Vetted Ops Leaders Africa, Remote Operations Matching, Structured Talent Search"
+            />
             {/* Faint Dotted Grid Pattern */}
             <div className="absolute inset-0 pointer-events-none z-0 opacity-[0.02]" 
                  style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }} />

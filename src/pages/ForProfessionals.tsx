@@ -2,10 +2,16 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check, DollarSign, ShieldCheck, Briefcase, Zap, Globe, Lock, ArrowRight, UserCheck, Star, TrendingUp, Shield, Users } from "lucide-react";
 import { motion } from "framer-motion";
+import SEO from "@/components/SEO";
 
 const ForProfessionals = () => {
     return (
         <div className="bg-white min-h-screen text-slate-900 selection:bg-blue-600 selection:text-white font-inter">
+            <SEO 
+                title="Join our Network | High-Impact African Operations Professionals"
+                description="Apply to join a curated network of vetted African operations professionals. Work with global companies through structured engagements, with compliance and payments handled for you."
+                keywords="African Operations Professionals, Remote Work for Africans, Vetted Talent Network, Operations Jobs EMEA, Hire African Operators"
+            />
 
             {/* Header / Hero - Enterprise SaaS Style */}
             <section className="relative pt-40 pb-12 md:pt-40 md:pb-16 flex flex-col justify-center px-6 bg-slate-50/50 overflow-hidden">

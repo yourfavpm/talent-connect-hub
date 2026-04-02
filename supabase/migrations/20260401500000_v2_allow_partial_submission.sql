@@ -62,6 +62,9 @@ $$;
 -- ── Updated: v2_admin_finalize_vetting (Flexible Approval) ─────────
 -- Allows admin to finalize if mandatory sections are Submitted/Approved.
 -- Automatically marks all submitted sections as approved.
+DROP FUNCTION IF EXISTS public.v2_admin_finalize_vetting(UUID, INT);
+DROP FUNCTION IF EXISTS public.v2_admin_finalize_vetting(UUID, TEXT);
+ 
 CREATE OR REPLACE FUNCTION public.v2_admin_finalize_vetting(
     p_talent_user_id UUID,
     p_vetting_level_text  TEXT

@@ -1,6 +1,6 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import SEO from "@/components/SEO";
 
 const Insights = () => {
     // Mock blog posts
@@ -13,6 +13,11 @@ const Insights = () => {
 
     return (
         <div className="bg-background min-h-screen text-foreground pb-20">
+            <SEO 
+                title="Insights & Signals | African Operations Leadership Trends"
+                description="Observations and deep dives into modern company building, specialized product leadership, and the shifting landscape of African operations talent."
+                keywords="Operations Insights, Product Leadership Trends, African Talent Market, Remote Operations Strategy, Company Building Signals"
+            />
             <section className="pt-40 pb-20 px-6 bg-slate-50 border-b border-slate-200">
                 <div className="container max-w-6xl mx-auto">
                     <h1 className="text-5xl md:text-7xl font-bold font-display mb-8 text-primary">Signals</h1>

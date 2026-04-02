@@ -1,8 +1,8 @@
-
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const Careers = () => {
     const fadeIn = {
@@ -16,6 +16,11 @@ const Careers = () => {
 
     return (
         <div className="bg-white font-inter text-slate-900">
+            <SEO 
+                title="Careers | Join the Future of Global Operations"
+                description="Help us build the infrastructure for the next generation of operations teams. Explore career opportunities at OPSlyHR and help connect world-class African operations talent with global companies."
+                keywords="Operations Careers, Remote Work Infrastructure, Join OPSlyHR, African Operations Jobs, Build Global Teams"
+            />
             {/* 1. HERO SECTION */}
             <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6">
                 <div className="container max-w-7xl mx-auto">

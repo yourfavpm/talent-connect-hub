@@ -1,13 +1,18 @@
-
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, ShieldCheck, Target, Users, Zap, Search, FileText, MessageSquare, Award, Clock } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import SEO from "@/components/SEO";
 
 const VettingProcess = () => {
     return (
         <div className="bg-white font-inter">
+            <SEO 
+                title="Our Vetting Standard | Rigorous Operations Assessment"
+                description="Explore our multi-stage vetting process for African operations professionals. We evaluate documented outcomes, execution depth, and functional integrity to ensure the highest quality talent."
+                keywords="Operations Vetting Process, Vetted African Talent, Operations Assessment Framework, Remote Hiring Standards, African Operations Experts Vetting"
+            />
             {/* HERO SECTION */}
             <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
                 <div className="container max-w-7xl mx-auto">

@@ -30,6 +30,7 @@ import {
     LogIn,
     UserPlus,
 } from "lucide-react";
+import SEO from "@/components/SEO";
 
 
 const PublicJobs = () => {
@@ -99,13 +100,19 @@ const PublicJobs = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+            <SEO 
+                title="African Operations Jobs | Remote Vetted Opportunities"
+                description="Browse open positions for vetted African operations professionals. Find high-impact remote roles in Product Ops, Rev Ops, and Business Ops with global companies."
+                keywords="African Operations Jobs, Remote Operations Careers Africa, Vetted Ops Talent Roles, High-Impact Remote Jobs, Product Operations Africa"
+            />
             {/* Header */}
             <header className="bg-white border-b sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-32" />
-                            <h1 className="text-2xl font-bold text-gray-900">Job Board</h1>
+                            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-12 object-contain" />
+                            <div className="h-6 w-px bg-slate-200 mx-2 hidden md:block" />
+                            <h1 className="text-lg font-bold text-slate-900 tracking-tight">Job Board</h1>
                         </div>
                         {!user && (
                             <div className="flex gap-2">

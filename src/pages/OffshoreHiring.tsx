@@ -1,12 +1,17 @@
-
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Globe, ShieldCheck, Banknote, Clock, CheckCircle2, MapPin } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const OffshoreHiring = () => {
     return (
         <div className="bg-white font-inter">
+            <SEO 
+                title="Offshore Hiring | Scalable African Operations Infrastructure"
+                description="Build distributed operations teams in Africa and EMEA without the complexity. OPSlyHR handles international compliance, payroll, and vetting for high-impact remote operators."
+                keywords="Offshore Operations Hiring, Remote Teams Africa, EMEA Operations Talent, Global Hiring Infrastructure, African Operations Outsourcing"
+            />
             {/* HERO SECTION */}
             <section className="relative pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
                 {/* Subtle Map Background */}
