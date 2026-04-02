@@ -80,11 +80,12 @@ const AdminDashboard = () => {
       let unvettedCount = 0;
 
       if (currentVersion === "v2") {
+        // Match the logic in VettingQueueV2.tsx: includes submitted/resubmitted/review OR draft with 100% progress
         const { data: v2Profiles, count: v2Count } = await supabase
           .from("v2_talent_profiles")
-          .select("id, user_id, status, submitted_at, created_at", { count: "exact" })
-          .in("status", ["submitted", "resubmitted", "in_review", "changes_requested", "revett_pending"])
-          .order("submitted_at", { ascending: false });
+          .select("id, user_id, status, progress_percent, submitted_at, created_at", { count: "exact" })
+          .or(`status.in.(submitted,resubmitted,in_review,changes_requested,revett_pending),and(status.eq.draft,progress_percent.eq.100)`)
+          .order("submitted_at", { ascending: false, nullsFirst: false });
 
         unvettedCount = v2Count || 0;
         
@@ -94,14 +95,15 @@ const AdminDashboard = () => {
           const { data: talentsData } = await supabase
             .from("talents")
             .select("*")
-            .in("user_id", userIds);
+            .in("user_id", userIds) as { data: any[] | null };
           
           pendingProfiles = limitedV2.map((p: any) => ({
             id: p.id,
             status: p.status,
+            progress_percent: p.progress_percent,
             submitted_at: p.submitted_at,
             created_at: p.created_at,
-            talents: (talentsData?.find(t => t.user_id === p.user_id) || {}) as Record<string, unknown>
+            talents: ((talentsData || []).find((t: any) => t.user_id === p.user_id) || {})
           }));
         }
       } else {
@@ -119,7 +121,7 @@ const AdminDashboard = () => {
         { data: pendingJobsData },
         { data: openTicketsData },
       ] = await Promise.all([
-        supabase.from("jobs").select("*, clients(company_name)").eq("status", "submitted").order("created_at", { ascending: false }).limit(5),
+        supabase.from("jobs").select("*, clients(company_name)").in("status", ["submitted", "under_review"]).order("created_at", { ascending: false }).limit(5),
         supabase.from("support_tickets").select("*").in("status", ["open", "in_progress"]).order("created_at", { ascending: false }).limit(5),
       ]);
 
@@ -144,17 +146,23 @@ const AdminDashboard = () => {
         { data: invoicesData },
         { count: openTicketsCount },
         { count: pendingInterviewsCount },
-        { data: recentOffers }
+        { data: latestOffers },
+        { data: latestTalents },
+        { data: latestJobs },
+        { data: latestTickets }
       ] = await Promise.all([
-        supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "submitted"),
+        supabase.from("jobs").select("id", { count: "exact", head: true }).in("status", ["submitted", "under_review"]),
         supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("invoices").select("amount").in("status", ["pending", "overdue"]),
+        supabase.from("invoices").select("total_amount, status").neq("status", "paid"),
         supabase.from("support_tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
         supabase.from("interviews").select("id", { count: "exact", head: true }).eq("status", "scheduled"), 
-        supabase.from("offers").select("*, talents(first_name, last_name)").order("created_at", { ascending: false }).limit(5)
+        supabase.from("offers").select("*, talents(first_name, last_name)").order("created_at", { ascending: false }).limit(5),
+        supabase.from("v2_talent_profiles").select("*, talents:talents(first_name, last_name, email)").order("created_at", { ascending: false }).limit(5),
+        supabase.from("jobs").select("*, clients(company_name)").order("created_at", { ascending: false }).limit(5),
+        supabase.from("support_tickets").select("*").order("created_at", { ascending: false }).limit(5)
       ]);
 
-      const invoiceSum = (invoicesData || []).reduce((acc: number, curr: any) => acc + (Number(curr.amount) || 0), 0);
+      const invoiceSum = (invoicesData || []).reduce((acc: number, curr: any) => acc + (Number(curr.total_amount) || 0), 0);
 
       setStats({
         pendingVetting: unvettedCount,
@@ -166,16 +174,42 @@ const AdminDashboard = () => {
         invoiceTotal: invoiceSum,
       });
 
-      // Format basic recent activity feed using offers for now
-      const formattedActivity = (recentOffers || []).map((offer: any) => ({
-        id: offer.id,
+      // Enrich recent activity with multiple event types
+      const activities: any[] = [];
+      
+      (latestOffers || []).forEach((o: any) => activities.push({
         type: 'Offer Created',
-        description: `Offer created for ${offer.talents?.first_name} ${offer.talents?.last_name} as ${offer.role_title}`,
-        time: offer.created_at,
-        status: offer.status
+        description: `New offer for ${o.talents?.first_name} ${o.talents?.last_name} as ${o.role_title}`,
+        time: o.created_at,
+        icon: 'offer'
       }));
 
-      setRecentActivity(formattedActivity);
+      (latestTalents || []).forEach((t: any) => activities.push({
+        type: 'Talent Signup',
+        description: `${t.talents?.first_name} ${t.talents?.last_name} (${t.status})`,
+        time: t.created_at,
+        icon: 'user'
+      }));
+
+      (latestJobs || []).forEach((j: any) => activities.push({
+        type: 'Job Posted',
+        description: `${j.title} by ${j.clients?.company_name || 'Client'}`,
+        time: j.created_at,
+        icon: 'job'
+      }));
+
+      (latestTickets || []).forEach((s: any) => activities.push({
+        type: 'Support Ticket',
+        description: s.subject,
+        time: s.created_at,
+        icon: 'ticket'
+      }));
+
+      const sortedActivity = activities
+        .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+        .slice(0, 10);
+
+      setRecentActivity(sortedActivity);
 
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -502,11 +536,19 @@ const AdminDashboard = () => {
               <div className="divide-y divide-gray-100">
                 {recentActivity.length > 0 ? recentActivity.map((activity, i) => (
                   <div key={i} className="p-4 flex gap-3 items-start hover:bg-gray-50 transition-colors">
-                    <div className="w-2 h-2 rounded-full bg-brand-primary mt-1.5 shrink-0" />
+                    <div className="mt-0.5 p-1.5 rounded-lg bg-gray-50 shrink-0">
+                      {activity.icon === 'offer' && <Wallet className="h-3 w-3 text-brand-primary" />}
+                      {activity.icon === 'user' && <Users className="h-3 w-3 text-success" />}
+                      {activity.icon === 'job' && <Briefcase className="h-3 w-3 text-blue-500" />}
+                      {activity.icon === 'ticket' && <AlertCircle className="h-3 w-3 text-warning" />}
+                    </div>
                     <div>
                       <p className="text-xs font-semibold text-gray-900">{activity.type}</p>
-                      <p className="text-xs text-gray-600 mt-0.5">{activity.description}</p>
-                      <p className="text-[10px] text-gray-400 mt-1">{new Date(activity.time).toLocaleString()}</p>
+                      <p className="text-[11px] text-gray-600 mt-0.5 line-clamp-2">{activity.description}</p>
+                      <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                        <Clock className="h-2.5 w-2.5" />
+                        {new Date(activity.time).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </p>
                     </div>
                   </div>
                 )) : (

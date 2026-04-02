@@ -242,8 +242,14 @@ const TalentDashboard = () => {
           <h1 className="text-xl md:text-2xl font-semibold text-slate-900 tracking-tight">
             Welcome back, {talent?.first_name || "User"}
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5 font-light">
-            You have <span className="text-slate-900 font-medium">{stats.unreadMessages || 0} unread messages</span> and <span className="text-slate-900 font-medium">{stats.openTickets || 0} active support tickets</span>.
+          <p className="text-xs text-slate-400 mt-1 font-light flex items-center gap-2">
+            <span>You have <span className="text-slate-900 font-medium">{stats.unreadMessages || 0} unread messages</span> and <span className="text-slate-900 font-medium">{stats.openTickets || 0} active support tickets</span>.</span>
+            {profile?.progress_percent < 100 && (
+              <>
+                <span className="h-1 w-1 rounded-full bg-slate-200" />
+                <span className="text-blue-500 font-medium">Profile: {profile?.progress_percent || 0}% complete</span>
+              </>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -265,13 +271,25 @@ const TalentDashboard = () => {
 
 
       {/* ── SHARED STATUS BANNER ───────────────────────────────────── */}
-      <ProfileStatusBanner 
-        status={profile?.status || "draft"}
-        progressPercent={profile?.progress_percent || 0}
-        requestedSectionsCount={sections.filter((s: any) => s.status === "changes_requested").length}
-        vettingLevelText={profile?.vetting_level_text}
-        managerName={talent?.assigned_manager_name}
-      />
+      {profile?.status && profile.status !== "draft" ? (
+        <ProfileStatusBanner 
+          status={profile.status}
+          progressPercent={profile?.progress_percent || 0}
+          requestedSectionsCount={sections.filter((s: any) => s.status === "changes_requested").length}
+          vettingLevelText={profile?.vetting_level_text}
+          managerName={talent?.assigned_manager_name}
+        />
+      ) : (
+        <div className="md:hidden">
+          <Link 
+            to={getInternalPath("/talent/onboarding")} 
+            className="flex items-center justify-between py-3 border-b border-slate-100 text-[12px] font-medium text-slate-900 hover:text-blue-600 transition-colors group"
+          >
+            <span className="underline decoration-slate-200 underline-offset-4 group-hover:decoration-blue-400">Complete your profile to get vetted</span>
+            <ArrowRight className="h-4 w-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+      )}
 
       <div className="space-y-4">
         {talent?.talent_id && (

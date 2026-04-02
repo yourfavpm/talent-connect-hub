@@ -299,25 +299,25 @@ const ProfileV2 = () => {
           <div className="w-full lg:w-80 shrink-0 lg:sticky lg:top-8 flex flex-col gap-6">
             <Card className="border-slate-200 overflow-hidden shadow-sm">
               <div className="h-24 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 relative" />
-              <CardContent className="p-6 pt-0 relative">
-                <div className="flex justify-center -mt-12 mb-4">
-                  <Avatar className="h-24 w-24 border-4 border-white shadow-sm">
-                    <AvatarFallback className="bg-slate-100 text-xl font-bold text-slate-700 uppercase">
+              <CardContent className="p-4 pt-0 relative">
+                <div className="flex justify-center -mt-10 mb-3">
+                  <Avatar className="h-20 w-20 border-4 border-white shadow-sm">
+                    <AvatarFallback className="bg-slate-100 text-lg font-bold text-slate-700 uppercase">
                       {(formData.firstName?.[0] || "") + (formData.lastName?.[0] || "")}
                     </AvatarFallback>
                   </Avatar>
                 </div>
                 
-                <div className="text-center space-y-1.5 mb-6">
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">
+                <div className="text-center space-y-1 mb-5">
+                  <h2 className="text-lg font-bold tracking-tight text-slate-900 leading-tight">
                     {formData.firstName} {formData.lastName}
                   </h2>
-                  <div className="flex items-center justify-center gap-1.5 text-slate-500 text-sm">
-                    <Briefcase className="h-3.5 w-3.5" />
+                  <div className="flex items-center justify-center gap-1.5 text-slate-400 text-[12px]">
+                    <Briefcase className="h-3 w-3" />
                     <span className="truncate max-w-[200px]">{formData.primaryRole || "Professional"}</span>
                   </div>
-                  <div className="flex items-center justify-center gap-1.5 text-slate-500 text-sm">
-                    <MapPin className="h-3.5 w-3.5" />
+                  <div className="flex items-center justify-center gap-1.5 text-slate-400 text-[12px]">
+                    <MapPin className="h-3 w-3" />
                     <span>{formData.country || "Remote"}</span>
                   </div>
                 </div>
@@ -372,10 +372,10 @@ const ProfileV2 = () => {
               return (
                 <Card key={step.key} className={clsx("border-slate-200 shadow-sm transition-all", isEditable && "ring-1 ring-emerald-500/20")}>
                   <CardHeader className="border-b border-slate-100 bg-white flex flex-row items-center justify-between py-5 px-6">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-3">
-                        <CardTitle className="text-lg font-bold text-slate-900">{step.title}</CardTitle>
-                        <Badge className={clsx(SColor.bg, SColor.text, "shadow-none font-semibold text-[10px] uppercase tracking-wider")}>
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2.5">
+                        <CardTitle className="text-base font-bold text-slate-900 tracking-tight">{step.title}</CardTitle>
+                        <Badge className={clsx(SColor.bg, SColor.text, "shadow-none font-bold text-[9px] uppercase tracking-widest px-1.5")}>
                           {SColor.label}
                         </Badge>
                       </div>
@@ -396,7 +396,7 @@ const ProfileV2 = () => {
                     )}
                   </CardHeader>
 
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 md:p-5">
                     {adminNote && status === "changes_requested" && (
                       <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
                         <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />

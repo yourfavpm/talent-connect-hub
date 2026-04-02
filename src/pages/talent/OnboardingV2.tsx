@@ -270,11 +270,11 @@ const OnboardingV2 = () => {
             <div className="mb-5 px-1">
               <h2 className="text-base font-semibold text-slate-800 tracking-tight">Onboarding</h2>
               <div className="mt-3">
-                <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1 font-medium uppercase tracking-wider">
-                  <span>Progress</span>
+                <div className="flex items-center justify-between text-[10px] text-slate-400 mb-0.5 font-medium uppercase tracking-wider">
+                  <span>Profile Progress</span>
                   <span>{progressPercent}%</span>
                 </div>
-                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
                   <div className="h-full bg-slate-900 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
                 </div>
               </div>
@@ -284,14 +284,13 @@ const OnboardingV2 = () => {
               const status = stepStatus(s.key);
               const isActive = s.id === currentStep;
               return (
-                <button
-                  key={s.id}
+                  <div key={s.id}
                   onClick={() => goToStep(s.id)}
                   className={clsx(
-                    "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left text-[13px] transition-all",
+                    "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-left text-[12px] transition-all",
                     isActive
-                      ? "bg-slate-900 text-white shadow-md font-medium"
-                      : "text-slate-500 hover:bg-slate-50 font-light"
+                      ? "bg-slate-900 text-white shadow-sm font-medium"
+                      : "text-slate-400 hover:bg-slate-50 font-light"
                   )}
                 >
                   <div className={clsx(
@@ -304,23 +303,23 @@ const OnboardingV2 = () => {
                     {status === "approved" ? <CheckCircle2 className="h-3.5 w-3.5" /> : s.id}
                   </div>
                   <span className="truncate">{s.title}</span>
-                </button>
+                </div>
               );
             })}
           </aside>
 
           {/* ── Main content ─────────────────────────────────────────── */}
-          <main className="flex-1 p-4 lg:p-12 max-w-3xl mx-auto w-full">
-            <Card className="bg-white shadow-[0_2px_15px_-3px_rgba(0,0,0,0.02)] border-slate-100/50 rounded-2xl overflow-hidden">
-              <CardContent className="p-5 md:p-8">
+          <main className="flex-1 p-4 lg:p-10 max-w-2xl mx-auto w-full">
+            <Card className="bg-white shadow-[0_2px_10px_-3px_rgba(0,0,0,0.02)] border-slate-100/50 rounded-xl overflow-hidden">
+              <CardContent className="p-4 md:p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div className="min-w-0 pr-4">
                     <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest pl-0.5">Step {currentStep} of {STEPS.length}</p>
                     <h1 className="text-xl font-semibold text-slate-900 mt-0.5 truncate">{step?.title}</h1>
                   </div>
                   {saving && (
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-blue-50 text-blue-500 text-[10px] font-medium animate-fade-in border border-blue-100/50">
-                      <Cloud className="h-3 w-3 animate-pulse" /> Saving
+                    <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-full bg-blue-50/50 text-blue-500 text-[9px] font-medium animate-fade-in border border-blue-100/30">
+                      <Cloud className="h-2.5 w-2.5 animate-pulse" /> Auto-saving
                     </div>
                   )}
                 </div>
@@ -341,16 +340,26 @@ const OnboardingV2 = () => {
                   </Button>
 
                   <div className="flex flex-col sm:flex-row gap-2">
+                    {!isLastStep && (
+                      <Button
+                        variant="ghost"
+                        onClick={nextStep}
+                        className="h-9 text-slate-400 hover:text-slate-900 text-[11px] font-medium px-3"
+                      >
+                        Skip Section
+                      </Button>
+                    )}
+                    
                     <Button
                       variant="outline"
                       onClick={saveCurrentStep}
                       disabled={saving}
-                      className="h-9 gap-1.5 border-slate-200 text-slate-600 hover:bg-slate-50 text-[12px] font-medium px-4"
+                      className="h-9 gap-1.5 border-slate-100 text-slate-500 hover:bg-slate-50 text-[11px] font-medium px-4"
                     >
-                      <Save className="h-3.5 w-3.5" /> Save Progress
+                      <Save className="h-3.5 w-3.5" /> Save
                     </Button>
-
-                    {currentStep >= 3 && (
+                    
+                    {isLastStep && (
                       <Button
                         onClick={handleSubmit}
                         disabled={submitting || saving}

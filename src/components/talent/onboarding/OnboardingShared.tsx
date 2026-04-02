@@ -16,21 +16,21 @@ import { TagInput } from "@/components/ui/tag-input";
 
 // ── Reusable primitives ────────────────────────────────────────────────────
 
-export const OB_INPUT_CLASS = "h-10 rounded-lg border border-slate-200 bg-white focus:border-slate-800 focus:ring-1 focus:ring-slate-800 text-[13px] font-light placeholder:text-slate-300 disabled:opacity-50 disabled:bg-slate-50";
+export const OB_INPUT_CLASS = "h-8 rounded-lg border border-slate-100 bg-white focus:border-slate-800 focus:ring-1 focus:ring-slate-800 text-[12px] font-light placeholder:text-slate-300 disabled:opacity-50 disabled:bg-slate-50 transition-all";
 
 export const FieldGroup = ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
-  <div className="space-y-1">
-    <Label className="text-[10px] font-medium text-slate-400 uppercase tracking-widest pl-0.5">
-      {label}{required && <span className="text-red-400 ml-1">*</span>}
+  <div className="space-y-0.5">
+    <Label className="text-[9px] font-medium text-slate-400 uppercase tracking-widest pl-0.5">
+      {label}{required && <span className="text-red-400 ml-0.5">*</span>}
     </Label>
     {children}
   </div>
 );
 
 export const CardBlock = ({ children, onDelete, disabled }: { children: React.ReactNode; onDelete?: () => void; disabled?: boolean }) => (
-  <div className="relative p-5 bg-white border border-slate-100/50 rounded-xl group shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)]">
+  <div className="relative p-4 bg-white border border-slate-100/50 rounded-xl group shadow-[0_2px_8px_-4px_rgba(0,0,0,0.01)]">
     {onDelete && !disabled && (
-      <button type="button" onClick={onDelete} className="absolute top-3 right-3 text-slate-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 p-1">
+      <button type="button" onClick={onDelete} className="absolute top-2.5 right-2.5 text-slate-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 p-1">
         <Trash2 className="h-3.5 w-3.5" />
       </button>
     )}
@@ -41,7 +41,7 @@ export const CardBlock = ({ children, onDelete, disabled }: { children: React.Re
 export const AddButton = ({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) => {
   if (disabled) return null;
   return (
-    <button type="button" onClick={onClick} className="w-full h-10 border border-dashed border-slate-200 rounded-xl text-[12px] font-medium text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all flex items-center justify-center gap-2 hover:bg-slate-50/50">
+    <button type="button" onClick={onClick} className="w-full h-9 border border-dashed border-slate-200 rounded-xl text-[11px] font-medium text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all flex items-center justify-center gap-2 hover:bg-slate-50/30">
       <Plus className="h-3.5 w-3.5" /> {label}
     </button>
   );
@@ -211,7 +211,7 @@ export const ProfessionalDetailsForm = ({ disabled }: { disabled?: boolean }) =>
         <Input className={OB_INPUT_CLASS} value={formData.headline} onChange={e => setValue("headline", e.target.value)} placeholder="Senior React Developer" disabled={disabled} />
       </FieldGroup>
       <FieldGroup label="Short Bio" required>
-        <Textarea className="min-h-[100px] rounded-lg border border-slate-200 bg-white focus:border-slate-800 disabled:opacity-50 disabled:bg-slate-50" value={formData.shortBio} onChange={e => setValue("shortBio", e.target.value)} placeholder="Tell us about yourself..." disabled={disabled} />
+        <Textarea className="min-h-[80px] rounded-lg border border-slate-100 bg-white focus:border-slate-800 disabled:opacity-50 disabled:bg-slate-50 text-[12px] font-light placeholder:text-slate-200" value={formData.shortBio} onChange={e => setValue("shortBio", e.target.value)} placeholder="Tell us about yourself..." disabled={disabled} />
       </FieldGroup>
       <div className="grid md:grid-cols-2 gap-4">
         <FieldGroup label="Years of Experience" required>
