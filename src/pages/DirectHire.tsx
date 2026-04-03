@@ -12,106 +12,109 @@ const DirectHire = () => {
                 description="Secure vetted African operations leaders for permanent placement. OPSlyHR manages the search, vetting, and guarantees, ensuring long-term operational success for your team."
                 keywords="Direct Hire Operations, Permanent Ops Placement Africa, Hire African Operations Leaders, Structured Operational Hiring, Remote Permanent Talent Africa"
             />
-      {/* HERO SECTION */}
       <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
-        <div className="container max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-            {/* Left Content */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="max-w-4xl"
-            >
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
-                Permanent Engagement
-              </div>
-              <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1]">
-                Build Long-Term Operational <br className="hidden md:block" /> Leadership with Confidence.
-              </h1>
-              <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-2xl">
-                OPSlyHR connects you with rigorously vetted product and operations leaders for permanent internal placement — backed by structured screening and replacement guarantees.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row items-start justify-start gap-8">
-                <Button 
-                    size="lg" 
-                    variant="outline"
-                    className="h-14 px-10 text-base rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none" 
-                    asChild
-                >
-                  <Link to="/auth/signup?portal=client">
-                    Discuss Direct Placement <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                
-                <Link 
-                    to="/service-models"
-                    className="text-slate-900 font-bold hover:text-blue-600 transition-colors"
-                >
-                    Compare Engagement Models →
-                </Link>
-              </div>
-            </motion.div>
-
-            {/* Right Visual (Enterprise Workflow) */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative"
-            >
-              <div className="bg-white border border-slate-200 rounded-[24px] p-10 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-blue-100/50 transition-colors duration-700"></div>
-                
-                <div className="relative space-y-0">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-10">Managed Hiring Pipeline</div>
-                  
-                  {[
-                    { label: "Role Definition", status: "aligned" },
-                    { label: "Vetting", status: "rigorous" },
-                    { label: "Interview", status: "structured" },
-                    { label: "Offer", status: "secured" },
-                    { label: "Hire", status: "transition" }
-                  ].map((step, idx) => (
-                    <div key={idx} className="relative flex items-start gap-6 pb-10 last:pb-0">
-                      {/* Vertical Line */}
-                      {idx !== 4 && (
-                        <div className="absolute left-[7px] top-[24px] w-[1px] h-[calc(100%-14px)] bg-slate-100">
-                          <motion.div 
-                            initial={{ height: 0 }}
-                            animate={{ height: "100%" }}
-                            transition={{ duration: 1, delay: 0.5 + idx * 0.2 }}
-                            className="w-full bg-blue-600/30"
-                          />
-                        </div>
-                      )}
-                      
-                      {/* Step Indicator */}
-                      <motion.div 
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ duration: 0.4, delay: 0.4 + idx * 0.2 }}
-                        className={`w-4 h-4 rounded-full border-2 bg-white shrink-0 mt-1.5 z-10 transition-colors duration-300 ${idx === 0 ? 'border-blue-600' : 'border-slate-200'}`}
-                      />
-                      
-                      {/* Label and Status */}
-                      <div className="flex flex-col">
-                        <span className={`text-sm font-bold tracking-tight transition-colors duration-300 ${idx === 0 ? 'text-slate-900' : 'text-slate-400'}`}>
-                          {step.label}
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-                          {step.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+        <div className="container max-w-7xl mx-auto relative z-20">
+          <div className="flex flex-wrap items-center -mx-4">
+            <div className="w-full lg:w-1/2 px-4 mb-16 lg:mb-0">
+              {/* Left Content */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="flex flex-col items-start text-left max-w-xl"
+              >
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
+                  Permanent Engagement
                 </div>
-              </div>
-
-              {/* Decorative background element */}
-              <div className="absolute -z-10 -bottom-6 -left-6 w-24 h-24 bg-slate-50 rounded-2xl rotate-12"></div>
-            </motion.div>
+                <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1]">
+                  Build Long-Term Operational <br className="hidden md:block" /> Leadership with Confidence.
+                </h1>
+                <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-2xl">
+                  OPSlyHR connects you with rigorously vetted product and operations leaders for permanent internal placement — backed by structured screening and replacement guarantees.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row items-start justify-start gap-8">
+                  <Button 
+                      size="lg" 
+                      variant="outline"
+                      className="h-14 px-10 text-base rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none w-full sm:w-auto" 
+                      asChild
+                  >
+                    <Link to="/auth/signup?portal=client">
+                      Discuss Direct Placement <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                  
+                  <Link 
+                      to="/service-models"
+                      className="inline-flex items-center text-slate-900 font-bold hover:text-blue-600 transition-colors py-4 sm:py-0"
+                  >
+                      Compare Engagement Models <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </div>
+              </motion.div>
+            </div>
+  
+            {/* Right Visual (Enterprise Workflow) */}
+            <div className="w-full lg:w-1/2 px-4 relative hidden lg:block">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="relative"
+              >
+                <div className="bg-white border border-slate-200 rounded-[24px] p-10 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-blue-100/50 transition-colors duration-700"></div>
+                  
+                  <div className="relative space-y-0">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-10">Managed Hiring Pipeline</div>
+                    
+                    {[
+                      { label: "Role Definition", status: "aligned" },
+                      { label: "Vetting", status: "rigorous" },
+                      { label: "Interview", status: "structured" },
+                      { label: "Offer", status: "secured" },
+                      { label: "Hire", status: "transition" }
+                    ].map((step, idx) => (
+                      <div key={idx} className="relative flex items-start gap-6 pb-10 last:pb-0">
+                        {/* Vertical Line */}
+                        {idx !== 4 && (
+                          <div className="absolute left-[7px] top-[24px] w-[1px] h-[calc(100%-14px)] bg-slate-100">
+                            <motion.div 
+                              initial={{ height: 0 }}
+                              animate={{ height: "100%" }}
+                              transition={{ duration: 1, delay: 0.5 + idx * 0.2 }}
+                              className="w-full bg-blue-600/30"
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Step Indicator */}
+                        <motion.div 
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ duration: 0.4, delay: 0.4 + idx * 0.2 }}
+                          className={`w-4 h-4 rounded-full border-2 bg-white shrink-0 mt-1.5 z-10 transition-colors duration-300 ${idx === 0 ? 'border-blue-600' : 'border-slate-200'}`}
+                        />
+                        
+                        {/* Label and Status */}
+                        <div className="flex flex-col">
+                          <span className={`text-sm font-bold tracking-tight transition-colors duration-300 ${idx === 0 ? 'text-slate-900' : 'text-slate-400'}`}>
+                            {step.label}
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                            {step.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+  
+                {/* Decorative background element */}
+                <div className="absolute -z-10 -bottom-6 -left-6 w-24 h-24 bg-slate-50 rounded-2xl rotate-12"></div>
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>

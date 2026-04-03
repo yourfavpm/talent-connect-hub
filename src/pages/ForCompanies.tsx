@@ -35,113 +35,119 @@ const ForCompanies = () => {
             />
             {/* 1. PAGE HERO (REDESIGNED FOR OPERATIONS) */}
             <section className="relative pt-40 pb-16 md:pt-40 md:pb-16 px-4 md:px-6 bg-[#F8F9FA] font-inter overflow-hidden">
-                <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                        className="flex flex-col items-center text-center lg:items-start lg:text-left"
-                    >
-                        <h1 className="text-3xl md:text-5xl lg:text-[52px] font-semibold mb-6 md:mb-6 tracking-tight text-slate-900 leading-[1.2] md:leading-[1.1]">
-                            Operations Talent, <span className="text-slate-900/40 block">Structured for Scale</span>
-                        </h1>
-                        <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium">
-                            Access rigorously vetted operations professionals — matched, contracted, and managed through a structured platform designed for scale.
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-12 w-full">
-                            <Button size="lg" className="h-14 px-8 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-none w-full sm:w-auto" asChild>
-                                <Link to="/book-consultation">Book an Operations Consultation</Link>
-                            </Button>
-                            <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-600 hover:text-slate-900 rounded-full font-bold flex items-center justify-center lg:justify-start gap-2 w-full sm:w-auto" asChild>
-                                <Link to="/service-models">View Engagement Models <ArrowRight className="w-4 h-4" /></Link>
-                            </Button>
+                <div className="container max-w-7xl mx-auto relative z-10">
+                    <div className="flex flex-wrap items-center -mx-4">
+                        <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8 }}
+                                className="flex flex-col items-start text-left max-w-xl"
+                            >
+                                <h1 className="text-3xl md:text-5xl lg:text-[52px] font-semibold mb-6 md:mb-6 tracking-tight text-slate-900 leading-[1.2] md:leading-[1.1]">
+                                    Operations Talent, <span className="text-slate-900/40 block">Structured for Scale</span>
+                                </h1>
+                                <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium">
+                                    Access rigorously vetted operations professionals — matched, contracted, and managed through a structured platform designed for scale.
+                                </p>
+                                <div className="flex flex-col sm:flex-row items-start justify-start gap-4 mb-12 w-full">
+                                    <Button size="lg" className="h-14 px-8 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-none w-full sm:w-auto" asChild>
+                                        <Link to="/book-consultation">Book an Operations Consultation</Link>
+                                    </Button>
+                                    <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-600 hover:text-slate-900 rounded-full font-bold flex items-center justify-start gap-2 w-full sm:w-auto" asChild>
+                                        <Link to="/service-models">View Engagement Models <ArrowRight className="w-4 h-4" /></Link>
+                                    </Button>
+                                </div>
+                                
+                                {/* System Status Indicators */}
+                                <div className="flex flex-wrap items-center justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-200/60 w-full">
+                                    {[
+                                        { label: "Vetting Completed", icon: UserCheck },
+                                        { label: "Contract Model Selected", icon: Shield },
+                                        { label: "Ops Manager Assigned", icon: Target }
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex items-center gap-2.5 text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-widest sm:whitespace-nowrap">
+                                            <item.icon className="h-4 w-4 text-blue-600 shrink-0" />
+                                            <span>{item.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
                         </div>
-                        
-                        {/* System Status Indicators */}
-                        <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-y-4 sm:gap-x-8 pt-8 border-t border-slate-200/60 w-full mb-8 lg:mb-0">
-                            {[
-                                { label: "Vetting Completed", icon: UserCheck },
-                                { label: "Contract Model Selected", icon: Shield },
-                                { label: "Ops Manager Assigned", icon: Target }
-                            ].map((item, i) => (
-                                <div key={i} className="flex items-center gap-2.5 text-[10px] md:text-[11px] font-bold text-slate-500 uppercase tracking-widest sm:whitespace-nowrap">
-                                    <item.icon className="h-4 w-4 text-blue-600 shrink-0" />
-                                    <span>{item.label}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div>
-
-                    {/* Right Side Visual: Active Operations Shortlist */}
-                    <motion.div 
-                        initial={{ opacity: 0, x: 30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                        className="relative hidden lg:block"
-                    >
-                        <div className="bg-white rounded-[24px] border border-slate-200 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] p-8">
-                            <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
-                                        <Users className="h-6 w-6" />
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-slate-900 text-base">Active Shortlist</div>
-                                        <div className="text-sm text-slate-500 font-medium">Operations Manager · 4 Candidates</div>
-                                    </div>
-                                </div>
-                                <div className="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-bold tracking-widest rounded-full uppercase border border-amber-100">
-                                    In Review
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                {[
-                                    { name: "S. Bennett", role: "Product Operations Manager", focus: "SaaS & Enterprise" },
-                                    { name: "M. Chen", role: "Revenue Operations Lead", focus: "Fintech & Pay-ops" },
-                                    { name: "J. Walters", role: "Business Operations Manager", focus: "Growth & Marketplace" },
-                                    { name: "A. Ibrahim", role: "Program Operations Lead", focus: "Scalable Infrastructure" }
-                                ].map((row, i) => (
-                                    <motion.div 
-                                        key={i}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.4 + (i * 0.1) }}
-                                        className="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-sm transition-all group"
-                                    >
+    
+                        {/* Right Side Visual: Active Operations Shortlist */}
+                        <div className="w-full lg:w-1/2 px-4">
+                            <motion.div 
+                                initial={{ opacity: 0, x: 30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.8, delay: 0.2 }}
+                                className="relative hidden lg:block"
+                            >
+                                <div className="bg-white rounded-[24px] border border-slate-200 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] p-8">
+                                    <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-6">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center text-slate-400 font-bold text-xs">
-                                                {row.name.split(' ').map(n => n[0]).join('')}
+                                            <div className="h-12 w-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                                                <Users className="h-6 w-6" />
                                             </div>
                                             <div>
-                                                <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{row.name}</div>
-                                                <div className="text-[12px] text-slate-500 font-medium">{row.role}</div>
+                                                <div className="font-bold text-slate-900 text-base">Active Shortlist</div>
+                                                <div className="text-sm text-slate-500 font-medium">Operations Manager · 4 Candidates</div>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Focus</div>
-                                            <div className="text-[11px] font-semibold text-slate-700">{row.focus}</div>
+                                        <div className="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-bold tracking-widest rounded-full uppercase border border-amber-100">
+                                            In Review
                                         </div>
-                                    </motion.div>
-                                ))}
-                            </div>
-
-                            <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-                                <div className="flex -space-x-2">
-                                    {[1, 2, 3].map((_, i) => (
-                                        <div key={i} className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white" />
-                                    ))}
-                                    <div className="w-8 h-8 rounded-full bg-blue-50 border-2 border-white flex items-center justify-center text-[10px] font-bold text-blue-600">
-                                        +4
+                                    </div>
+    
+                                    <div className="space-y-4">
+                                        {[
+                                            { name: "S. Bennett", role: "Product Operations Manager", focus: "SaaS & Enterprise" },
+                                            { name: "M. Chen", role: "Revenue Operations Lead", focus: "Fintech & Pay-ops" },
+                                            { name: "J. Walters", role: "Business Operations Manager", focus: "Growth & Marketplace" },
+                                            { name: "A. Ibrahim", role: "Program Operations Lead", focus: "Scalable Infrastructure" }
+                                        ].map((row, i) => (
+                                            <motion.div 
+                                                key={i}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.4 + (i * 0.1) }}
+                                                className="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-sm transition-all group"
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center text-slate-400 font-bold text-xs">
+                                                        {row.name.split(' ').map(n => n[0]).join('')}
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{row.name}</div>
+                                                        <div className="text-[12px] text-slate-500 font-medium">{row.role}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Focus</div>
+                                                    <div className="text-[11px] font-semibold text-slate-700">{row.focus}</div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+    
+                                    <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+                                        <div className="flex -space-x-2">
+                                            {[1, 2, 3].map((_, i) => (
+                                                <div key={i} className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white" />
+                                            ))}
+                                            <div className="w-8 h-8 rounded-full bg-blue-50 border-2 border-white flex items-center justify-center text-[10px] font-bold text-blue-600">
+                                                +4
+                                            </div>
+                                        </div>
+                                        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <Clock className="w-3 h-3 text-blue-400" />
+                                            Update: 2h ago
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                    <Clock className="w-3 h-3 text-blue-400" />
-                                    Update: 2h ago
-                                </div>
-                            </div>
+                            </motion.div>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </section>
 

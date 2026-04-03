@@ -57,10 +57,10 @@ const BookConsultation = () => {
                 description: "Failed to submit request. Please try again.",
                 variant: "destructive"
             });
-    } finally {
-        setLoading(false);
-    }
-  };
+        } finally {
+            setLoading(false);
+        }
+    };
 
   const firstNameRef = useRef<HTMLInputElement>(null);
   const [showStickyCTA, setShowStickyCTA] = useState(false);
@@ -136,10 +136,10 @@ const BookConsultation = () => {
                     <span className="text-slate-600">Request Talent</span>
                 </div>
 
-                <div className="grid lg:grid-cols-[45%_1fr] gap-16 lg:gap-32 items-start">
+                <div className="flex flex-wrap -mx-4 items-start">
                     {/* LEFT COLUMN: Context Panel */}
-                    <div className="order-2 lg:order-1 lg:sticky lg:top-24 space-y-12">
-                        <div>
+                    <div className="w-full lg:w-1/2 px-4 mb-16 lg:mb-0 lg:sticky lg:top-24">
+                        <div className="max-w-xl">
                             <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200 uppercase tracking-[0.15em] mb-6">
                                 Consultation Request
                             </div>
@@ -147,174 +147,170 @@ const BookConsultation = () => {
                                 Define the Role. <br className="hidden md:block" />
                                 We Structure the Match.
                             </h1>
-                            <p className="text-lg text-slate-500 leading-relaxed max-w-lg">
+                            <p className="text-lg text-slate-500 leading-relaxed max-w-lg mb-12">
                                 Share your objectives and timeline. Our team will coordinate vetting, matching, and engagement setup.
                             </p>
-                        </div>
 
-                        {/* Feature Blocks */}
-                        <div className="space-y-8 max-w-md">
-                            <div className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">
-                                What Happens Next
+                            {/* Feature Blocks */}
+                            <div className="space-y-8 max-w-md mb-12">
+                                <div className="text-[11px] font-bold text-slate-900 uppercase tracking-widest">
+                                    What Happens Next
+                                </div>
+                                <div className="space-y-0">
+                                    {[
+                                        "Role alignment call",
+                                        "Curated shortlist within 48 hours",
+                                        "Structured engagement proposal",
+                                        "Centralized billing & compliance"
+                                    ].map((item, idx) => (
+                                        <div key={idx} className={`py-5 flex items-center gap-4 ${idx !== 0 ? 'border-t border-slate-100' : ''}`}>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0" />
+                                            <span className="text-sm font-semibold text-slate-700 tracking-tight">{item}</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                            
-                            <div className="space-y-0">
-                                {[
-                                    "Role alignment call",
-                                    "Curated shortlist within 48 hours",
-                                    "Structured engagement proposal",
-                                    "Centralized billing & compliance"
-                                ].map((item, idx) => (
-                                    <div key={idx} className={`py-5 flex items-center gap-4 ${idx !== 0 ? 'border-t border-slate-100' : ''}`}>
-                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0" />
-                                        <span className="text-sm font-semibold text-slate-700 tracking-tight">{item}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
 
-                        {/* Trust Indicator */}
-                        <div className="pt-8 border-t border-slate-100">
-                            <p className="text-[12px] font-medium text-slate-400 mb-6">
-                                Trusted by growth-stage and enterprise teams globally.
-                            </p>
-                            <div className="flex flex-wrap items-center gap-8 opacity-40 grayscale">
-                                {/* Muted logos placeholder - using stylized text for enterprise feel */}
-                                <div className="text-lg font-bold tracking-tighter text-slate-900">FORTH</div>
-                                <div className="text-lg font-bold tracking-tight text-slate-900 underline decoration-2">VELO</div>
-                                <div className="text-lg font-bold tracking-widest text-slate-900 uppercase">Aspect</div>
+                            {/* Trust Indicator */}
+                            <div className="pt-8 border-t border-slate-100">
+                                <p className="text-[12px] font-medium text-slate-400 mb-6">
+                                    Trusted by growth-stage and enterprise teams globally.
+                                </p>
+                                <div className="flex flex-wrap items-center gap-8 opacity-40 grayscale">
+                                    <div className="text-lg font-bold tracking-tighter text-slate-900">FORTH</div>
+                                    <div className="text-lg font-bold tracking-tight text-slate-900 underline decoration-2">VELO</div>
+                                    <div className="text-lg font-bold tracking-widest text-slate-900 uppercase">Aspect</div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     {/* RIGHT COLUMN: Form Panel */}
-                    <div id="form" className="order-1 lg:order-2 bg-white border border-slate-200 rounded-xl p-8 md:p-12 shadow-sm max-w-[600px] w-full">
-                        {/* Mobile Header */}
-                        <div className="lg:hidden mb-10">
-                            <h1 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Define the Role.</h1>
-                            <p className="text-slate-500 font-medium tracking-tight leading-relaxed">We structure the match within 48 hours.</p>
-                        </div>
-                        <div className="hidden lg:block mb-10">
-                            <h2 className="text-2xl font-bold text-slate-900 mb-2">Request Structured Matching</h2>
-                            <p className="text-sm text-slate-500">All fields required unless marked optional.</p>
-                        </div>
+                    <div id="form" className="w-full lg:w-1/2 px-4 order-first lg:order-last mb-16 lg:mb-0">
+                        <div className="bg-white border border-slate-200 rounded-xl p-8 md:p-12 shadow-sm max-w-[600px] w-full mx-auto lg:ml-auto">
+                            <div className="mb-10">
+                                <h2 className="text-2xl font-bold text-slate-900 mb-2">Request Structured Matching</h2>
+                                <p className="text-sm text-slate-500">All fields required unless marked optional.</p>
+                            </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid md:grid-cols-2 gap-6">
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="firstName" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">First Name</Label>
+                                        <Input 
+                                            ref={firstNameRef}
+                                            id="firstName" 
+                                            value={formData.firstName} 
+                                            onChange={(e) => handleChange("firstName", e.target.value)} 
+                                            placeholder="Jane" 
+                                            className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900" 
+                                            required 
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="lastName" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Last Name</Label>
+                                        <Input 
+                                            id="lastName" 
+                                            value={formData.lastName} 
+                                            onChange={(e) => handleChange("lastName", e.target.value)} 
+                                            placeholder="Doe" 
+                                            className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900" 
+                                            required 
+                                        />
+                                    </div>
+                                </div>
+
                                 <div className="space-y-2">
-                                    <Label htmlFor="firstName" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">First Name</Label>
+                                    <Label htmlFor="email" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Work Email</Label>
                                     <Input 
-                                        ref={firstNameRef}
-                                        id="firstName" 
-                                        value={formData.firstName} 
-                                        onChange={(e) => handleChange("firstName", e.target.value)} 
-                                        placeholder="Jane" 
+                                        id="email" 
+                                        type="email" 
+                                        value={formData.email} 
+                                        onChange={(e) => handleChange("email", e.target.value)} 
+                                        placeholder="jane@company.com" 
                                         className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900" 
                                         required 
                                     />
                                 </div>
+
                                 <div className="space-y-2">
-                                    <Label htmlFor="lastName" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Last Name</Label>
+                                    <Label htmlFor="company" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Company</Label>
                                     <Input 
-                                        id="lastName" 
-                                        value={formData.lastName} 
-                                        onChange={(e) => handleChange("lastName", e.target.value)} 
-                                        placeholder="Doe" 
+                                        id="company" 
+                                        value={formData.company} 
+                                        onChange={(e) => handleChange("company", e.target.value)} 
+                                        placeholder="Acme Inc." 
                                         className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900" 
                                         required 
                                     />
                                 </div>
-                            </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Work Email</Label>
-                                <Input 
-                                    id="email" 
-                                    type="email" 
-                                    value={formData.email} 
-                                    onChange={(e) => handleChange("email", e.target.value)} 
-                                    placeholder="jane@company.com" 
-                                    className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900" 
-                                    required 
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="company" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Company</Label>
-                                <Input 
-                                    id="company" 
-                                    value={formData.company} 
-                                    onChange={(e) => handleChange("company", e.target.value)} 
-                                    placeholder="Acme Inc." 
-                                    className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900" 
-                                    required 
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="goal" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Primary Objective</Label>
-                                <Select value={formData.objective} onValueChange={(val) => handleChange("objective", val)}>
-                                    <SelectTrigger className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900 text-sm">
-                                        <SelectValue placeholder="What are you looking to solve?" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-lg shadow-xl border-slate-200">
-                                        <SelectItem value="hire-full-time">Hire Full-Time Leadership</SelectItem>
-                                        <SelectItem value="hire-contractor">Hire Specialized Contractor</SelectItem>
-                                        <SelectItem value="project-support">One-Time Project Delivery</SelectItem>
-                                        <SelectItem value="advisory">Advisory / Consultation</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="grid md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="preferredDate" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Preferred Date</Label>
-                                    <Input
-                                        id="preferredDate"
-                                        type="date"
-                                        value={formData.preferredDate}
-                                        onChange={(e) => handleChange("preferredDate", e.target.value)}
-                                        className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="preferredTime" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Preferred Time</Label>
-                                    <Select value={formData.preferredTime} onValueChange={(val) => handleChange("preferredTime", val)}>
+                                    <Label htmlFor="goal" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Primary Objective</Label>
+                                    <Select value={formData.objective} onValueChange={(val) => handleChange("objective", val)}>
                                         <SelectTrigger className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900 text-sm">
-                                            <SelectValue placeholder="Select time" />
+                                            <SelectValue placeholder="What are you looking to solve?" />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-lg shadow-xl border-slate-200">
-                                            <SelectItem value="morning">Morning (9AM - 12PM)</SelectItem>
-                                            <SelectItem value="afternoon">Afternoon (12PM - 4PM)</SelectItem>
-                                            <SelectItem value="evening">Evening (4PM - 6PM)</SelectItem>
+                                            <SelectItem value="hire-full-time">Hire Full-Time Leadership</SelectItem>
+                                            <SelectItem value="hire-contractor">Hire Specialized Contractor</SelectItem>
+                                            <SelectItem value="project-support">One-Time Project Delivery</SelectItem>
+                                            <SelectItem value="advisory">Advisory / Consultation</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
-                            </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="message" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Details (Optional)</Label>
-                                <Textarea
-                                    id="message"
-                                    value={formData.details}
-                                    onChange={(e) => handleChange("details", e.target.value)}
-                                    placeholder="Tell us a bit about the role or the challenge..."
-                                    className="min-h-[120px] border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900 resize-none p-4 leading-relaxed placeholder:text-slate-400"
-                                />
-                            </div>
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="preferredDate" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Preferred Date</Label>
+                                        <Input
+                                            id="preferredDate"
+                                            type="date"
+                                            value={formData.preferredDate}
+                                            onChange={(e) => handleChange("preferredDate", e.target.value)}
+                                            className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="preferredTime" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Preferred Time</Label>
+                                        <Select value={formData.preferredTime} onValueChange={(val) => handleChange("preferredTime", val)}>
+                                            <SelectTrigger className="h-12 border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900 text-sm">
+                                                <SelectValue placeholder="Select time" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-lg shadow-xl border-slate-200">
+                                                <SelectItem value="morning">Morning (9AM - 12PM)</SelectItem>
+                                                <SelectItem value="afternoon">Afternoon (12PM - 4PM)</SelectItem>
+                                                <SelectItem value="evening">Evening (4PM - 6PM)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
 
-                            <div className="pt-2">
-                                <Button type="submit" disabled={loading} className="w-full h-12 bg-slate-950 hover:bg-blue-700 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2">
-                                    {loading ? "Processing..." : "Request Consultation →"}
-                                </Button>
-                                <p className="text-[11px] text-slate-400 font-medium text-center mt-4">
-                                    We’ll respond within one business day.
-                                </p>
-                            </div>
-                        </form>
+                                <div className="space-y-2">
+                                    <Label htmlFor="message" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Details (Optional)</Label>
+                                    <Textarea
+                                        id="message"
+                                        value={formData.details}
+                                        onChange={(e) => handleChange("details", e.target.value)}
+                                        placeholder="Tell us a bit about the role or the challenge..."
+                                        className="min-h-[120px] border-slate-200 rounded-lg focus:ring-blue-600/10 focus:border-blue-600 bg-white text-slate-900 resize-none p-4 leading-relaxed placeholder:text-slate-400"
+                                    />
+                                </div>
+
+                                <div className="pt-2">
+                                    <Button type="submit" disabled={loading} className="w-full h-12 bg-slate-950 hover:bg-blue-700 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2">
+                                        {loading ? "Processing..." : "Request Consultation →"}
+                                    </Button>
+                                    <p className="text-[11px] text-slate-400 font-medium text-center mt-4">
+                                        We’ll respond within one business day.
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
+
             {/* Sticky Mobile CTA */}
             <AnimatePresence>
                 {showStickyCTA && (

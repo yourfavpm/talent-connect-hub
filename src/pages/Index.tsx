@@ -91,82 +91,85 @@ const Index = () => {
         {/* Subtle background decoration */}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-white/50 to-transparent pointer-events-none"></div>
         
-        <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
-          {/* Left Side: Content & Trust Indicators */}
-          <div className="animate-slide-up flex flex-col items-start text-left w-full">
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
-              Hire Vetted Remote Operations Experts — Built for Global Teams
-            </h1>
- 
-            <p className="text-xs md:text-sm text-slate-600 mb-8 md:mb-10 max-w-md leading-relaxed font-light">
-              We match you with pre-screened professionals ready to handle operations, support, project work, and team management — no recruitment burden.
-            </p>
- 
-            <div className="flex flex-col sm:flex-row items-start justify-start gap-4 mb-10 w-full">
-              <Link to="/auth/login" className="w-full sm:w-auto">
-                <Button size="lg" className="h-10 px-6 text-[11px] bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/5 transition-all font-bold w-full uppercase tracking-wider">
-                  Get Matched With Talent
-                </Button>
-              </Link>
-              <Link to="/book-consultation" className="w-full sm:w-auto">
-                <Button variant="ghost" size="lg" className="h-10 px-6 text-[11px] text-slate-700 hover:bg-slate-100/80 rounded-full font-bold flex items-center justify-start gap-2 w-full sm:w-auto uppercase tracking-wider">
-                  Book Strategy Call <ArrowRight className="w-3 h-3" />
-                </Button>
-              </Link>
-            </div>
-            
-            {/* MOBILE ONLY: FEATURED TALENT CARD */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="lg:hidden w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl shadow-slate-200/60 border border-slate-100 mb-12"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100">
-                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80" alt="Featured Talent" className="w-full h-full object-cover" />
+        <div className="container max-w-7xl mx-auto relative z-10">
+          <div className="flex flex-wrap items-center -mx-4">
+            {/* Left Side: Content & Trust Indicators */}
+            <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
+              <div className="animate-slide-up flex flex-col items-start text-left w-full max-w-xl">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
+                  Hire Vetted Remote Operations Experts — Built for Global Teams
+                </h1>
+     
+                <p className="text-xs md:text-sm text-slate-600 mb-8 md:mb-10 max-w-md leading-relaxed font-light">
+                  We match you with pre-screened professionals ready to handle operations, support, project work, and team management — no recruitment burden.
+                </p>
+     
+                <div className="flex flex-col sm:flex-row items-start justify-start gap-4 mb-10 w-full">
+                  <Link to="/auth/login" className="w-full sm:w-auto">
+                    <Button size="lg" className="h-10 px-6 text-[11px] bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/5 transition-all font-bold w-full uppercase tracking-wider">
+                      Get Matched With Talent
+                    </Button>
+                  </Link>
+                  <Link to="/book-consultation" className="w-full sm:w-auto">
+                    <Button variant="ghost" size="lg" className="h-10 px-6 text-[11px] text-slate-700 hover:bg-slate-100/80 rounded-full font-bold flex items-center justify-start gap-2 w-full sm:w-auto uppercase tracking-wider">
+                      Book Strategy Call <ArrowRight className="w-3 h-3" />
+                    </Button>
+                  </Link>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 text-sm">Michael T.</span>
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                
+                {/* MOBILE ONLY: FEATURED TALENT CARD */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="lg:hidden w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl shadow-slate-200/60 border border-slate-100 mb-12"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100">
+                      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80" alt="Featured Talent" className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 text-sm">Michael T.</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium">Dir. of Operations</p>
+                    </div>
+                    <div className="ml-auto flex flex-col items-end">
+                      <span className="text-[9px] font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded tracking-tighter">VETTED L5</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-500 font-medium">Dir. of Operations</p>
-                </div>
-                <div className="ml-auto flex flex-col items-end">
-                  <span className="text-[9px] font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded tracking-tighter">VETTED L5</span>
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Relavent EXP</span>
+                      <span className="text-xs font-bold text-slate-700">14 Years</span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Active Region</span>
+                      <span className="text-xs font-bold text-slate-700">EMEA / GMT+2</span>
+                    </div>
+                  </div>
+                </motion.div>
+    
+                {/* Trust Indicators */}
+                <div className="flex flex-wrap items-center justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-200 w-full">
+                  {[
+                    "48h Average Shortlist",
+                    "98% Placement Rate",
+                    "EMEA Coverage"
+                  ].map((indicator, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="w-1 h-1 rounded-full bg-blue-500" />
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{indicator}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50">
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Relavent EXP</span>
-                  <span className="text-xs font-bold text-slate-700">14 Years</span>
-                </div>
-                <div className="flex flex-col items-end">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Active Region</span>
-                  <span className="text-xs font-bold text-slate-700">EMEA / GMT+2</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap items-center justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-200">
-              {[
-                "48h Average Shortlist",
-                "98% Placement Rate",
-                "EMEA Coverage"
-              ].map((indicator, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className="w-1 h-1 rounded-full bg-blue-500" />
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{indicator}</span>
-                </div>
-              ))}
             </div>
-          </div>
-
-          {/* Right Side: Layered Profile Cards */}
-          <div className="relative animate-fade-in hidden lg:block h-[540px]">
-            {[
+    
+            {/* Right Side: Layered Profile Cards */}
+            <div className="w-full lg:w-1/2 px-4 relative animate-fade-in hidden lg:block h-[540px]">
+              {[
               {
                 name: "Sarah J.",
                 role: "Head of Product",
@@ -248,6 +251,7 @@ const Index = () => {
                 </div>
               </motion.div>
             ))}
+            </div>
           </div>
         </div>
       </section>

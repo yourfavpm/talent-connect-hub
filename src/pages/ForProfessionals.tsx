@@ -15,107 +15,111 @@ const ForProfessionals = () => {
 
             {/* Header / Hero - Enterprise SaaS Style */}
             <section className="relative pt-40 pb-12 md:pt-40 md:pb-16 flex flex-col justify-center px-6 bg-slate-50/50 overflow-hidden">
-                <div className="container max-w-7xl mx-auto relative z-20 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                    <div className="flex flex-col items-start text-left">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
-                            For Operations Professionals
-                        </div>
-                        <h1 className="text-3xl md:text-7xl font-semibold mb-6 md:mb-8 text-slate-900 leading-[1.2] md:leading-[1.1] tracking-tight">
-                            Join a Curated <br className="hidden md:block" />
-                            Network of <span className="text-blue-600">High-Impact</span> Operators
-                        </h1>
-                        <p className="text-base md:text-xl text-slate-600 mb-10 md:mb-12 leading-relaxed max-w-xl font-medium">
-                            Work with ambitious companies through structured, vetted engagements — with contracts, compliance, and payments handled centrally.
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-start justify-start gap-8 w-full sm:w-auto">
-                            <Button 
-                                size="lg" 
-                                variant="outline"
-                                className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold transition-all duration-300 shadow-none w-full sm:w-auto" 
-                                asChild
-                            >
-                                <Link to="/auth/signup?portal=talent">Apply as Talent</Link>
-                            </Button>
-                            
-                            <Link 
-                                to="#"
-                                className="inline-flex items-center text-slate-900 font-semibold hover:text-blue-600 transition-colors justify-start"
-                            >
-                                View Open Roles <ArrowRight className="ml-2 h-4 w-4" />
-                            </Link>
-                        </div>
-                    </div>
-
-                    {/* Visual Panel - Redesigned Dashboard Style */}
-                    <div className="relative hidden lg:block">
-                        <div className="relative z-10 bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 md:p-8 overflow-hidden min-h-[380px] md:min-h-[480px] flex flex-col">
-                            {/* Profile Header */}
-                            <div className="flex items-center gap-6 mb-8 pb-6 border-b border-slate-100">
-                                <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center overflow-hidden">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80" 
-                                        className="w-full h-full object-cover" 
-                                        alt="Professional Operator" 
-                                    />
+                <div className="container max-w-7xl mx-auto relative z-20">
+                    <div className="flex flex-wrap items-center -mx-4">
+                        <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
+                            <div className="flex flex-col items-start text-left max-w-xl">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
+                                    For Operations Professionals
                                 </div>
-                                <div className="flex-grow">
-                                    <div className="flex items-center gap-3 mb-1">
-                                        <div className="text-xl font-bold text-slate-900 tracking-tight">Vetted Operator</div>
-                                        <div className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold rounded-md border border-green-100 flex items-center gap-1">
-                                            <Check className="w-2.5 h-2.5" />
-                                            ACTIVE
-                                        </div>
+                                <h1 className="text-3xl md:text-7xl font-semibold mb-6 md:mb-8 text-slate-900 leading-[1.2] md:leading-[1.1] tracking-tight">
+                                    Join a Curated <br className="hidden md:block" />
+                                    Network of <span className="text-blue-600">High-Impact</span> Operators
+                                </h1>
+                                <p className="text-base md:text-xl text-slate-600 mb-10 md:mb-12 leading-relaxed max-w-xl font-medium">
+                                    Work with ambitious companies through structured, vetted engagements — with contracts, compliance, and payments handled centrally.
+                                </p>
+                                <div className="flex flex-col sm:flex-row items-start justify-start gap-8 w-full sm:w-auto">
+                                    <Button 
+                                        size="lg" 
+                                        variant="outline"
+                                        className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold transition-all duration-300 shadow-none w-full sm:w-auto" 
+                                        asChild
+                                    >
+                                        <Link to="/auth/signup?portal=talent">Apply as Talent</Link>
+                                    </Button>
+                                    
+                                    <Link 
+                                        to="#"
+                                        className="inline-flex items-center text-slate-900 font-semibold hover:text-blue-600 transition-colors justify-start py-4 sm:py-0"
+                                    >
+                                        View Open Roles <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+    
+                        {/* Visual Panel - Redesigned Dashboard Style */}
+                        <div className="w-full lg:w-1/2 px-4 relative hidden lg:block">
+                            <div className="relative z-10 bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 md:p-8 overflow-hidden min-h-[380px] md:min-h-[480px] flex flex-col">
+                                {/* Profile Header */}
+                                <div className="flex items-center gap-6 mb-8 pb-6 border-b border-slate-100">
+                                    <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center overflow-hidden">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80" 
+                                            className="w-full h-full object-cover" 
+                                            alt="Professional Operator" 
+                                        />
                                     </div>
-                                    <div className="text-sm text-slate-500 font-medium">Product Operations Manager</div>
-                                </div>
-                            </div>
-
-                            {/* Skills & Metrics */}
-                            <div className="grid grid-cols-2 gap-4 mb-8">
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Focus Area</div>
-                                    <div className="text-sm font-bold text-slate-800">Fintech Scaleups</div>
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Experience</div>
-                                    <div className="text-sm font-bold text-slate-800">8+ Years</div>
-                                </div>
-                            </div>
-
-                            {/* Execution Timeline Mockup */}
-                            <div className="mt-auto space-y-4">
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Engagement Progress</div>
-                                <div className="space-y-3">
-                                    {[
-                                        { label: "Requirements Definition", status: "completed" },
-                                        { label: "Technical Vetting", status: "completed" },
-                                        { label: "Matching & Interview", status: "active" },
-                                        { label: "Managed Activation", status: "pending" }
-                                    ].map((step, i) => (
-                                        <div key={i} className="flex items-center gap-4">
-                                            <div className={`w-2 h-2 rounded-full ${step.status === 'completed' ? 'bg-blue-600' : step.status === 'active' ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-slate-200'}`} />
-                                            <div className={`text-xs font-semibold ${step.status === 'pending' ? 'text-slate-400' : 'text-slate-700'}`}>{step.label}</div>
-                                            {step.status === 'completed' && <Check className="w-3 h-3 text-blue-600 ml-auto" />}
+                                    <div className="flex-grow">
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <div className="text-xl font-bold text-slate-900 tracking-tight">Vetted Operator</div>
+                                            <div className="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold rounded-md border border-green-100 flex items-center gap-1">
+                                                <Check className="w-2.5 h-2.5" />
+                                                ACTIVE
+                                            </div>
                                         </div>
-                                    ))}
+                                        <div className="text-sm text-slate-500 font-medium">Product Operations Manager</div>
+                                    </div>
                                 </div>
+    
+                                {/* Skills & Metrics */}
+                                <div className="grid grid-cols-2 gap-4 mb-8">
+                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Focus Area</div>
+                                        <div className="text-sm font-bold text-slate-800">Fintech Scaleups</div>
+                                    </div>
+                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Experience</div>
+                                        <div className="text-sm font-bold text-slate-800">8+ Years</div>
+                                    </div>
+                                </div>
+    
+                                {/* Execution Timeline Mockup */}
+                                <div className="mt-auto space-y-4">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Engagement Progress</div>
+                                    <div className="space-y-3">
+                                        {[
+                                            { label: "Requirements Definition", status: "completed" },
+                                            { label: "Technical Vetting", status: "completed" },
+                                            { label: "Matching & Interview", status: "active" },
+                                            { label: "Managed Activation", status: "pending" }
+                                        ].map((step, i) => (
+                                            <div key={i} className="flex items-center gap-4">
+                                                <div className={`w-2 h-2 rounded-full ${step.status === 'completed' ? 'bg-blue-600' : step.status === 'active' ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-slate-200'}`} />
+                                                <div className={`text-xs font-semibold ${step.status === 'pending' ? 'text-slate-400' : 'text-slate-700'}`}>{step.label}</div>
+                                                {step.status === 'completed' && <Check className="w-3 h-3 text-blue-600 ml-auto" />}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+    
+                                {/* Floating Metadata Tag */}
+                                <motion.div 
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.8 }}
+                                    className="absolute top-8 right-8 bg-blue-600 text-white rounded-xl shadow-xl p-4 flex flex-col items-center gap-1 border border-blue-500/20"
+                                >
+                                    <Users className="h-5 w-5 mb-1" />
+                                    <span className="text-[10px] font-bold">TOP 1%</span>
+                                </motion.div>
                             </div>
-
-                            {/* Floating Metadata Tag */}
-                            <motion.div 
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.8 }}
-                                className="absolute top-8 right-8 bg-blue-600 text-white rounded-xl shadow-xl p-4 flex flex-col items-center gap-1 border border-blue-500/20"
-                            >
-                                <Users className="h-5 w-5 mb-1" />
-                                <span className="text-[10px] font-bold">TOP 1%</span>
-                            </motion.div>
+                            
+                            {/* Decorative background element */}
+                            <div className="absolute -top-10 -right-10 w-64 h-64 bg-blue-100/50 rounded-full blur-3xl -z-10 opacity-40"></div>
+                            <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-slate-200/50 rounded-full blur-3xl -z-10 opacity-40"></div>
                         </div>
-                        
-                        {/* Decorative background element */}
-                        <div className="absolute -top-10 -right-10 w-64 h-64 bg-blue-100/50 rounded-full blur-3xl -z-10 opacity-40"></div>
-                        <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-slate-200/50 rounded-full blur-3xl -z-10 opacity-40"></div>
                     </div>
                 </div>
             </section>

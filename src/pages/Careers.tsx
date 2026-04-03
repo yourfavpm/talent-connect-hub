@@ -21,38 +21,56 @@ const Careers = () => {
                 description="Help us build the infrastructure for the next generation of operations teams. Explore career opportunities at OPSlyHR and help connect world-class African operations talent with global companies."
                 keywords="Operations Careers, Remote Work Infrastructure, Join OPSlyHR, African Operations Jobs, Build Global Teams"
             />
-            {/* 1. HERO SECTION */}
             <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6">
                 <div className="container max-w-7xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <div className="inline-flex items-center px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
-                            CAREERS AT OPSLYHR
-                        </div>
-                        <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1] max-w-5xl">
-                            Help Build the Infrastructure Behind Modern Operations Teams.
-                        </h1>
-                        <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-3xl">
-                            OPSlyHR is building structured systems for how companies hire and manage product and operations talent globally. We're looking for thoughtful, high-ownership individuals to help us scale that vision.
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-start justify-start gap-6">
-                            <Button 
-                                variant="outline"
-                                className="h-14 px-8 text-base rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none shrink-0"
-                                asChild
+                    <div className="flex flex-wrap items-center -mx-4">
+                        <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6 }}
+                                className="flex flex-col items-start text-left"
                             >
-                                <a href="#open-roles">
-                                    View Open Roles <ArrowRight className="ml-2 h-4 w-4" />
-                                </a>
-                            </Button>
-                            <Link to="/vetting-process" className="text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors inline-flex items-center group mt-4 sm:mt-0">
-                                Learn About Our Vetting Standard <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                            </Link>
+                                <div className="inline-flex items-center px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
+                                    CAREERS AT OPSLYHR
+                                </div>
+                                <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1]">
+                                    Help Build the Infrastructure Behind Modern Operations Teams.
+                                </h1>
+                                <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-xl">
+                                    OPSlyHR is building structured systems for how companies hire and manage product and operations talent globally. We're looking for thoughtful, high-ownership individuals to help us scale that vision.
+                                </p>
+                                <div className="flex flex-col sm:flex-row items-start justify-start gap-6">
+                                    <Button 
+                                        variant="outline"
+                                        className="h-14 px-8 text-base rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none shrink-0"
+                                        asChild
+                                    >
+                                        <a href="#open-roles">
+                                            View Open Roles <ArrowRight className="ml-2 h-4 w-4" />
+                                        </a>
+                                    </Button>
+                                    <Link to="/vetting-process" className="text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors inline-flex items-center group mt-4 sm:mt-0">
+                                        Learn About Our Vetting Standard <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                    </Link>
+                                </div>
+                            </motion.div>
                         </div>
-                    </motion.div>
+                        <div className="w-full lg:w-1/2 px-4 flex justify-end">
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.8, delay: 0.2 }}
+                                className="w-full max-w-md aspect-video bg-slate-50 border border-slate-100 hidden lg:flex items-center justify-center relative overflow-hidden rounded-2xl"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-bl from-blue-50/20 to-transparent"></div>
+                                <div className="relative z-10 flex flex-col items-center gap-3">
+                                    <div className="w-24 h-1 bg-slate-200 rounded-full"></div>
+                                    <div className="w-16 h-1 bg-slate-100 rounded-full"></div>
+                                </div>
+                            </motion.div>
+                        </div>
+                    </div>
                 </div>
             </section>
 

@@ -12,26 +12,44 @@ const About = () => {
                 description="Learn about OPSlyHR's mission to build the infrastructure behind modern operations teams. We connect vetted African operations professionals with global teams through managed engagement models."
                 keywords="About OPSlyHR, Operations Infrastructure, African Operations Experts, Remote Work Mission, Vetted Talent Network"
             />
-            {/* HERO SECTION */}
             <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6">
                 <div className="container max-w-7xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="flex flex-col items-start"
-                    >
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
-                            About OPSlyHR
+                    <div className="flex flex-wrap items-center -mx-4">
+                        <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6 }}
+                                className="flex flex-col items-start text-left"
+                            >
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
+                                    About OPSlyHR
+                                </div>
+                                <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1]">
+                                    Building the Infrastructure Behind <br className="hidden md:block" /> Modern Operations Teams.
+                                </h1>
+                                <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-xl">
+                                    OPSlyHR connects vetted product and operations professionals with growth-focused companies — through structured, transparent, and managed engagement models.
+                                    <br /><span className="mt-4 block text-slate-900 font-bold">We are not a marketplace. We are operational infrastructure.</span>
+                                </p>
+                            </motion.div>
                         </div>
-                        <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1] max-w-5xl">
-                            Building the Infrastructure Behind <br className="hidden md:block" /> Modern Operations Teams.
-                        </h1>
-                        <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-3xl">
-                            OPSlyHR connects vetted product and operations professionals with growth-focused companies — through structured, transparent, and managed engagement models.
-                            <br /><span className="mt-4 block text-slate-900 font-bold">We are not a marketplace. We are operational infrastructure.</span>
-                        </p>
-                    </motion.div>
+                        <div className="w-full lg:w-1/2 px-4 flex justify-end">
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.8, delay: 0.2 }}
+                                className="w-full max-w-md aspect-video bg-slate-50 border border-slate-100 hidden lg:flex items-center justify-center relative overflow-hidden rounded-2xl"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/30 to-transparent"></div>
+                                <div className="relative z-10 flex flex-col items-center gap-4">
+                                    <div className="w-16 h-1 bg-slate-200 rounded-full"></div>
+                                    <div className="w-32 h-1 bg-slate-100 rounded-full"></div>
+                                    <div className="w-24 h-1 bg-slate-50 rounded-full"></div>
+                                </div>
+                            </motion.div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
