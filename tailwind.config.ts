@@ -24,9 +24,9 @@ export default {
         sans: ["Inter", "Satoshi", "Manrope", "system-ui", "sans-serif"],
       },
       fontSize: {
-        xs: "12px",
-        sm: "14px",
-        base: "16px",
+        xs: "13px",
+        sm: "15px",
+        base: "17px",
         lg: "18px",
         xl: "20px",
         "2xl": "24px",

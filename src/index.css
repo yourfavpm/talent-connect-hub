@@ -6,9 +6,9 @@
   :root {
     /* OPSLYHR DESIGN TOKENS */
     /* Core Brand */
-    --color-brand-primary: #1e40af;
+    --color-brand-primary: #2b53e3;
     --color-brand-secondary: #0f172a;
-    --color-brand-accent: #2563eb;
+    --color-brand-accent: #4b73f3;
 
     /* Neutrals */
     --gray-950: #020617;
@@ -129,7 +129,7 @@
   }
  
   body {
-    @apply bg-background text-foreground antialiased font-light;
+    @apply bg-background text-foreground antialiased font-normal;
     font-family:
       "Inter",
       system-ui,
@@ -162,7 +162,7 @@
   }
  
   p {
-    @apply leading-relaxed font-light text-slate-500;
+    @apply leading-relaxed font-normal text-slate-500;
   }
 
   /* Reduce opacity of placeholders globally */
