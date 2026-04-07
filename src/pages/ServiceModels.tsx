@@ -321,12 +321,13 @@ const ServiceModels = () => {
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80')] bg-cover bg-center grayscale invert"></div>
                 
                 <div className="container max-w-[1200px] mx-auto relative z-10">
-                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+                    <div className="flex flex-wrap items-center -mx-4">
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8 }}
+                            className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0"
                         >
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 text-slate-400 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
                                 Global Operations
@@ -366,7 +367,7 @@ const ServiceModels = () => {
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8 }}
-                            className="space-y-12"
+                            className="w-full lg:w-1/2 px-4 space-y-12"
                         >
                             {[
                                 {

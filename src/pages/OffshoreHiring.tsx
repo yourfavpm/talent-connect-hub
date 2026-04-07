@@ -126,7 +126,7 @@ const OffshoreHiring = () => {
             {/* SECTION 1 — COST EFFICIENCY */}
             <section className="py-24 md:py-32 px-6 bg-slate-50 border-t border-slate-100">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+                    <div className="flex flex-wrap items-center -mx-4">
                         <div>
                             <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Cost Optimization <br /> Without Compromise</h2>
                             <div className="space-y-6 mb-12">
@@ -209,8 +209,8 @@ const OffshoreHiring = () => {
                 </div>
 
                 <div className="container max-w-[1200px] mx-auto relative z-10">
-                    <div className="grid lg:grid-cols-2 gap-16 items-center">
-                        <div>
+                    <div className="flex flex-wrap items-center -mx-4">
+                        <div className="w-full lg:w-1/2 px-4">
                             <h2 className="text-3xl md:text-5xl font-semibold mb-8 tracking-tight">Extended Operational Coverage</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
                                 {[
@@ -229,7 +229,7 @@ const OffshoreHiring = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white/5 border border-white/10 p-12 rounded-[24px]">
+                        <div className="w-full lg:w-1/2 px-4 bg-white/5 border border-white/10 p-12 rounded-[24px] h-fit\">
                             <Clock className="h-8 w-8 text-blue-500 mb-8" />
                             <h4 className="text-2xl font-bold mb-4 tracking-tight">24/7 Continuity</h4>
                             <p className="text-slate-400 font-medium leading-relaxed">

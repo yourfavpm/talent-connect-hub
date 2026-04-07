@@ -176,7 +176,7 @@ const ProjectEngagement = () => {
       {/* SECTION 2 — PRICING MODEL */}
       <section className="py-24 md:py-32 px-6 border-t border-slate-100">
         <div className="container max-w-[1200px] mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+          <div className="flex flex-wrap items-center -mx-4">
             <div>
               <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Transparent Project Pricing</h2>
               <div className="space-y-8">

@@ -117,7 +117,7 @@ const VettingProcess = () => {
             {/* SECTION 2 — OUR SELECTION PHILOSOPHY */}
             <section className="py-24 md:py-32 px-6 border-t border-slate-100 bg-slate-50/50">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
+                    <div className="flex flex-wrap items-center -mx-4 space-y-8 lg:space-y-0">
                         <div>
                             <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">We Vet for Execution, <br /> Not Just Experience.</h2>
                             <p className="text-lg text-slate-600 font-medium leading-relaxed mb-8">
@@ -211,8 +211,8 @@ const VettingProcess = () => {
             {/* SECTION 5 — ACCEPTANCE RATE & QUALITY CONTROL */}
             <section className="py-24 md:py-32 px-6 border-t border-slate-100">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-                        <div>
+                    <div className="flex flex-wrap items-center -mx-4 gap-16 lg:gap-0\">
+                        <div className=\"w-full lg:w-1/2 px-4\">
                             <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Selective Admission <br /> Criteria</h2>
                             <div className="space-y-6">
                                 {[
@@ -231,7 +231,7 @@ const VettingProcess = () => {
                                 ))}
                             </div>
                         </div>
-                        <div className="bg-slate-50 p-12 rounded-[24px] border border-slate-200">
+                        <div className="w-full lg:w-1/2 px-4 bg-slate-50 p-12 rounded-[24px] border border-slate-200 h-fit">
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Performance Commitment</div>
                             <div className="text-5xl font-semibold text-slate-900 mb-4 tracking-tighter">98%</div>
                             <div className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-6">Engagement Success Rate</div>

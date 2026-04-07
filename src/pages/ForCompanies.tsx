@@ -153,8 +153,8 @@ const ForCompanies = () => {
 
             {/* 2. OPERATIONAL GAP SECTION (REDESIGNED) */}
             <section className="py-24 px-6 relative bg-white border-y border-slate-100 font-inter">
-                <div className="container max-w-[1200px] mx-auto grid lg:grid-cols-2 gap-20 items-center">
-                    <motion.div {...fadeIn}>
+                <div className="container max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-20 items-start lg:items-center">
+                    <motion.div {...fadeIn} className="w-full lg:w-1/2">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">The Operational Gap</div>
                         <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold mb-8 text-slate-900 leading-[1.15] tracking-tight">Hiring Without Structure <br/>Slows Growth.</h2>
                         <p className="text-lg text-slate-600 leading-relaxed mb-6 max-w-lg">
@@ -165,7 +165,7 @@ const ForCompanies = () => {
                         </p>
                     </motion.div>
 
-                    <div className="grid sm:grid-cols-2 gap-6">
+                    <div className="w-full lg:w-1/2 grid sm:grid-cols-2 gap-6">
                         {[
                             { 
                                 title: "Leadership Time Diverted", 

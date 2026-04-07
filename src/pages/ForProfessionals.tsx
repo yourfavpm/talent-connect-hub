@@ -155,7 +155,7 @@ const ForProfessionals = () => {
 
             {/* RECENT OPERATOR DEPLOYMENTS: Board Layout */}
             <section className="py-24 px-6 bg-slate-50 border-y border-slate-100 font-inter">
-                <div className="container max-w-[1200px] mx-auto grid lg:grid-cols-[1fr_2fr] gap-20 items-start">
+                <div className="container max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-20 items-start">
                     <div className="animate-slide-up">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">Recent Operator Deployments</div>
                         <h2 className="text-4xl md:text-5xl font-bold mb-8 text-slate-900 leading-tight tracking-tight">Where Our Talent Is Making Impact</h2>
