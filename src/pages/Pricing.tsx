@@ -112,9 +112,9 @@ const Pricing = () => {
 
             {/* 2. PRICING PHILOSOPHY SECTION */}
             <section className="py-24 px-6 bg-white">
-                <div className="container max-w-[1200px] mx-auto">
-                    <div className="grid lg:grid-cols-2 gap-16 items-center">
-                        <div>
+                <div className="container max-w-7xl mx-auto">
+                    <div className="flex flex-wrap items-center -mx-4">
+                        <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">Our Approach</div>
                             <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 tracking-tight">Pricing Aligned to Risk, <br /> Commitment, and Impact</h2>
                             <p className="text-base text-slate-600 font-medium leading-relaxed max-w-xl">
@@ -122,6 +122,7 @@ const Pricing = () => {
                             </p>
                         </div>
                         
+                        <div className="w-full lg:w-1/2 px-4">
                         <div className="relative pt-12 pb-8 px-4 md:px-0">
                             {/* Horizontal visual spectrum */}
                             <div className="relative">
@@ -140,6 +141,7 @@ const Pricing = () => {
                                     ))}
                                 </div>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>

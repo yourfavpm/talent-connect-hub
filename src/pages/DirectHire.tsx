@@ -9,14 +9,15 @@ const DirectHire = () => {
     <div className="bg-white font-inter">
       {/* HERO SECTION */}
       <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
-        <div className="container max-w-[1200px] mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+        <div className="container max-w-7xl mx-auto">
+          <div className="flex flex-wrap items-center -mx-4">
             {/* Left Content */}
+            <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="max-w-4xl"
+              className="max-w-2xl"
             >
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
                 Permanent Engagement
@@ -48,8 +49,10 @@ const DirectHire = () => {
                 </Link>
               </div>
             </motion.div>
+            </div>
 
             {/* Right Visual (Enterprise Workflow) */}
+            <div className="w-full lg:w-1/2 px-4">
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -107,6 +110,7 @@ const DirectHire = () => {
               {/* Decorative background element */}
               <div className="absolute -z-10 -bottom-6 -left-6 w-24 h-24 bg-slate-50 rounded-2xl rotate-12"></div>
             </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -168,9 +172,9 @@ const DirectHire = () => {
 
       {/* SECTION 2 — PRICING STRUCTURE */}
       <section className="py-24 md:py-32 px-6 border-t border-slate-100">
-        <div className="container max-w-[1200px] mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-            <div>
+        <div className="container max-w-7xl mx-auto">
+          <div className="flex flex-wrap items-center -mx-4">
+            <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
               <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Transparent Placement Fee</h2>
               <div className="space-y-6 mb-12">
                 {[
@@ -190,6 +194,7 @@ const DirectHire = () => {
               </div>
             </div>
             
+            <div className="w-full lg:w-1/2 px-4">
             <div className="bg-slate-50 p-12 rounded-[16px] border border-slate-100">
               <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-8">Financial Clarity</h4>
               <p className="text-slate-600 font-medium leading-relaxed mb-8">
@@ -209,6 +214,7 @@ const DirectHire = () => {
                   <span className="font-bold text-blue-600">$0 Upfront</span>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>

@@ -187,9 +187,9 @@ const TrialToHire = () => {
 
             {/* SECTION 2 — PRICING STRUCTURE */}
             <section className="py-24 md:py-32 px-6 border-t border-slate-100">
-                <div className="container max-w-[1200px] mx-auto">
-                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-                        <div className="order-2 lg:order-1">
+                <div className="container max-w-7xl mx-auto">
+                    <div className="flex flex-wrap items-center -mx-4">
+                        <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
                             <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Managed Engagement Pricing</h2>
                             <div className="space-y-6">
                                 {[
