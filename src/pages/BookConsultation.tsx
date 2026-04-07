@@ -128,17 +128,8 @@ const BookConsultation = () => {
             <div className="absolute inset-0 pointer-events-none z-0 opacity-[0.02]" 
                  style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-            <div className="relative z-10 container max-w-7xl mx-auto py-12 md:py-20 px-6">
-                {/* Top Nav / Breadcrumbs */}
-                <div className="flex items-center gap-2 text-[12px] font-medium text-slate-400 mb-8 md:mb-12">
-                    <Link to="/" className="hover:text-slate-900 transition-colors">Home</Link>
-                    <span className="text-slate-300">/</span>
-                    <span className="text-slate-600">Request Talent</span>
-                </div>
-
-                <div className="flex flex-wrap -mx-4 items-start">
-                    {/* LEFT COLUMN: Context Panel */}
-                    <div className="w-full lg:w-1/2 px-4 mb-16 lg:mb-0 lg:sticky lg:top-24">
+            <div className="relative z-10 container max-w-[1200px] mx-auto py-12 md:py-20 px-6 flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
+                <div className="flex-1 lg:sticky lg:top-24">
                         <div className="max-w-xl">
                             <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200 uppercase tracking-[0.15em] mb-6">
                                 Consultation Request
@@ -183,10 +174,10 @@ const BookConsultation = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                </div>
 
-                    {/* RIGHT COLUMN: Form Panel */}
-                    <div id="form" className="w-full lg:w-1/2 px-4 order-first lg:order-last mb-16 lg:mb-0">
+                {/* RIGHT COLUMN: Form Panel */}
+                <div id="form" className="flex-1 w-full order-first lg:order-last mb-16 lg:mb-0">
                         <div className="bg-white border border-slate-200 rounded-xl p-8 md:p-12 shadow-sm max-w-[600px] w-full mx-auto lg:ml-auto">
                             <div className="mb-10">
                                 <h2 className="text-2xl font-bold text-slate-900 mb-2">Request Structured Matching</h2>
@@ -309,7 +300,6 @@ const BookConsultation = () => {
                         </div>
                     </div>
                 </div>
-            </div>
 
             {/* Sticky Mobile CTA */}
             <AnimatePresence>

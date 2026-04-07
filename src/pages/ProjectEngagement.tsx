@@ -13,15 +13,14 @@ const ProjectEngagement = () => {
                 keywords="Project Based Operations, Hire African Ops Specialists, Remote Operations Projects, Vetted Managed Projects, Operational Infrastructure Setup"
             />
       <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
-        <div className="container max-w-7xl mx-auto relative z-20">
-          <div className="flex flex-wrap items-center -mx-4">
-            <div className="w-full lg:w-1/2 px-4 mb-16 lg:mb-0">
+        <div className="container max-w-[1200px] mx-auto relative z-20 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+            <div className="flex-1">
               {/* Left Content */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="flex flex-col items-start text-left max-w-xl"
+                className="flex flex-col items-start text-left"
               >
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
                   Project Engagement
@@ -56,7 +55,7 @@ const ProjectEngagement = () => {
             </div>
   
             {/* Right Visual (Enterprise Workflow) */}
-            <div className="w-full lg:w-1/2 px-4 relative hidden lg:block">
+            <div className="flex-1 w-full relative hidden lg:block">
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -117,7 +116,6 @@ const ProjectEngagement = () => {
                 <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-blue-50/30 rounded-full blur-[100px]"></div>
               </motion.div>
             </div>
-          </div>
         </div>
       </section>
 

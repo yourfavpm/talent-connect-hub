@@ -9,15 +9,13 @@ const DirectHire = () => {
     <div className="bg-white font-inter">
       {/* HERO SECTION */}
       <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
-        <div className="container max-w-7xl mx-auto">
-          <div className="flex flex-wrap items-center -mx-4">
-            {/* Left Content */}
-            <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
+        <div className="container max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+          <div className="flex-1">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="max-w-2xl"
+              className="flex flex-col items-start text-left"
             >
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
                 Permanent Engagement
@@ -49,15 +47,14 @@ const DirectHire = () => {
                 </Link>
               </div>
             </motion.div>
-            </div>
+          </div>
 
-            {/* Right Visual (Enterprise Workflow) */}
-            <div className="w-full lg:w-1/2 px-4">
+          <div className="flex-1 w-full flex justify-end">
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative"
+              className="relative w-full max-w-md"
             >
               <div className="bg-white border border-slate-200 rounded-[24px] p-10 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-blue-100/50 transition-colors duration-700"></div>
@@ -110,7 +107,6 @@ const DirectHire = () => {
               {/* Decorative background element */}
               <div className="absolute -z-10 -bottom-6 -left-6 w-24 h-24 bg-slate-50 rounded-2xl rotate-12"></div>
             </motion.div>
-            </div>
           </div>
         </div>
       </section>

@@ -52,105 +52,102 @@ const ServiceModels = () => {
             />
 
             <section className="relative pt-40 pb-16 md:pt-40 md:pb-24 px-4 md:px-6 bg-white border-b border-slate-100 font-inter overflow-hidden">
-                <div className="container max-w-7xl mx-auto relative z-10">
-                    <div className="flex flex-wrap items-center -mx-4">
-                        <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
-                            <motion.div 
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8 }}
-                                className="flex flex-col items-start text-left max-w-xl"
-                            >
-                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
-                                    Engagement Structure
-                                </div>
-                                <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold mb-6 md:mb-8 text-slate-900 leading-[1.2] md:leading-[1.1] tracking-tight">
-                                    Structured Engagement <br className="hidden md:block" />
-                                    Models. <span className="text-slate-900/40">Clear Tradeoffs.</span>
-                                </h1>
-                                <p className="text-base md:text-lg text-slate-600 mb-10 md:mb-12 leading-relaxed max-w-xl font-medium">
-                                    From permanent leadership placements to managed trial engagements and milestone-based projects — each model aligns risk, cost, and control to your stage of growth.
-                                </p>
+                <div className="container max-w-[1200px] mx-auto relative z-10 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+                    <div className="flex-1">
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8 }}
+                            className="flex flex-col items-start text-left"
+                        >
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
+                                Engagement Structure
+                            </div>
+                            <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold mb-6 md:mb-8 text-slate-900 leading-[1.2] md:leading-[1.1] tracking-tight">
+                                Structured Engagement <br className="hidden md:block" />
+                                Models. <span className="text-slate-900/40">Clear Tradeoffs.</span>
+                            </h1>
+                            <p className="text-base md:text-lg text-slate-600 mb-10 md:mb-12 leading-relaxed font-medium">
+                                From permanent leadership placements to managed trial engagements and milestone-based projects — each model aligns risk, cost, and control to your stage of growth.
+                            </p>
+                            
+                            <div className="flex flex-col sm:flex-row items-start justify-start gap-8 mb-12 w-full sm:w-auto">
+                                <Button 
+                                    size="lg" 
+                                    variant="outline"
+                                    className="h-16 px-10 text-base rounded-xl border-[1.5px] border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold transition-all duration-300 shadow-none w-full sm:w-auto text-center" 
+                                    asChild
+                                >
+                                    <Link to="#engagement-models">Explore Engagement Models</Link>
+                                </Button>
                                 
-                                <div className="flex flex-col sm:flex-row items-start justify-start gap-8 mb-12 w-full sm:w-auto">
-                                    <Button 
-                                        size="lg" 
-                                        variant="outline"
-                                        className="h-16 px-10 text-base rounded-xl border-[1.5px] border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold transition-all duration-300 shadow-none w-full sm:w-auto text-center" 
-                                        asChild
-                                    >
-                                        <Link to="#engagement-models">Explore Engagement Models</Link>
-                                    </Button>
-                                    
-                                    <Link 
-                                        to="/book-consultation"
-                                        className="inline-flex items-center text-slate-900 font-semibold hover:text-blue-600 transition-colors py-4 sm:py-0"
-                                    >
-                                        Book a Consultation <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Link>
-                                </div>
-        
-                                {/* Financial Clarity Row */}
-                                <div className="flex flex-col sm:flex-row flex-wrap items-start justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-100 w-full">
-                                    {[
-                                        { label: "Direct Hire", value: "15%" },
-                                        { label: "Trial", value: "20%" },
-                                        { label: "Project", value: "30%" }
-                                    ].map((item, i) => (
-                                        <div key={i} className="flex items-center gap-3">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none">{item.label} — {item.value}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        </div>
+                                <Link 
+                                    to="/book-consultation"
+                                    className="inline-flex items-center text-slate-900 font-semibold hover:text-blue-600 transition-colors py-4 sm:py-0"
+                                >
+                                    Book a Consultation <ArrowRight className="ml-2 h-4 w-4" />
+                                </Link>
+                            </div>
     
-                        {/* Right Side Visual - Minimal Model Previews */}
-                        <div className="w-full lg:w-1/2 px-4 relative hidden lg:block animate-fade-in">
-                            <div className="space-y-4">
+                            {/* Financial Clarity Row */}
+                            <div className="flex flex-col sm:flex-row flex-wrap items-start justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-100 w-full">
                                 {[
-                                    { 
-                                        title: "Direct Hire", 
-                                        desc: "One-time placement fee. Permanent employment transfer.", 
-                                        icon: Building2, 
-                                        color: "bg-blue-50 text-blue-600 border-blue-100" 
-                                    },
-                                    { 
-                                        title: "Trial-to-Hire", 
-                                        desc: "Managed engagement with conversion flexibility.", 
-                                        icon: Clock, 
-                                        color: "bg-slate-50 text-slate-600 border-slate-200" 
-                                    },
-                                    { 
-                                        title: "Project Engagement", 
-                                        desc: "Milestone-based structured delivery.", 
-                                        icon: Zap, 
-                                        color: "bg-slate-50 text-slate-600 border-slate-200" 
-                                    }
-                                ].map((model, i) => (
-                                    <motion.div 
-                                        key={i}
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.1 * (i + 1) }}
-                                        className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-5 hover:border-blue-200 hover:shadow-md transition-all duration-300"
-                                    >
-                                        <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center border ${model.color}`}>
-                                            <model.icon className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-bold text-slate-900 mb-1 tracking-tight">{model.title}</h3>
-                                            <p className="text-sm text-slate-500 leading-relaxed font-medium">{model.desc}</p>
-                                        </div>
-                                    </motion.div>
+                                    { label: "Direct Hire", value: "15%" },
+                                    { label: "Trial", value: "20%" },
+                                    { label: "Project", value: "30%" }
+                                ].map((item, i) => (
+                                    <div key={i} className="flex items-center gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none">{item.label} — {item.value}</span>
+                                    </div>
                                 ))}
                             </div>
-                            
-                            {/* Decorative elements */}
-                            <div className="absolute -top-10 -right-10 w-64 h-64 bg-blue-50 rounded-full blur-3xl -z-10 opacity-60"></div>
-                            <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-slate-100 rounded-full blur-3xl -z-10 opacity-60"></div>
+                        </motion.div>
+                    </div>
+
+                    <div className="flex-1 w-full relative hidden lg:block animate-fade-in">
+                        <div className="space-y-4">
+                            {[
+                                { 
+                                    title: "Direct Hire", 
+                                    desc: "One-time placement fee. Permanent employment transfer.", 
+                                    icon: Building2, 
+                                    color: "bg-blue-50 text-blue-600 border-blue-100" 
+                                },
+                                { 
+                                    title: "Trial-to-Hire", 
+                                    desc: "Managed engagement with conversion flexibility.", 
+                                    icon: Clock, 
+                                    color: "bg-slate-50 text-slate-600 border-slate-200" 
+                                },
+                                { 
+                                    title: "Project Engagement", 
+                                    desc: "Milestone-based structured delivery.", 
+                                    icon: Zap, 
+                                    color: "bg-slate-50 text-slate-600 border-slate-200" 
+                                }
+                            ].map((model, i) => (
+                                <motion.div 
+                                    key={i}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.1 * (i + 1) }}
+                                    className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-5 hover:border-blue-200 hover:shadow-md transition-all duration-300"
+                                >
+                                    <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center border ${model.color}`}>
+                                        <model.icon className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-900 mb-1 tracking-tight">{model.title}</h3>
+                                        <p className="text-sm text-slate-500 leading-relaxed font-medium">{model.desc}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
                         </div>
+                        
+                        {/* Decorative elements */}
+                        <div className="absolute -top-10 -right-10 w-64 h-64 bg-blue-50 rounded-full blur-3xl -z-10 opacity-60"></div>
+                        <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-slate-100 rounded-full blur-3xl -z-10 opacity-60"></div>
                     </div>
                 </div>
             </section>

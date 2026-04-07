@@ -35,15 +35,14 @@ const ForCompanies = () => {
             />
             {/* 1. PAGE HERO (REDESIGNED FOR OPERATIONS) */}
             <section className="relative pt-40 pb-16 md:pt-40 md:pb-16 px-4 md:px-6 bg-[#F8F9FA] font-inter overflow-hidden">
-                <div className="container max-w-7xl mx-auto relative z-10">
-                    <div className="flex flex-wrap items-center -mx-4">
-                        <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
-                            <motion.div 
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8 }}
-                                className="flex flex-col items-start text-left max-w-xl"
-                            >
+                <div className="container max-w-[1200px] mx-auto relative z-10 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+                    <div className="flex-1">
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8 }}
+                            className="flex flex-col items-start text-left"
+                        >
                                 <h1 className="text-3xl md:text-5xl lg:text-[52px] font-semibold mb-6 md:mb-6 tracking-tight text-slate-900 leading-[1.2] md:leading-[1.1]">
                                     Operations Talent, <span className="text-slate-900/40 block">Structured for Scale</span>
                                 </h1>
@@ -72,11 +71,9 @@ const ForCompanies = () => {
                                         </div>
                                     ))}
                                 </div>
-                            </motion.div>
-                        </div>
-    
-                        {/* Right Side Visual: Active Operations Shortlist */}
-                        <div className="w-full lg:w-1/2 px-4">
+                        </motion.div>
+                    </div>
+                    <div className="flex-1 w-full lg:block">
                             <motion.div 
                                 initial={{ opacity: 0, x: 30 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -148,7 +145,6 @@ const ForCompanies = () => {
                             </motion.div>
                         </div>
                     </div>
-                </div>
             </section>
 
             {/* 2. OPERATIONAL GAP SECTION (REDESIGNED) */}

@@ -49,62 +49,60 @@ const Pricing = () => {
 
             {/* 1. HERO SECTION */}
             <section className="pt-40 pb-24 px-6 relative overflow-hidden">
-                <div className="container max-w-7xl mx-auto relative z-10">
-                    <div className="flex flex-wrap items-center -mx-4">
-                        <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6 }}
-                                className="flex flex-col items-start text-left"
-                            >
-                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
-                                    Pricing Structure
-                                </div>
-                                <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold mb-8 tracking-tight leading-[1.1] text-slate-900">
-                                    Transparent Engagement Pricing. <br className="hidden md:block" />
-                                    <span className="text-slate-400">Built for Scale.</span>
-                                </h1>
-                                <p className="text-lg md:text-xl text-slate-600 font-medium leading-relaxed max-w-xl mb-12">
-                                    Our pricing aligns with your engagement model — whether you’re building long-term leadership capacity, testing talent before committing, or executing high-impact projects.
+                <div className="container max-w-[1200px] mx-auto relative z-10 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+                    <div className="flex-1">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6 }}
+                            className="flex flex-col items-start text-left"
+                        >
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
+                                Pricing Structure
+                            </div>
+                            <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold mb-8 tracking-tight leading-[1.1] text-slate-900">
+                                Transparent Engagement Pricing. <br className="hidden md:block" />
+                                <span className="text-slate-400">Built for Scale.</span>
+                            </h1>
+                            <p className="text-lg md:text-xl text-slate-600 font-medium leading-relaxed max-w-xl mb-12">
+                                Our pricing aligns with your engagement model — whether you’re building long-term leadership capacity, testing talent before committing, or executing high-impact projects.
+                            </p>
+                            
+                            <div className="flex flex-col items-start gap-6 w-full">
+                                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                                    No hidden fees. No subscription traps. Just structured costs.
                                 </p>
-                                
-                                <div className="flex flex-col items-start gap-6 w-full">
-                                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-                                        No hidden fees. No subscription traps. Just structured costs.
-                                    </p>
-                                    <div className="flex flex-col sm:flex-row items-start gap-8 w-full">
-                                        <Link 
-                                            to="/book-consultation"
-                                            className="px-8 py-4 border-1.5 border-slate-900 text-slate-900 font-bold rounded-lg hover:bg-slate-900 hover:text-white transition-all duration-300 flex items-center gap-2"
-                                        >
-                                            Discuss Your Needs <ArrowRight className="w-4 h-4" />
-                                        </Link>
-                                        <Link 
-                                            to="/service-models"
-                                            className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors py-4 sm:py-0"
-                                        >
-                                            Explore Engagement Models →
-                                        </Link>
-                                    </div>
+                                <div className="flex flex-col sm:flex-row items-start gap-8 w-full">
+                                    <Link 
+                                        to="/book-consultation"
+                                        className="px-8 py-4 border-1.5 border-slate-900 text-slate-900 font-bold rounded-lg hover:bg-slate-900 hover:text-white transition-all duration-300 flex items-center gap-2"
+                                    >
+                                        Discuss Your Needs <ArrowRight className="w-4 h-4" />
+                                    </Link>
+                                    <Link 
+                                        to="/service-models"
+                                        className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors py-4 sm:py-0"
+                                    >
+                                        Explore Engagement Models →
+                                    </Link>
                                 </div>
-                            </motion.div>
-                        </div>
-                        <div className="w-full lg:w-1/2 px-4 flex justify-end">
-                            {/* Visual placeholder or balanced whitespace */}
-                            <motion.div 
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.8, delay: 0.2 }}
-                                className="w-full max-w-md aspect-square bg-slate-50/50 rounded-3xl border border-slate-100 hidden lg:flex items-center justify-center relative overflow-hidden"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent"></div>
-                                <div className="relative z-10 p-12 text-center">
-                                    <div className="text-4xl font-bold text-slate-200 mb-4 tracking-tighter uppercase">Transparent</div>
-                                    <div className="text-2xl font-bold text-slate-300 tracking-tighter uppercase opacity-50">Operational Costs</div>
-                                </div>
-                            </motion.div>
-                        </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                    <div className="flex-1 w-full flex justify-end">
+                        {/* Visual placeholder or balanced whitespace */}
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.8, delay: 0.2 }}
+                            className="w-full max-w-md aspect-square bg-slate-50/50 rounded-3xl border border-slate-100 hidden lg:flex items-center justify-center relative overflow-hidden"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent"></div>
+                            <div className="relative z-10 p-12 text-center">
+                                <div className="text-4xl font-bold text-slate-200 mb-4 tracking-tighter uppercase">Transparent</div>
+                                <div className="text-2xl font-bold text-slate-300 tracking-tighter uppercase opacity-50">Operational Costs</div>
+                            </div>
+                        </motion.div>
                     </div>
                 </div>
                 <div className="absolute bottom-0 left-0 w-full h-[1px] bg-slate-100"></div>
