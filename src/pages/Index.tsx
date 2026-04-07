@@ -81,7 +81,7 @@ const Index = () => {
     <div className="bg-background min-h-screen text-foreground overflow-x-hidden selection:bg-primary selection:text-white font-sans">
 
       {/* 2. ENTERPRISE HERO SECTION (REDESIGNED) */}
-      <section className="relative pt-36 pb-16 md:pt-36 md:pb-32 px-6 overflow-hidden bg-slate-50 font-inter">
+      <section className="relative pt-44 pb-16 md:pt-52 md:pb-32 px-6 overflow-hidden bg-slate-50 font-inter">
         {/* Subtle background decoration */}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-white/50 to-transparent pointer-events-none"></div>
         
@@ -169,7 +169,7 @@ const Index = () => {
                 tags: ["Growth", "Fintech", "B2B SaaS"],
                 tz: "GMT+1",
                 exp: "12 Yrs",
-                offset: "rotate-[-4deg] translate-y-4 z-10"
+                offset: "rotate-[-4deg] translate-y-12 z-10"
               },
               {
                 name: "Michael T.",
@@ -179,7 +179,7 @@ const Index = () => {
                 tags: ["Logistics", "Scaleup", "EOR"],
                 tz: "GMT+2",
                 exp: "14 Yrs",
-                offset: "rotate-[2deg] translate-x-12 -translate-y-8 z-20"
+                offset: "rotate-[2deg] translate-x-12 -translate-y-2 z-20"
               },
               {
                 name: "David K.",
@@ -189,7 +189,7 @@ const Index = () => {
                 tags: ["Python", "Infrastructure", "AI"],
                 tz: "GMT+1",
                 exp: "9 Yrs",
-                offset: "rotate-[-2deg] -translate-x-4 translate-y-24 z-30 shadow-xl"
+                offset: "rotate-[-2deg] -translate-x-4 translate-y-32 z-30 shadow-xl"
               }
             ].map((talent, i) => (
               <motion.div 
