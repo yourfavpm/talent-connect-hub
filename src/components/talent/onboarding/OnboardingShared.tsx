@@ -18,6 +18,9 @@ import { TagInput } from "@/components/ui/tag-input";
 
 import { STEPS, SECTION_KEYS, OB_INPUT_CLASS } from "./onboarding_config";
 
+// Re-export STEPS and SECTION_KEYS for use in other components
+export { STEPS, SECTION_KEYS };
+
 export const FieldGroup = ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
   <div className="space-y-0.5">
     <Label className="text-[9px] font-medium text-slate-400 uppercase tracking-widest pl-0.5">
