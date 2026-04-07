@@ -799,61 +799,178 @@ const Index = () => {
           {/* Scrolling Profile Cards */}
           <div className="relative">
             <motion.div 
-              animate={{ x: [-100, -2000] }}
-              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-              className="flex gap-6"
+              animate={{ x: [0, -2500] }}
+              transition={{ 
+                duration: 40, 
+                repeat: Infinity, 
+                ease: "linear" 
+              }}
+              className="flex gap-6 whitespace-nowrap"
             >
               {[
-                { name: "Sarah Chen", role: "Product Ops Lead", specialty: "Scaling Startups", color: "from-blue-400 to-cyan-400" },
-                { name: "Amara Okonkwo", role: "Revenue Ops Manager", specialty: "SaaS Growth", color: "from-emerald-400 to-green-400" },
-                { name: "Marcus Rodriguez", role: "Business Ops Director", specialty: "Operations Strategy", color: "from-purple-400 to-pink-400" },
-                { name: "Zara Patel", role: "Finance Ops Specialist", specialty: "Payments & Compliance", color: "from-orange-400 to-red-400" },
-                { name: "James O'Brien", role: "Data Ops Engineer", specialty: "Analytics Infrastructure", color: "from-indigo-400 to-blue-400" },
-                { name: "Naomi Adeyemi", role: "People Ops Manager", specialty: "Talent & Culture", color: "from-rose-400 to-pink-400" },
-                { name: "David Kim", role: "Infrastructure Ops", specialty: "System Reliability", color: "from-cyan-400 to-blue-400" },
-                { name: "Elena Morales", role: "Operations Manager", specialty: "Process Optimization", color: "from-yellow-400 to-orange-400" },
+                { 
+                  name: "Sarah Chen", 
+                  role: "Product Ops Lead", 
+                  image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80",
+                  tags: ["Product Strategy", "SaaS", "Scaling"],
+                  tz: "GMT+8",
+                  exp: "11 Yrs",
+                  level: 5
+                },
+                { 
+                  name: "Amara Okonkwo", 
+                  role: "Revenue Ops Manager", 
+                  image: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80",
+                  tags: ["Salesforce", "Lead Gen", "Strategy"],
+                  tz: "GMT+1",
+                  exp: "8 Yrs",
+                  level: 5
+                },
+                { 
+                  name: "Marcus Rodriguez", 
+                  role: "Business Ops Director", 
+                  image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80",
+                  tags: ["OPS Strategy", "M&A", "Global"],
+                  tz: "GMT-5",
+                  exp: "15 Yrs",
+                  level: 5
+                },
+                { 
+                  name: "Zara Patel", 
+                  role: "Finance Ops Specialist", 
+                  image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80",
+                  tags: ["Payments", "Compliance", "FP&A"],
+                  tz: "GMT+5:30",
+                  exp: "7 Yrs",
+                  level: 4
+                },
+                { 
+                  name: "James O'Brien", 
+                  role: "Data Ops Engineer", 
+                  image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80",
+                  tags: ["Analytics", "SQL", "Pipelines"],
+                  tz: "GMT",
+                  exp: "9 Yrs",
+                  level: 5
+                },
+                { 
+                  name: "Naomi Adeyemi", 
+                  role: "People Ops Manager", 
+                  image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80",
+                  tags: ["Talent", "HRIS", "Culture"],
+                  tz: "GMT+1",
+                  exp: "10 Yrs",
+                  level: 5
+                },
+                { 
+                  name: "David Kim", 
+                  role: "Infrastructure Ops", 
+                  image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80",
+                  tags: ["Reliability", "AWS", "Security"],
+                  tz: "GMT-8",
+                  exp: "12 Yrs",
+                  level: 5
+                },
+                { 
+                  name: "Elena Morales", 
+                  role: "Operations Manager", 
+                  image: "https://images.unsplash.com/photo-1567532939604-b6c5b0ad2ea6?auto=format&fit=crop&q=80",
+                  tags: ["Optimization", "PMO", "Agile"],
+                  tz: "GMT+1",
+                  exp: "9 Yrs",
+                  level: 4
+                },
+                // Duplicates for seamless loop
+                { 
+                  name: "Sarah Chen", 
+                  role: "Product Ops Lead", 
+                  image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80",
+                  tags: ["Product Strategy", "SaaS", "Scaling"],
+                  tz: "GMT+8",
+                  exp: "11 Yrs",
+                  level: 5
+                },
+                { 
+                  name: "Amara Okonkwo", 
+                  role: "Revenue Ops Manager", 
+                  image: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80",
+                  tags: ["Salesforce", "Lead Gen", "Strategy"],
+                  tz: "GMT+1",
+                  exp: "8 Yrs",
+                  level: 5
+                },
+                { 
+                  name: "Marcus Rodriguez", 
+                  role: "Business Ops Director", 
+                  image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80",
+                  tags: ["OPS Strategy", "M&A", "Global"],
+                  tz: "GMT-5",
+                  exp: "15 Yrs",
+                  level: 5
+                },
+                { 
+                  name: "Zara Patel", 
+                  role: "Finance Ops Specialist", 
+                  image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80",
+                  tags: ["Payments", "Compliance", "FP&A"],
+                  tz: "GMT+5:30",
+                  exp: "7 Yrs",
+                  level: 4
+                }
               ].map((person, i) => (
                 <motion.div 
                   key={i}
                   whileHover={{ y: -8 }}
-                  className="flex-shrink-0 w-72"
+                  className="flex-shrink-0 w-[320px] bg-white rounded-[24px] p-6 shadow-xl shadow-slate-200/50 border border-slate-100 transition-all duration-300"
                 >
-                  <div className={`bg-gradient-to-br ${person.color} rounded-2xl p-1`}>
-                    <div className="bg-white rounded-[14px] p-6 h-full flex flex-col">
-                      <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${person.color} mb-4`} />
-                      <h3 className="text-lg font-semibold text-slate-900 mb-1">{person.name}</h3>
-                      <p className="text-sm font-medium text-slate-600 mb-4">{person.role}</p>
-                      <div className="mt-auto">
-                        <span className="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">
-                          {person.specialty}
-                        </span>
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="w-14 h-14 rounded-full overflow-hidden border border-slate-100">
+                      <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-grow">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="font-bold text-slate-900 text-base">{person.name}</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       </div>
+                      <p className="text-xs text-slate-500 font-medium">{person.role}</p>
                     </div>
                   </div>
-                </motion.div>
-              ))}
-              {/* Duplicate for seamless loop */}
-              {[
-                { name: "Sarah Chen", role: "Product Ops Lead", specialty: "Scaling Startups", color: "from-blue-400 to-cyan-400" },
-                { name: "Amara Okonkwo", role: "Revenue Ops Manager", specialty: "SaaS Growth", color: "from-emerald-400 to-green-400" },
-                { name: "Marcus Rodriguez", role: "Business Ops Director", specialty: "Operations Strategy", color: "from-purple-400 to-pink-400" },
-                { name: "Zara Patel", role: "Finance Ops Specialist", specialty: "Payments & Compliance", color: "from-orange-400 to-red-400" },
-              ].map((person, i) => (
-                <motion.div 
-                  key={`dup-${i}`}
-                  whileHover={{ y: -8 }}
-                  className="flex-shrink-0 w-72"
-                >
-                  <div className={`bg-gradient-to-br ${person.color} rounded-2xl p-1`}>
-                    <div className="bg-white rounded-[14px] p-6 h-full flex flex-col">
-                      <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${person.color} mb-4`} />
-                      <h3 className="text-lg font-semibold text-slate-900 mb-1">{person.name}</h3>
-                      <p className="text-sm font-medium text-slate-600 mb-4">{person.role}</p>
-                      <div className="mt-auto">
-                        <span className="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">
-                          {person.specialty}
-                        </span>
-                      </div>
+
+                  <div className="bg-emerald-50/50 border border-emerald-100 rounded-lg py-2 px-3 flex items-center justify-center gap-2 mb-5">
+                    <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
+                      <CheckCircle className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">100% Vetted Talent</span>
+                  </div>
+
+                  <div className="space-y-3 mb-5">
+                    <div className="flex justify-between items-center text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                      <span>Vetted skill level</span>
+                      <span className="text-blue-600">Level {person.level}/5</span>
+                    </div>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <div key={star} className={`h-1 flex-grow rounded-full ${star <= person.level ? 'bg-blue-600' : 'bg-slate-100'}`} />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {person.tags.map(tag => (
+                      <span key={tag} className="bg-slate-50 text-slate-600 px-2.5 py-1 rounded-md text-[10px] font-bold border border-slate-100">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-between items-center pt-4 border-t border-slate-50">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Timezone</span>
+                      <span className="text-xs font-bold text-slate-700">{person.tz}</span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Experience</span>
+                      <span className="text-xs font-bold text-slate-700">{person.exp}</span>
                     </div>
                   </div>
                 </motion.div>
