@@ -780,7 +780,7 @@ const Index = () => {
 
 
       {/* 7. OPERATIONS PROFESSIONALS SHOWCASE */}
-      <section className="py-24 px-6 bg-white font-inter overflow-hidden">
+      <section className="py-24 px-6 bg-blue-50/50 font-inter overflow-hidden">
         <div className="container max-w-7xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
