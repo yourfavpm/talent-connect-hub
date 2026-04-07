@@ -2,6 +2,7 @@
 import { Outlet } from "react-router-dom";
 import WebsiteNavbar from "./WebsiteNavbar";
 import WebsiteFooter from "./WebsiteFooter";
+import CommunityCTA from "./CommunityCTA";
 
 const WebsiteLayout = () => {
     return (
@@ -10,6 +11,7 @@ const WebsiteLayout = () => {
             <main className="flex-grow animate-fade-in">
                 <Outlet />
             </main>
+            <CommunityCTA />
             <WebsiteFooter />
         </div>
     );
