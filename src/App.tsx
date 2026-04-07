@@ -10,7 +10,7 @@ import { FEATURES } from "@/config/features";
 import { useVettingVersion } from "./hooks/useVettingVersion";
 import { useAuth } from "@/hooks/useAuth";
 import { getZoneUrl } from "@/utils/subdomain";
-import OpslyLoader from "@/components/OpslyLoader";
+import { Loader2 } from "lucide-react";
 
 // Layouts and Core Components
 import WebsiteLayout from "./components/website/WebsiteLayout";
@@ -189,7 +189,11 @@ const ZoneGuard = ({
   const currentZone = getCurrentZone();
 
   if (loading) {
-    return <OpslyLoader />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+      </div>
+    );
   }
 
   // 1. If not in the allowed zone for this route set, don't render it
@@ -237,7 +241,11 @@ const App = () => {
             <BrowserRouter>
               <ScrollToTop />
               <DevZoneIndicator zone={zone} />
-              <Suspense fallback={<OpslyLoader />}>
+              <Suspense fallback={
+                <div className="min-h-screen flex items-center justify-center bg-white">
+                  <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+                </div>
+              }>
                 <Routes>
               {/* Marketing Zone (opslyhr.com) */}
               {zone === Zone.MARKETING && (
