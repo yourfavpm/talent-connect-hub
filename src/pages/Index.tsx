@@ -779,37 +779,7 @@ const Index = () => {
       </section>
 
 
-      {/* 7. JOIN TALENT COMMUNITY SECTION */}
-      <section className="py-24 px-6 bg-slate-50/80 font-inter">
-        <div className="container max-w-7xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center max-w-2xl mx-auto"
-          >
-            <h2 className="text-3xl md:text-[40px] font-semibold text-slate-900 mb-6 leading-tight">
-              Join Our Talent Community
-            </h2>
-            <p className="text-base text-slate-600 leading-relaxed mb-10">
-              Connect with vetted operations professionals, share best practices, and grow your network with the global OPSlyHR community.
-            </p>
-            <motion.a
-              href="https://slack.com/oauth/v2/authorize?client_id=YOUR_SLACK_CLIENT_ID&scope=chat:write,commands&redirect_uri=https://opslyhr.com/slack-callback"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 127 127" fill="currentColor">
-                <path d="M27.2 80c0 7.5-6.1 13.6-13.6 13.6C6.1 93.6 0 87.5 0 80c0-7.5 6.1-13.6 13.6-13.6h13.6v13.6zm6.8 0c0-7.5 6.1-13.6 13.6-13.6 7.5 0 13.6 6.1 13.6 13.6v34c0 7.5-6.1 13.6-13.6 13.6-7.5 0-13.6-6.1-13.6-13.6v-34zM47 27.2c-7.5 0-13.6-6.1-13.6-13.6C33.4 6.1 39.5 0 47 0c7.5 0 13.6 6.1 13.6 13.6v13.6H47zm0 6.8c7.5 0 13.6 6.1 13.6 13.6 0 7.5-6.1 13.6-13.6 13.6H13c-7.5 0-13.6-6.1-13.6-13.6 0-7.5 6.1-13.6 13.6-13.6h34zm52.8-6.8c0-7.5 6.1-13.6 13.6-13.6 7.5 0 13.6 6.1 13.6 13.6v13.6H99.8zm-6.8 0c0 7.5-6.1 13.6-13.6 13.6-7.5 0-13.6-6.1-13.6-13.6V13.6C66.8 6.1 72.9 0 80.4 0c7.5 0 13.6 6.1 13.6 13.6v20.4zm-13.6 47c7.5 0 13.6 6.1 13.6 13.6 0 7.5-6.1 13.6-13.6 13.6-7.5 0-13.6-6.1-13.6-13.6v-13.6h13.6zm0-6.8c-7.5 0-13.6-6.1-13.6-13.6 0-7.5 6.1-13.6 13.6-13.6h34c7.5 0 13.6 6.1 13.6 13.6 0 7.5-6.1 13.6-13.6 13.6h-34z" />
-              </svg>
-              Join on Slack
-            </motion.a>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* 8. OPERATIONS PROFESSIONALS SHOWCASE */}
+      {/* 7. OPERATIONS PROFESSIONALS SHOWCASE */}
       <section className="py-24 px-6 bg-white font-inter overflow-hidden">
         <div className="container max-w-7xl mx-auto">
           <motion.div 
@@ -893,6 +863,35 @@ const Index = () => {
         </div>
       </section>
 
+      {/* 8. JOIN TALENT COMMUNITY SECTION */}
+      <section className="py-24 px-6 bg-slate-50/80 font-inter">
+        <div className="container max-w-7xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center max-w-2xl mx-auto"
+          >
+            <h2 className="text-3xl md:text-[40px] font-semibold text-slate-900 mb-6 leading-tight">
+              Join Our Talent Community
+            </h2>
+            <p className="text-base text-slate-600 leading-relaxed mb-10">
+              Connect with vetted operations professionals, share best practices, and grow your network with the global OPSlyHR community.
+            </p>
+            <motion.a
+              href="https://slack.com/oauth/v2/authorize?client_id=YOUR_SLACK_CLIENT_ID&scope=chat:write,commands&redirect_uri=https://opslyhr.com/slack-callback"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 127 127" fill="currentColor">
+                <path d="M27.2 80c0 7.5-6.1 13.6-13.6 13.6C6.1 93.6 0 87.5 0 80c0-7.5 6.1-13.6 13.6-13.6h13.6v13.6zm6.8 0c0-7.5 6.1-13.6 13.6-13.6 7.5 0 13.6 6.1 13.6 13.6v34c0 7.5-6.1 13.6-13.6 13.6-7.5 0-13.6-6.1-13.6-13.6v-34zM47 27.2c-7.5 0-13.6-6.1-13.6-13.6C33.4 6.1 39.5 0 47 0c7.5 0 13.6 6.1 13.6 13.6v13.6H47zm0 6.8c7.5 0 13.6 6.1 13.6 13.6 0 7.5-6.1 13.6-13.6 13.6H13c-7.5 0-13.6-6.1-13.6-13.6 0-7.5 6.1-13.6 13.6-13.6h34zm52.8-6.8c0-7.5 6.1-13.6 13.6-13.6 7.5 0 13.6 6.1 13.6 13.6v13.6H99.8zm-6.8 0c0 7.5-6.1 13.6-13.6 13.6-7.5 0-13.6-6.1-13.6-13.6V13.6C66.8 6.1 72.9 0 80.4 0c7.5 0 13.6 6.1 13.6 13.6v20.4zm-13.6 47c7.5 0 13.6 6.1 13.6 13.6 0 7.5-6.1 13.6-13.6 13.6-7.5 0-13.6-6.1-13.6-13.6v-13.6h13.6zm0-6.8c-7.5 0-13.6-6.1-13.6-13.6 0-7.5 6.1-13.6 13.6-13.6h34c7.5 0 13.6 6.1 13.6 13.6 0 7.5-6.1 13.6-13.6 13.6h-34z" />
+              </svg>
+              Join on Slack
+            </motion.a>
+          </motion.div>
+        </div>
+      </section>
 
       {/* 9. CLIENT RESULTS — REDESIGNED TESTIMONIAL SECTION */}
       <section className="py-24 px-6 bg-white font-inter">
