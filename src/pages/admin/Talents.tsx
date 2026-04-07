@@ -45,8 +45,11 @@ import {
   UserCircle,
   Eye,
   Loader2,
+  Briefcase,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 import AssignManagerDrawer from "./TalentVetting/components/drawers/AssignManagerDrawer";
 import SkillAssessmentDrawer from "./TalentVetting/components/drawers/SkillAssessmentDrawer";
 
@@ -54,6 +57,7 @@ import SkillAssessmentDrawer from "./TalentVetting/components/drawers/SkillAsses
 
 interface TalentRow {
   id: string;
+  user_id: string; // Added to help with contract joins
   first_name: string;
   last_name: string;
   email: string;
@@ -65,6 +69,8 @@ interface TalentRow {
   skill_assessment_notes: string | null;
   skill_assessment_visible_to_clients: boolean | null;
   onboarding_completed: boolean | null;
+  is_hired: boolean; // New: tracking active contract status
+  has_signed_offer: boolean; // New: tracking signed offer status
   // computed
   uiStatus: "pending" | "changes" | "approved" | "rejected";
   completedSteps: number;
@@ -102,6 +108,7 @@ const SKILL_LABELS: Record<string, string> = {
 
 const AdminTalents = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [talents, setTalents] = useState<TalentRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,6 +120,7 @@ const AdminTalents = () => {
   const [stepStatusFilter, setStepStatusFilter] = useState("all");
   const [managerFilter, setManagerFilter] = useState("all");
   const [skillFilter, setSkillFilter] = useState("all");
+  const [managedByMe, setManagedByMe] = useState(false);
 
   // Bulk actions
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -145,33 +153,44 @@ const AdminTalents = () => {
       else setLoading(true);
 
       // 1. Fetch talent profiles
-      const { data: profiles, error: profileError } = await supabase.from("talent_profiles")
+      const { data: profiles, error: profileError } = await (supabase.from("talent_profiles" as any) as any)
         .select("*")
         .order("created_at", { ascending: false });
 
       if (profileError) throw profileError;
 
-      // 2. Fetch all talents to join (in a real app with many users, we'd filter or limit, but for this scale it's fine or we can map user_ids)
-      const userIds = profiles?.map((p: any) => p.user_id) || [];
-      const { data: talentsData, error: talentsError } = await supabase
-        .from("talents")
+      // 2. Fetch all talents to join
+      const userIds = (profiles as any[])?.map(p => p.user_id) || [];
+      const { data: talentsData, error: talentsError } = await (supabase.from("talents" as any) as any)
         .select("*")
         .in("user_id", userIds);
 
       if (talentsError) throw talentsError;
 
-      const talentMap: Record<string, any> = {};
+      const talentMap: Record<string, any> = {}; // Keep as any for dynamic property access from Supabase
       (talentsData || []).forEach(t => {
         talentMap[t.user_id] = t;
       });
 
-      // 2. Fetch all sections to calculate progress
-      const { data: sectionsData, error: sectionsError } = await supabase.from("talent_profile_sections")
+      // 3. Fetch active contracts and signed offers for status indicator
+      const [
+        { data: activeContracts },
+        { data: signedOffers }
+      ] = await Promise.all([
+        (supabase.from("contracts" as any) as any).select("talent_id").eq("status", "active").in("talent_id", userIds),
+        (supabase.from("offers" as any) as any).select("talent_id").eq("status", "signed").in("talent_id", userIds)
+      ]);
+
+      const hiredSet = new Set((activeContracts || []).map(c => c.talent_id));
+      const offerSet = new Set((signedOffers || []).map(o => o.talent_id));
+
+      // 4. Fetch all sections to calculate progress
+      const { data: sectionsData, error: sectionsError } = await (supabase.from("talent_profile_sections" as any) as any)
         .select("user_id, section_key, status");
 
       if (sectionsError) console.warn("Sections table error:", sectionsError);
 
-      // 3. Fetch admin profiles for manager names
+      // 5. Fetch admin profiles for manager names
       const { data: adminProfiles } = await supabase
         .from("profiles")
         .select("user_id, first_name, last_name");
@@ -181,9 +200,9 @@ const AdminTalents = () => {
         profileMap[p.user_id] = `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Admin";
       });
 
-      // 4. Group sections by user_id
+      // 6. Group sections by user_id
       const sectionsMap: Record<string, { completed: number; total: number; attention: string[] }> = {};
-      ((sectionsData as any[]) || []).forEach((s: any) => {
+      (sectionsData || []).forEach((s) => {
         if (!sectionsMap[s.user_id]) sectionsMap[s.user_id] = { completed: 0, total: 0, attention: [] };
         sectionsMap[s.user_id].total++;
         if (s.status === "APPROVED") sectionsMap[s.user_id].completed++;
@@ -192,8 +211,8 @@ const AdminTalents = () => {
         }
       });
 
-      // 5. Build rows
-      const rows: TalentRow[] = (profiles || []).map((p: any) => {
+      // 7. Build rows
+      const rows: TalentRow[] = (profiles || []).map((p) => {
         const t = talentMap[p.user_id] || {};
         let uiStatus: TalentRow["uiStatus"] = "pending";
         
@@ -206,6 +225,7 @@ const AdminTalents = () => {
 
         return {
           id: p.id,
+          user_id: p.user_id,
           first_name: t.first_name || "Unknown",
           last_name: t.last_name || "",
           email: t.email || "",
@@ -217,6 +237,8 @@ const AdminTalents = () => {
           skill_assessment_notes: t.skill_assessment_notes,
           skill_assessment_visible_to_clients: t.skill_assessment_visible_to_clients,
           onboarding_completed: p.locked_onboarding,
+          is_hired: hiredSet.has(p.user_id),
+          has_signed_offer: offerSet.has(p.user_id),
           uiStatus,
           completedSteps: sectionInfo.completed,
           totalSteps: sectionInfo.total || 8,
@@ -247,6 +269,7 @@ const AdminTalents = () => {
     approved: talents.filter((t) => t.uiStatus === "approved").length,
     rejected: talents.filter((t) => t.uiStatus === "rejected").length,
     unassigned: talents.filter((t) => !t.assigned_manager).length,
+    hired: talents.filter((t) => t.is_hired).length,
   }), [talents]);
 
   // ── Filtering ──────────────────────────────────────────────────────────────
@@ -258,6 +281,8 @@ const AdminTalents = () => {
       if (stepStatusFilter === "needs_review" && t.attentionSteps.length === 0) return false;
       if (stepStatusFilter === "changes_requested" && !t.attentionSteps.some(() => t.uiStatus === "changes")) return false;
 
+      if (managedByMe && t.assigned_manager !== user?.id) return false;
+      
       if (managerFilter === "unassigned" && t.managerName) return false;
       if (managerFilter !== "all" && managerFilter !== "unassigned" && t.managerName !== managerFilter) return false;
 
@@ -272,7 +297,7 @@ const AdminTalents = () => {
 
       return true;
     });
-  }, [talents, statusFilter, stepStatusFilter, managerFilter, skillFilter, searchQuery]);
+  }, [talents, statusFilter, stepStatusFilter, managerFilter, skillFilter, searchQuery, managedByMe, user?.id]);
 
   const hasActiveFilters = statusFilter !== "all" || stepStatusFilter !== "all" || managerFilter !== "all" || skillFilter !== "all" || searchQuery !== "";
 
@@ -347,12 +372,13 @@ const AdminTalents = () => {
       </div>
 
       {/* ── Stats Cards ───────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {([
           { key: "pending", icon: Clock, accent: "text-blue-600 bg-blue-50", border: "border-blue-100" },
           { key: "changes", icon: AlertTriangle, accent: "text-amber-600 bg-amber-50", border: "border-amber-100" },
           { key: "approved", icon: CheckCircle2, accent: "text-emerald-600 bg-emerald-50", border: "border-emerald-100" },
           { key: "rejected", icon: XCircle, accent: "text-red-600 bg-red-50", border: "border-red-100" },
+          { key: "hired", icon: Award, accent: "text-brand-primary bg-brand-primary/10", border: "border-brand-primary/20" },
         ] as const).map(({ key, icon: Icon, accent, border }) => (
           <button
             key={key}
@@ -367,9 +393,13 @@ const AdminTalents = () => {
               <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${accent}`}>
                 <Icon className="h-4 w-4" />
               </div>
-              <span className="text-2xl font-bold text-gray-900 tabular-nums">{counts[key]}</span>
+              <span className="text-2xl font-bold text-gray-900 tabular-nums">
+                {key === "hired" ? counts.hired : counts[key as keyof typeof counts]}
+              </span>
             </div>
-            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{STATUS_CONFIG[key].label}</p>
+            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+              {key === "hired" ? "Talents Hired" : STATUS_CONFIG[key as keyof typeof STATUS_CONFIG]?.label || key}
+            </p>
             {key === "pending" && counts.unassigned > 0 && (
               <p className="text-[10px] text-gray-400 mt-0.5">
                 {counts.unassigned} unassigned
@@ -381,14 +411,29 @@ const AdminTalents = () => {
 
       {/* ── Filter Toolbar ────────────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-gray-50/50 border border-gray-100 rounded-xl p-3">
-        <div className="relative flex-shrink-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-          <Input
-            placeholder="Search name or email…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 w-full lg:w-[240px] h-9 text-sm bg-white border-gray-200 shadow-sm"
-          />
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+          <div className="relative flex-shrink-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+            <Input
+              placeholder="Search name or email…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-full lg:w-[240px] h-9 text-sm bg-white border-gray-200 shadow-sm"
+            />
+          </div>
+
+          <div 
+            onClick={() => setManagedByMe(!managedByMe)}
+            className={`
+              flex items-center gap-2 px-3 py-1.5 rounded-lg border cursor-pointer transition-all select-none
+              ${managedByMe 
+                ? "bg-brand-primary/10 border-brand-primary/30 text-brand-primary" 
+                : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"}
+            `}
+          >
+            <Users className={`h-3.5 w-3.5 ${managedByMe ? "text-brand-primary" : "text-gray-400"}`} />
+            <span className="text-[11px] font-bold uppercase tracking-tight">Managed by me</span>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -443,8 +488,8 @@ const AdminTalents = () => {
             </SelectContent>
           </Select>
 
-          {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={resetFilters} className="h-9 text-xs text-gray-500 gap-1.5">
+          {(hasActiveFilters || managedByMe) && (
+            <Button variant="ghost" size="sm" onClick={() => { resetFilters(); setManagedByMe(false); }} className="h-9 text-xs text-gray-500 gap-1.5">
               <RotateCcw className="h-3 w-3" />
               Reset
             </Button>
@@ -473,15 +518,15 @@ const AdminTalents = () => {
           <div className="p-16 text-center flex flex-col items-center justify-center">
             <UserCircle className="h-10 w-10 text-gray-200 mb-3" />
             <h3 className="text-sm font-semibold text-gray-900">
-              {hasActiveFilters ? "No talents match your filters" : "No talent profiles submitted yet"}
+              {hasActiveFilters || managedByMe ? "No talents match your filters" : "No talent profiles submitted yet"}
             </h3>
             <p className="text-xs text-gray-400 mt-1.5 max-w-sm">
-              {hasActiveFilters
+              {hasActiveFilters || managedByMe
                 ? "Try adjusting your filters or search query."
                 : "When talent profiles are submitted for vetting, they will appear here."}
             </p>
-            {hasActiveFilters && (
-              <Button variant="outline" size="sm" className="mt-4 h-8 text-xs gap-1.5" onClick={resetFilters}>
+            {(hasActiveFilters || managedByMe) && (
+              <Button variant="outline" size="sm" className="mt-4 h-8 text-xs gap-1.5" onClick={() => { resetFilters(); setManagedByMe(false); }}>
                 <RotateCcw className="h-3 w-3" /> Reset Filters
               </Button>
             )}
@@ -518,6 +563,7 @@ const AdminTalents = () => {
                       className={`
                         group border-b border-gray-50 cursor-pointer transition-colors
                         ${needsEmphasis ? "bg-amber-50/20 hover:bg-amber-50/40" : "hover:bg-gray-50/50"}
+                        ${t.is_hired ? "bg-emerald-50/10 hover:bg-emerald-50/20" : ""}
                       `}
                       onClick={(e) => {
                         // Don't navigate if clicking checkbox or kebab
@@ -545,7 +591,19 @@ const AdminTalents = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{t.first_name} {t.last_name}</p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-sm font-medium text-gray-900 truncate">{t.first_name} {t.last_name}</p>
+                              {t.is_hired && (
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <div className="h-4 w-4 rounded-full bg-emerald-100 flex items-center justify-center">
+                                      <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="text-xs">Hired & Active</TooltipContent>
+                                </Tooltip>
+                              )}
+                            </div>
                             <p className="text-[11px] text-gray-400 font-mono truncate">{t.email}</p>
                           </div>
                         </div>
@@ -565,9 +623,20 @@ const AdminTalents = () => {
 
                       {/* Status */}
                       <TableCell className="py-3">
-                        <Badge className={`text-[10px] font-semibold border ${STATUS_CONFIG[t.uiStatus].color} hover:opacity-80`}>
-                          {STATUS_CONFIG[t.uiStatus].label}
-                        </Badge>
+                        <div className="flex flex-col gap-1">
+                          <Badge className={`text-[10px] font-semibold border w-fit ${STATUS_CONFIG[t.uiStatus].color} hover:opacity-80`}>
+                            {STATUS_CONFIG[t.uiStatus].label}
+                          </Badge>
+                          {t.is_hired ? (
+                            <span className="text-[9px] font-bold uppercase text-emerald-600 flex items-center gap-0.5">
+                              <Briefcase className="h-2.5 w-2.5" /> Hired
+                            </span>
+                          ) : t.has_signed_offer ? (
+                            <span className="text-[9px] font-bold uppercase text-blue-600 flex items-center gap-0.5">
+                              <FileText className="h-2.5 w-2.5" /> Offer Signed
+                            </span>
+                          ) : null}
+                        </div>
                       </TableCell>
 
                       {/* Steps */}

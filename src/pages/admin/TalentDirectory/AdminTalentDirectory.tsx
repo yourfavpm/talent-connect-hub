@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -56,18 +57,25 @@ const PIPELINE_TABS = [
   { id: "suspended", label: "Suspended" },
 ];
 
-const AdminTalentDirectory = () => {
+interface AdminTalentDirectoryProps {
+  mode?: "global" | "manager" | "pipeline";
+}
+
+const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) => {
   const navigate = useNavigate();
+  const { user, userRole } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState(mode === "pipeline" ? "review" : "all");
   const [searchQuery, setSearchQuery] = useState("");
   const [talents, setTalents] = useState<TalentProfile[]>([]);
 
   const fetchTalents = async () => {
+    const shouldScopeToManager = userRole === "talent_manager" || mode !== "global";
+    if (shouldScopeToManager && !user?.id) return;
     setLoading(true);
     try {
       // Fetch V2 profiles joined with talent base data
-      const { data, error } = await supabase
+      let query = supabase
         .from("v2_talent_profiles")
         .select(`
           *,
@@ -80,8 +88,13 @@ const AdminTalentDirectory = () => {
             country,
             timezone
           )
-        `)
-        .order("created_at", { ascending: false });
+        `);
+
+      if (shouldScopeToManager) {
+        query = query.eq("talent_manager_admin_id", user.id);
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) throw error;
       setTalents((data as any[]) || []);
@@ -95,7 +108,7 @@ const AdminTalentDirectory = () => {
 
   useEffect(() => {
     fetchTalents();
-  }, []);
+  }, [user?.id, userRole, mode]);
 
   const filteredTalents = useMemo(() => {
     return talents.filter((tp) => {
@@ -149,8 +162,14 @@ const AdminTalentDirectory = () => {
     <div className="space-y-6 max-w-[1600px] mx-auto pb-10">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Talent Pipeline</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage global talent across all lifecycle stages.</p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            {mode === "manager" || userRole === "talent_manager" ? "My Talents" : "Talent Pipeline"}
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            {mode === "manager" || userRole === "talent_manager"
+              ? "Manage and track your assigned talent portfolio."
+              : "Manage global talent across all lifecycle stages."}
+          </p>
         </div>
         <div className="flex items-center gap-2">
            <Button variant="outline" size="sm" className="h-9 gap-2">

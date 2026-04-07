@@ -47,6 +47,12 @@ const navigation = [
   { name: "Settings", href: "/admin/settings", icon: Settings, roles: ["super_admin", "operations_admin"] },
 ];
 
+const talentManagerNavigation = [
+  { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: ["talent_manager"] },
+  { name: "My Talents", href: "/admin/my-talents", icon: UserPlus, roles: ["talent_manager"] },
+  { name: "Hiring Pipeline", href: "/admin/hiring-pipeline", icon: Briefcase, roles: ["talent_manager"] },
+];
+
 interface AdminSidebarProps {
   onLogout: () => void;
   mobileOpen: boolean;
@@ -63,7 +69,8 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
   // Mobile layout ignores the `collapsed` prop to show a full-width drawer when open
   const isCollapsed = collapsed && !mobileOpen;
 
-  const filteredNavigation = navigation.filter(item =>
+  const baseNavigation = userRole === "talent_manager" ? talentManagerNavigation : navigation;
+  const filteredNavigation = baseNavigation.filter(item =>
     !userRole || (userRole && item.roles.includes(userRole))
   );
 
@@ -77,7 +84,7 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
     }
   };
 
-  const renderNavItems = (items: typeof navigation) => {
+  const renderNavItems = (items: Array<{ name: string; href: string; icon: any; roles: string[]; badgeKey?: string }>) => {
     return items.map((item) => {
       const isActive = location.pathname.startsWith(getInternalPath(item.href));
       const badgeCount = getBadgeCount(item.badgeKey);

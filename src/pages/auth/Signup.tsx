@@ -260,11 +260,7 @@ const Signup = () => {
           </div>
         </div>
 
-        <div className="mt-12 lg:mt-0">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-            © {new Date().getFullYear()} OPSlyHR HR Solutions.
-          </p>
-        </div>
+
       </div>
 
       <div id="form" className="lg:w-[60%] flex flex-col justify-center px-6 lg:px-20 xl:px-32 py-12 bg-white relative">

@@ -16,8 +16,14 @@ interface AssignManagerDrawerProps {
   onSuccess: () => void;
 }
 
+interface AdminUser {
+  id: string;
+  full_name: string;
+  email: string;
+}
+
 const AssignManagerDrawer = ({ open, onOpenChange, talentId, currentManagerId, onSuccess }: AssignManagerDrawerProps) => {
-  const [admins, setAdmins] = useState<any[]>([]);
+  const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,17 +40,26 @@ const AssignManagerDrawer = ({ open, onOpenChange, talentId, currentManagerId, o
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from("profiles")
-        .select("user_id, first_name, last_name, email")
-        .order("first_name");
+        .from("admin_users")
+        .select("id, full_name, email, roles:admin_roles(role:roles(name))")
+        .eq("status", "active")
+        .order("full_name");
 
       if (error) throw error;
-      setAdmins((data || []).map(p => ({
-        id: p.user_id,
-        full_name: `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Admin',
-        email: p.email
-      })));
-    } catch (error: any) {
+      const managers = (data || [])
+        .filter((row: any) =>
+          (row.roles || []).some((r: any) =>
+            ["Talent Manager", "Super Admin", "Admin"].includes(r?.role?.name)
+          )
+        )
+        .map((row: any) => ({
+          id: row.id,
+          full_name: row.full_name || "Admin",
+          email: row.email,
+        }));
+      setAdmins(managers);
+    } catch (err: unknown) {
+      const error = err as Error;
       toast.error("Failed to load admins: " + error.message);
     } finally {
       setLoading(false);
@@ -64,23 +79,25 @@ const AssignManagerDrawer = ({ open, onOpenChange, talentId, currentManagerId, o
 
       if (talentError) throw talentError;
 
-      // Update new talent_profiles table
-      // We need user_id for talent_profiles, but we have talentId (from talents table id)
-      // Usually talent id is the same as the record id in talent_profiles or we can join
-      const { data: talentData } = await supabase.from("talents").select("user_id").eq("id", talentId).single();
+      // Update new v2_talent_profiles table
+      const { data: talentData } = await (supabase.from("talents" as any) as any)
+        .select("user_id")
+        .eq("id", talentId)
+        .maybeSingle();
       
-      if (talentData?.user_id) {
-        const { error: profileError } = await (supabase.from("talent_profiles" as any) as any)
-          .update({ assigned_admin_id: selectedId } as any)
+      if (talentData && 'user_id' in talentData && talentData.user_id) {
+        const { error: profileError } = await (supabase.from("v2_talent_profiles" as any) as any)
+          .update({ talent_manager_admin_id: selectedId } as any)
           .eq("user_id", talentData.user_id);
         
-        if (profileError) console.warn("Failed to update talent_profiles admin:", profileError);
+        if (profileError) console.warn("Failed to update v2_talent_profiles admin:", profileError);
       }
       
       toast.success("Talent manager assigned successfully");
       onSuccess();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (err: unknown) {
+      const error = err as Error;
       toast.error("Failed to assign manager: " + error.message);
     } finally {
       setSaving(false);

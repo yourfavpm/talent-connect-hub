@@ -366,7 +366,9 @@ const App = () => {
                           <Route path="dashboard" element={<AdminDashboard />} />
                           <Route path="vetting" element={<AdminVettingQueueRouter />} />
                           <Route path="vetting/:id" element={<AdminVettingWorkspaceRouter />} />
-                          <Route path="talents" element={<AdminTalentDirectory />} />
+                          <Route path="talents" element={<AdminTalentDirectory mode="global" />} />
+                          <Route path="my-talents" element={<AdminTalentDirectory mode="manager" />} />
+                          <Route path="hiring-pipeline" element={<AdminTalentDirectory mode="pipeline" />} />
                           <Route path="talents/:id" element={<AdminTalentProfileView />} />
                           <Route path="clients" element={<AdminClients />} />
                           <Route path="clients/:id" element={<AdminClientDetail />} />

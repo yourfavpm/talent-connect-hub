@@ -38,7 +38,11 @@ type Talent = Database["public"]["Tables"]["talents"]["Row"];
 type Ticket = Database["public"]["Tables"]["support_tickets"]["Row"];
 
 const AdminDashboard = () => {
-  const { userRole } = useAuth();
+  const { user, userRole } = useAuth();
+  const isTalentManager = userRole === "talent_manager";
+  const [viewMode, setViewMode] = useState<"personal" | "global">(
+    userRole === "super_admin" ? "global" : "personal"
+  );
   
   const [stats, setStats] = useState({
     pendingVetting: 0,
@@ -48,6 +52,7 @@ const AdminDashboard = () => {
     openTickets: 0,
     pendingInterviews: 0,
     invoiceTotal: 0,
+    assignedHired: 0, // New stat: talents assigned to me that are hired
   });
 
   const [queues, setQueues] = useState<{
@@ -61,10 +66,13 @@ const AdminDashboard = () => {
   const [vettingVersion, setVettingVersion] = useState<"v1" | "v2">("v2");
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user, viewMode]);
 
   const fetchDashboardData = async () => {
+    if (!user) return;
     setLoading(true);
     try {
       const { data: versionRow } = await supabase
@@ -75,17 +83,24 @@ const AdminDashboard = () => {
       const currentVersion = (versionRow?.value as "v1" | "v2") ?? "v2";
       setVettingVersion(currentVersion);
 
-      // V1 or V2 Profiles & Counts
+      // Filtering logic
+      const isPersonal = isTalentManager || viewMode === "personal";
+
+      // 1. Fetch Profiles & Vetting Queue
       let pendingProfiles: any[] = [];
       let unvettedCount = 0;
 
       if (currentVersion === "v2") {
-        // Match the logic in VettingQueueV2.tsx: includes submitted/resubmitted/review OR draft with 100% progress
-        const { data: v2Profiles, count: v2Count } = await supabase
+        let query = supabase
           .from("v2_talent_profiles")
-          .select("id, user_id, status, progress_percent, submitted_at, created_at", { count: "exact" })
-          .or(`status.in.(submitted,resubmitted,in_review,changes_requested,revett_pending),and(status.eq.draft,progress_percent.eq.100)`)
-          .order("submitted_at", { ascending: false, nullsFirst: false });
+          .select("id, user_id, status, progress_percent, submitted_at, created_at, talent_manager_admin_id", { count: "exact" })
+          .or(`status.in.(submitted,resubmitted,in_review,changes_requested,revett_pending),and(status.eq.draft,progress_percent.eq.100)`);
+
+        if (isPersonal) {
+          query = query.eq("talent_manager_admin_id", user.id);
+        }
+
+        const { data: v2Profiles, count: v2Count } = await query.order("submitted_at", { ascending: false, nullsFirst: false });
 
         unvettedCount = v2Count || 0;
         
@@ -107,39 +122,66 @@ const AdminDashboard = () => {
           }));
         }
       } else {
-        const { data: v1Profiles, count: v1Count } = await (supabase.from("talent_profiles" as any) as any)
+        let query = (supabase.from("talent_profiles" as any) as any)
           .select("*, talents(*)", { count: "exact" })
-          .in("status", ["SUBMITTED", "RESUBMITTED", "VETTING_IN_PROGRESS"])
-          .order("last_action_at", { ascending: false });
+          .in("status", ["SUBMITTED", "RESUBMITTED", "VETTING_IN_PROGRESS"]);
+
+        if (isPersonal) {
+          query = query.eq("assigned_admin_id", user.id);
+        }
+
+        const { data: v1Profiles, count: v1Count } = await query.order("last_action_at", { ascending: false });
         
         unvettedCount = v1Count || 0;
         pendingProfiles = (v1Profiles || []).slice(0, 5);
       }
 
-      // Fetch other queue tables (limit 5)
+      // 2. Fetch Hired Stats for Personal View
+      let hiredCount = 0;
+      if (isPersonal) {
+        // Find talents assigned to me who have active contracts
+        const { data: managedTalents } = await supabase
+          .from("v2_talent_profiles")
+          .select("user_id")
+          .eq("talent_manager_admin_id", user.id);
+        
+        if (managedTalents && managedTalents.length > 0) {
+          const uids = managedTalents.map(m => m.user_id);
+          const { count } = await supabase
+            .from("contracts")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "active")
+            .in("talent_id", uids); // Assuming contract talent_id is user_id or linked to talent record user_id
+          
+          hiredCount = count || 0;
+        }
+      }
+
+      // 3. Fetch other queue tables (Jobs & Tickets are usually global or business-unit wide, but we'll keep them 5)
       const [
         { data: pendingJobsData },
         { data: openTicketsData },
       ] = await Promise.all([
-        supabase.from("jobs").select("*, clients(company_name)").in("status", ["submitted", "under_review"]).order("created_at", { ascending: false }).limit(5),
-        supabase.from("support_tickets").select("*").in("status", ["open", "in_progress"]).order("created_at", { ascending: false }).limit(5),
+        isTalentManager
+          ? Promise.resolve({ data: [] as any[] } as any)
+          : supabase.from("jobs").select("*, clients(company_name)").in("status", ["submitted", "under_review"]).order("created_at", { ascending: false }).limit(5),
+        isTalentManager
+          ? Promise.resolve({ data: [] as any[] } as any)
+          : supabase.from("support_tickets").select("*").in("status", ["open", "in_progress"]).order("created_at", { ascending: false }).limit(5),
       ]);
 
-      // Map profiles to Talent format for the Table UI
-      const mappedTalents = pendingProfiles.map((p: any) => ({
-        ...p.talents,
-        id: p.id, // Profile UUID for detail link
-        vetting_status: p.status.toLowerCase(),
-        created_at: p.submitted_at || p.created_at
-      }));
-
       setQueues({
-        talents: mappedTalents || [],
+        talents: pendingProfiles.map((p: any) => ({
+          ...p.talents,
+          id: p.id,
+          vetting_status: p.status.toLowerCase(),
+          created_at: p.submitted_at || p.created_at
+        })) || [],
         jobs: pendingJobsData || [],
         tickets: openTicketsData || [],
       });
 
-      // Fetch global counts & aggregated amounts
+      // 4. Global counts
       const [
         { count: submittedJobsCount },
         { count: activeContractsCount },
@@ -151,15 +193,18 @@ const AdminDashboard = () => {
         { data: latestJobs },
         { data: latestTickets }
       ] = await Promise.all([
-        supabase.from("jobs").select("id", { count: "exact", head: true }).in("status", ["submitted", "under_review"]),
-        supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("invoices").select("total_amount, status").neq("status", "paid"),
-        supabase.from("support_tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
+        isTalentManager ? Promise.resolve({ count: 0 } as any) : supabase.from("jobs").select("id", { count: "exact", head: true }).in("status", ["submitted", "under_review"]),
+        isTalentManager ? Promise.resolve({ count: 0 } as any) : supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
+        isTalentManager ? Promise.resolve({ data: [] } as any) : supabase.from("invoices").select("total_amount, status").neq("status", "paid"),
+        isTalentManager ? Promise.resolve({ count: 0 } as any) : supabase.from("support_tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
         supabase.from("interviews").select("id", { count: "exact", head: true }).eq("status", "scheduled"), 
-        supabase.from("offers").select("*, talents(first_name, last_name)").order("created_at", { ascending: false }).limit(5),
-        supabase.from("v2_talent_profiles").select("*, talents:talents(first_name, last_name, email)").order("created_at", { ascending: false }).limit(5),
-        supabase.from("jobs").select("*, clients(company_name)").order("created_at", { ascending: false }).limit(5),
-        supabase.from("support_tickets").select("*").order("created_at", { ascending: false }).limit(5)
+        isTalentManager ? Promise.resolve({ data: [] } as any) : supabase.from("offers").select("*, talents(first_name, last_name)").order("created_at", { ascending: false }).limit(5),
+        (isTalentManager
+          ? supabase.from("v2_talent_profiles").select("*, talents:talents(first_name, last_name, email)").eq("talent_manager_admin_id", user.id)
+          : supabase.from("v2_talent_profiles").select("*, talents:talents(first_name, last_name, email)"))
+          .order("created_at", { ascending: false }).limit(5),
+        isTalentManager ? Promise.resolve({ data: [] } as any) : supabase.from("jobs").select("*, clients(company_name)").order("created_at", { ascending: false }).limit(5),
+        isTalentManager ? Promise.resolve({ data: [] } as any) : supabase.from("support_tickets").select("*").order("created_at", { ascending: false }).limit(5)
       ]);
 
       const invoiceSum = (invoicesData || []).reduce((acc: number, curr: any) => acc + (Number(curr.total_amount) || 0), 0);
@@ -172,32 +217,29 @@ const AdminDashboard = () => {
         openTickets: openTicketsCount || 0,
         pendingInterviews: pendingInterviewsCount || 0,
         invoiceTotal: invoiceSum,
+        assignedHired: hiredCount,
       });
 
-      // Enrich recent activity with multiple event types
+      // Enrich recent activity
       const activities: any[] = [];
-      
       (latestOffers || []).forEach((o: any) => activities.push({
         type: 'Offer Created',
         description: `New offer for ${o.talents?.first_name} ${o.talents?.last_name} as ${o.role_title}`,
         time: o.created_at,
         icon: 'offer'
       }));
-
       (latestTalents || []).forEach((t: any) => activities.push({
         type: 'Talent Signup',
         description: `${t.talents?.first_name} ${t.talents?.last_name} (${t.status})`,
         time: t.created_at,
         icon: 'user'
       }));
-
       (latestJobs || []).forEach((j: any) => activities.push({
         type: 'Job Posted',
         description: `${j.title} by ${j.clients?.company_name || 'Client'}`,
         time: j.created_at,
         icon: 'job'
       }));
-
       (latestTickets || []).forEach((s: any) => activities.push({
         type: 'Support Ticket',
         description: s.subject,
@@ -205,11 +247,11 @@ const AdminDashboard = () => {
         icon: 'ticket'
       }));
 
-      const sortedActivity = activities
-        .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-        .slice(0, 10);
-
-      setRecentActivity(sortedActivity);
+      setRecentActivity(
+        activities
+          .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+          .slice(0, 10)
+      );
 
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -263,8 +305,40 @@ const AdminDashboard = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-gray-200 pb-5">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Admin Overview</h1>
-          <p className="text-sm text-gray-500 mt-1">Operational summary across OPSlyHR.</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+              {isTalentManager ? "Talent Manager Dashboard" : (viewMode === "personal" ? "My Dashboard" : "Admin Overview")}
+            </h1>
+            {userRole === "super_admin" && (
+              <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200 ml-2">
+                <button
+                  onClick={() => setViewMode("personal")}
+                  className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${
+                    viewMode === "personal"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-400 hover:text-gray-600"
+                  }`}
+                >
+                  Personal
+                </button>
+                <button
+                  onClick={() => setViewMode("global")}
+                  className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${
+                    viewMode === "global"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-400 hover:text-gray-600"
+                  }`}
+                >
+                  Global
+                </button>
+              </div>
+            )}
+          </div>
+          <p className="text-sm text-gray-500 mt-1">
+            {viewMode === "personal" 
+              ? "Tracking your assigned talents and recruitment progress." 
+              : "Operational summary across the entire platform."}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={fetchDashboardData} className="h-9 px-3 text-gray-600">
@@ -275,14 +349,26 @@ const AdminDashboard = () => {
       </div>
 
       {/* Stat Cards Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <Link to={getInternalPath("/admin/talents")} className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
           <div className="flex items-center justify-between mb-3">
             <UserCheck className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
           </div>
-          <p className="text-xs font-medium text-gray-500 mb-1">Pending Vetting</p>
+          <p className="text-xs font-medium text-gray-500 mb-1">
+            {viewMode === "personal" ? "My Pending Vetting" : "Pending Vetting"}
+          </p>
           <p className="text-2xl font-semibold text-gray-900">{stats.pendingVetting}</p>
         </Link>
+
+        {viewMode === "personal" && (
+          <div className="group rounded-xl border border-brand-primary/20 bg-brand-primary/5 p-4 shadow-sm hover:border-brand-primary/30 transition-all text-left">
+            <div className="flex items-center justify-between mb-3">
+              <UserCheck className="h-4 w-4 text-brand-primary" />
+            </div>
+            <p className="text-xs font-medium text-brand-primary/70 mb-1">Talents Hired</p>
+            <p className="text-2xl font-semibold text-brand-primary">{stats.assignedHired}</p>
+          </div>
+        )}
 
         <Link to={getInternalPath("/admin/jobs")} className="group rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow transition-all text-left">
           <div className="flex items-center justify-between mb-3">
@@ -320,7 +406,7 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between mb-3">
             <Calendar className="h-4 w-4 text-gray-500" />
           </div>
-          <p className="text-xs font-medium text-gray-500 mb-1">Pending Interviews</p>
+          <p className="text-xs font-medium text-gray-500 mb-1">Interviews</p>
           <p className="text-2xl font-semibold text-gray-900">{stats.pendingInterviews}</p>
         </div>
       </div>

@@ -282,6 +282,13 @@ const TalentDashboard = () => {
             </button>
           </div>
         )}
+        {talent?.assigned_manager_name && (
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl">
+            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Talent Manager</span>
+            <div className="h-3 w-px bg-blue-200" />
+            <span className="text-[13px] font-semibold text-blue-900">{talent.assigned_manager_name}</span>
+          </div>
+        )}
       </div>
 
       {/* ── KPI Numeric Strip ─────────────────────────────────────────── */}

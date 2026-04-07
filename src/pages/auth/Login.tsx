@@ -240,12 +240,7 @@ const Login = () => {
           </div>
         </div>
 
-        <div className="mt-12 lg:mt-0 flex items-center gap-3 py-4 px-5 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl w-fit">
-          <Shield className="w-4 h-4 text-slate-400" />
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-            Secure login powered by encrypted authentication.
-          </p>
-        </div>
+
       </div>
 
       <div id="form" className="lg:w-[55%] flex flex-col justify-center px-6 lg:px-20 xl:px-32 py-12 bg-white relative">

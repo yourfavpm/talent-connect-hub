@@ -32,7 +32,18 @@ const AdminLayout = () => {
   return (
     <ProtectedRoute 
       portalType="admin" 
-      allowedRoles={["super_admin", "operations_admin", "vetting_admin", "finance_admin", "support_admin"]}
+      allowedRoles={[
+        "super_admin",
+        "admin",
+        "talent_manager",
+        "operations_manager",
+        "billing_manager",
+        "support_manager",
+        "operations_admin",
+        "vetting_admin",
+        "finance_admin",
+        "support_admin",
+      ]}
     >
       <div className="flex h-screen w-full bg-[#FAFAFA] overflow-hidden font-sans text-gray-900">
         <AdminSidebar 

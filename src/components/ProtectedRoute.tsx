@@ -10,6 +10,11 @@ interface ProtectedRouteProps {
 
 const ADMIN_ROLES = [
   "super_admin",
+  "admin",
+  "talent_manager",
+  "operations_manager",
+  "billing_manager",
+  "support_manager",
   "operations_admin",
   "vetting_admin",
   "finance_admin",

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -66,6 +67,7 @@ const SECTION_LABELS: Record<string, string> = {
 const AdminTalentProfileView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user, userRole } = useAuth();
   const [loading, setLoading] = useState(true);
   const [tp, setTp] = useState<ProfileData | null>(null);
   const [sections, setSections] = useState<SectionData[]>([]);
@@ -92,6 +94,11 @@ const AdminTalentProfileView = () => {
 
       if (pError) throw pError;
       const pData = profile as ProfileData;
+      if (userRole === "talent_manager" && pData.talent_manager_admin_id !== user?.id) {
+        toast.error("You can only access talents assigned to you.");
+        navigate("/admin/my-talents");
+        return;
+      }
       setTp(pData);
 
       // Fetch Sections
