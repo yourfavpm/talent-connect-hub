@@ -211,8 +211,8 @@ const VettingProcess = () => {
             {/* SECTION 5 — ACCEPTANCE RATE & QUALITY CONTROL */}
             <section className="py-24 md:py-32 px-6 border-t border-slate-100">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="flex flex-wrap items-center -mx-4 gap-16 lg:gap-0\">
-                        <div className=\"w-full lg:w-1/2 px-4\">
+                    <div className="flex flex-wrap items-center -mx-4 gap-16 lg:gap-0">
+                        <div className="w-full lg:w-1/2 px-4">
                             <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Selective Admission <br /> Criteria</h2>
                             <div className="space-y-6">
                                 {[
