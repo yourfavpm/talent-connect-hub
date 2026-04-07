@@ -81,13 +81,13 @@ const Index = () => {
     <div className="bg-background min-h-screen text-foreground overflow-x-hidden selection:bg-primary selection:text-white font-sans">
 
       {/* 2. ENTERPRISE HERO SECTION (REDESIGNED) */}
-      <section className="relative pt-36 pb-16 md:pt-48 md:pb-32 px-6 overflow-hidden bg-slate-50 font-inter">
+      <section className="relative pt-36 pb-16 md:pt-36 md:pb-32 px-6 overflow-hidden bg-slate-50 font-inter">
         {/* Subtle background decoration */}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-white/50 to-transparent pointer-events-none"></div>
         
-        <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 lg:gap-24 items-center relative z-10">
+        <div className="container max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-12 lg:gap-20 items-center relative z-10">
           {/* Left Side: Content & Trust Indicators */}
-          <div className="animate-slide-up flex flex-col items-start text-left">
+          <div className="animate-slide-up flex flex-col items-center text-center lg:items-start lg:text-left flex-1 min-w-0">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
               Hire Vetted Remote Operations Experts — Built for Global Teams
             </h1>
@@ -96,7 +96,7 @@ const Index = () => {
               We match you with pre-screened professionals ready to handle operations, support, project work, and team management — no recruitment burden.
             </p>
 
-            <div className="flex flex-col sm:flex-row justify-start gap-4 mb-14 w-full">
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-14 w-full">
               <Link to="/auth/login" className="w-full sm:w-auto">
                 <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/10 transition-all font-semibold w-full">
                   Get Matched With Talent
@@ -114,7 +114,7 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="md:hidden w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl shadow-slate-200/60 border border-slate-100 mb-12"
+              className="lg:hidden w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl shadow-slate-200/60 border border-slate-100 mb-12"
             >
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100">
@@ -144,7 +144,7 @@ const Index = () => {
             </motion.div>
 
             {/* Trust Indicators */}
-            <div className="flex flex-wrap items-center justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-200">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-200">
               {[
                 "48h Average Shortlist",
                 "98% Placement Rate",
@@ -159,7 +159,7 @@ const Index = () => {
           </div>
 
           {/* Right Side: Layered Profile Cards */}
-          <div className="relative animate-fade-in h-[540px] flex items-center justify-center">
+          <div className="relative animate-fade-in hidden lg:flex h-[540px] flex-1 items-center justify-center min-w-0">
             {[
               {
                 name: "Sarah J.",

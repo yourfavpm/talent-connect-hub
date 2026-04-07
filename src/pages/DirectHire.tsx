@@ -9,7 +9,7 @@ const DirectHire = () => {
     <div className="bg-white font-inter">
       {/* HERO SECTION */}
       <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
-        <div className="container max-w-7xl mx-auto">
+        <div className="container max-w-[1200px] mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             {/* Left Content */}
             <motion.div
