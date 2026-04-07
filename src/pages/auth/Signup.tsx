@@ -224,7 +224,7 @@ const Signup = () => {
         
         <div>
           <Link to="/" className="inline-block mb-16 lg:mb-24">
-            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-28" />
+            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-32" />
           </Link>
 
           <div className="max-w-md">
@@ -271,7 +271,7 @@ const Signup = () => {
         {/* Mobile Header (Refined) */}
         <div className="lg:hidden flex flex-col items-center mb-10 text-center">
           <Link to="/" className="mb-6">
-            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-24" />
+            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-28" />
           </Link>
           <h1 className="text-2xl font-semibold text-slate-900 tracking-tight leading-tight mb-3">
             {isTalent ? "Apply as Talent" : "Get Started"}

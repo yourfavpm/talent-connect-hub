@@ -129,7 +129,7 @@ const VerifyEmail = () => {
                             <img 
                                 src="/images/logoplain.png" 
                                 alt="OPSlyHR" 
-                                className="h-12 object-contain"
+                                className="h-16 object-contain"
                                 onError={() => setLogoError(true)}
                             />
                         ) : (

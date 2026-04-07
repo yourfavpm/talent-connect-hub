@@ -67,7 +67,7 @@ const WebsiteNavbar = () => {
                 
                 {/* Left: Logo */}
                 <Link to="/" className="flex items-center shrink-0 p-2 lg:p-0 transition-transform hover:scale-[1.02]">
-                    <img src="/images/logoplain.png" alt="OPSlyHR" className="h-28" />
+                    <img src="/images/logoplain.png" alt="OPSlyHR" className="h-32" />
                 </Link>
 
                 {/* Center: Desktop Nav */}

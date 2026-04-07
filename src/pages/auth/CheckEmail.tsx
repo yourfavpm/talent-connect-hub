@@ -45,7 +45,7 @@ const CheckEmail = () => {
                 <img 
                     src="/images/logoplain.png" 
                     alt="OPSlyHR" 
-                    className="h-10 opacity-30 grayscale mix-blend-multiply" 
+                    className="h-14 opacity-30 grayscale mix-blend-multiply" 
                 />
             </div>
         </div>

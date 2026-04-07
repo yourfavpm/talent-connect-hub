@@ -183,7 +183,7 @@ const ProjectEngagement = () => {
                 {[
                   { t: "Milestone-based", d: "Payments triggered by validated project phases." },
                   { t: "Hourly or Fixed-scope", d: "Pricing models that align with project complexity." },
-                  { t: "30% platform margin", d: "Covers vetting, sourcing, and operational oversight." },
+                  { t: "20% platform margin", d: "Covers vetting, sourcing, and operational oversight." },
                   { t: "Clear deliverables", d: "Zero ambiguity on what you are paying for." }
                 ].map((item, i) => (
                   <div key={i} className="flex gap-4">

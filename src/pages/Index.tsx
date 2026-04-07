@@ -779,172 +779,117 @@ const Index = () => {
       </section>
 
 
-      {/* 7. TALENT OPERATIONS FEATURE SECTION (PREMIUM REPLACEMENT) */}
+      {/* 7. JOIN TALENT COMMUNITY SECTION */}
       <section className="py-24 px-6 bg-slate-50/80 font-inter">
         <div className="container max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="text-center max-w-3xl mx-auto mb-20 animate-slide-up">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center max-w-2xl mx-auto"
+          >
             <h2 className="text-3xl md:text-[40px] font-semibold text-slate-900 mb-6 leading-tight">
-              We handle the talent operations complexity
+              Join Our Talent Community
             </h2>
-            <p className="text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-              From sourcing and vetting to contracts, timesheets, payroll, and compliance — OPSlyHR manages the details so you can focus on building.
+            <p className="text-base text-slate-600 leading-relaxed mb-10">
+              Connect with vetted operations professionals, share best practices, and grow your network with the global OPSlyHR community.
             </p>
+            <motion.a
+              href="https://slack.com/oauth/v2/authorize?client_id=YOUR_SLACK_CLIENT_ID&scope=chat:write,commands&redirect_uri=https://opslyhr.com/slack-callback"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 127 127" fill="currentColor">
+                <path d="M27.2 80c0 7.5-6.1 13.6-13.6 13.6C6.1 93.6 0 87.5 0 80c0-7.5 6.1-13.6 13.6-13.6h13.6v13.6zm6.8 0c0-7.5 6.1-13.6 13.6-13.6 7.5 0 13.6 6.1 13.6 13.6v34c0 7.5-6.1 13.6-13.6 13.6-7.5 0-13.6-6.1-13.6-13.6v-34zM47 27.2c-7.5 0-13.6-6.1-13.6-13.6C33.4 6.1 39.5 0 47 0c7.5 0 13.6 6.1 13.6 13.6v13.6H47zm0 6.8c7.5 0 13.6 6.1 13.6 13.6 0 7.5-6.1 13.6-13.6 13.6H13c-7.5 0-13.6-6.1-13.6-13.6 0-7.5 6.1-13.6 13.6-13.6h34zm52.8-6.8c0-7.5 6.1-13.6 13.6-13.6 7.5 0 13.6 6.1 13.6 13.6v13.6H99.8zm-6.8 0c0 7.5-6.1 13.6-13.6 13.6-7.5 0-13.6-6.1-13.6-13.6V13.6C66.8 6.1 72.9 0 80.4 0c7.5 0 13.6 6.1 13.6 13.6v20.4zm-13.6 47c7.5 0 13.6 6.1 13.6 13.6 0 7.5-6.1 13.6-13.6 13.6-7.5 0-13.6-6.1-13.6-13.6v-13.6h13.6zm0-6.8c-7.5 0-13.6-6.1-13.6-13.6 0-7.5 6.1-13.6 13.6-13.6h34c7.5 0 13.6 6.1 13.6 13.6 0 7.5-6.1 13.6-13.6 13.6h-34z" />
+              </svg>
+              Join on Slack
+            </motion.a>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 8. OPERATIONS PROFESSIONALS SHOWCASE */}
+      <section className="py-24 px-6 bg-white font-inter overflow-hidden">
+        <div className="container max-w-7xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-[40px] font-semibold text-slate-900 mb-4 leading-tight">
+              Meet Operations Leaders in Our Pipeline
+            </h2>
+            <p className="text-base text-slate-600 max-w-2xl mx-auto">
+              Vetted professionals across product ops, revenue ops, business ops, and specialized domains
+            </p>
+          </motion.div>
+
+          {/* Scrolling Profile Cards */}
+          <div className="relative">
+            <motion.div 
+              animate={{ x: [-100, -2000] }}
+              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+              className="flex gap-6"
+            >
+              {[
+                { name: "Sarah Chen", role: "Product Ops Lead", specialty: "Scaling Startups", color: "from-blue-400 to-cyan-400" },
+                { name: "Amara Okonkwo", role: "Revenue Ops Manager", specialty: "SaaS Growth", color: "from-emerald-400 to-green-400" },
+                { name: "Marcus Rodriguez", role: "Business Ops Director", specialty: "Operations Strategy", color: "from-purple-400 to-pink-400" },
+                { name: "Zara Patel", role: "Finance Ops Specialist", specialty: "Payments & Compliance", color: "from-orange-400 to-red-400" },
+                { name: "James O'Brien", role: "Data Ops Engineer", specialty: "Analytics Infrastructure", color: "from-indigo-400 to-blue-400" },
+                { name: "Naomi Adeyemi", role: "People Ops Manager", specialty: "Talent & Culture", color: "from-rose-400 to-pink-400" },
+                { name: "David Kim", role: "Infrastructure Ops", specialty: "System Reliability", color: "from-cyan-400 to-blue-400" },
+                { name: "Elena Morales", role: "Operations Manager", specialty: "Process Optimization", color: "from-yellow-400 to-orange-400" },
+              ].map((person, i) => (
+                <motion.div 
+                  key={i}
+                  whileHover={{ y: -8 }}
+                  className="flex-shrink-0 w-72"
+                >
+                  <div className={`bg-gradient-to-br ${person.color} rounded-2xl p-1`}>
+                    <div className="bg-white rounded-[14px] p-6 h-full flex flex-col">
+                      <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${person.color} mb-4`} />
+                      <h3 className="text-lg font-semibold text-slate-900 mb-1">{person.name}</h3>
+                      <p className="text-sm font-medium text-slate-600 mb-4">{person.role}</p>
+                      <div className="mt-auto">
+                        <span className="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">
+                          {person.specialty}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              {/* Duplicate for seamless loop */}
+              {[
+                { name: "Sarah Chen", role: "Product Ops Lead", specialty: "Scaling Startups", color: "from-blue-400 to-cyan-400" },
+                { name: "Amara Okonkwo", role: "Revenue Ops Manager", specialty: "SaaS Growth", color: "from-emerald-400 to-green-400" },
+                { name: "Marcus Rodriguez", role: "Business Ops Director", specialty: "Operations Strategy", color: "from-purple-400 to-pink-400" },
+                { name: "Zara Patel", role: "Finance Ops Specialist", specialty: "Payments & Compliance", color: "from-orange-400 to-red-400" },
+              ].map((person, i) => (
+                <motion.div 
+                  key={`dup-${i}`}
+                  whileHover={{ y: -8 }}
+                  className="flex-shrink-0 w-72"
+                >
+                  <div className={`bg-gradient-to-br ${person.color} rounded-2xl p-1`}>
+                    <div className="bg-white rounded-[14px] p-6 h-full flex flex-col">
+                      <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${person.color} mb-4`} />
+                      <h3 className="text-lg font-semibold text-slate-900 mb-1">{person.name}</h3>
+                      <p className="text-sm font-medium text-slate-600 mb-4">{person.role}</p>
+                      <div className="mt-auto">
+                        <span className="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">
+                          {person.specialty}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
-
-          {/* Feature Grid */}
-          <div className="grid lg:grid-cols-12 gap-8 items-stretch mb-20 font-inter">
-            {/* LEFT COLUMN */}
-            <div className="lg:col-span-3 flex flex-col gap-6">
-              {/* Card 1: Vetted EMEA Talent */}
-              <motion.div 
-                whileHover={{ y: -4 }}
-                className="bg-white p-6 rounded-[14px] border border-slate-200 shadow-sm flex flex-col h-full"
-              >
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Vetted EMEA Talent</h3>
-                <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-                  Every professional is screened, skill-assessed, and verified before appearing in your dashboard.
-                </p>
-                <div className="mt-auto bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100" />
-                  <div className="flex-grow">
-                    <div className="h-2 w-20 bg-slate-200 rounded-full mb-2" />
-                    <div className="flex gap-1.5">
-                      <div className="px-2 py-0.5 bg-blue-50 text-[10px] text-blue-600 font-semibold rounded-md border border-blue-100/50">Verified</div>
-                      <div className="px-2 py-0.5 bg-slate-100 text-[10px] text-slate-500 font-semibold rounded-md">Senior</div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Card 2: Flexible Hiring Models */}
-              <motion.div 
-                whileHover={{ y: -4 }}
-                className="bg-white p-6 rounded-[14px] border border-slate-200 shadow-sm flex flex-col h-full"
-              >
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Flexible Hiring Models</h3>
-                <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-                  Hire directly, trial talent with managed payroll, or launch a one-time project — all from one platform.
-                </p>
-                <div className="mt-auto flex flex-col gap-2">
-                  {['Direct Hire', 'Trial-to-Hire', 'One-Time Project'].map((tab, i) => (
-                    <div key={i} className={`px-3 py-2 text-[11px] font-medium rounded-lg border ${i === 1 ? 'bg-primary/5 border-primary/20 text-primary' : 'bg-white border-slate-100 text-slate-400'}`}>
-                      {tab}
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            </div>
-
-            {/* CENTER COLUMN: PRODUCT MOCKUP */}
-            <div className="lg:col-span-6 flex flex-col">
-              <motion.div 
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="bg-white rounded-[24px] border border-slate-200 shadow-md p-2 flex-grow flex flex-col"
-              >
-                <div className="bg-slate-50 rounded-[20px] p-8 border border-slate-100 flex-grow">
-                  <div className="flex justify-between items-start mb-10">
-                    <div>
-                      <div className="h-4 w-32 bg-slate-200 rounded-full mb-3" />
-                      <div className="h-3 w-48 bg-slate-100 rounded-full" />
-                    </div>
-                    <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center border border-slate-100">
-                      <Layout className="h-6 w-6 text-slate-400" />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Contracts</span>
-                      </div>
-                      <div className="text-2xl font-bold text-slate-900">12</div>
-                    </div>
-                    <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-2 h-2 rounded-full bg-amber-500" />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Timesheets</span>
-                      </div>
-                      <div className="text-2xl font-bold text-slate-900">4 Pending</div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-500">Recently Invoiced</span>
-                      <div className="px-2 py-1 bg-green-50 text-green-600 text-[10px] font-bold rounded-full">PAID</div>
-                    </div>
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <div className="text-lg font-bold text-slate-900">$4,250.00</div>
-                        <div className="text-[10px] text-slate-400 font-medium">Invoice #TK-4412 • Mar 2026</div>
-                      </div>
-                      <div className="flex -space-x-2">
-                        {[1,2,3].map(i => <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-200" />)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-8 text-center bg-white rounded-b-[24px]">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2 font-inter">All-in-one Talent Operations Dashboard</h3>
-                  <p className="text-sm text-slate-500 max-w-sm mx-auto font-inter">
-                    Manage contracts, timesheets, payroll, and communication in one place.
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* RIGHT COLUMN */}
-            <div className="lg:col-span-3 flex flex-col gap-6">
-              {/* Card 3: Contracts & Compliance */}
-              <motion.div 
-                whileHover={{ y: -4 }}
-                className="bg-white p-6 rounded-[14px] border border-slate-200 shadow-sm flex flex-col h-full"
-              >
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Contracts & Compliance</h3>
-                <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-                  Automated agreements per service model with secure digital signing and global compliance.
-                </p>
-                <div className="mt-auto space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <span className="text-[10px] font-bold text-slate-400 tracking-wider">STATUS</span>
-                    <span className="text-[10px] font-bold text-green-600">SIGNED</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <span className="text-[10px] font-bold text-slate-400 tracking-wider">TYPE</span>
-                    <span className="text-[10px] font-bold text-slate-900">Trial-to-Hire</span>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Card 4: Managed Payroll & Payments */}
-              <motion.div 
-                whileHover={{ y: -4 }}
-                className="bg-white p-6 rounded-[14px] border border-slate-200 shadow-sm flex flex-col h-full"
-              >
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Managed Payroll</h3>
-                <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-                  Approve timesheets, generate invoices, and process payouts with transparent breakdowns.
-                </p>
-                <div className="mt-auto bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
-                  {[
-                    { l: 'Client Paid', v: '$4,000', b: false },
-                    { l: 'Talent Payout', v: '$3,200', b: false },
-                    { l: 'OPSlyHR Margin', v: '$800', b: true }
-                  ].map((row, i) => (
-                    <div key={i} className="flex justify-between items-center">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{row.l}</span>
-                      <span className={`text-[11px] font-bold ${row.b ? 'text-primary' : 'text-slate-600'}`}>{row.v}</span>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            </div>
-          </div>
-
         </div>
       </section>
 
