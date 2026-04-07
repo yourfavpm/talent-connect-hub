@@ -14,10 +14,10 @@ const ForProfessionals = () => {
             />
 
             {/* Header / Hero - Enterprise SaaS Style */}
-            <section className="relative pt-40 pb-12 md:pt-40 md:pb-16 flex flex-col justify-center px-6 bg-slate-50/50 overflow-hidden">
+            <section className="relative pt-40 pb-12 md:pt-48 md:pb-24 flex flex-col justify-center px-6 bg-slate-50/50 overflow-hidden">
                 <div className="container max-w-7xl mx-auto relative z-20">
-                    <div className="flex flex-wrap items-center -mx-4">
-                        <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
+                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+                        <div className="w-full">
                             <div className="flex flex-col items-start text-left max-w-xl">
                                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
                                     For Operations Professionals
@@ -50,7 +50,7 @@ const ForProfessionals = () => {
                         </div>
     
                         {/* Visual Panel - Redesigned Dashboard Style */}
-                        <div className="w-full lg:w-1/2 px-4 relative hidden lg:block">
+                        <div className="w-full relative block">
                             <div className="relative z-10 bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 md:p-8 overflow-hidden min-h-[380px] md:min-h-[480px] flex flex-col">
                                 {/* Profile Header */}
                                 <div className="flex items-center gap-6 mb-8 pb-6 border-b border-slate-100">

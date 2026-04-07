@@ -34,10 +34,10 @@ const ForCompanies = () => {
                 keywords="Hire African Operations, Vetted African Talent, Operational Leadership, Scale Operations, Remote Operations Professionals Africa"
             />
             {/* 1. PAGE HERO (REDESIGNED FOR OPERATIONS) */}
-            <section className="relative pt-40 pb-16 md:pt-40 md:pb-16 px-4 md:px-6 bg-[#F8F9FA] font-inter overflow-hidden">
+            <section className="relative pt-40 pb-16 md:pt-48 md:pb-24 px-4 md:px-6 bg-[#F8F9FA] font-inter overflow-hidden">
                 <div className="container max-w-7xl mx-auto relative z-10">
-                    <div className="flex flex-wrap items-center -mx-4">
-                        <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
+                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+                        <div className="w-full lg:w-auto">
                             <motion.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -76,12 +76,12 @@ const ForCompanies = () => {
                         </div>
     
                         {/* Right Side Visual: Active Operations Shortlist */}
-                        <div className="w-full lg:w-1/2 px-4">
+                        <div className="w-full lg:w-auto">
                             <motion.div 
                                 initial={{ opacity: 0, x: 30 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.8, delay: 0.2 }}
-                                className="relative hidden lg:block"
+                                className="relative block"
                             >
                                 <div className="bg-white rounded-[24px] border border-slate-200 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] p-8">
                                     <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-6">

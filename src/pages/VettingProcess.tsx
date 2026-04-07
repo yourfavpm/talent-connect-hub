@@ -16,8 +16,8 @@ const VettingProcess = () => {
             {/* HERO SECTION */}
             <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
                 <div className="container max-w-7xl mx-auto relative z-20">
-                    <div className="flex flex-wrap items-center -mx-4">
-                        <div className="w-full lg:w-1/2 px-4 mb-16 lg:mb-0">
+                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+                        <div className="w-full">
                             {/* Left Content */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
@@ -58,7 +58,7 @@ const VettingProcess = () => {
                         </div>
     
                         {/* Right Visual (Layered Assurance) */}
-                        <div className="w-full lg:w-1/2 px-4 relative hidden lg:block">
+                        <div className="w-full relative block">
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}

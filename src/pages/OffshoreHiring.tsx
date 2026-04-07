@@ -20,9 +20,9 @@ const OffshoreHiring = () => {
                 </div>
 
                 <div className="container max-w-7xl mx-auto relative z-10">
-                    <div className="flex flex-wrap items-center -mx-4">
+                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
                         {/* Left Content */}
-                        <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
+                        <div className="w-full">
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -52,7 +52,7 @@ const OffshoreHiring = () => {
                         </div>
 
                         {/* Right Visual (Global Infrastructure) */}
-                        <div className="w-full lg:w-1/2 px-4">
+                        <div className="w-full">
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
