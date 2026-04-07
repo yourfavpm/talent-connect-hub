@@ -125,39 +125,7 @@ const WebsiteNavbar = () => {
                         <span className="absolute bottom-0 left-0 w-full h-[1.5px] bg-blue-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
                     </Link>
                     
-                    {/* Resources Dropdown */}
-                    <div className="relative group/menu">
-                        <button 
-                            onMouseEnter={() => setIsResourcesOpen(true)}
-                            onMouseLeave={() => setIsResourcesOpen(false)}
-                            className="flex items-center gap-1 text-[13px] font-medium text-slate-600 hover:text-slate-900 transition-colors py-2"
-                        >
-                            Resources <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isResourcesOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                        
-                        <AnimatePresence>
-                            {isResourcesOpen && (
-                                <motion.div 
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 10 }}
-                                    onMouseEnter={() => setIsResourcesOpen(true)}
-                                    onMouseLeave={() => setIsResourcesOpen(false)}
-                                    className="absolute top-full left-0 w-48 bg-white border border-slate-100 shadow-xl shadow-slate-200/50 rounded-xl mt-1 py-3 z-50 overflow-hidden"
-                                >
-                                    {ResourceLinks.map((link) => (
-                                        <Link
-                                            key={link.name}
-                                            to={link.path}
-                                            className="block px-5 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
-                                        >
-                                            {link.name}
-                                        </Link>
-                                    ))}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
+
                 </div>
 
                 {/* Right: CTAs */}
@@ -257,30 +225,6 @@ const WebsiteNavbar = () => {
                                                 </Link>
                                             ))}
  
-                                            <div className="py-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-4">Resources</div>
-                                            {ResourceLinks.map((link) => (
-                                                <Link
-                                                    key={link.name}
-                                                    to={link.path}
-                                                    className="block py-2 text-[13px] font-medium text-slate-600 hover:text-blue-600 transition-colors"
-                                                >
-                                                    {link.name}
-                                                </Link>
-                                            ))}
- 
-                                            <div className="py-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-4">Company</div>
-                                            <Link
-                                                to="/about"
-                                                className="block py-2 text-[13px] font-medium text-slate-600 hover:text-blue-600 transition-colors"
-                                            >
-                                                About
-                                            </Link>
-                                            <Link
-                                                to="/careers"
-                                                className="block py-2 text-[13px] font-medium text-slate-600 hover:text-blue-600 transition-colors"
-                                            >
-                                                Careers
-                                            </Link>
                                         </div>
                                     </div>
                                     </div>
