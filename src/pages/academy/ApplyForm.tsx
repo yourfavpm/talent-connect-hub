@@ -92,18 +92,18 @@ const ApplyForm = () => {
         <div className="min-h-screen bg-slate-50 pt-12 pb-24 px-6 font-inter">
             <div className="container max-w-[1000px] mx-auto">
                 
-                <div className="flex flex-col lg:flex-row gap-16 lg:gap-24 items-start">
+                <div className="flex flex-col-reverse lg:flex-row gap-8 lg:gap-24 items-start">
                     
-                    {/* Left: Info & Stepper */}
-                    <div className="lg:w-1/3 shrink-0">
+                    {/* Left: Info & Stepper - Hidden on mobile, shown with order-last on lg */}
+                    <div className="hidden lg:block lg:w-1/3 shrink-0">
                         <div className="sticky top-32">
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8">Admission Process</div>
-                            <h1 className="text-4xl font-bold text-slate-900 mb-6 tracking-tight">Begin Your <br />Academy Journey</h1>
-                            <p className="text-slate-500 font-medium leading-relaxed mb-12">
+                            <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4 lg:mb-6 tracking-tight">Begin Your <br />Academy Journey</h1>
+                            <p className="text-xs lg:text-sm text-slate-500 font-medium leading-relaxed mb-8 lg:mb-12">
                                 We are selective not to be exclusive, but to ensure every student has the commitment and background to succeed and get placed globally.
                             </p>
 
-                            <div className="space-y-8 relative">
+                            <div className="space-y-6 lg:space-y-8 relative">
                                 {/* Vertical line */}
                                 <div className="absolute left-6 top-6 bottom-6 w-px bg-slate-200" />
                                 
@@ -112,39 +112,39 @@ const ApplyForm = () => {
                                     { step: 2, title: "Professional Background", sub: "Current role and target path" },
                                     { step: 3, title: "Goals & Intent", sub: "Why you want to join us" }
                                 ].map((item) => (
-                                    <div key={item.step} className="flex items-center gap-6 relative z-10">
-                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm transition-all shadow-sm ${
+                                    <div key={item.step} className="flex items-center gap-4 lg:gap-6 relative z-10">
+                                        <div className={`w-10 lg:w-12 h-10 lg:h-12 rounded-full flex items-center justify-center font-bold text-xs lg:text-sm transition-all shadow-sm ${
                                             step >= item.step 
                                             ? "bg-blue-600 text-white shadow-blue-200" 
                                             : "bg-white text-slate-400 border border-slate-200"
                                         }`}>
-                                            {step > item.step ? <CheckCircle2 className="w-5 h-5" /> : item.step}
+                                            {step > item.step ? <CheckCircle2 className="w-4 lg:w-5 h-4 lg:h-5" /> : item.step}
                                         </div>
                                         <div>
-                                            <h4 className={`text-sm font-bold ${step >= item.step ? "text-slate-900" : "text-slate-400"}`}>{item.title}</h4>
-                                            <p className="text-[11px] font-medium text-slate-500">{item.sub}</p>
+                                            <h4 className={`text-xs lg:text-sm font-bold ${step >= item.step ? "text-slate-900" : "text-slate-400"}`}>{item.title}</h4>
+                                            <p className="text-[9px] lg:text-[11px] font-medium text-slate-500">{item.sub}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="mt-20 p-8 bg-slate-900 rounded-[32px] text-white">
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
-                                        <Award className="w-5 h-5 text-white" />
+                            <div className="mt-12 lg:mt-20 p-6 lg:p-8 bg-slate-900 rounded-2xl lg:rounded-[32px] text-white">
+                                <div className="flex items-center gap-3 lg:gap-4 mb-4 lg:mb-6">
+                                    <div className="w-8 lg:w-10 h-8 lg:h-10 rounded-lg lg:rounded-xl bg-blue-600 flex items-center justify-center">
+                                        <Award className="w-4 lg:w-5 h-4 lg:h-5 text-white" />
                                     </div>
-                                    <div className="text-xs font-bold leading-tight">Fast-track to <br />Placement</div>
+                                    <div className="text-[10px] lg:text-xs font-bold leading-tight">Fast-track to <br />Placement</div>
                                 </div>
-                                <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                                <p className="text-[9px] lg:text-xs text-slate-400 leading-relaxed font-medium">
                                     Graduates are prioritized for the OPSly HR global talent marketplace.
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right: Form */}
+                    {/* Right: Form - Shown first on mobile */}
                     <div className="flex-grow w-full">
-                        <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-xl border border-slate-100 relative overflow-hidden">
+                        <div className="bg-white rounded-2xl lg:rounded-[40px] p-6 md:p-8 lg:p-12 shadow-lg lg:shadow-xl border border-slate-100 relative overflow-hidden">
                             
                             <form onSubmit={handleSubmit}>
                                 <AnimatePresence mode="wait">

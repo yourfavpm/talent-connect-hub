@@ -21,7 +21,7 @@ const Careers = () => {
                 description="Help us build the infrastructure for the next generation of operations teams. Explore career opportunities at OPSlyHR and help connect world-class African operations talent with global companies."
                 keywords="Operations Careers, Remote Work Infrastructure, Join OPSlyHR, African Operations Jobs, Build Global Teams"
             />
-            <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6">
+            <section className="pt-24 md:pt-32 md:pb-24 md:pb-32 px-3 md:px-6">
                 <div className="container max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
                     <div className="flex-1">
                         <motion.div

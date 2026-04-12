@@ -51,7 +51,7 @@ const ServiceModels = () => {
                 keywords="Service Models, Hiring African Talent, Remote Operations Engagement, Directed Placement, Project Based Talent Africa"
             />
 
-            <section className="relative pt-40 pb-16 md:pt-40 md:pb-24 px-4 md:px-6 bg-white border-b border-slate-100 font-inter overflow-hidden">
+            <section className="relative pt-32 md:pt-40 pb-12 md:pb-24 px-3 md:px-4 lg:px-6 bg-white border-b border-slate-100 font-inter overflow-hidden">
                 <div className="container max-w-[1200px] mx-auto relative z-10 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
                     <div className="flex-1">
                         <motion.div 

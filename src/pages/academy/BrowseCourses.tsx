@@ -23,7 +23,7 @@ const BrowseCourses = () => {
     return (
         <div className="bg-white min-h-screen">
             {/* Header */}
-            <section className="pt-20 pb-16 bg-slate-50 border-b border-slate-100 px-6">
+            <section className="pt-16 md:pt-20 pb-12 md:pb-16 bg-slate-50 border-b border-slate-100 px-3 md:px-6">
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="max-w-3xl">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-xs font-bold tracking-[0.2em] uppercase mb-8">Course Catalog</div>
@@ -36,9 +36,9 @@ const BrowseCourses = () => {
             </section>
 
             {/* Filter & Search Bar */}
-            <section className="sticky top-[72px] z-40 bg-white border-b border-slate-100 py-4 px-6">
+            <section className="sticky top-[72px] z-40 bg-white border-b border-slate-100 py-3 md:py-4 px-3 md:px-6">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-6">
                         {/* Tabs */}
                         <div className="flex p-1 bg-slate-100 rounded-xl w-full md:w-auto">
                             {levels.map(level => (
@@ -72,10 +72,10 @@ const BrowseCourses = () => {
             </section>
 
             {/* Grid */}
-            <section className="py-20 px-6">
+            <section className="py-12 md:py-20 px-3 md:px-6">
                 <div className="container max-w-[1200px] mx-auto">
                     {filteredCourses.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                             <AnimatePresence mode="popLayout">
                                 {filteredCourses.map((course) => (
                                     <motion.div
@@ -111,19 +111,19 @@ const BrowseCourses = () => {
             </section>
 
             {/* Bottom CTA */}
-            <section className="py-24 px-6 bg-slate-900 text-white text-center">
+            <section className="py-16 md:py-24 px-3 md:px-6 bg-slate-900 text-white text-center">
                 <div className="container max-w-[800px] mx-auto">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-8 tracking-tight">Not finding what you need?</h2>
-                    <p className="text-xl text-slate-400 mb-12 leading-relaxed font-medium">
+                    <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-8 tracking-tight">Not finding what you need?</h2>
+                    <p className="text-base md:text-lg lg:text-xl text-slate-400 mb-6 md:mb-12 leading-relaxed font-medium">
                         Our cohorts fill up fast. Sign up for the next announcement or request a specific learning path.
                     </p>
-                    <div className="flex flex-col sm:flex-row justify-center gap-4">
+                    <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4">
                         <Link to="/apply">
-                            <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all font-semibold shadow-xl shadow-blue-900/40">
+                            <Button size="lg" className="h-12 md:h-14 px-6 md:px-10 text-sm md:text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all font-semibold shadow-lg md:shadow-xl shadow-blue-900/40">
                                 Apply for Next Cohort
                             </Button>
                         </Link>
-                        <a href="mailto:academy@opslyhr.com" className="h-14 px-10 flex items-center justify-center text-white border border-white/20 hover:bg-white/5 rounded-full font-semibold transition-all">
+                        <a href="mailto:academy@opslyhr.com" className="h-12 md:h-14 px-6 md:px-10 flex items-center justify-center text-white border border-white/20 hover:bg-white/5 rounded-full font-semibold transition-all text-sm md:text-base">
                             Contact Admissions
                         </a>
                     </div>

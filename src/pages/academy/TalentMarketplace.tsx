@@ -21,17 +21,17 @@ const TalentMarketplace = () => {
         <div className="bg-white min-h-screen font-inter">
             
             {/* HERO */}
-            <section className="pt-24 pb-32 px-6 bg-slate-900 text-white relative overflow-hidden">
+            <section className="pt-20 md:pt-24 pb-16 md:pb-32 px-3 md:px-6 bg-slate-900 text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-blue-600/10 to-transparent pointer-events-none" />
                 <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
 
                 <div className="container max-w-[1200px] mx-auto text-center relative z-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-10">Ecosystem Bridge</div>
-                    <h1 className="text-4xl md:text-6xl font-bold mb-8 leading-[1.1] tracking-tight">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase mb-6 md:mb-10">Ecosystem Bridge</div>
+                    <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-8 leading-[1.1] tracking-tight">
                         You Mastered the Skills. <br />
                         <span className="text-blue-400">Now Get Placed globally.</span>
                     </h1>
-                    <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
+                    <p className="text-base md:text-lg lg:text-xl text-slate-400 mb-8 md:mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
                         The OPSly HR talent marketplace is where world-class companies come to hire pre-screened operations professionals. As an academy graduate, you are fast-tracked into the pipeline.
                     </p>
                     
@@ -51,9 +51,9 @@ const TalentMarketplace = () => {
             </section>
 
             {/* BENEFITS PANEL */}
-            <section className="py-24 px-6 border-b border-slate-100">
+            <section className="py-16 md:py-24 px-3 md:px-6 border-b border-slate-100">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                         {[
                             {
                                 title: "Global Client Access",
@@ -74,12 +74,12 @@ const TalentMarketplace = () => {
                                 color: "bg-amber-50 text-amber-600"
                             }
                         ].map((item, i) => (
-                            <div key={i} className="p-10 rounded-[32px] border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow">
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 ${item.color}`}>
+                            <div key={i} className="p-4 md:p-10 rounded-2xl md:rounded-[32px] border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+                                <div className={`w-10 md:w-14 h-10 md:h-14 rounded-lg md:rounded-2xl flex items-center justify-center mb-4 md:mb-8 ${item.color}`}>
                                     <item.icon className="w-7 h-7" />
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-900 mb-4">{item.title}</h3>
-                                <p className="text-slate-500 font-medium leading-relaxed">{item.desc}</p>
+                                <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2 md:mb-4">{item.title}</h3>
+                                <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed">{item.desc}</p>
                             </div>
                         ))}
                     </div>

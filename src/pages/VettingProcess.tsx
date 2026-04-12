@@ -14,7 +14,7 @@ const VettingProcess = () => {
                 keywords="Operations Vetting Process, Vetted African Talent, Operations Assessment Framework, Remote Hiring Standards, African Operations Experts Vetting"
             />
             {/* HERO SECTION */}
-            <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
+            <section className="pt-24 md:pt-32 md:pb-24 md:pb-32 px-3 md:px-6 overflow-hidden">
                 <div className="container max-w-[1200px] mx-auto relative z-20 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
                     <div className="flex-1">
                         {/* Left Content */}
@@ -187,7 +187,7 @@ const VettingProcess = () => {
                         <p className="text-slate-400 font-medium max-w-2xl mx-auto">Professionals are categorized by execution complexity and strategic scope.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
                         {[
                             { level: "Level 1", title: "Associate Operator", desc: "Execution-focused, task-driven contributors." },
                             { level: "Level 2", title: "Mid-Level Operator", desc: "Independent execution with process ownership." },
