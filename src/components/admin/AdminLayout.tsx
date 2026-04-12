@@ -5,6 +5,7 @@ import AdminTopbar from "./AdminTopbar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ALL_ADMIN_ROLES } from "@/lib/roles";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -32,18 +33,7 @@ const AdminLayout = () => {
   return (
     <ProtectedRoute 
       portalType="admin" 
-      allowedRoles={[
-        "super_admin",
-        "admin",
-        "talent_manager",
-        "operations_manager",
-        "billing_manager",
-        "support_manager",
-        "operations_admin",
-        "vetting_admin",
-        "finance_admin",
-        "support_admin",
-      ]}
+      allowedRoles={[...ALL_ADMIN_ROLES]}
     >
       <div className="flex h-screen w-full bg-[#FAFAFA] overflow-hidden font-sans text-gray-900">
         <AdminSidebar 

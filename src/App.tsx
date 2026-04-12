@@ -40,9 +40,19 @@ const VettingProcess = lazy(() => import("./pages/VettingProcess"));
 const PublicJobs = lazy(() => import("./pages/PublicJobs"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+// Academy
+const AcademyLayout = lazy(() => import("./components/academy/AcademyLayout"));
+const AcademyHome = lazy(() => import("./pages/academy/AcademyHome"));
+const BrowseCourses = lazy(() => import("./pages/academy/BrowseCourses"));
+const CourseDetail = lazy(() => import("./pages/academy/CourseDetail"));
+const TalentMarketplace = lazy(() => import("./pages/academy/TalentMarketplace"));
+const ApplyForm = lazy(() => import("./pages/academy/ApplyForm"));
+
 // Auth
 const Login = lazy(() => import("./pages/auth/Login"));
 const Signup = lazy(() => import("./pages/auth/Signup"));
+const ClientSignup = lazy(() => import("./pages/auth/ClientSignup"));
+const TalentSignup = lazy(() => import("./pages/auth/TalentSignup"));
 const AdminSignup = lazy(() => import("./pages/auth/AdminSignup"));
 const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
 const CheckEmail = lazy(() => import("./pages/auth/CheckEmail"));
@@ -270,12 +280,26 @@ const App = () => {
                 </Route>
               )}
 
+              {/* Academy Zone (academy.opslyhr.com) */}
+              {zone === Zone.ACADEMY && (
+                <Route element={<AcademyLayout />}>
+                  <Route path="/" element={<AcademyHome />} />
+                  <Route path="/courses" element={<BrowseCourses />} />
+                  <Route path="/courses/:slug" element={<CourseDetail />} />
+                  <Route path="/marketplace" element={<TalentMarketplace />} />
+                  <Route path="/apply" element={<ApplyForm />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              )}
+
               {/* Auth Hub Zone (app.opslyhr.com) */}
               {zone === Zone.AUTH && (
                 <>
                   <Route index element={<Navigate to="/auth/login" replace />} />
                   <Route path="/auth/login" element={<Login />} />
                   <Route path="/auth/signup" element={<Signup />} />
+                  <Route path="/auth/signup/client" element={<ClientSignup />} />
+                  <Route path="/auth/signup/talent" element={<TalentSignup />} />
                   <Route path="/auth/check-email" element={<CheckEmail />} />
                   <Route path="/auth/verify-email" element={<VerifyEmail />} />
                   <Route path="/auth/admin-signup" element={<AdminSignup />} />

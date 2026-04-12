@@ -1,25 +1,12 @@
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { getInternalPath, getZoneUrl, Zone } from "@/utils/subdomain";
-
+import { ALL_ADMIN_ROLES, isAdminRole } from "@/lib/roles";
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles?: string[];
   portalType: "client" | "talent" | "admin";
 }
-
-const ADMIN_ROLES = [
-  "super_admin",
-  "admin",
-  "talent_manager",
-  "operations_manager",
-  "billing_manager",
-  "support_manager",
-  "operations_admin",
-  "vetting_admin",
-  "finance_admin",
-  "support_admin",
-] as const;
 
 const ProtectedRoute = ({ children, allowedRoles, portalType }: ProtectedRouteProps) => {
   const { user, loading, userRole, roleLoading } = useAuth();
@@ -46,7 +33,7 @@ const ProtectedRoute = ({ children, allowedRoles, portalType }: ProtectedRoutePr
 
   // Role-based access control
   if (allowedRoles && allowedRoles.length > 0) {
-    const isAdminGate = allowedRoles.some((r) => (ADMIN_ROLES as readonly string[]).includes(r));
+    const isAdminGate = allowedRoles.some((r) => (ALL_ADMIN_ROLES as readonly string[]).includes(r));
 
     // 1) If we have a role, enforce it strictly.
     if (userRole) {
@@ -60,7 +47,7 @@ const ProtectedRoute = ({ children, allowedRoles, portalType }: ProtectedRoutePr
             window.location.href = getZoneUrl(Zone.CLIENT, "/dashboard");
             return null;
         }
-        if (userRole.includes("admin")) {
+        if (isAdminRole(userRole)) {
             window.location.href = getZoneUrl(Zone.ADMIN, "/dashboard");
             return null;
         }

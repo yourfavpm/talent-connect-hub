@@ -9,6 +9,7 @@ export enum Zone {
   TALENT = "TALENT",
   CLIENT = "CLIENT",
   ADMIN = "ADMIN",
+  ACADEMY = "ACADEMY",
 }
 
 export const PRODUCTION_DOMAIN = "opslyhr.com";
@@ -39,6 +40,7 @@ export const getCurrentZone = (): Zone => {
       if (sub === "talent") return Zone.TALENT;
       if (sub === "client") return Zone.CLIENT;
       if (sub === "app") return Zone.AUTH;
+      if (sub === "academy") return Zone.ACADEMY;
     }
     
     return Zone.AUTH; 
@@ -50,6 +52,7 @@ export const getCurrentZone = (): Zone => {
   if (hostname.startsWith("talent.")) return Zone.TALENT;
   if (hostname.startsWith("client.")) return Zone.CLIENT;
   if (hostname.startsWith("app.")) return Zone.AUTH;
+  if (hostname.startsWith("academy.")) return Zone.ACADEMY;
 
   return Zone.MARKETING; // Fallback to Marketing
 };
@@ -120,6 +123,7 @@ export const getZoneUrl = (zone: Zone, path: string = "/"): string => {
     case Zone.TALENT: subdomain = "talent."; break;
     case Zone.CLIENT: subdomain = "client."; break;
     case Zone.MARKETING: subdomain = ""; break;
+    case Zone.ACADEMY: subdomain = "academy."; break;
   }
 
   return `${protocol}${subdomain}${PRODUCTION_DOMAIN}${cleanPath}`;

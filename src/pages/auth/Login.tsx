@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { getFriendlyErrorMessage } from "@/utils/errorHandling";
 import { Zone, redirectToZone, getCurrentZone } from "@/utils/subdomain";
+import { isAdminRole } from "@/lib/roles";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -97,7 +98,7 @@ const Login = () => {
 
         const userRole = (roleData as { role: string } | null)?.role;
 
-        if (userRole && ["super_admin", "operations_admin", "vetting_admin", "finance_admin", "support_admin"].includes(userRole)) {
+        if (isAdminRole(userRole)) {
           redirectPath = "/admin/dashboard";
         } else {
           toast({

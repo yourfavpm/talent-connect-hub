@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext, ReactNode, useRef } fro
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Zone, redirectToZone } from "@/utils/subdomain";
+import { isAdminRole, isSuperAdminRole } from "@/lib/roles";
 
 // Module-level cache: role/permissions are fetched ONCE per user per session
 const roleCache = new Map<string, { role: string | null; permissions: string[] }>();
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       let perms: string[] = [];
-      if (roleData?.role && ['super_admin', 'operations_admin', 'vetting_admin', 'finance_admin', 'support_admin'].includes(roleData.role)) {
+      if (isAdminRole(roleData?.role)) {
           const { data: permData, error: permError } = await supabase
             .rpc('get_admin_permissions' as any, { p_admin_id: userId });
 
@@ -77,7 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const hasPermission = (permission: string) => {
-    if (userRole === 'super_admin') return true;
+    if (isSuperAdminRole(userRole)) return true;
     return permissions.includes(permission);
   };
 

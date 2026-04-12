@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { isAdminRole } from "@/lib/roles";
 
 export const useUnreadCounts = () => {
     const { user, userRole } = useAuth();
@@ -36,7 +37,7 @@ export const useUnreadCounts = () => {
                 let adminJobs = 0;
                 let adminTalents = 0;
                 let adminTimesheets = 0;
-                if (userRole && ["super_admin", "operations_admin", "finance_admin", "vetting_admin"].includes(userRole)) {
+                if (isAdminRole(userRole)) {
                     const [
                         { count: offerCount },
                         { count: supportCount },

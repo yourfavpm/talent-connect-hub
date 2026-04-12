@@ -143,10 +143,10 @@ const WebsiteNavbar = () => {
                         Login
                     </a>
                     <a 
-                        href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=client#form")}
+                        href="https://academy.opslyhr.com"
                         className="px-6 py-2.5 bg-slate-900 text-white text-[13px] font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-sm font-inter"
                     >
-                        Request Talent
+                        Join Academy
                     </a>
                 </div>
 
@@ -236,10 +236,10 @@ const WebsiteNavbar = () => {
                             <div className="mt-auto px-6 py-8 border-t border-slate-100 bg-white">
                                 <div className="space-y-4">
                                     <a 
-                                        href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=client#form")}
+                                        href="https://academy.opslyhr.com"
                                         className="flex items-center justify-between w-full py-2 border-b border-slate-900 text-slate-900 font-bold text-[12px] group"
                                     >
-                                        <span>Request Talent</span>
+                                        <span>Join Academy</span>
                                         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                     </a>
                                     <a 
