@@ -81,7 +81,7 @@ const CourseDetail = () => {
             </AnimatePresence>
 
             {/* HERO */}
-            <section className="pt-12 pb-24 md:pt-20 md:pb-32 px-3 md:px-6 bg-slate-50 border-b border-slate-100 relative overflow-hidden">
+            <section className="pt-12 pb-24 md:pt-20 md:pb-32 px-3 md:px-6 bg-slate-50 border-b border-slate-100 relative overflow-x-hidden">
                 <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-blue-600/5 to-transparent pointer-events-none" />
                 
                 <div className="container max-w-[1200px] mx-auto relative z-10">
@@ -228,7 +228,7 @@ const CourseDetail = () => {
             </section>
 
             {/* WHAT YOU WILL LEARN */}
-            <section className="py-16 md:py-24 px-3 md:px-6 border-b border-slate-100">
+            <section className="py-16 md:py-24 px-3 md:px-6 border-b border-slate-100 overflow-x-hidden">
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="grid lg:grid-cols-12 gap-8 md:gap-16 lg:gap-24">
                         <div className="lg:col-span-5">
@@ -267,8 +267,8 @@ const CourseDetail = () => {
             </section>
 
             {/* CURRICULUM */}
-            <section className="py-16 md:py-24 px-3 md:px-6 bg-slate-50 border-b border-slate-100">
-                <div className="container max-w-[800px] mx-auto">
+            <section className="py-16 md:py-24 px-3 md:px-6 bg-slate-50 border-b border-slate-100 overflow-x-hidden">
+                <div className="container max-w-[800px] mx-auto px-0">
                     <div className="text-center mb-12 md:mb-16">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-200 text-slate-600 rounded-full text-xs font-bold tracking-[0.2em] uppercase mb-4 md:mb-6">Course Path</div>
                         <h2 className="text-2xl md:text-4xl lg:text-6xl font-black text-slate-900 mb-4 md:mb-6 tracking-tight">How we get <span className="text-blue-600">Results</span></h2>
@@ -280,7 +280,7 @@ const CourseDetail = () => {
             </section>
 
             {/* WHO IT''S FOR */}
-            <section className="py-16 md:py-24 px-3 md:px-6 border-b border-slate-100">
+            <section className="py-16 md:py-24 px-3 md:px-6 border-b border-slate-100 overflow-x-hidden">
                 <div className="container max-w-[1200px] mx-auto text-center">
                     <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 mb-12 md:mb-16 tracking-tight">Is this for <span className="text-blue-600">You?</span></h2>
                     
@@ -298,7 +298,7 @@ const CourseDetail = () => {
             </section>
 
             {/* MACBOOK BONUS (Flagship Only) */}
-            <section className="py-12 md:py-24 px-3 md:px-6 bg-slate-900 text-white overflow-hidden relative">
+            <section className="py-12 md:py-24 px-3 md:px-6 bg-slate-900 text-white overflow-x-hidden relative">
                 <div className="absolute inset-0 bg-blue-600/10 blur-[150px] pointer-events-none" />
                 
                 <div className="container max-w-[1100px] mx-auto relative z-10">
@@ -334,7 +334,7 @@ const CourseDetail = () => {
             </section>
 
             {/* OUTCOMES */}
-            <section className="py-16 md:py-24 px-3 md:px-6 bg-slate-50 border-b border-slate-100">
+            <section className="py-16 md:py-24 px-3 md:px-6 bg-slate-50 border-b border-slate-100 overflow-x-hidden">
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="text-center mb-12 md:mb-20 animate-slide-up">
                         <h2 className="text-2xl md:text-4xl lg:text-6xl font-black text-slate-900 mb-4 md:mb-8 leading-tight tracking-tight">
@@ -362,7 +362,7 @@ const CourseDetail = () => {
             </section>
 
             {/* TESTIMONIALS */}
-            <section className="py-16 md:py-24 px-3 md:px-6 bg-white overflow-hidden">
+            <section className="py-16 md:py-24 px-3 md:px-6 bg-white overflow-x-hidden">
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="text-center mb-12 md:mb-20 animate-slide-up">
                         <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 mb-4 md:mb-6 leading-tight tracking-tight">
@@ -382,7 +382,7 @@ const CourseDetail = () => {
             </section>
 
             {/* FINAL CTA */}
-            <section className="py-16 md:py-24 px-3 md:px-6 bg-slate-900 text-white text-center">
+            <section className="py-16 md:py-24 px-3 md:px-6 bg-slate-900 text-white text-center overflow-x-hidden">
                 <div className="container max-w-[800px] mx-auto">
                     <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-8 tracking-tight">Start Your <span className="text-blue-400">Career Transformation</span></h2>
                     <p className="text-base md:text-lg lg:text-xl text-slate-400 mb-8 md:mb-12 leading-relaxed font-medium">
