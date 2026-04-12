@@ -5,6 +5,7 @@ import {
   DocumentsForm
 } from "@/components/talent/onboarding/OnboardingShared";
 import { STEPS, OB_INPUT_CLASS } from "@/components/talent/onboarding/onboarding_config";
+import { useOnboardingGuard } from "@/lib/onboarding-helpers";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -53,6 +54,9 @@ const OnboardingV2 = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Guard: redirect if onboarding already complete
+  useOnboardingGuard();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);

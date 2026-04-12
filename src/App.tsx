@@ -40,14 +40,6 @@ const VettingProcess = lazy(() => import("./pages/VettingProcess"));
 const PublicJobs = lazy(() => import("./pages/PublicJobs"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Academy
-const AcademyLayout = lazy(() => import("./components/academy/AcademyLayout"));
-const AcademyHome = lazy(() => import("./pages/academy/AcademyHome"));
-const BrowseCourses = lazy(() => import("./pages/academy/BrowseCourses"));
-const CourseDetail = lazy(() => import("./pages/academy/CourseDetail"));
-const TalentMarketplace = lazy(() => import("./pages/academy/TalentMarketplace"));
-const ApplyForm = lazy(() => import("./pages/academy/ApplyForm"));
-
 // Auth
 const Login = lazy(() => import("./pages/auth/Login"));
 const Signup = lazy(() => import("./pages/auth/Signup"));
@@ -100,6 +92,7 @@ const TalentPayments = lazy(() => import("./pages/talent/Payments"));
 const TalentTeam = lazy(() => import("./pages/talent/Team"));
 const OnboardingV2 = lazy(() => import("./pages/talent/OnboardingV2"));
 const ProfileV2 = lazy(() => import("./pages/talent/ProfileV2"));
+const OnboardingRedirect = lazy(() => import("./pages/talent/OnboardingRedirect"));
 
 // Admin
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -280,18 +273,6 @@ const App = () => {
                 </Route>
               )}
 
-              {/* Academy Zone (academy.opslyhr.com) */}
-              {zone === Zone.ACADEMY && (
-                <Route element={<AcademyLayout />}>
-                  <Route path="/" element={<AcademyHome />} />
-                  <Route path="/courses" element={<BrowseCourses />} />
-                  <Route path="/courses/:slug" element={<CourseDetail />} />
-                  <Route path="/marketplace" element={<TalentMarketplace />} />
-                  <Route path="/apply" element={<ApplyForm />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-              )}
-
               {/* Auth Hub Zone (app.opslyhr.com) */}
               {zone === Zone.AUTH && (
                 <>
@@ -356,6 +337,8 @@ const App = () => {
                     {zone === Zone.TALENT && (
                       <>
                         <Route index element={<Navigate to="/dashboard" replace />} />
+                        {/* Onboarding redirect route (used after email verification during signup) */}
+                        <Route path="onboarding-redirect" element={<OnboardingRedirect />} />
                         <Route element={<TalentLayout />}>
                           <Route path="onboarding" element={<OnboardingRouter />} />
                           <Route path="dashboard" element={<TalentDashboard />} />

@@ -66,7 +66,9 @@ const TalentSignup = () => {
     }
 
     try {
-      const redirectUrl = `${window.location.origin}/talent/dashboard`;
+      // Redirect to the onboarding check route instead of directly to dashboard
+      // This allows us to automatically route new signups through onboarding if needed
+      const redirectUrl = `${window.location.origin}/talent/onboarding-redirect`;
 
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
