@@ -42,7 +42,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Auth
 const Login = lazy(() => import("./pages/auth/Login"));
-const Signup = lazy(() => import("./pages/auth/Signup"));
+const SignupHub = lazy(() => import("./pages/auth/SignupHub"));
 const ClientSignup = lazy(() => import("./pages/auth/ClientSignup"));
 const TalentSignup = lazy(() => import("./pages/auth/TalentSignup"));
 const AdminSignup = lazy(() => import("./pages/auth/AdminSignup"));
@@ -278,7 +278,7 @@ const App = () => {
                 <>
                   <Route index element={<Navigate to="/auth/login" replace />} />
                   <Route path="/auth/login" element={<Login />} />
-                  <Route path="/auth/signup" element={<Signup />} />
+                  <Route path="/auth/signup" element={<SignupHub />} />
                   <Route path="/auth/signup/client" element={<ClientSignup />} />
                   <Route path="/auth/signup/talent" element={<TalentSignup />} />
                   <Route path="/auth/check-email" element={<CheckEmail />} />

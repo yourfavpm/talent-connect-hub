@@ -131,10 +131,10 @@ const WebsiteNavbar = () => {
                 {/* Right: CTAs */}
                 <div className="hidden lg:flex items-center gap-6">
                     <a 
-                        href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=talent#form")}
+                        href={getZoneUrl(Zone.AUTH, "/auth/signup")}
                         className="text-[13px] font-semibold text-slate-500 hover:text-slate-900 transition-colors"
                     >
-                        Apply as Talent
+                        Sign Up
                     </a>
                     <a 
                         href={getZoneUrl(Zone.AUTH, "/auth/login?portal=client#form")}
@@ -243,10 +243,10 @@ const WebsiteNavbar = () => {
                                         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                     </a>
                                     <a 
-                                        href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=talent#form")}
+                                        href={getZoneUrl(Zone.AUTH, "/auth/signup")}
                                         className="flex items-center justify-between w-full py-2 border-b border-slate-100 text-slate-500 font-medium text-[12px] group"
                                     >
-                                        <span>Apply as Talent</span>
+                                        <span>Sign Up</span>
                                         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                     </a>
                                     <a 
