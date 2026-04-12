@@ -1,25 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
 
-const supabaseUrl = Deno.env.get("SUPABASE_URL");
-const supabaseServiceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-const paystackSecretKey = Deno.env.get("PAYSTACK_SECRET_KEY");
+const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+const supabaseServiceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const paystackSecretKey = Deno.env.get("PAYSTACK_SECRET_KEY") || "";
 
 const supabase = createClient(supabaseUrl, supabaseServiceRole);
 
 // Verify Paystack webhook signature
-function verifyPaystackSignature(body: string, signature: string): boolean {
-  const hash = new TextEncoder().encode(
-    body + paystackSecretKey
-  );
+async function verifyPaystackSignature(body: string, signature: string): Promise<boolean> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(body + paystackSecretKey);
   
   // Paystack uses SHA512 HMAC
-  return crypto.subtle
-    .digestSync("SHA-512", hash)
-    .hex() === signature;
+  const hashBuffer = await crypto.subtle.digest("SHA-512", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  
+  return hashHex === signature;
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
@@ -29,7 +30,7 @@ serve(async (req) => {
     const signature = req.headers.get("x-paystack-signature");
 
     // Verify webhook authenticity
-    if (!signature || !verifyPaystackSignature(body, signature)) {
+    if (!signature || !(await verifyPaystackSignature(body, signature))) {
       console.error("Invalid Paystack signature");
       return new Response("Unauthorized", { status: 401 });
     }

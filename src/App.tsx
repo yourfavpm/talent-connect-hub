@@ -11,6 +11,7 @@ import { useVettingVersion } from "./hooks/useVettingVersion";
 import { useAuth } from "@/hooks/useAuth";
 import { getZoneUrl } from "@/utils/subdomain";
 import { Loader2 } from "lucide-react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Layouts and Core Components
 import WebsiteLayout from "./components/website/WebsiteLayout";
@@ -241,14 +242,15 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
-              <ScrollToTop />
-              <DevZoneIndicator zone={zone} />
-              <Suspense fallback={
-                <div className="min-h-screen flex items-center justify-center bg-white">
-                  <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
-                </div>
-              }>
+            <ErrorBoundary>
+              <BrowserRouter>
+                <ScrollToTop />
+                <DevZoneIndicator zone={zone} />
+                <Suspense fallback={
+                  <div className="min-h-screen flex items-center justify-center bg-white">
+                    <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+                  </div>
+                }>
                 <Routes>
               {/* Marketing Zone (opslyhr.com) */}
               {zone === Zone.MARKETING && (
@@ -425,7 +427,8 @@ const App = () => {
               } />
               </Routes>
             </Suspense>
-          </BrowserRouter>
+              </BrowserRouter>
+            </ErrorBoundary>
         </TooltipProvider>
       </AuthProvider>
     </HelmetProvider>

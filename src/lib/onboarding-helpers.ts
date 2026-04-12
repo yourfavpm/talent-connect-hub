@@ -27,8 +27,9 @@ export const useOnboardingGuard = () => {
 
         // If locked and NOT in changes_requested state, they've already completed
         if (
-          profile?.locked_onboarding &&
-          profile.status !== "changes_requested"
+          profile &&
+          (profile as any)?.locked_onboarding &&
+          (profile as any)?.status !== "changes_requested"
         ) {
           // Redirect to profile/dashboard, they're done with onboarding
           navigate("/profile");
@@ -36,7 +37,7 @@ export const useOnboardingGuard = () => {
         }
 
         // Additional check: if all mandatory sections are submitted
-        if (!profile?.locked_onboarding) {
+        if (profile && !(profile as any)?.locked_onboarding) {
           const { data: sections } = await supabase
             .from("v2_profile_sections")
             .select("section_key, status")
@@ -46,7 +47,7 @@ export const useOnboardingGuard = () => {
           const mandatoryComplete =
             sections &&
             sections.length === 3 &&
-            sections.every((s) => s.status === "submitted");
+            sections.every((s) => (s as any)?.status === "submitted");
 
           if (mandatoryComplete) {
             // All mandatory sections complete, go to profile
@@ -76,12 +77,13 @@ export const getOnboardingStatus = async (userId: string) => {
 
     if (!profile) return { isComplete: false, progress: 0, requiresChanges: false };
 
+    const profileData = profile as any;
     return {
-      isComplete: profile.locked_onboarding && profile.status !== "changes_requested",
-      progress: profile.progress_percent || 0,
-      requiresChanges: profile.status === "changes_requested",
-      status: profile.status,
-      locked: profile.locked_onboarding,
+      isComplete: profileData.locked_onboarding && profileData.status !== "changes_requested",
+      progress: profileData.progress_percent || 0,
+      requiresChanges: profileData.status === "changes_requested",
+      status: profileData.status,
+      locked: profileData.locked_onboarding,
     };
   } catch (err) {
     console.error("Error getting onboarding status:", err);

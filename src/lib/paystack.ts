@@ -91,7 +91,7 @@ export async function createPendingEnrollment(
   const reference = `REF-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   // Create enrollment record
-  const { data: enrollment, error: enrollmentError } = await supabase
+  const { data: enrollment, error: enrollmentError } = await (supabase
     .from("academy_enrollments")
     .insert([
       {
@@ -106,29 +106,29 @@ export async function createPendingEnrollment(
         price_naira: params.priceNaira,
         currency: "USD",
         enrollment_status: "pending_payment",
-      },
-    ])
+      } as any,
+    ] as any)
     .select()
-    .single();
+    .single() as any);
 
-  if (enrollmentError) throw enrollmentError;
+  if (enrollmentError || !enrollment) throw enrollmentError || new Error("Failed to create enrollment");
 
   // Create transaction record
-  const { data: transaction, error: transactionError } = await supabase
+  const { data: transaction, error: transactionError } = await (supabase
     .from("course_transactions")
     .insert([
       {
-        enrollment_id: enrollment.id,
+        enrollment_id: (enrollment as any)?.id,
         user_id: user.id,
         paystack_reference: reference,
         amount_naira: params.priceNaira,
         amount_usd: params.priceUSD,
         currency: "NGN",
         status: "pending",
-      },
-    ])
+      } as any,
+    ] as any)
     .select()
-    .single();
+    .single() as any);
 
   if (transactionError) throw transactionError;
 

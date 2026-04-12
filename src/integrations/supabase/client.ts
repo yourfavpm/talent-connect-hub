@@ -6,6 +6,17 @@ import { getCookieDomain } from '@/utils/subdomain';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+// Validate required environment variables
+if (!SUPABASE_URL) {
+  console.error('[SUPABASE] Missing environment variable: VITE_SUPABASE_URL');
+  throw new Error('Supabase configuration error: Missing VITE_SUPABASE_URL');
+}
+
+if (!SUPABASE_PUBLISHABLE_KEY) {
+  console.error('[SUPABASE] Missing environment variable: VITE_SUPABASE_PUBLISHABLE_KEY');
+  throw new Error('Supabase configuration error: Missing VITE_SUPABASE_PUBLISHABLE_KEY');
+}
+
 const domain = getCookieDomain();
 
 // Import the supabase client like this:
@@ -14,25 +25,38 @@ const domain = getCookieDomain();
 // Custom storage to share sessions across subdomains
 const cookieStorage = {
   getItem: (key: string) => {
-    const cookies = document.cookie.split(';');
-    for (const cookie of cookies) {
-      const [name, value] = cookie.trim().split('=');
-      if (name === key) return decodeURIComponent(value);
+    try {
+      const cookies = document.cookie.split(';');
+      for (const cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === key) return decodeURIComponent(value);
+      }
+      return localStorage.getItem(key); // Fallback to localStorage
+    } catch (err) {
+      console.error('[SUPABASE] Storage getItem error:', err);
+      return null;
     }
-    return localStorage.getItem(key); // Fallback to localStorage
   },
   setItem: (key: string, value: string) => {
-    const secure = window.location.protocol === 'https:' ? 'Secure;' : '';
-    const domainStr = domain ? `Domain=${domain};` : '';
-    // Set cookie for subdomain sharing
-    document.cookie = `${key}=${encodeURIComponent(value)}; ${domainStr} Path=/; SameSite=Lax; ${secure}`;
-    // Also keep in localStorage for resilience
-    localStorage.setItem(key, value);
+    try {
+      const secure = window.location.protocol === 'https:' ? 'Secure;' : '';
+      const domainStr = domain ? `Domain=${domain};` : '';
+      // Set cookie for subdomain sharing
+      document.cookie = `${key}=${encodeURIComponent(value)}; ${domainStr} Path=/; SameSite=Lax; ${secure}`;
+      // Also keep in localStorage for resilience
+      localStorage.setItem(key, value);
+    } catch (err) {
+      console.error('[SUPABASE] Storage setItem error:', err);
+    }
   },
   removeItem: (key: string) => {
-    const domainStr = domain ? `Domain=${domain};` : '';
-    document.cookie = `${key}=; ${domainStr} Path=/; Max-Age=0; SameSite=Lax;`;
-    localStorage.removeItem(key);
+    try {
+      const domainStr = domain ? `Domain=${domain};` : '';
+      document.cookie = `${key}=; ${domainStr} Path=/; Max-Age=0; SameSite=Lax;`;
+      localStorage.removeItem(key);
+    } catch (err) {
+      console.error('[SUPABASE] Storage removeItem error:', err);
+    }
   },
 };
 
