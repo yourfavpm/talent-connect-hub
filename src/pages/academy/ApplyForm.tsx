@@ -10,7 +10,9 @@ import {
     Zap, 
     Globe, 
     Award,
-    ChevronRight
+    ChevronRight,
+    Loader2,
+    CreditCard
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ACADEMY_COURSES } from "@/data/academy-courses";
@@ -21,10 +23,15 @@ import {
     SelectTrigger, 
     SelectValue 
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { PaystackService, createPendingEnrollment } from "@/lib/paystack";
 
 const ApplyForm = () => {
     const [step, setStep] = useState(1);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [paymentStatus, setPaymentStatus] = useState<"pending" | "success" | "error" | null>(null);
+    const { toast } = useToast();
     const [formData, setFormData] = useState({
         fullName: "",
         email: "",
@@ -38,7 +45,8 @@ const ApplyForm = () => {
         reason: ""
     });
 
-    const totalSteps = 3;
+    const totalSteps = 4;
+    const selectedCourse = ACADEMY_COURSES.find(c => c.slug === formData.course);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -49,14 +57,115 @@ const ApplyForm = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const nextStep = () => setStep(prev => Math.min(prev + 1, totalSteps));
+    const nextStep = () => {
+        if (step === 3 && !formData.course) {
+            toast({
+                title: "Missing Course",
+                description: "Please select a course before proceeding to payment",
+                variant: "destructive"
+            });
+            return;
+        }
+        setStep(prev => Math.min(prev + 1, totalSteps));
+    };
+    
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
+
+    const handlePayment = async () => {
+        if (!selectedCourse) {
+            toast({
+                title: "Error",
+                description: "Please select a valid course",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        setIsLoading(true);
+        setPaymentStatus("pending");
+
+        try {
+            // Create pending enrollment and transaction
+            const { reference } = await createPendingEnrollment({
+                courseId: formData.course,
+                courseName: selectedCourse.title,
+                priceUSD: selectedCourse.priceUSD,
+                priceNaira: selectedCourse.priceNaira,
+                studentEmail: formData.email,
+                studentName: formData.fullName,
+                studentPhone: formData.phone,
+                studentCountry: formData.country
+            });
+
+            // Convert USD to Naira (amount must be in kobo for Paystack)
+            const amountInKobo = Math.round(selectedCourse.priceNaira * 100);
+
+            // Initialize Paystack
+            const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+            if (!paystackPublicKey) {
+                throw new Error("Paystack public key not configured");
+            }
+
+            const paystack = new PaystackService({ publicKey: paystackPublicKey });
+
+            // Initiate payment
+            await paystack.initializePayment({
+                email: formData.email,
+                amount: amountInKobo,
+                reference,
+                metadata: {
+                    custom_fields: [
+                        {
+                            display_name: "Course",
+                            variable_name: "course",
+                            value: selectedCourse.title
+                        }
+                    ],
+                    enrollment_data: {
+                        fullName: formData.fullName,
+                        phone: formData.phone,
+                        country: formData.country,
+                        currentRole: formData.currentRole,
+                        goal: formData.goal,
+                        availability: formData.availability,
+                        reason: formData.reason
+                    }
+                },
+                onSuccess: (response) => {
+                    setPaymentStatus("success");
+                    setIsSubmitted(true);
+                    toast({
+                        title: "Payment Successful!",
+                        description: "Your enrollment has been confirmed. Check your email for access details.",
+                    });
+                },
+                onClose: () => {
+                    setPaymentStatus(null);
+                    toast({
+                        title: "Payment Cancelled",
+                        description: "You can come back and complete your payment anytime",
+                        variant: "destructive"
+                    });
+                }
+            });
+
+        } catch (error) {
+            console.error("Payment error:", error);
+            setPaymentStatus("error");
+            toast({
+                title: "Payment Error",
+                description: error instanceof Error ? error.message : "Failed to process payment",
+                variant: "destructive"
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Here we would normally send to Supabase/API
-        console.log("Form Submitted:", formData);
-        setIsSubmitted(true);
+        // Move to payment step
+        nextStep();
     };
 
     if (isSubmitted) {
@@ -110,7 +219,8 @@ const ApplyForm = () => {
                                 {[
                                     { step: 1, title: "Personal Details", sub: "Basic info and contact" },
                                     { step: 2, title: "Professional Background", sub: "Current role and target path" },
-                                    { step: 3, title: "Goals & Intent", sub: "Why you want to join us" }
+                                    { step: 3, title: "Goals & Intent", sub: "Why you want to join us" },
+                                    { step: 4, title: "Payment", sub: "Secure checkout" }
                                 ].map((item) => (
                                     <div key={item.step} className="flex items-center gap-4 lg:gap-6 relative z-10">
                                         <div className={`w-10 lg:w-12 h-10 lg:h-12 rounded-full flex items-center justify-center font-bold text-xs lg:text-sm transition-all shadow-sm ${
@@ -328,7 +438,104 @@ const ApplyForm = () => {
                                                     <ArrowLeft className="w-5 h-5" /> Back
                                                 </Button>
                                                 <Button type="submit" size="lg" className="h-14 px-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-blue-200">
-                                                    Submit Application
+                                                    Proceed to Payment <ChevronRight className="w-5 h-5" />
+                                                </Button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+
+                                    {step === 4 && (
+                                        <motion.div
+                                            key="step4"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            className="space-y-8"
+                                        >
+                                            <div>
+                                                <h3 className="text-2xl font-bold text-slate-900 mb-2">Confirm & Pay</h3>
+                                                <p className="text-slate-500 font-medium">Complete your enrollment by securing your spot in the course</p>
+                                            </div>
+
+                                            {selectedCourse && (
+                                                <div className="p-8 bg-gradient-to-br from-blue-50 to-slate-50 rounded-2xl border border-blue-100">
+                                                    <div className="space-y-6">
+                                                        <div>
+                                                            <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Course Enrollment</h4>
+                                                            <h3 className="text-2xl font-bold text-slate-900">{selectedCourse.title}</h3>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-6">
+                                                            <div className="p-4 bg-white rounded-xl border border-slate-100">
+                                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Duration</p>
+                                                                <p className="text-lg font-bold text-slate-900">{selectedCourse.duration}</p>
+                                                            </div>
+                                                            <div className="p-4 bg-white rounded-xl border border-slate-100">
+                                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Level</p>
+                                                                <p className="text-lg font-bold text-slate-900 capitalize">{selectedCourse.level}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="border-t border-slate-200 pt-6">
+                                                            <div className="space-y-3 mb-6">
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-slate-600 font-medium">Course Fee (USD)</span>
+                                                                    <span className="text-xl font-bold text-slate-900">${selectedCourse.priceUSD}</span>
+                                                                </div>
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-slate-600 font-medium">Total (NGN)</span>
+                                                                    <span className="text-2xl font-bold text-blue-600">₦{selectedCourse.priceNaira.toLocaleString()}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                                                <div className="flex gap-3 items-start">
+                                                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                                    <div>
+                                                        <p className="text-sm font-bold text-slate-900 mb-1">What's Included</p>
+                                                        <ul className="text-sm text-slate-600 space-y-1">
+                                                            <li>✓ Full course curriculum with video lessons</li>
+                                                            <li>✓ Live weekly workshops and Q&A sessions</li>
+                                                            <li>✓ Community access and peer support</li>
+                                                            <li>✓ Placement assistance and job board access</li>
+                                                            <li>✓ Certificate of completion</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-4 flex justify-between gap-4">
+                                                <Button 
+                                                    type="button" 
+                                                    onClick={prevStep} 
+                                                    variant="ghost" 
+                                                    className="h-14 px-8 text-slate-500 font-bold rounded-2xl transition-all flex items-center gap-2"
+                                                    disabled={isLoading}
+                                                >
+                                                    <ArrowLeft className="w-5 h-5" /> Back
+                                                </Button>
+                                                <Button 
+                                                    type="button" 
+                                                    onClick={handlePayment}
+                                                    disabled={isLoading}
+                                                    size="lg" 
+                                                    className="h-14 px-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-blue-200 flex items-center gap-2"
+                                                >
+                                                    {isLoading ? (
+                                                        <>
+                                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                                            Processing...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <CreditCard className="w-5 h-5" />
+                                                            Pay ₦{selectedCourse?.priceNaira.toLocaleString()}
+                                                        </>
+                                                    )}
                                                 </Button>
                                             </div>
                                         </motion.div>
@@ -342,5 +549,3 @@ const ApplyForm = () => {
         </div>
     );
 };
-
-export default ApplyForm;
