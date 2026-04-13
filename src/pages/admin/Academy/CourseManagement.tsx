@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import CreateCourseModal from "@/components/admin/Academy/CreateCourseModal";
 
 interface Course {
     id: string;
@@ -35,8 +36,12 @@ const CourseManagement = () => {
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    
+    // Modal state
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState<any>(null);
 
-    const fetchCourses = async () => {
+    const fetchCourses = useCallback(async () => {
         setLoading(true);
         try {
             const { data, error } = await supabase
@@ -56,11 +61,28 @@ const CourseManagement = () => {
         } finally {
             setLoading(false);
         }
+    }, [toast]);
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this course? This action is permanent.")) return;
+        
+        try {
+            const { error } = await supabase
+                .from("academy_courses")
+                .delete()
+                .eq("id", id);
+            
+            if (error) throw error;
+            toast({ title: "Deleted", description: "Course removed successfully." });
+            fetchCourses();
+        } catch (err) {
+            toast({ title: "Error", description: "Failed to delete course.", variant: "destructive" });
+        }
     };
 
     useEffect(() => {
         fetchCourses();
-    }, []);
+    }, [fetchCourses]);
 
     const filteredCourses = courses.filter(c => 
         c.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -74,7 +96,13 @@ const CourseManagement = () => {
                         <h1 className="text-4xl font-bold text-slate-900 tracking-tight mb-2">Academy Course Hub</h1>
                         <p className="text-slate-500 font-medium">Manage your dynamic course catalog and learning content.</p>
                     </div>
-                    <Button className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold gap-2 shadow-lg shadow-blue-200 transition-all">
+                    <Button 
+                        onClick={() => {
+                            setSelectedCourse(null);
+                            setIsModalOpen(true);
+                        }}
+                        className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold gap-2 shadow-lg shadow-blue-200 transition-all font-inter"
+                    >
                         <Plus className="w-5 h-5" /> Create New Course
                     </Button>
                 </div>
@@ -113,8 +141,25 @@ const CourseManagement = () => {
                                             <BookOpen className="w-7 h-7" />
                                         </div>
                                         <div className="flex gap-2">
-                                            <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600"><Edit className="w-4 h-4" /></Button>
-                                            <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-xl bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></Button>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                onClick={() => {
+                                                    setSelectedCourse(course);
+                                                    setIsModalOpen(true);
+                                                }}
+                                                className="h-10 w-10 p-0 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600"
+                                            >
+                                                <Edit className="w-4 h-4" />
+                                            </Button>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                onClick={() => handleDelete(course.id)}
+                                                className="h-10 w-10 p-0 rounded-xl bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
                                         </div>
                                     </div>
 
@@ -162,7 +207,13 @@ const CourseManagement = () => {
                         ))}
 
                         {/* Add Card */}
-                        <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[40px] p-8 flex flex-col items-center justify-center text-center group cursor-pointer hover:border-blue-300 transition-all">
+                        <div 
+                            onClick={() => {
+                                setSelectedCourse(null);
+                                setIsModalOpen(true);
+                            }}
+                            className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[40px] p-8 flex flex-col items-center justify-center text-center group cursor-pointer hover:border-blue-300 transition-all"
+                        >
                             <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                 <Plus className="w-8 h-8 text-slate-300 group-hover:text-blue-500" />
                             </div>
@@ -172,6 +223,13 @@ const CourseManagement = () => {
                     </div>
                 )}
             </div>
+
+            <CreateCourseModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={fetchCourses}
+                editCourse={selectedCourse}
+            />
         </div>
     );
 };

@@ -115,11 +115,12 @@ const CourseDetail = () => {
     const handleEnroll = (e: React.MouseEvent) => {
         e.preventDefault();
         if (!user) {
-            const returnTo = encodeURIComponent(`${pathname}${search}`);
-            window.location.href = `/auth/login?portal=student&returnTo=${returnTo}`;
+            // Use absolute URL for returnTo to ensure cross-subdomain consistency
+            const returnTo = encodeURIComponent(getZoneUrl(Zone.ACADEMY, "/dashboard"));
+            window.location.href = getZoneUrl(Zone.AUTH, `/auth/login?portal=student&returnTo=${returnTo}`);
             return;
         }
-        navigate({ pathname: "/apply", search });
+        navigate({ pathname: "/dashboard", search });
     };
 
     useEffect(() => {

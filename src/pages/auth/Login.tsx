@@ -27,7 +27,7 @@ const Login = () => {
   // 3. Fallback to client
   const getInitialPortal = () => {
     const param = searchParams.get("portal");
-    if (param && ["talent", "client", "admin"].includes(param)) return param;
+    if (param && ["talent", "client", "admin", "student"].includes(param)) return param;
     
     if (zone === Zone.TALENT) return "talent";
     if (zone === Zone.ADMIN) return "admin";
@@ -61,6 +61,13 @@ const Login = () => {
           subtitle: "Find jobs and manage your career",
           gradient: "from-accent to-primary",
           emailPlaceholder: "you@example.com"
+        };
+      case "student":
+        return {
+          title: "Academy Student Portal",
+          subtitle: "Access your live cohorts and learning materials",
+          gradient: "from-blue-600 to-indigo-600",
+          emailPlaceholder: "student@opsly.com"
         };
       default:
         return {
@@ -137,7 +144,11 @@ const Login = () => {
       if (userRoles.length > 1) {
         // If they have a returnTo, respect it first
         if (returnTo) {
-          navigate(returnTo);
+          if (returnTo.startsWith('http')) {
+            window.location.href = returnTo;
+          } else {
+            navigate(returnTo);
+          }
           return;
         }
         // Otherwise use role selector but pass portal context
