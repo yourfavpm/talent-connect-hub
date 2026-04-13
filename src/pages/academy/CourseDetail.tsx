@@ -115,9 +115,8 @@ const CourseDetail = () => {
     const handleEnroll = (e: React.MouseEvent) => {
         e.preventDefault();
         if (!user) {
-            // Use absolute URL for returnTo to ensure cross-subdomain consistency
-            const returnTo = encodeURIComponent(getZoneUrl(Zone.ACADEMY, "/dashboard"));
-            window.location.href = getZoneUrl(Zone.AUTH, `/auth/login?portal=student&returnTo=${returnTo}`);
+            // Local Academy signup instead of global Auth Hub redirect
+            navigate(`/signup?redirect=/dashboard`);
             return;
         }
         navigate({ pathname: "/dashboard", search });

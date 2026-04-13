@@ -1,7 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown, ArrowRight } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zone, getZoneUrl } from "@/utils/subdomain";
 
@@ -10,6 +11,8 @@ const AcademyNavbar = () => {
     const [isCoursesOpen, setIsCoursesOpen] = useState(false);
     
     const location = useLocation();
+    const navigate = useNavigate();
+    const { user } = useAuth();
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
@@ -20,6 +23,10 @@ const AcademyNavbar = () => {
         { name: "Courses", path: "/courses" },
         { name: "Talent Marketplace", path: "/marketplace" },
     ];
+
+    if (user) {
+        NavLinks.push({ name: "My Dashboard", path: "/dashboard" });
+    }
 
     // Close mobile menu on route change
     useEffect(() => {
@@ -52,12 +59,21 @@ const AcademyNavbar = () => {
 
                 {/* Right: CTAs */}
                 <div className="hidden lg:flex items-center gap-6">
-                    <Link
-                        to="/apply"
-                        className="px-8 py-3 bg-slate-900 text-white text-[15px] font-bold rounded-xl hover:bg-blue-700 transition-all shadow-sm font-inter"
-                    >
-                        Join as Talent
-                    </Link>
+                    {user ? (
+                        <Link
+                            to="/dashboard"
+                            className="px-8 py-3 bg-slate-100 text-slate-900 border border-slate-200 text-[15px] font-bold rounded-xl hover:bg-slate-200 transition-all font-inter"
+                        >
+                            Academy Dashboard
+                        </Link>
+                    ) : (
+                        <Link
+                            to="/signup"
+                            className="px-8 py-3 bg-slate-900 text-white text-[15px] font-bold rounded-xl hover:bg-blue-700 transition-all shadow-sm font-inter"
+                        >
+                            Get Started
+                        </Link>
+                    )}
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -125,13 +141,23 @@ const AcademyNavbar = () => {
                             </div>
 
                             <div className="mt-auto px-6 py-10 border-t border-slate-100 bg-white">
-                                <Link 
-                                    to="/apply"
-                                    className="flex items-center justify-between w-full py-4 px-6 bg-slate-900 text-white font-bold text-base rounded-2xl group transition-all active:scale-95"
-                                >
-                                    <span>Join as Talent</span>
-                                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                </Link>
+                                {user ? (
+                                    <Link 
+                                        to="/dashboard"
+                                        className="flex items-center justify-between w-full py-4 px-6 bg-slate-900 text-white font-bold text-base rounded-2xl group transition-all"
+                                    >
+                                        <span>Student Dashboard</span>
+                                        <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                    </Link>
+                                ) : (
+                                    <Link 
+                                        to="/signup"
+                                        className="flex items-center justify-between w-full py-4 px-6 bg-slate-900 text-white font-bold text-base rounded-2xl group transition-all"
+                                    >
+                                        <span>Start Learning</span>
+                                        <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                    </Link>
+                                )}
                             </div>
                         </motion.div>
                     </>

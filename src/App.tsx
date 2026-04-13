@@ -58,6 +58,8 @@ const SignupHub = lazy(() => import("./pages/auth/SignupHub"));
 const ClientSignup = lazy(() => import("./pages/auth/ClientSignup"));
 const TalentSignup = lazy(() => import("./pages/auth/TalentSignup"));
 const AdminSignup = lazy(() => import("./pages/auth/AdminSignup"));
+const AcademyLogin = lazy(() => import("./pages/academy/AcademyLogin"));
+const AcademySignup = lazy(() => import("./pages/academy/AcademySignup"));
 const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
 const CheckEmail = lazy(() => import("./pages/auth/CheckEmail"));
 const VerifyEmail = lazy(() => import("./pages/auth/VerifyEmail"));
@@ -298,6 +300,8 @@ const App = () => {
                   <Route path="/courses" element={<BrowseCourses />} />
                   <Route path="/courses/:slug" element={<CourseDetail />} />
                   <Route path="/marketplace" element={<TalentMarketplace />} />
+                  <Route path="/login" element={<AcademyLogin />} />
+                  <Route path="/signup" element={<AcademySignup />} />
                   <Route path="/404" element={<NotFound />} />
                   
                   {/* Protected Student Routes */}
