@@ -9,8 +9,6 @@ window.addEventListener("error", (event) => {
 
 window.addEventListener("unhandledrejection", (event) => {
   console.error("Unhandled promise rejection:", event.reason);
-  // Prevent the default handling (which would print to console)
-  event.preventDefault();
 });
 
 const root = document.getElementById("root");

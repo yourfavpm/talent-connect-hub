@@ -38,6 +38,7 @@ export interface AcademyCourse {
   isFlagship?: boolean;
   hasBonus?: boolean;
   bonusDescription?: string;
+  image?: string;
 }
 
 export const ACADEMY_COURSES: AcademyCourse[] = [
@@ -58,6 +59,7 @@ export const ACADEMY_COURSES: AcademyCourse[] = [
     priceNaira: 199000,
     priceUSD: 149,
     isFlagship: true,
+    image: "https://images.unsplash.com/photo-1542744094-24638eff58bb?auto=format&fit=crop&q=80",
     hasBonus: true,
     bonusDescription:
       "The top-performing graduate of each cohort receives a MacBook Air M2 — sponsored by OPSly as our personal investment in your career. Judged on final project quality, consistency, and peer feedback.",

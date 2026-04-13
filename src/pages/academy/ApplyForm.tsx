@@ -24,28 +24,45 @@ import {
     SelectValue 
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { PaystackService, createPendingEnrollment } from "@/lib/paystack";
+import { useAuth } from "@/hooks/useAuth";
+
+interface Cohort {
+    id: string;
+    name: string;
+    start_date: string;
+    price_usd: number;
+    price_naira: number;
+    status: string;
+}
 
 const ApplyForm = () => {
+    const { user } = useAuth();
     const [step, setStep] = useState(1);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [paymentStatus, setPaymentStatus] = useState<"pending" | "success" | "error" | null>(null);
+    const [cohorts, setCohorts] = useState<Cohort[]>([]);
+    const [loadingCohorts, setLoadingCohorts] = useState(false);
     const { toast } = useToast();
+    const navigate = useNavigate();
+    
     const [formData, setFormData] = useState({
-        fullName: "",
-        email: "",
-        phone: "",
-        country: "",
-        currentRole: "",
+        fullName: user?.user_metadata?.full_name || user?.user_metadata?.first_name || "",
+        email: user?.email || "",
+        phone: user?.user_metadata?.phone || "",
+        country: user?.user_metadata?.country || "",
         course: "",
+        cohortId: "",
+        currentRole: user?.user_metadata?.current_role || "",
         goal: "",
-        experience: "",
         availability: "",
         reason: ""
     });
 
-    const totalSteps = 4;
+    const totalSteps = 3; // Simplified: Personal -> Cohort/Course -> Payment
     const selectedCourse = ACADEMY_COURSES.find(c => c.slug === formData.course);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -55,7 +72,40 @@ const ApplyForm = () => {
 
     const handleSelectChange = (name: string, value: string) => {
         setFormData(prev => ({ ...prev, [name]: value }));
+        if (name === "course") {
+            fetchCohorts(value);
+        }
     };
+
+    const fetchCohorts = async (courseSlug: string) => {
+        setLoadingCohorts(true);
+        try {
+            const { data, error } = await supabase
+                .from("cohorts")
+                .select("*")
+                .eq("course_id", courseSlug)
+                .eq("status", "open")
+                .order("start_date", { ascending: true });
+
+            if (error) throw error;
+            const typedData = data as Cohort[];
+            setCohorts(typedData || []);
+            if (typedData && typedData.length > 0) {
+                setFormData(prev => ({ ...prev, cohortId: typedData[0].id }));
+            }
+        } catch (err) {
+            console.error("Error fetching cohorts:", err);
+            toast({
+                title: "Error",
+                description: "Failed to load upcoming cohorts.",
+                variant: "destructive"
+            });
+        } finally {
+            setLoadingCohorts(false);
+        }
+    };
+
+    const selectedCohort = cohorts.find(c => c.id === formData.cohortId);
 
     const nextStep = () => {
         if (step === 3 && !formData.course) {
@@ -88,9 +138,10 @@ const ApplyForm = () => {
             // Create pending enrollment and transaction
             const { reference } = await createPendingEnrollment({
                 courseId: formData.course,
+                cohortId: formData.cohortId,
                 courseName: selectedCourse.title,
-                priceUSD: selectedCourse.priceUSD,
-                priceNaira: selectedCourse.priceNaira,
+                priceUSD: selectedCohort?.price_usd || selectedCourse.priceUSD,
+                priceNaira: selectedCohort?.price_naira || selectedCourse.priceNaira,
                 studentEmail: formData.email,
                 studentName: formData.fullName,
                 studentPhone: formData.phone,
@@ -98,7 +149,8 @@ const ApplyForm = () => {
             });
 
             // Convert USD to Naira (amount must be in kobo for Paystack)
-            const amountInKobo = Math.round(selectedCourse.priceNaira * 100);
+            const amountInNaira = selectedCohort?.price_naira || selectedCourse.priceNaira;
+            const amountInKobo = Math.round(amountInNaira * 100);
 
             // Initialize Paystack
             const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
@@ -131,13 +183,29 @@ const ApplyForm = () => {
                         reason: formData.reason
                     }
                 },
-                onSuccess: (response) => {
+                onSuccess: async (response) => {
                     setPaymentStatus("success");
                     setIsSubmitted(true);
+                    
+                    // 1. Assign student role if not already assigned
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        const { error: roleError } = await (supabase
+                                .from("user_roles" as any)
+                                .upsert({ user_id: user.id, role: "student" } as any, { onConflict: 'user_id,role' }) as any);
+                        
+                        if (roleError) console.error("Failed to assign student role:", roleError);
+                    }
+
                     toast({
                         title: "Payment Successful!",
-                        description: "Your enrollment has been confirmed. Check your email for access details.",
+                        description: "Your enrollment has been confirmed. Redirecting to your dashboard...",
                     });
+
+                    // 2. Redirect to dashboard after a short delay
+                    setTimeout(() => {
+                        navigate("/dashboard");
+                    }, 2000);
                 },
                 onClose: () => {
                     setPaymentStatus(null);
@@ -218,9 +286,8 @@ const ApplyForm = () => {
                                 
                                 {[
                                     { step: 1, title: "Personal Details", sub: "Basic info and contact" },
-                                    { step: 2, title: "Professional Background", sub: "Current role and target path" },
-                                    { step: 3, title: "Goals & Intent", sub: "Why you want to join us" },
-                                    { step: 4, title: "Payment", sub: "Secure checkout" }
+                                    { step: 2, title: "Cohort Selection", sub: "Choose your live session" },
+                                    { step: 3, title: "Payment", sub: "Secure checkout" }
                                 ].map((item) => (
                                     <div key={item.step} className="flex items-center gap-4 lg:gap-6 relative z-10">
                                         <div className={`w-10 lg:w-12 h-10 lg:h-12 rounded-full flex items-center justify-center font-bold text-xs lg:text-sm transition-all shadow-sm ${
@@ -344,10 +411,49 @@ const ApplyForm = () => {
                                                                 {course.title}
                                                             </SelectItem>
                                                         ))}
-                                                        <SelectItem value="not-sure" className="py-3 font-medium">Not Sure - Need Guidance</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
+
+                                            {formData.course && (
+                                                <div className="space-y-2">
+                                                    <Label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Available Cohorts</Label>
+                                                    <Select 
+                                                        value={formData.cohortId} 
+                                                        onValueChange={(val) => handleSelectChange("cohortId", val)}
+                                                        disabled={loadingCohorts}
+                                                    >
+                                                        <SelectTrigger className="h-14 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:ring-blue-600 transition-all font-medium">
+                                                            {loadingCohorts ? (
+                                                                <div className="flex items-center gap-2">
+                                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                                    <span>Finding open cohorts...</span>
+                                                                </div>
+                                                            ) : (
+                                                                <SelectValue placeholder="Choose your preferred start date" />
+                                                            )}
+                                                        </SelectTrigger>
+                                                        <SelectContent className="bg-white rounded-xl border-slate-100 shadow-xl font-medium">
+                                                            {cohorts.length > 0 ? (
+                                                                cohorts.map(cohort => (
+                                                                    <SelectItem key={cohort.id} value={cohort.id}>
+                                                                        {cohort.name} (Starts {new Date(cohort.start_date).toLocaleDateString()})
+                                                                    </SelectItem>
+                                                                ))
+                                                            ) : (
+                                                                <div className="p-4 text-center text-slate-400 text-sm">
+                                                                    No upcoming cohorts found for this program.
+                                                                </div>
+                                                            )}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    {cohorts.length > 0 && (
+                                                        <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider mt-1 px-1">
+                                                            ✓ Guaranteed live sessions & cohort activity
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                 <div className="space-y-2">
@@ -361,41 +467,32 @@ const ApplyForm = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Years of Experience</Label>
-                                                    <Select value={formData.experience} onValueChange={(val) => handleSelectChange("experience", val)}>
+                                                    <Label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Weekly Availability</Label>
+                                                    <Select value={formData.availability} onValueChange={(val) => handleSelectChange("availability", val)}>
                                                         <SelectTrigger className="h-14 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:ring-blue-600 transition-all font-medium">
-                                                            <SelectValue placeholder="Select years" />
+                                                            <SelectValue placeholder="Commitment level" />
                                                         </SelectTrigger>
                                                         <SelectContent className="bg-white rounded-xl border-slate-100 shadow-xl font-medium">
-                                                            <SelectItem value="0-1">0 - 1 years</SelectItem>
-                                                            <SelectItem value="1-3">1 - 3 years</SelectItem>
-                                                            <SelectItem value="3-5">3 - 5 years</SelectItem>
-                                                            <SelectItem value="5+">5+ years</SelectItem>
+                                                            <SelectItem value="5-10">5 - 10 hours/week</SelectItem>
+                                                            <SelectItem value="10-20">10 - 20 hours/week</SelectItem>
+                                                            <SelectItem value="20+">20+ hours/week</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Weekly Availability</Label>
-                                                <Select value={formData.availability} onValueChange={(val) => handleSelectChange("availability", val)}>
-                                                    <SelectTrigger className="h-14 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:ring-blue-600 transition-all font-medium">
-                                                        <SelectValue placeholder="How much time can you commit?" />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="bg-white rounded-xl border-slate-100 shadow-xl font-medium">
-                                                        <SelectItem value="5-10">5 - 10 hours/week</SelectItem>
-                                                        <SelectItem value="10-20">10 - 20 hours/week (Recommended)</SelectItem>
-                                                        <SelectItem value="20+">20+ hours/week</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
                                             </div>
 
                                             <div className="pt-8 flex justify-between">
                                                 <Button type="button" onClick={prevStep} variant="ghost" className="h-14 px-8 text-slate-500 font-bold rounded-2xl transition-all flex items-center gap-2">
                                                     <ArrowLeft className="w-5 h-5" /> Back
                                                 </Button>
-                                                <Button type="button" onClick={nextStep} size="lg" className="h-14 px-10 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-2xl transition-all flex items-center gap-2">
-                                                    Goals & Intent <ChevronRight className="w-5 h-5" />
+                                                <Button 
+                                                    type="button" 
+                                                    onClick={nextStep} 
+                                                    size="lg" 
+                                                    disabled={!formData.cohortId || loadingCohorts}
+                                                    className="h-14 px-10 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-2xl transition-all flex items-center gap-2"
+                                                >
+                                                    Review & Pay <ChevronRight className="w-5 h-5" />
                                                 </Button>
                                             </div>
                                         </motion.div>
@@ -409,104 +506,63 @@ const ApplyForm = () => {
                                             exit={{ opacity: 0, x: -20 }}
                                             className="space-y-8"
                                         >
-                                            <div className="space-y-2">
-                                                <Label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Primary Career Goal</Label>
-                                                <Input 
-                                                    name="goal"
-                                                    value={formData.goal}
-                                                    onChange={handleChange}
-                                                    placeholder="e.g. Break into global remote work as an AI operator" 
-                                                    className="h-14 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:ring-blue-600 transition-all font-medium" 
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Why OPSly Academy?</Label>
-                                                <Textarea 
-                                                    name="reason"
-                                                    value={formData.reason}
-                                                    onChange={handleChange}
-                                                    placeholder="Tell us what excites you about this path and why you're a good fit." 
-                                                    className="min-h-[160px] rounded-xl bg-slate-50 border-transparent focus:bg-white focus:ring-blue-600 transition-all font-medium py-4" 
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div className="pt-8 flex justify-between">
-                                                <Button type="button" onClick={prevStep} variant="ghost" className="h-14 px-8 text-slate-500 font-bold rounded-2xl transition-all flex items-center gap-2">
-                                                    <ArrowLeft className="w-5 h-5" /> Back
-                                                </Button>
-                                                <Button type="submit" size="lg" className="h-14 px-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-blue-200">
-                                                    Proceed to Payment <ChevronRight className="w-5 h-5" />
-                                                </Button>
-                                            </div>
-                                        </motion.div>
-                                    )}
-
-                                    {step === 4 && (
-                                        <motion.div
-                                            key="step4"
-                                            initial={{ opacity: 0, x: 20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, x: -20 }}
-                                            className="space-y-8"
-                                        >
                                             <div>
-                                                <h3 className="text-2xl font-bold text-slate-900 mb-2">Confirm & Pay</h3>
-                                                <p className="text-slate-500 font-medium">Complete your enrollment by securing your spot in the course</p>
+                                                <h3 className="text-2xl font-bold text-slate-900 mb-2">Review & Secure Checkout</h3>
+                                                <p className="text-slate-500 font-medium tracking-tight">You're one step away from joining the {selectedCohort?.name || 'cohort'}.</p>
                                             </div>
 
                                             {selectedCourse && (
-                                                <div className="p-8 bg-gradient-to-br from-blue-50 to-slate-50 rounded-2xl border border-blue-100">
+                                                <div className="p-8 bg-gradient-to-br from-blue-50/50 to-slate-50/50 rounded-2xl border border-blue-100/50">
                                                     <div className="space-y-6">
-                                                        <div>
-                                                            <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Course Enrollment</h4>
-                                                            <h3 className="text-2xl font-bold text-slate-900">{selectedCourse.title}</h3>
-                                                        </div>
-
-                                                        <div className="grid grid-cols-2 gap-6">
-                                                            <div className="p-4 bg-white rounded-xl border border-slate-100">
-                                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Duration</p>
-                                                                <p className="text-lg font-bold text-slate-900">{selectedCourse.duration}</p>
-                                                            </div>
-                                                            <div className="p-4 bg-white rounded-xl border border-slate-100">
-                                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Level</p>
-                                                                <p className="text-lg font-bold text-slate-900 capitalize">{selectedCourse.level}</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="border-t border-slate-200 pt-6">
-                                                            <div className="space-y-3 mb-6">
-                                                                <div className="flex justify-between items-center">
-                                                                    <span className="text-slate-600 font-medium">Course Fee (USD)</span>
-                                                                    <span className="text-xl font-bold text-slate-900">${selectedCourse.priceUSD}</span>
+                                                        <div className="flex justify-between items-start">
+                                                            <div>
+                                                                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Selected Program</h4>
+                                                                <h3 className="text-xl font-bold text-slate-900 tracking-tight">{selectedCourse.title}</h3>
+                                                                <div className="flex items-center gap-2 mt-2">
+                                                                    <div className="px-2 py-0.5 bg-blue-600 text-white text-[9px] font-bold rounded uppercase tracking-wider">
+                                                                        {selectedCohort?.name || 'Live Cohort'}
+                                                                    </div>
+                                                                    <span className="text-[10px] font-bold text-slate-500">Starts {selectedCohort ? new Date(selectedCohort.start_date).toLocaleDateString() : 'TBD'}</span>
                                                                 </div>
-                                                                <div className="flex justify-between items-center">
-                                                                    <span className="text-slate-600 font-medium">Total (NGN)</span>
-                                                                    <span className="text-2xl font-bold text-blue-600">₦{selectedCourse.priceNaira.toLocaleString()}</span>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Due</h4>
+                                                                <p className="text-2xl font-bold text-blue-600">₦{(selectedCohort?.price_naira || selectedCourse.priceNaira).toLocaleString()}</p>
+                                                                <p className="text-[10px] font-bold text-slate-400">${selectedCohort?.price_usd || selectedCourse.priceUSD} USD equivalent</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="pt-6 border-t border-slate-200/60">
+                                                            <div className="grid grid-cols-2 gap-4">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+                                                                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                                                    </div>
+                                                                    <span className="text-xs font-medium text-slate-600">Live Weekly Sessions</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+                                                                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                                                    </div>
+                                                                    <span className="text-xs font-medium text-slate-600">Cohort Community</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+                                                                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                                                    </div>
+                                                                    <span className="text-xs font-medium text-slate-600">Industry Certificate</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+                                                                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                                                    </div>
+                                                                    <span className="text-xs font-medium text-slate-600">Placement Support</span>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             )}
-
-                                            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200">
-                                                <div className="flex gap-3 items-start">
-                                                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                                                    <div>
-                                                        <p className="text-sm font-bold text-slate-900 mb-1">What's Included</p>
-                                                        <ul className="text-sm text-slate-600 space-y-1">
-                                                            <li>✓ Full course curriculum with video lessons</li>
-                                                            <li>✓ Live weekly workshops and Q&A sessions</li>
-                                                            <li>✓ Community access and peer support</li>
-                                                            <li>✓ Placement assistance and job board access</li>
-                                                            <li>✓ Certificate of completion</li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
 
                                             <div className="pt-4 flex justify-between gap-4">
                                                 <Button 
@@ -533,7 +589,7 @@ const ApplyForm = () => {
                                                     ) : (
                                                         <>
                                                             <CreditCard className="w-5 h-5" />
-                                                            Pay ₦{selectedCourse?.priceNaira.toLocaleString()}
+                                                            Complete Enrollment
                                                         </>
                                                     )}
                                                 </Button>
@@ -549,3 +605,5 @@ const ApplyForm = () => {
         </div>
     );
 };
+
+export default ApplyForm;

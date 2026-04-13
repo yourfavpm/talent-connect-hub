@@ -41,6 +41,16 @@ const VettingProcess = lazy(() => import("./pages/VettingProcess"));
 const PublicJobs = lazy(() => import("./pages/PublicJobs"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+// Academy
+const AcademyLayout = lazy(() => import("./components/academy/AcademyLayout"));
+const AcademyHome = lazy(() => import("./pages/academy/AcademyHome"));
+const BrowseCourses = lazy(() => import("./pages/academy/BrowseCourses"));
+const CourseDetail = lazy(() => import("./pages/academy/CourseDetail"));
+const TalentMarketplace = lazy(() => import("./pages/academy/TalentMarketplace"));
+const ApplyForm = lazy(() => import("./pages/academy/ApplyForm"));
+const StudentDashboard = lazy(() => import("./pages/academy/StudentDashboard"));
+const CourseHub = lazy(() => import("./pages/academy/CourseHub"));
+
 // Auth
 const Login = lazy(() => import("./pages/auth/Login"));
 const SignupHub = lazy(() => import("./pages/auth/SignupHub"));
@@ -50,6 +60,7 @@ const AdminSignup = lazy(() => import("./pages/auth/AdminSignup"));
 const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
 const CheckEmail = lazy(() => import("./pages/auth/CheckEmail"));
 const VerifyEmail = lazy(() => import("./pages/auth/VerifyEmail"));
+const RoleSelection = lazy(() => import("./pages/auth/RoleSelection"));
 
 // Client
 const ClientOnboarding = lazy(() => import("@/pages/client/Onboarding"));
@@ -128,6 +139,9 @@ const AdminTalentDirectory = lazy(() => import("./pages/admin/TalentDirectory/Ad
 const AdminTalentProfileView = lazy(() => import("./pages/admin/TalentDirectory/AdminTalentProfileView"));
 const AdminHireRequestsList = lazy(() => import("./pages/admin/HireRequests/AdminHireRequestsList"));
 const AdminHireRequestDetail = lazy(() => import("./pages/admin/HireRequests/AdminHireRequestDetail"));
+const AcademyManagement = lazy(() => import("./pages/admin/Academy/AcademyManagement"));
+const CourseManagement = lazy(() => import("./pages/admin/Academy/CourseManagement"));
+const CohortDetail = lazy(() => import("./pages/admin/Academy/CohortDetail"));
 
 // Admin Settings Sections
 const OrganizationSettings = lazy(() => import("@/pages/admin/Settings/sections/Organization"));
@@ -275,6 +289,21 @@ const App = () => {
                 </Route>
               )}
 
+              {/* Academy Zone (academy.opslyhr.com) */}
+              {zone === Zone.ACADEMY && (
+                <Route element={<AcademyLayout />}>
+                  <Route path="/" element={<AcademyHome />} />
+                  <Route path="/courses" element={<BrowseCourses />} />
+                  <Route path="/courses/:slug" element={<CourseDetail />} />
+                  <Route path="/marketplace" element={<TalentMarketplace />} />
+                  <Route path="/apply" element={<ApplyForm />} />
+                  <Route path="/dashboard" element={<StudentDashboard />} />
+                  <Route path="/courses/:slug/learn" element={<CourseHub />} />
+                  <Route path="/404" element={<NotFound />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Route>
+              )}
+
               {/* Auth Hub Zone (app.opslyhr.com) */}
               {zone === Zone.AUTH && (
                 <>
@@ -285,6 +314,7 @@ const App = () => {
                   <Route path="/auth/signup/talent" element={<TalentSignup />} />
                   <Route path="/auth/check-email" element={<CheckEmail />} />
                   <Route path="/auth/verify-email" element={<VerifyEmail />} />
+                  <Route path="/auth/select-role" element={<RoleSelection />} />
                   <Route path="/auth/admin-signup" element={<AdminSignup />} />
                   <Route path="/auth/reset-password" element={<ResetPassword />} />
                   <Route path="/404" element={<NotFound />} />
@@ -417,6 +447,9 @@ const App = () => {
                             <Route path="data" element={<DataSettings />} />
                             <Route path="audit" element={<SettingsAuditLog />} />
                           </Route>
+                          <Route path="academy" element={<AcademyManagement />} />
+                          <Route path="academy/courses" element={<CourseManagement />} />
+                          <Route path="academy/cohorts/:id" element={<CohortDetail />} />
                         </Route>
                       </>
                     )}
@@ -425,10 +458,10 @@ const App = () => {
                   </Routes>
                 </ZoneGuard>
               } />
-              </Routes>
+            </Routes>
             </Suspense>
-              </BrowserRouter>
-            </ErrorBoundary>
+          </BrowserRouter>
+        </ErrorBoundary>
         </TooltipProvider>
       </AuthProvider>
     </HelmetProvider>
@@ -437,3 +470,4 @@ const App = () => {
 };
 
 export default App;
+ 

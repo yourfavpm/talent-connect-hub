@@ -82,8 +82,15 @@ const ClientSignup = () => {
 
       if (error) throw error;
 
-      // Send email notifications after successful signup
       if (data.user) {
+        // Assign client role
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .insert({ user_id: data.user.id, role: "client" } as any);
+        
+        if (roleError) console.error("Failed to assign client role:", roleError);
+        
         try {
           // Secure Verification Flow
           if (!data.session) {

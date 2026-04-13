@@ -70,6 +70,7 @@ export class PaystackService {
 
 interface CreateEnrollmentParams {
   courseId: string;
+  cohortId?: string;
   courseName: string;
   priceUSD: number;
   priceNaira: number;
@@ -97,6 +98,7 @@ export async function createPendingEnrollment(
       {
         user_id: user.id,
         course_id: params.courseId,
+        cohort_id: params.cohortId,
         course_name: params.courseName,
         student_email: params.studentEmail,
         student_name: params.studentName,

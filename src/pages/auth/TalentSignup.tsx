@@ -85,8 +85,15 @@ const TalentSignup = () => {
 
       if (error) throw error;
 
-      // Send email notifications after successful signup
       if (data.user) {
+        // Assign talent role
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .insert({ user_id: data.user.id, role: "talent" } as any);
+        
+        if (roleError) console.error("Failed to assign talent role:", roleError);
+        
         try {
           // 1. Account Created Notification
           await sendTalentAccountCreatedEmail(

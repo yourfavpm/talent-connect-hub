@@ -11,7 +11,7 @@ const Logo = ({ className = "", showText = true, variant = "dark" }: LogoProps) 
       <img 
         src={logoPath} 
         alt="OPSlyHR" 
-        className="h-32 w-auto object-contain drop-shadow-xl shadow-lg"
+        className="h-32 w-auto object-contain"
       />
       {showText && (
         <span className="text-lg font-black text-slate-900 tracking-tight hidden sm:inline">OPSlyHR</span>

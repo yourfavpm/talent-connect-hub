@@ -86,65 +86,83 @@ const Login = () => {
 
       if (error) throw error;
 
-      // Determine redirect path before showing toast
-      let redirectPath = "";
-
-      if (portal === "admin") {
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.user.id)
-          .maybeSingle();
-
-        const userRole = (roleData as { role: string } | null)?.role;
-
-        if (isAdminRole(userRole)) {
-          redirectPath = "/admin/dashboard";
-        } else {
-          toast({
-            title: "Access Denied",
-            description: "You don't have admin access.",
-            variant: "destructive",
-          });
-          await supabase.auth.signOut();
-          setLoading(false);
-          return;
-        }
-      } else if (portal === "talent") {
-        const { data: talentData } = await supabase
-          .from("talents")
-          .select("onboarding_completed")
-          .eq("user_id", data.user.id)
-          .maybeSingle();
-
-        // Always redirect to dashboard, onboarding is optional/banner-driven
-        redirectPath = "/talent/dashboard";
-      } else {
-        const { data: clientData } = await supabase
-          .from("clients")
-          .select("id")
-          .eq("user_id", data.user.id)
-          .maybeSingle();
-
-        // Direct access to dashboard as requested, skipping onboarding check
-        redirectPath = "/client/dashboard";
-
-        // If they really have no client record, the dashboard might handle it or they can navigate to settings/onboarding from there.
-        // But per request, we force dashboard.
+      // 1. Check for returnTo redirect (e.g., from a course enrollment)
+      const returnTo = searchParams.get("returnTo");
+      if (returnTo) {
+        toast({
+          title: "Session authenticated",
+          description: "Returning to your previous page...",
+        });
+        navigate(returnTo);
+        return;
       }
+
+      // 2. Fetch all user roles
+      const { data: roleRecords, error: roleError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id);
+
+      if (roleError) console.error("Error fetching roles:", roleError);
+      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const userRoles = roleRecords?.map((r: any) => r.role) || [];
 
       toast({
         title: "Welcome back!",
         description: "You have been signed in successfully.",
       });
 
-      // Use Zone-based redirection for subdomains
-      if (portal === "admin") {
+      // 3. Student Portal Priority & Auto-Assignment
+      if (portal === "student") {
+        if (!userRoles.includes("student")) {
+          // Auto-assign student role if missing
+          const { error: assignError } = await (supabase
+            .from("user_roles") as any)
+            .insert({ user_id: data.user.id, role: "student" });
+          
+          if (!assignError) {
+            toast({
+              title: "Welcome to OPSly Academy!",
+              description: "We've activated your student profile.",
+            });
+          }
+        }
+        
+        redirectToZone(Zone.ACADEMY, "/dashboard");
+        return;
+      }
+
+      // 4. Multi-role Redirection Logic (If not specifically going to a portal)
+      if (userRoles.length > 1) {
+        // If they have a returnTo, respect it first
+        if (returnTo) {
+          navigate(returnTo);
+          return;
+        }
+        // Otherwise use role selector but pass portal context
+        navigate(`/auth/select-role?portal=${portal}`);
+        return;
+      }
+
+      // 5. Single-role Redirection
+      if (userRoles.includes("super_admin") || userRoles.includes("operations_admin")) {
         redirectToZone(Zone.ADMIN, "/dashboard");
-      } else if (portal === "talent") {
+      } else if (userRoles.includes("talent")) {
         redirectToZone(Zone.TALENT, "/dashboard");
-      } else {
+      } else if (userRoles.includes("client")) {
         redirectToZone(Zone.CLIENT, "/dashboard");
+      } else if (userRoles.includes("student")) {
+        redirectToZone(Zone.ACADEMY, "/dashboard");
+      } else {
+        // Fallback: If no roles defined in user_roles, use the portal param or default
+        if (portal === "admin") {
+          redirectToZone(Zone.ADMIN, "/dashboard");
+        } else if (portal === "talent") {
+          redirectToZone(Zone.TALENT, "/dashboard");
+        } else {
+          redirectToZone(Zone.CLIENT, "/dashboard");
+        }
       }
     } catch (err: unknown) {
       setError(getFriendlyErrorMessage(err));
@@ -263,33 +281,6 @@ const Login = () => {
         </div>
 
         <div className="max-w-[440px] w-full mx-auto">
-          {/* PORTAL SWITCH AT TOP */}
-          <div className="flex bg-slate-50 p-1 rounded-xl mb-8 border border-slate-100">
-            <button
-              onClick={() => navigate("/auth/login?portal=talent")}
-              className={`flex-1 py-1.5 text-[10px] font-semibold rounded-lg transition-all ${
-                portal === 'talent' ? "bg-white text-blue-600 shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              Professional
-            </button>
-            <button
-              onClick={() => navigate("/auth/login?portal=client")}
-              className={`flex-1 py-1.5 text-[10px] font-semibold rounded-lg transition-all ${
-                portal === 'client' ? "bg-white text-blue-600 shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              Company
-            </button>
-            {portal === 'admin' && (
-              <button
-                className="flex-1 py-1.5 text-[10px] font-semibold rounded-lg bg-slate-900 text-white"
-              >
-                Admin
-              </button>
-            )}
-          </div>
-
           <div className="bg-white border border-slate-100 rounded-2xl p-8 md:p-10 shadow-sm shadow-slate-200/40 relative">
             <div className="hidden lg:block mb-6">
               <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-1">Sign In</h1>

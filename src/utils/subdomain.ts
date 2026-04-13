@@ -83,8 +83,8 @@ export const getInternalPath = (path: string): string => {
   // If we are in any portal zone (TALENT, CLIENT, ADMIN),
   // we want to allow relative paths that don''t include the portal prefix.
   // Example: On talent.opslyhr.com, ''/talent/dashboard'' should become ''/dashboard''.
-  if ([Zone.TALENT, Zone.CLIENT, Zone.ADMIN].includes(currentZone)) {
-    const prefixes = ["/talent", "/client", "/admin"];
+  if ([Zone.TALENT, Zone.CLIENT, Zone.ADMIN, Zone.ACADEMY].includes(currentZone)) {
+    const prefixes = ["/talent", "/client", "/admin", "/academy"];
     for (const prefix of prefixes) {
       if (cleanPath.startsWith(prefix)) {
         return cleanPath.substring(prefix.length) || "/";
