@@ -1432,8 +1432,7 @@ BEGIN
     -- Check all 7 sections have data
     SELECT count(*) INTO v_incomplete
     FROM (
-        SELECT unnest(ARRAY['basic_info','professional_details','work_history',
-                            'documents','education','certifications','references']) AS sk
+        SELECT unnest('["basic_info", "professional_details", "work_history", "documents", "education", "certifications", "references"]'::jsonb) AS sk
     ) required_sections
     WHERE NOT EXISTS (
         SELECT 1 FROM public.v2_profile_sections
@@ -5868,7 +5867,7 @@ BEGIN
     -- We allow submission from Step 3 onwards
     SELECT count(*) INTO v_incomplete
     FROM (
-        SELECT unnest(ARRAY['basic_info','professional_details','work_history']) AS sk
+        SELECT unnest('["basic_info", "professional_details", "work_history"]'::jsonb) AS sk
     ) required_sections
     WHERE NOT EXISTS (
         SELECT 1 FROM public.v2_profile_sections
@@ -5936,7 +5935,7 @@ BEGIN
     -- Ensure mandatory sections (Basic, Pro, Work) are AT LEAST submitted
     SELECT count(*) INTO v_incomplete
     FROM (
-        SELECT unnest(ARRAY['basic_info','professional_details','work_history']) AS sk
+        SELECT unnest('["basic_info", "professional_details", "work_history"]'::jsonb) AS sk
     ) mandatories
     WHERE NOT EXISTS (
         SELECT 1 FROM public.v2_profile_sections
@@ -6359,29 +6358,54 @@ DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='academy_courses' AND column_name='next_cohort_date') THEN
         ALTER TABLE public.academy_courses ADD COLUMN next_cohort_date TEXT;
     END IF;
+
+    -- Ensure sessions table columns exist
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='sessions') THEN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='sessions' AND column_name='date') THEN
+            ALTER TABLE public.sessions ADD COLUMN date TIMESTAMPTZ;
+            -- If session_date exists, try to backfill
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='sessions' AND column_name='session_date') THEN
+                UPDATE public.sessions SET date = session_date::timestamp + start_time::interval WHERE date IS NULL;
+            END IF;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='sessions' AND column_name='description') THEN
+            ALTER TABLE public.sessions ADD COLUMN description TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='sessions' AND column_name='duration_minutes') THEN
+            ALTER TABLE public.sessions ADD COLUMN duration_minutes INT DEFAULT 60;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='sessions' AND column_name='join_link') THEN
+            ALTER TABLE public.sessions ADD COLUMN join_link TEXT;
+        END IF;
+    END IF;
 END $$;
 
 
 -- Fix column types if they were created as wrong type
 DO $$ BEGIN
-    -- If tools is jsonb, drop default, change to text[], set new default
+    -- Convert TEXT[] columns to JSONB for consistency with later migrations
     IF EXISTS (SELECT 1 FROM information_schema.columns 
                WHERE table_schema='public' AND table_name='academy_courses' 
-               AND column_name='tools' AND data_type='jsonb') THEN
-        ALTER TABLE public.academy_courses ALTER COLUMN tools DROP DEFAULT;
-        ALTER TABLE public.academy_courses ALTER COLUMN tools TYPE TEXT[] USING CASE WHEN tools IS NULL THEN NULL ELSE ARRAY[]::TEXT[] END;
+               AND column_name='tools' AND data_type='ARRAY') THEN
+        ALTER TABLE public.academy_courses ALTER COLUMN tools TYPE JSONB USING to_jsonb(tools);
+        ALTER TABLE public.academy_courses ALTER COLUMN tools SET DEFAULT '[]'::jsonb;
     END IF;
     IF EXISTS (SELECT 1 FROM information_schema.columns 
                WHERE table_schema='public' AND table_name='academy_courses' 
-               AND column_name='what_youll_learn' AND data_type='jsonb') THEN
-        ALTER TABLE public.academy_courses ALTER COLUMN what_youll_learn DROP DEFAULT;
-        ALTER TABLE public.academy_courses ALTER COLUMN what_youll_learn TYPE TEXT[] USING CASE WHEN what_youll_learn IS NULL THEN NULL ELSE ARRAY[]::TEXT[] END;
+               AND column_name='what_youll_learn' AND data_type='ARRAY') THEN
+        ALTER TABLE public.academy_courses ALTER COLUMN what_youll_learn TYPE JSONB USING to_jsonb(what_youll_learn);
+        ALTER TABLE public.academy_courses ALTER COLUMN what_youll_learn SET DEFAULT '[]'::jsonb;
     END IF;
     IF EXISTS (SELECT 1 FROM information_schema.columns 
                WHERE table_schema='public' AND table_name='academy_courses' 
-               AND column_name='who_is_it_for' AND data_type='jsonb') THEN
-        ALTER TABLE public.academy_courses ALTER COLUMN who_is_it_for DROP DEFAULT;
-        ALTER TABLE public.academy_courses ALTER COLUMN who_is_it_for TYPE TEXT[] USING CASE WHEN who_is_it_for IS NULL THEN NULL ELSE ARRAY[]::TEXT[] END;
+               AND column_name='who_is_it_for' AND data_type='ARRAY') THEN
+        ALTER TABLE public.academy_courses ALTER COLUMN who_is_it_for TYPE JSONB USING to_jsonb(who_is_it_for);
+        ALTER TABLE public.academy_courses ALTER COLUMN who_is_it_for SET DEFAULT '[]'::jsonb;
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_schema='public' AND table_name='academy_courses' 
+               AND column_name='outcomes' AND data_type='ARRAY') THEN
+        ALTER TABLE public.academy_courses ALTER COLUMN outcomes TYPE JSONB USING to_jsonb(outcomes);
     END IF;
 END $$;
 
@@ -6496,13 +6520,13 @@ INSERT INTO public.academy_courses (
     '4 Weeks', 
     'Beginner', 
     'AI Operations Specialist', 
-    ARRAY['Zapier', 'Make.com', 'Notion AI', 'GPT-4', 'Airtable', 'Loom'],
+    '["Zapier", "Make.com", "Notion AI", "GPT-4", "Airtable", "Loom"]'::jsonb,
     199000, 149, true, 
     'https://images.unsplash.com/photo-1542744094-24638eff58bb?auto=format&fit=crop&q=80',
     true, 'The top-performing graduate of each cohort receives a MacBook Air M2.',
-    ARRAY['Build automation workflows', 'Integrate GPT-4', 'Design AI processes'],
-    ARRAY['Earn $2,500–$6,000/month', 'Work with global clients'],
-    ARRAY['Ops professionals', 'Career switchers'],
+    '["Build automation workflows", "Integrate GPT-4", "Design AI processes"]'::jsonb,
+    '["Earn $2,500–$6,000/month", "Work with global clients"]'::jsonb,
+    '["Ops professionals", "Career switchers"]'::jsonb,
     '[{"week": "Week 01", "title": "Foundations", "lessons": ["Logic", "Tools"]}, {"week": "Week 02", "title": "Automation", "lessons": ["Zapier", "Make"]}]'::jsonb
 ),
 (
@@ -6513,13 +6537,13 @@ INSERT INTO public.academy_courses (
     '6 Weeks', 
     'Intermediate', 
     'Remote Operations Manager', 
-    ARRAY['ClickUp', 'Notion', 'Slack', 'Loom', 'Calendly'],
+    '["ClickUp", "Notion", "Slack", "Loom", "Calendly"]'::jsonb,
     249000, 179, false, 
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80',
     false, null,
-    ARRAY['Design operating systems', 'Build SOPs', 'Manage distributed teams'],
-    ARRAY['Earn $3,000–$7,000/month', 'Start-up infrastructure skills'],
-    ARRAY['Ops professionals', 'Project managers'],
+    '["Design operating systems", "Build SOPs", "Manage distributed teams"]'::jsonb,
+    '["Earn $3,000–$7,000/month", "Start-up infrastructure skills"]'::jsonb,
+    '["Ops professionals", "Project managers"]'::jsonb,
     '[{"week": "Week 01", "title": "Architecture", "lessons": ["Structure", "Mandate"]}]'::jsonb
 );
 
