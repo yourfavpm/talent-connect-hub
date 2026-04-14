@@ -107,7 +107,7 @@ const CourseHub = () => {
             // 1. Fetch Enrollment & Cohort
             const { data: enrollData, error: enrollError } = await (supabase
                 .from("academy_enrollments")
-                .select("*, cohorts(*)")
+                .select("*, cohorts!cohort_id(*)")
                 .eq("user_id", user.id)
                 .eq("course_id", slug)
                 .single() as any);

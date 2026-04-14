@@ -91,7 +91,7 @@ const StudentDashboard = () => {
 
       const enrollRequest = supabase
         .from("academy_enrollments")
-        .select("*, cohorts(*)")
+        .select("*, cohorts!cohort_id(*)")
         .eq("user_id", user.id)
         .eq("enrollment_status", "active");
         
