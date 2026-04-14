@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Loader2, AlertCircle, Send, User, MapPin, Briefcase, Mail, Save, FileText, CheckCircle2, Cloud
+  Loader2, AlertCircle, Send, User, MapPin, Briefcase, Mail, Save, FileText, CheckCircle2, Cloud, ChevronRight
 } from "lucide-react";
 import clsx from "clsx";
 import {
