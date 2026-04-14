@@ -381,7 +381,26 @@ const VettingWorkspaceV2 = () => {
         } as any)
         .eq("user_id", profile.user_id);
 
-      toast({ title: "Talent Vetted!", description: "Profile is now visible to clients." });
+      // 5. Send branded email notification
+      const emailSubject = "Congratulations! Your OPSlyHR Profile is Vetted";
+      const emailBody = `
+        Hello ${talentInfo.name},<br/><br/>
+        Great news! Your profile has been officially vetted by our team at the <strong>${vettingLevelText}</strong> level.<br/><br/>
+        Your profile is now visible to our partner clients, and you're officially part of the talent network. Keep an eye out for potential opportunities!<br/><br/>
+        Best regards,<br/>
+        The OPSlyHR Team
+      `;
+      const brandedHtml = getBrandedEmailHtml(emailBody, emailSubject);
+      
+      await supabase.functions.invoke("send-email", {
+        body: {
+          to: talentInfo.email,
+          subject: emailSubject,
+          htmlTemplate: brandedHtml,
+        }
+      });
+
+      toast({ title: "Talent Vetted!", description: "Profile is vetted and notification email sent." });
       fetchData();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });

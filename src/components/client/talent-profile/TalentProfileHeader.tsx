@@ -11,65 +11,70 @@ interface TalentProfileHeaderProps {
 
 export function TalentProfileHeader({ talent, onInvite, onMessage }: TalentProfileHeaderProps) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-      <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
-        {/* Left: Avatar & Info */}
-        <div className="flex gap-4 items-center">
+    <div className="pb-16 border-b border-gray-100 mb-12">
+      <div className="flex flex-col lg:flex-row gap-10 items-start">
+        {/* Left: Avatar */}
+        <div className="shrink-0">
           {talent.avatar ? (
             <img 
               src={talent.avatar} 
               alt={talent.full_name} 
-              className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow-sm" 
+              className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700 shadow-2xl shadow-blue-500/10" 
             />
           ) : (
-            <div className="w-20 h-20 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 font-bold text-2xl border border-slate-100 uppercase">
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] bg-gray-50 flex items-center justify-center text-gray-300 font-bold text-4xl border border-gray-100 uppercase tracking-tighter">
               {talent.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
             </div>
           )}
+        </div>
+        
+        {/* Right: Info */}
+        <div className="flex-1 min-w-0 pt-2 text-center lg:text-left w-full lg:w-auto">
+          <div className="flex flex-col lg:flex-row lg:items-end gap-4 lg:gap-6 mb-4">
+            <h1 className="text-5xl md:text-7xl font-bold text-slate-900 tracking-tight leading-[0.9]">
+              {talent.full_name}
+            </h1>
+            <Badge variant="outline" className="self-center lg:self-end mb-2 px-3 py-1 text-[10px] font-black text-slate-400 border-slate-200 uppercase tracking-[0.2em] h-fit">
+              ID: {talent.talent_id}
+            </Badge>
+          </div>
           
-          <div>
-            <div className="flex flex-wrap items-center gap-3 mb-1">
-              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{talent.full_name}</h1>
-              <Badge variant="outline" className="text-[10px] font-bold text-blue-600 border-blue-100 bg-blue-50/50 uppercase tracking-widest">{talent.talent_id}</Badge>
+          <div className="text-xl md:text-2xl text-blue-600 font-medium mb-8 max-w-2xl leading-relaxed">
+            {talent.primary_role} — {talent.skill_level.charAt(0).toUpperCase() + talent.skill_level.slice(1)} Professional
+          </div>
+          
+          <div className="flex flex-wrap justify-center lg:justify-start gap-y-4 gap-6 text-[13px] font-medium text-slate-500 tracking-wide uppercase">
+            <div className="flex items-center gap-2 group">
+              <MapPin className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" /> 
+              {talent.location}
             </div>
-            <div className="text-lg text-gray-500 font-medium mb-4">{talent.primary_role}</div>
-            
-            {/* Badges */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              <Badge className="bg-slate-900 text-white border-transparent hover:bg-slate-800 px-3 py-1 text-xs font-semibold">
-                <ShieldCheck className="w-3.5 h-3.5 mr-1.5 text-blue-400" /> OPSlyHR Vetted
-              </Badge>
-              <Badge variant="secondary" className="bg-slate-100 text-slate-600 hover:bg-slate-100 capitalize px-3 py-1 text-xs font-semibold">
-                {talent.skill_level} Level
-              </Badge>
+            <div className="flex items-center gap-2 group">
+              <Clock className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" /> 
+              {talent.timezone}
             </div>
-            
-            {/* Sub-row */}
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-              <div className="flex items-center gap-2 text-gray-600 font-medium">
-                <MapPin className="w-4 h-4 text-gray-400" /> 
-                {talent.location}
-              </div>
-              <div className="flex items-center gap-2 text-gray-600 font-medium">
-                <Clock className="w-4 h-4 text-gray-400" /> 
-                {talent.timezone}
-              </div>
-              <div className="flex items-center gap-2 text-gray-600 font-medium">
-                <Briefcase className="w-4 h-4 text-gray-400" /> 
-                {talent.years_experience}y+ Experience
-              </div>
-              <div className="flex items-center gap-2 text-gray-600 font-medium">
-                <Calendar className="w-4 h-4 text-gray-400" /> 
-                {talent.availability}
-              </div>
+            <div className="flex items-center gap-2 group">
+              <Briefcase className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" /> 
+              {talent.years_experience}y+ Exp.
+            </div>
+            <div className="flex items-center gap-2 group">
+              <Calendar className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" /> 
+              {talent.availability}
             </div>
           </div>
         </div>
 
-        {/* Right: Actions (Hidden on large screens because Action Panel takes over) */}
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto mt-6 md:mt-0 lg:hidden">
-          <Button variant="outline" className="w-full sm:w-auto font-semibold border-gray-200" onClick={onMessage}>Message Talent</Button>
-          <Button className="w-full sm:w-auto bg-blue-600 text-white hover:bg-blue-700 font-semibold shadow-lg shadow-blue-500/20" onClick={onInvite}>Invite to Interview</Button>
+        {/* Floating Vetted Badge (Desktop Only) */}
+        <div className="hidden lg:flex flex-col items-center gap-3 pt-4">
+          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100 shadow-inner">
+            <ShieldCheck className="w-8 h-8 focus:animate-pulse" />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600/60">OPSly Vetted</span>
+        </div>
+
+        {/* Mobile Actions Overlay */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full mt-10 lg:hidden">
+          <Button className="w-full bg-slate-900 text-white hover:bg-slate-800 h-14 rounded-2xl font-bold uppercase tracking-widest text-xs" onClick={onInvite}>Invite to Interview</Button>
+          <Button variant="outline" className="w-full h-14 rounded-2xl font-bold uppercase tracking-widest text-xs border-slate-200" onClick={onMessage}>Message</Button>
         </div>
       </div>
     </div>
