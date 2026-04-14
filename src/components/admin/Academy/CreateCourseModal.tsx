@@ -140,7 +140,12 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                 error = err;
             }
 
-            if (error) throw error;
+            if (error) {
+                if (error.code === '23505' && error.message?.includes('slug')) {
+                    throw new Error(`A course with the slug "${courseData.slug}" already exists. Please use a different slug.`);
+                }
+                throw error;
+            }
 
             toast({
                 title: editCourse ? "Course Updated" : "Course Created",
@@ -152,7 +157,7 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
             console.error("Save error:", err);
             toast({
                 title: "Error",
-                description: "Failed to save course. Check slug uniqueness.",
+                description: (err as Error).message || "Failed to save course.",
                 variant: "destructive"
             });
         } finally {
@@ -230,7 +235,11 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                                             type="text" 
                                             className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
                                             value={formData.title}
-                                            onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                            onChange={e => {
+                                                const title = e.target.value;
+                                                const autoSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                                                setFormData({ ...formData, title, slug: editCourse ? formData.slug : autoSlug });
+                                            }}
                                             placeholder="e.g. AI Operations Masterclass"
                                         />
                                     </div>
