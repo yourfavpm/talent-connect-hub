@@ -105,7 +105,7 @@ const Checkout = () => {
             if (!user || !course) throw new Error("Missing user or course data");
 
             const enrolledAt = new Date().toISOString();
-            const { error: enrollError } = await supabase
+            const { data: enrollmentData, error: enrollError } = await supabase
                 .from("academy_enrollments")
                 .insert({
                     user_id: user.id,
@@ -116,14 +116,35 @@ const Checkout = () => {
                     enrollment_status: "active",
                     price_naira: Number(course.price_naira) || 0,
                     price_usd: Number(course.price_usd) || 0,
-                    payment_status: "paid",
-                    payment_reference: reference,
                     enrollment_date: enrolledAt
-                });
+                })
+                .select("id")
+                .single();
 
             if (enrollError) {
                 console.error("Supabase enrollment error detail:", enrollError);
                 throw new Error(enrollError.message);
+            }
+
+            // Record the successful transaction
+            if (enrollmentData?.id) {
+                const { error: txError } = await supabase
+                    .from("course_transactions")
+                    .insert({
+                        enrollment_id: enrollmentData.id,
+                        user_id: user.id,
+                        paystack_reference: reference,
+                        amount_naira: Number(course.price_naira) || 0,
+                        amount_usd: Number(course.price_usd) || 0,
+                        currency: "NGN",
+                        status: "success",
+                        payment_method: "paystack",
+                        paid_at: enrolledAt
+                    });
+                
+                if (txError) {
+                    console.error("Failed to record transaction locally:", txError);
+                }
             }
 
             setSuccess(true);
