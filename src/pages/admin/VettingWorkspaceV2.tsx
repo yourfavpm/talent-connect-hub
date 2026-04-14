@@ -740,8 +740,8 @@ const VettingWorkspaceV2 = () => {
                 )}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
