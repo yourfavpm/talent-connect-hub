@@ -51,7 +51,7 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
         who_this_is_for: [] as string[],
         what_you_will_learn: [] as string[],
         cohort_slots: 50,
-        bonus_content: ""
+        bonus_description: ""
     });
 
     useEffect(() => {
@@ -60,6 +60,7 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                 ...formData,
                 ...editCourse,
                 learning_outcomes: editCourse.learning_outcomes || [],
+                bonus_description: editCourse.bonus_description || "",
                 tools: editCourse.tools || [],
                 curriculum: editCourse.curriculum || [],
                 who_this_is_for: editCourse.who_this_is_for || [],
@@ -461,8 +462,8 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                                         <input 
                                             type="text" 
                                             className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
-                                            value={formData.bonus_content}
-                                            onChange={e => setFormData({ ...formData, bonus_content: e.target.value })}
+                                            value={formData.bonus_description}
+                                            onChange={e => setFormData({ ...formData, bonus_description: e.target.value })}
                                             placeholder="e.g. 1-on-1 Career Coaching session"
                                         />
                                     </div>
