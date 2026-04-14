@@ -283,7 +283,7 @@ const AdminPayments = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto pb-12 animate-fade-in space-y-8">
+        <div className="w-full max-w-none px-6 lg:px-10 pb-20 animate-fade-in space-y-8 font-inter">
             {/* Header Area */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-1">

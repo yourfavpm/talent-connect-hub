@@ -257,7 +257,7 @@ const AdminInvoices = () => {
     });
 
     return (
-        <div className="space-y-8 animate-fade-in bg-white p-6 -m-6 rounded-lg min-h-screen">
+        <div className="space-y-8 w-full max-w-none px-6 lg:px-10 pb-20 font-inter">
             {/* Header */}
             <div className="flex justify-between items-end border-b border-gray-100 pb-6">
                 <div>

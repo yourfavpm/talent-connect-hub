@@ -115,7 +115,7 @@ export default function AdminClients() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-7xl mx-auto pb-8">
+    <div className="space-y-8 w-full max-w-none px-6 lg:px-10 pb-20 animate-fade-in font-inter">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Clients</h1>
@@ -237,9 +237,9 @@ export default function AdminClients() {
       ) : (
         <>
           {/* Desktop Table View */}
-          <div className="hidden md:block rounded-md border border-gray-200 bg-white overflow-hidden shadow-sm">
+          <div className="hidden md:block rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
             <Table>
-              <TableHeader className="bg-gray-50">
+              <TableHeader className="bg-slate-50/50">
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider h-11">Company Name</TableHead>
                   <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider h-11">Client ID</TableHead>

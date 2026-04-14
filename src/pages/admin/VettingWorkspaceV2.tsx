@@ -384,65 +384,79 @@ const VettingWorkspaceV2 = () => {
   // ── Render ──────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 w-full max-w-none px-6 lg:px-10 pb-20 font-inter">
       {/* ── Back button ─────────────────────────────────────────── */}
-      <Button variant="ghost" onClick={() => navigate("/admin/vetting")} className="gap-2 text-slate-500 hover:text-slate-900 border border-slate-200 bg-white">
-        <ChevronLeft className="h-4 w-4" /> Back to Queue
-      </Button>
+      <div className="flex items-center justify-between pt-6">
+        <Button variant="ghost" onClick={() => navigate("/admin/vetting")} className="gap-2 text-slate-500 hover:text-slate-900 border border-slate-200 bg-white rounded-lg">
+          <ChevronLeft className="h-4 w-4" /> Back to Queue
+        </Button>
+      </div>
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      <Card className="border-slate-200 shadow-sm overflow-hidden">
-        <div className="bg-slate-50/50 p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-          <div className="flex items-center gap-4">
-             <Avatar className="h-16 w-16 border-2 border-white shadow-sm shrink-0">
-                <AvatarFallback className="bg-slate-200 text-xl font-bold text-slate-700">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="p-8 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+          <div className="flex items-center gap-6">
+             <Avatar className="h-20 w-20 border border-slate-100 shadow-sm shrink-0 rounded-xl">
+                <AvatarFallback className="bg-blue-600 text-2xl font-black text-white rounded-xl">
                   {talentInfo.name[0]}
                 </AvatarFallback>
               </Avatar>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">{talentInfo.name}</h1>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-3 mb-1">
+                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{talentInfo.name}</h1>
+                <Badge className={`${profileStatusCfg.bg} ${profileStatusCfg.text} font-bold px-2 py-0.5 rounded-md shadow-none border-transparent`}>
+                  {profileStatusCfg.label}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                 <p className="text-sm font-medium text-slate-500">{talentInfo.email}</p>
-                {profile.talent_id && <Badge variant="secondary" className="font-mono text-[10px]">{profile.talent_id}</Badge>}
+                {profile.talent_id && <Badge variant="secondary" className="font-mono text-[10px] bg-slate-100 text-slate-600 border-none">{profile.talent_id}</Badge>}
+                {profile.submitted_at && (
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-l border-slate-200 pl-4">
+                    <Clock className="h-3 w-3" /> Submitted {new Date(profile.submitted_at).toLocaleDateString()}
+                  </span>
+                )}
               </div>
             </div>
           </div>
           
-          <div className="flex flex-col items-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate(`/admin/talents/${id}`)} className="h-8 text-[10px] font-bold uppercase tracking-wider border-indigo-200 text-indigo-600 hover:bg-indigo-50">
-              View in Directory
+          <div className="flex flex-wrap items-center gap-4">
+            <Button 
+                variant="outline" 
+                onClick={() => navigate(`/admin/talents/${id}`)} 
+                className="h-11 px-6 rounded-lg font-bold border-slate-200 text-indigo-600 hover:bg-indigo-50"
+            >
+              View Talent Profile
             </Button>
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Status</span>
-              <Badge className={`${profileStatusCfg.bg} ${profileStatusCfg.text} font-bold shadow-none`}>
-                {profileStatusCfg.label}
-              </Badge>
-            </div>
-            {profile.submitted_at && (
-              <span className="text-xs font-medium text-slate-400">
-                Submitted: {new Date(profile.submitted_at).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
-              </span>
-            )}
+            <Button 
+                variant="outline" 
+                onClick={() => setIsNoteModalOpen(true)}
+                className="h-11 px-6 rounded-lg font-bold border-slate-200 text-slate-600 bg-slate-50 hover:bg-slate-100 gap-2"
+            >
+              <Send className="h-4 w-4" /> Send Vetting Note
+            </Button>
           </div>
         </div>
 
         {/* Action Bar */}
-        <div className="p-6 bg-white flex flex-col md:flex-row md:items-center gap-6 justify-between">
-          {/* Manager Assignment */}
-          <div className="flex items-center gap-3 bg-slate-50 px-4 py-2.5 rounded-lg border border-slate-100 w-full md:w-auto">
-            <UserPlus className="h-4 w-4 text-slate-400 shrink-0" />
-            <span className="text-sm font-semibold text-slate-700 whitespace-nowrap">Assigned Manager:</span>
-            <Select value={selectedManagerId} onValueChange={assignManager} disabled={actionPending}>
-              <SelectTrigger className="w-[200px] h-8 bg-white text-sm border-slate-200">
-                <SelectValue placeholder="Assign a manager..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-                {managers.map(m => (
-                  <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="p-6 bg-slate-50/50 flex flex-col lg:flex-row lg:items-center gap-6 justify-between border-t border-slate-50">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+            {/* Manager Assignment */}
+            <div className="flex items-center gap-3 px-1">
+                <UserPlus className="h-4 w-4 text-slate-400" />
+                <span className="text-sm font-bold text-slate-600 whitespace-nowrap uppercase tracking-widest text-[10px]">Assigned Manager</span>
+                <Select value={selectedManagerId} onValueChange={assignManager} disabled={actionPending}>
+                <SelectTrigger className="w-[180px] h-9 bg-white border-slate-200 rounded-lg text-sm font-medium">
+                    <SelectValue placeholder="Assign a manager..." />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {managers.map(m => (
+                    <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                    ))}
+                </SelectContent>
+                </Select>
+            </div>
           </div>
 
           {/* Level Assignment & Vetting Finalization */}
@@ -454,40 +468,48 @@ const VettingWorkspaceV2 = () => {
                   <Mail className="h-4 w-4" /> Send Note
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Send Vetting Note</DialogTitle>
-                  <DialogDescription>
-                    This will trigger a branded email to {talentInfo.name}. Use this for custom feedback or instructions.
+              <DialogContent className="sm:max-w-2xl">
+                <DialogHeader className="pb-4 border-b border-slate-100">
+                  <DialogTitle className="text-xl font-bold text-slate-900">Send Vetting Note</DialogTitle>
+                  <DialogDescription className="text-slate-500 font-medium">
+                    This will trigger a branded email to <span className="text-slate-900 font-bold">{talentInfo.name}</span>. Use this for custom feedback or instructions.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="subject" className="text-xs font-bold uppercase text-slate-500">Email Subject</Label>
+                <div className="space-y-6 py-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="subject" className="text-xs font-bold uppercase text-slate-400 tracking-wider">Email Subject</Label>
                     <Input 
                       id="subject" 
                       value={noteSubject} 
                       onChange={(e) => setNoteSubject(e.target.value)}
                       placeholder="Enter subject..."
+                      className="h-11 border-slate-200 focus:border-slate-900 transition-all font-medium"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="message" className="text-xs font-bold uppercase text-slate-500">Message to Talent</Label>
-                    <Textarea 
-                      id="message" 
-                      value={noteBody} 
-                      onChange={(e) => setNoteBody(e.target.value)}
-                      placeholder="Type your message here..."
-                      className="min-h-[150px]"
-                    />
+                  <div className="space-y-3">
+                    <Label htmlFor="message" className="text-xs font-bold uppercase text-slate-400 tracking-wider">Message to Talent</Label>
+                    <div className="relative">
+                      <Textarea 
+                        id="message" 
+                        value={noteBody} 
+                        onChange={(e) => setNoteBody(e.target.value)}
+                        placeholder="Type your message here..."
+                        className="min-h-[280px] border-slate-200 focus:border-slate-900 transition-all font-medium leading-relaxed p-4"
+                      />
+                      <div className="absolute bottom-3 right-3 text-[10px] font-bold text-slate-400 uppercase">
+                        Supports plaintext
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <DialogFooter className="sm:justify-end gap-2">
-                  <Button variant="ghost" onClick={() => setIsNoteModalOpen(false)} disabled={actionPending}>Cancel</Button>
+                <DialogFooter className="pt-6 border-t border-slate-100 sm:justify-end gap-3">
+                  <Button variant="ghost" onClick={() => setIsNoteModalOpen(false)} disabled={actionPending} className="font-bold text-slate-500 hover:text-slate-900">
+                    Cancel
+                  </Button>
                   <Button 
                     onClick={sendVettingNote} 
                     disabled={actionPending || !noteBody.trim()} 
-                    className="gap-2 bg-slate-900 text-white font-bold"
+                    className="gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold h-11 px-8 shadow-lg shadow-slate-200 transition-all"
                   >
                     {actionPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     Send Branded Email
@@ -496,42 +518,22 @@ const VettingWorkspaceV2 = () => {
               </DialogContent>
             </Dialog>
 
-            <span className="text-sm font-semibold text-slate-700 whitespace-nowrap ml-4">Target Level:</span>
-            <Select value={vettingLevelText} onValueChange={setVettingLevelText} disabled={actionPending}>
-              <SelectTrigger className="w-[140px] h-9 border-slate-200 text-sm font-medium">
-                <SelectValue placeholder="Select Level" />
-              </SelectTrigger>
-              <SelectContent>
-                {LEVEL_OPTIONS.map(lvl => (
-                  <SelectItem key={lvl} value={lvl}>{lvl} Level</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
- 
-            <Button
-              onClick={finalizeVetting}
-              disabled={!canFinalize || actionPending || profile.status === "vetted"}
-              className="gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold h-9 ml-2"
-            >
-              {actionPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4 text-emerald-400" />}
-              {profile.status === "vetted" ? "Vetted" : "Mark Vetted"}
-            </Button>
-          </div>
-        </div>
         {!allMandatorySubmitted && profile.status !== "vetted" && (
-            <div className="px-6 pb-4 bg-white flex justify-end">
-               <span className="text-xs font-semibold text-rose-500">Mandatory sections (Basic, Pro, Work) must be submitted or approved.</span>
+            <div className="px-8 pb-4 bg-white flex justify-end">
+               <span className="text-xs font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1 rounded">
+                 Required: Basic Info, Pro Details, Work History
+               </span>
             </div>
         )}
-      </Card>
+      </div>
 
       {/* ── Two-column layout ───────────────────────────────────── */}
-      <div className="grid lg:grid-cols-[280px_1fr] gap-6 items-start">
+      <div className="grid lg:grid-cols-[300px_1fr] gap-8 items-start">
         {/* Left sidebar: section list */}
-        <Card className="h-fit sticky top-6 border-slate-200 shadow-sm">
-          <CardContent className="p-4 space-y-1">
-            <div className="mb-4">
-               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-2">Profile Sections</h3>
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm h-fit sticky top-10">
+          <div className="p-6 space-y-1">
+            <div className="mb-6">
+               <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] px-2 mb-2">Workspace Navigation</h3>
             </div>
             {SECTION_ORDER.map(key => {
               const sec = sections.find(s => s.section_key === key);
@@ -542,34 +544,33 @@ const VettingWorkspaceV2 = () => {
                 <button
                   key={key}
                   onClick={() => { setSelectedSection(key); setActiveTab("data"); }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive ? "bg-slate-900 text-white shadow-md" : "text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-200"}`}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-bold transition-all ${isActive ? "bg-slate-900 text-white shadow-lg shadow-slate-200" : "text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-100"}`}
                 >
                   <span className="truncate">{SECTION_LABELS[key]}</span>
-                  {/* Basic Info is auto-approved implicitly usually but we show its explicit status */}
-                  <Badge className={`${isActive ? "bg-white/20 text-white" : cfg.bg + " " + cfg.text} text-[10px] font-bold ml-2 shrink-0 shadow-none border-none`}>
+                  <Badge className={`${isActive ? "bg-white/20 text-white" : cfg.bg + " " + cfg.text} text-[9px] font-bold ml-2 shrink-0 shadow-none border-none rounded-md px-2 py-0.5`}>
                     {cfg.label}
                   </Badge>
                 </button>
               );
             })}
 
-            <div className="pt-4 border-t border-slate-100 mt-4">
+            <div className="pt-4 border-t border-slate-100 mt-6">
               <button
                 onClick={() => setActiveTab("timeline")}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === "timeline" ? "bg-slate-900 text-white shadow-md" : "text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-200"}`}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === "timeline" ? "bg-slate-900 text-white shadow-lg shadow-slate-200" : "text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-100"}`}
               >
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4" /> Audit Timeline
                 </div>
-                <Badge variant="secondary" className="text-[10px] font-bold ml-2 shrink-0">{actions.length}</Badge>
+                <Badge variant="secondary" className="text-[9px] font-bold ml-2 shrink-0 bg-slate-100 text-slate-500 border-none px-2 py-0.5">{actions.length}</Badge>
               </button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Main panel */}
-        <Card className="border-slate-200 shadow-sm min-h-[500px]">
-          <CardContent className="p-8">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm min-h-[600px] overflow-hidden">
+          <div className="p-10">
             {activeTab === "timeline" ? (
               // Timeline view
               <div className="max-w-2xl">

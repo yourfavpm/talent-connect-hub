@@ -104,66 +104,70 @@ const AcademyManagement = () => {
     }
 
     return (
-        <div className="p-8 lg:p-12 bg-slate-50/50 min-h-screen font-inter">
-            <div className="max-w-[1600px] mx-auto">
+        <div className="p-6 lg:p-10 bg-white min-h-screen font-inter">
+            <div className="w-full max-w-none">
                 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
                     <div>
-                        <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-[10px] font-bold tracking-widest uppercase mb-4 w-fit">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold tracking-widest uppercase mb-4 w-fit">
                             Admin Portal
                         </div>
-                        <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Academy Management</h1>
+                        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Academy Management</h1>
                         <p className="text-slate-500 font-medium mt-2">Oversee cohorts, sessions, and academic performance.</p>
                     </div>
-                    
-                    <div className="flex flex-wrap flex-col sm:flex-row items-center gap-4">
+                    <div className="flex items-center gap-3">
                         <Button 
                             variant="outline" 
-                            onClick={() => navigate("/academy/courses")}
-                            className="h-12 px-6 rounded-xl font-bold gap-2 text-slate-700 bg-white border-slate-200 hover:bg-slate-50 shadow-sm"
+                            className="h-12 px-6 rounded-xl font-bold text-slate-600 border-slate-200 hover:bg-slate-50"
+                            onClick={() => navigate("/admin/academy/courses")}
                         >
-                            <BookOpen className="w-4 h-4" /> Manage Courses
+                            <BookOpen className="mr-2 w-4 h-4 text-blue-600" />
+                            Manage Courses
                         </Button>
-                        <Button className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold gap-2 shadow-lg shadow-blue-200">
-                            <Plus className="w-4 h-4" /> Create New Cohort
+                        <Button 
+                            className="h-12 px-6 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200"
+                            onClick={() => navigate("/admin/academy/cohorts/new")}
+                        >
+                            <Plus className="mr-2 w-4 h-4" />
+                            Create Cohort
                         </Button>
                     </div>
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                     {[
-                        { label: "Active Students", value: stats.totalStudents, icon: Users, color: "bg-blue-500", trend: "+12%" },
-                        { label: "Open Cohorts", value: stats.activeCohorts, icon: BookOpen, color: "bg-emerald-500", trend: "Stable" },
-                        { label: "Est. Revenue", value: `₦${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: "bg-indigo-500", trend: "+8%" },
-                        { label: "Graduations", value: stats.pendingGraduations, icon: CheckCircle2, color: "bg-amber-500", trend: "Pending" }
+                        { label: "Active Students", value: stats.totalStudents, icon: Users, color: "bg-blue-600", trend: "+12%" },
+                        { label: "Open Cohorts", value: stats.activeCohorts, icon: BookOpen, color: "bg-emerald-600", trend: "Stable" },
+                        { label: "Est. Revenue", value: `₦${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: "bg-indigo-600", trend: "+8%" },
+                        { label: "Graduations", value: stats.pendingGraduations, icon: CheckCircle2, color: "bg-amber-600", trend: "Pending" }
                     ].map((stat) => (
-                        <div key={stat.label} className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden group">
-                            <div className="flex items-start justify-between mb-6">
-                                <div className={`w-12 h-12 ${stat.color} rounded-2xl flex items-center justify-center text-white shadow-lg`}>
-                                    <stat.icon className="w-6 h-6" />
+                        <div key={stat.label} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center text-white`}>
+                                    <stat.icon className="w-5 h-5" />
                                 </div>
-                                <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${stat.trend.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'}`}>
+                                <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${stat.trend.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'}`}>
                                     {stat.trend}
                                 </span>
                             </div>
-                            <h3 className="text-3xl font-bold text-slate-900 mb-1">{stat.value}</h3>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
+                            <h3 className="text-3xl font-extrabold text-slate-900 mb-1">{stat.value}</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
                         </div>
                     ))}
                 </div>
 
                 {/* Main Table */}
-                <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden mb-12">
-                    <div className="p-8 border-b border-slate-100 flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-slate-900">Academic Cohorts</h2>
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-12">
+                    <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between">
+                        <h2 className="text-xl font-bold text-slate-900">Academic Cohorts</h2>
                         <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input 
                                 type="text"
                                 placeholder="Search cohorts..." 
-                                className="h-11 pl-12 pr-6 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-blue-600 transition-all font-medium text-sm w-72"
+                                className="h-10 pl-11 pr-6 bg-white rounded-lg border border-slate-200 focus:ring-1 focus:ring-blue-600 transition-all font-medium text-sm w-72"
                             />
                         </div>
                     </div>

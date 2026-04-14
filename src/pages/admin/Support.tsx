@@ -164,7 +164,7 @@ const AdminSupport = () => {
     };
 
     return (
-        <div className="max-w-[1600px] mx-auto pb-12 animate-fade-in space-y-8">
+        <div className="w-full max-w-none px-6 lg:px-10 pb-20 animate-fade-in space-y-8 font-inter">
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Support</h1>
