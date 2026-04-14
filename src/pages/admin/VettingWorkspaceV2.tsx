@@ -339,15 +339,14 @@ const VettingWorkspaceV2 = () => {
     }
     setActionPending(true);
     try {
-      // 1. Auto-approve any submitted/resubmitted sections
+      // 1. Auto-approve ALL profile sections (to ensure they show up in the Client-side RPC)
       await (supabase.from("v2_profile_sections") as any)
         .update({
           status: "approved",
           approved_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
-        .eq("user_id", profile.user_id)
-        .in("status", ["submitted", "resubmitted"]);
+        .eq("user_id", profile.user_id);
 
       // 2. Update v2 profile to vetted & visible
       const { error: profileError } = await (supabase.from("v2_talent_profiles") as any)
@@ -356,6 +355,7 @@ const VettingWorkspaceV2 = () => {
           vetting_level_text: vettingLevelText,
           vetted_at: new Date().toISOString(),
           visible_to_clients: true,
+          locked_onboarding: true,
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", profile.user_id);
@@ -378,6 +378,8 @@ const VettingWorkspaceV2 = () => {
         .update({
           vetting_status: "fully_vetted",
           onboarding_completed: true,
+          onboarding_step: 8, // Final step
+          primary_role: vettingLevelText // Sync level to role fallback if needed
         } as any)
         .eq("user_id", profile.user_id);
 

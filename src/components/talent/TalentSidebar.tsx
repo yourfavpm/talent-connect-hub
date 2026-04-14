@@ -148,20 +148,20 @@ const TalentSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
           key={item.label}
           to={getInternalPath(item.href)}
           className={cn(
-            "flex items-center gap-2.5 px-2.5 py-1.5 rounded-md transition-colors duration-150 relative group outline-none",
+            "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 relative group outline-none",
             isActive
-              ? "bg-[#EFF6FF] text-[#0f2147] font-medium"
-              : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+              ? "bg-[#EFF6FF] text-[#0f2147] shadow-sm shadow-blue-500/5 font-semibold"
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           )}
         >
-          <div className={cn("p-1.5 rounded-md transition-colors", isActive ? item.bgColor : "bg-transparent group-hover:bg-gray-200/50")}>
-            <item.icon className={cn("h-4 w-4 flex-shrink-0 stroke-[2.5px]", isActive ? item.iconColor : "text-gray-400 group-hover:text-gray-600")} />
+          <div className={cn("p-1.5 rounded-lg transition-colors shrink-0", isActive ? "bg-white shadow-sm" : "bg-transparent group-hover:bg-gray-100")}>
+            <item.icon className={cn("h-[18px] w-[18px] flex-shrink-0 stroke-[2.5px]", isActive ? item.iconColor : "text-gray-400 group-hover:text-gray-600")} />
           </div>
           {!isCollapsed && (
-             <div className="flex-1 flex items-center justify-between text-[13px] tracking-wide relative top-[1px]">
+             <div className="flex-1 flex items-center justify-between text-[14px] tracking-tight antialiased">
                <span>{item.label}</span>
                {badgeCount > 0 && (
-                 <span className="bg-gray-200 text-gray-700 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center justify-center min-w-[20px]">
+                 <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center justify-center min-w-[20px]">
                    {badgeCount}
                  </span>
                )}
@@ -198,40 +198,43 @@ const TalentSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
       {/* Sidebar Container */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out transform",
-          mobileOpen ? "translate-x-0 w-64 shadow-2xl" : "-translate-x-full",
+          "fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-gray-100 transition-all duration-300 ease-in-out transform",
+          mobileOpen ? "translate-x-0 w-72 shadow-2xl" : "-translate-x-full",
           "lg:translate-x-0 lg:static lg:shadow-none",
-          collapsed ? "lg:w-[80px]" : "lg:w-[260px]"
+          collapsed ? "lg:w-[84px]" : "lg:w-[280px]"
         )}
       >
         {/* Logo Header */}
-        <div className="flex items-center justify-between px-5 h-20 shrink-0 pt-4">
+        <div className="flex items-center justify-between px-6 h-20 shrink-0 pt-2">
           {!isCollapsed ? (
             <Link to="/" className="flex flex-col">
-              <img src="/images/logoplain.png" alt="OPSlyHR" className="h-32 w-auto animate-fade-in" />
-              <span className="text-[10px] font-semibold text-gray-400 tracking-wider uppercase mt-1 ml-0.5">Talent Portal</span>
+              <img src="/images/logoplain.png" alt="OPSlyHR" className="h-[48px] w-auto animate-fade-in object-contain -ml-4" />
+              <span className="text-[10px] font-bold text-blue-600/60 tracking-[0.15em] uppercase mt-[-4px] ml-1">Talent Portal</span>
             </Link>
           ) : (
              <Link to="/">
-               <img src="/images/logoplain.png" alt="T" className="h-6 w-auto mx-auto animate-fade-in" />
+               <img src="/images/logoplain.png" alt="T" className="h-7 w-auto mx-auto animate-fade-in" />
              </Link>
           )}
         </div>
 
         {/* Main Navigation */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide py-4 px-3 flex flex-col gap-6">
-          <nav className="space-y-[2px]">
+        <div className="flex-1 overflow-y-auto scrollbar-hide py-6 px-4 flex flex-col gap-8">
+          <nav className="space-y-1">
             {renderNavItems(navigation)}
           </nav>
           
-          <nav className="space-y-[2px]">
-            {renderNavItems(secondaryNavigation)}
-          </nav>
+          <div className="space-y-4">
+            <p className="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Profile & Help</p>
+            <nav className="space-y-1">
+              {renderNavItems(secondaryNavigation)}
+            </nav>
+          </div>
         </div>
 
         {/* Footer actions */}
-        <div className="mt-auto px-3 pb-4">
-          <div className="border-t border-gray-200 pt-4 mb-2 space-y-1">
+        <div className="mt-auto px-4 pb-6">
+          <div className="border-t border-gray-100 pt-6 mb-2 space-y-3">
 
             {isCollapsed ? (
                <TooltipProvider delayDuration={0}>
@@ -239,9 +242,9 @@ const TalentSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
                    <TooltipTrigger asChild>
                      <button
                        onClick={onLogout}
-                       className="flex items-center justify-center w-full p-2 rounded-md transition-colors text-gray-500 hover:bg-red-50 hover:text-red-600"
+                       className="flex items-center justify-center w-full p-3 rounded-xl transition-colors text-gray-500 hover:bg-red-50 hover:text-red-600"
                      >
-                       <LogOut className="h-4.5 w-4.5 stroke-[2px]" />
+                       <LogOut className="h-5 w-5 stroke-[2px]" />
                      </button>
                    </TooltipTrigger>
                    <TooltipContent side="right" className="bg-red-900 text-white text-xs border-none ml-2">
@@ -252,10 +255,10 @@ const TalentSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
             ) : (
                 <button
                   onClick={onLogout}
-                  className="flex items-center gap-3 px-3 py-2 w-full rounded-md transition-colors text-gray-500 hover:bg-red-50 hover:text-red-600 outline-none group"
+                  className="flex items-center gap-3 px-3 py-3 w-full rounded-xl transition-all text-gray-600 hover:bg-red-50 hover:text-red-600 outline-none group"
                 >
                   <LogOut className="h-4.5 w-4.5 shrink-0 stroke-[2px] text-gray-400 group-hover:text-red-500" />
-                  <span className="flex-1 text-left text-[13px] tracking-wide relative top-[1px]">Log out</span>
+                  <span className="flex-1 text-left text-[14px] font-medium tracking-tight">Log out</span>
                 </button>
             )}
           </div>

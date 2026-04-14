@@ -95,20 +95,25 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
         <NavLink
           to={getInternalPath(item.href)}
           onClick={() => setMobileOpen(false)}
+        <NavLink
+          to={getInternalPath(item.href)}
+          onClick={() => setMobileOpen(false)}
           className={cn(
-            "flex items-center gap-3 rounded-md transition-colors outline-none",
-            isCollapsed ? "justify-center p-2" : "px-3 py-2 w-full",
+            "flex items-center gap-3 rounded-xl transition-all outline-none",
+            isCollapsed ? "justify-center p-3" : "px-3 py-2 w-full",
             isActive
-              ? "bg-[#EFF6FF] text-brand-primary font-medium"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "bg-[#EFF6FF] text-brand-primary shadow-sm shadow-blue-500/5 font-semibold"
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           )}
         >
-          <item.icon className={cn("shrink-0 stroke-[2px]", isCollapsed ? "h-5 w-5" : "h-[18px] w-[18px]")} />
+          <div className={cn("shrink-0 p-1.5 rounded-lg transition-colors", isActive ? "bg-white shadow-sm" : "transparent group-hover:bg-gray-100")}>
+            <item.icon className={cn("stroke-[2px]", isCollapsed ? "h-5 w-5" : "h-[18px] w-[18px]", isActive ? "text-brand-primary" : "text-gray-400 group-hover:text-gray-600")} />
+          </div>
           {!isCollapsed && (
             <div className="flex-1 flex items-center justify-between min-w-0">
-              <span className="text-[13px] tracking-wide relative top-[1px] truncate">{item.name}</span>
+              <span className="text-[14px] tracking-tight antialiased truncate">{item.name}</span>
               {badgeCount > 0 && (
-                <span className="bg-blue-100 text-blue-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-md min-w-[1.25rem] text-center border border-blue-200">
+                <span className="bg-blue-100 text-brand-primary text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[1.25rem] text-center border border-blue-200">
                   {badgeCount > 99 ? '99+' : badgeCount}
                 </span>
               )}
@@ -154,44 +159,44 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
       {/* Sidebar Container */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out lg:static",
-          isCollapsed ? "w-[72px]" : "w-[260px]",
+          "fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-gray-100 transition-all duration-300 ease-in-out lg:static",
+          isCollapsed ? "w-[84px]" : "w-[280px]",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         {/* Logo Header */}
-        <div className="flex items-center justify-between px-5 h-20 shrink-0 pt-4">
+        <div className="flex items-center justify-between px-6 h-20 shrink-0 pt-2 text-right">
           {!isCollapsed ? (
             <Link to="/" className="flex flex-col">
-              <img src="/images/logoplain.png" alt="OPSlyHR" className="h-28 w-auto animate-fade-in" />
-              <span className="text-[10px] font-semibold text-gray-400 tracking-wider uppercase mt-1 ml-0.5">Admin Portal</span>
+              <img src="/images/logoplain.png" alt="OPSlyHR" className="h-[48px] w-auto animate-fade-in object-contain -ml-4" />
+              <span className="text-[10px] font-bold text-brand-primary/60 tracking-[0.15em] uppercase mt-[-4px] ml-1">Admin Portal</span>
             </Link>
           ) : (
              <Link to="/">
-               <img src="/images/logoplain.png" alt="T" className="h-6 w-auto mx-auto animate-fade-in" />
+               <img src="/images/logoplain.png" alt="T" className="h-7 w-auto mx-auto animate-fade-in" />
              </Link>
           )}
         </div>
 
         {/* Main Navigation */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide py-4 px-3 flex flex-col gap-6">
-          <nav className="space-y-[2px]">
+        <div className="flex-1 overflow-y-auto scrollbar-hide py-6 px-4 flex flex-col gap-8">
+          <nav className="space-y-1">
             {renderNavItems(filteredNavigation)}
           </nav>
         </div>
 
         {/* Footer actions */}
-        <div className="mt-auto px-3 pb-4">
+        <div className="mt-auto px-4 pb-6">
           
-          <div className="border-t border-gray-200 pt-4 mb-2 space-y-2">
+          <div className="border-t border-gray-100 pt-6 mb-2 space-y-3">
             {!isCollapsed && (
-              <div className="px-3 py-2 bg-gray-50 rounded-lg border border-gray-100 mb-4 animate-fade-in flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center shrink-0 font-semibold text-sm">
+              <div className="px-3 py-3 bg-gray-50/50 rounded-xl border border-gray-100 mb-6 animate-fade-in flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center shrink-0 font-bold text-sm shadow-sm">
                   {user?.email?.charAt(0).toUpperCase() || "A"}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-gray-900 truncate tracking-tight">{userRole?.replace(/_/g, ' ') || "Admin"}</p>
-                  <p className="text-[10px] text-gray-500 truncate">{user?.email}</p>
+                  <p className="text-xs font-bold text-gray-900 truncate tracking-tight uppercase antialiased">{userRole?.replace(/_/g, ' ') || "Admin"}</p>
+                  <p className="text-[10px] text-gray-500 truncate font-medium">{user?.email}</p>
                 </div>
               </div>
             )}
@@ -202,9 +207,9 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
                    <TooltipTrigger asChild>
                      <button
                        onClick={onLogout}
-                       className="flex items-center justify-center w-full p-2 rounded-md transition-colors text-gray-500 hover:bg-red-50 hover:text-red-600"
+                       className="flex items-center justify-center w-full p-3 rounded-xl transition-colors text-gray-500 hover:bg-red-50 hover:text-red-600"
                      >
-                       <LogOut className="h-4.5 w-4.5 stroke-[2px]" />
+                       <LogOut className="h-5 w-5 stroke-[2px]" />
                      </button>
                    </TooltipTrigger>
                    <TooltipContent side="right" className="bg-red-900 text-white text-xs border-none ml-2">
@@ -215,10 +220,10 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
             ) : (
                 <button
                   onClick={onLogout}
-                  className="flex items-center gap-3 px-3 py-2 w-full rounded-md transition-colors text-gray-500 hover:bg-red-50 hover:text-red-600 outline-none group"
+                  className="flex items-center gap-3 px-3 py-3 w-full rounded-xl transition-all text-gray-600 hover:bg-red-50 hover:text-red-600 outline-none group"
                 >
                   <LogOut className="h-[18px] w-[18px] shrink-0 stroke-[2px] text-gray-400 group-hover:text-red-500" />
-                  <span className="flex-1 text-left text-[13px] tracking-wide relative top-[1px]">Log out</span>
+                  <span className="flex-1 text-left text-[14px] font-medium tracking-tight">Log out</span>
                 </button>
             )}
           </div>

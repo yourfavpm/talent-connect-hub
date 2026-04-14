@@ -21,10 +21,19 @@ import TalentLayout from "./components/talent/TalentLayout";
 import AdminLayout from "./components/admin/AdminLayout";
 import SettingsLayout from "@/pages/admin/Settings/SettingsLayout";
 
-// --- Lazy Loading Pages ---
+// --- Eager Loading Primary Pages (Performance Boost) ---
+import Index from "./pages/Index";
+import ClientDashboard from "@/pages/client/Dashboard";
+import TalentDashboard from "@/pages/talent/Dashboard";
+import AdminDashboard from "./pages/admin/Dashboard";
+import OnboardingV2 from "./pages/talent/OnboardingV2";
+import ClientOnboarding from "@/pages/client/Onboarding";
+import BrowseTalents from "@/pages/client/BrowseTalents";
+import AdminVettingWorkspaceRouter from "./pages/admin/VettingWorkspaceV2";
+
+// --- Lazy Loading Secondary Pages ---
 
 // Marketing
-const Index = lazy(() => import("./pages/Index"));
 const ForCompanies = lazy(() => import("./pages/ForCompanies"));
 const ForProfessionals = lazy(() => import("./pages/ForProfessionals"));
 const ServiceModels = lazy(() => import("./pages/ServiceModels"));
@@ -66,9 +75,6 @@ const VerifyEmail = lazy(() => import("./pages/auth/VerifyEmail"));
 const RoleSelection = lazy(() => import("./pages/auth/RoleSelection"));
 
 // Client
-const ClientOnboarding = lazy(() => import("@/pages/client/Onboarding"));
-const ClientDashboard = lazy(() => import("@/pages/client/Dashboard"));
-const BrowseTalents = lazy(() => import("@/pages/client/BrowseTalents"));
 const ClientTalentProfile = lazy(() => import("@/pages/client/TalentProfile"));
 const Jobs = lazy(() => import("@/pages/client/Jobs"));
 const CreateJob = lazy(() => import("@/pages/client/CreateJob"));
@@ -86,7 +92,6 @@ const HireRequestDetail = lazy(() => import("@/pages/client/HireRequests/HireReq
 
 // Talent
 const TalentOnboarding = lazy(() => import("./pages/talent/Onboarding"));
-const TalentDashboard = lazy(() => import("./pages/talent/Dashboard"));
 const TalentProfile = lazy(() => import("./pages/talent/Profile"));
 const TalentJobs = lazy(() => import("./pages/talent/Jobs"));
 const TalentContracts = lazy(() => import("./pages/talent/Contracts"));
@@ -105,39 +110,36 @@ const TicketDetail = lazy(() => import("./pages/talent/TicketDetail"));
 const TalentSettings = lazy(() => import("./pages/talent/Settings"));
 const TalentPayments = lazy(() => import("./pages/talent/Payments"));
 const TalentTeam = lazy(() => import("./pages/talent/Team"));
-const OnboardingV2 = lazy(() => import("./pages/talent/OnboardingV2"));
 const ProfileV2 = lazy(() => import("./pages/talent/ProfileV2"));
 const OnboardingRedirect = lazy(() => import("./pages/talent/OnboardingRedirect"));
 
 // Admin
-const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
 const AdminTalents = lazy(() => import("./pages/admin/Talents"));
 const AdminTalentDetail = lazy(() => import("./pages/admin/TalentDetail"));
 const VettingWorkspace = lazy(() => import("./pages/admin/TalentVetting/VettingWorkspace"));
 const AdminClients = lazy(() => import("@/pages/admin/Clients"));
 const AdminClientDetail = lazy(() => import("@/pages/admin/ClientDetail"));
-const AdminJobs = lazy(() => import("@/pages/admin/Jobs"));
-const AdminJobDetail = lazy(() => import("@/pages/admin/JobDetail"));
-const AdminOffers = lazy(() => import("@/pages/admin/Offers"));
-const AdminContracts = lazy(() => import("@/pages/admin/Contracts"));
-const AdminInvoices = lazy(() => import("@/pages/admin/Invoices"));
-const AdminSupport = lazy(() => import("@/pages/admin/Support"));
-const AdminSupportDetail = lazy(() => import("@/pages/admin/SupportDetail"));
-const AdminInvoiceDetail = lazy(() => import("@/pages/admin/InvoiceDetail"));
-const AdminTeam = lazy(() => import("@/pages/admin/Team"));
-const AdminDetail = lazy(() => import("@/pages/admin/Team/AdminDetail"));
+const AdminJobs = lazy(() => import("./pages/admin/Jobs"));
+const AdminJobDetail = lazy(() => import("./pages/admin/JobDetail"));
+const AdminOffers = lazy(() => import("./pages/admin/Offers"));
+const AdminContracts = lazy(() => import("./pages/admin/Contracts"));
+const AdminInvoices = lazy(() => import("./pages/admin/Invoices"));
+const AdminSupport = lazy(() => import("./pages/admin/Support"));
+const AdminSupportDetail = lazy(() => import("./pages/admin/SupportDetail"));
+const AdminInvoiceDetail = lazy(() => import("./pages/admin/InvoiceDetail"));
+const AdminTeam = lazy(() => import("./pages/admin/Team"));
+const AdminDetail = lazy(() => import("./pages/admin/Team/AdminDetail"));
 const RolesPermissions = lazy(() => import("@/pages/admin/Team/RolesPermissions"));
 const AuditLog = lazy(() => import("@/pages/admin/Team/AuditLog"));
-const AdminSettings = lazy(() => import("@/pages/admin/Settings"));
-const AdminConsultations = lazy(() => import("@/pages/admin/Consultations"));
-const AdminConsultationDetail = lazy(() => import("@/pages/admin/ConsultationDetail"));
-const AdminOfferConfig = lazy(() => import("@/pages/admin/OfferConfiguration"));
-const AgreementTemplates = lazy(() => import("@/pages/admin/AgreementTemplates"));
-const AdminTimesheets = lazy(() => import("@/pages/admin/Timesheets"));
-const AdminTimesheetDetail = lazy(() => import("@/pages/admin/TimesheetDetail"));
-const AdminPayments = lazy(() => import("@/pages/admin/Payments"));
+const AdminSettings = lazy(() => import("./pages/admin/Settings"));
+const AdminConsultations = lazy(() => import("./pages/admin/Consultations"));
+const AdminConsultationDetail = lazy(() => import("./pages/admin/ConsultationDetail"));
+const AdminOfferConfig = lazy(() => import("./pages/admin/OfferConfiguration"));
+const AgreementTemplates = lazy(() => import("./pages/admin/AgreementTemplates"));
+const AdminTimesheets = lazy(() => import("./pages/admin/Timesheets"));
+const AdminTimesheetDetail = lazy(() => import("./pages/admin/TimesheetDetail"));
+const AdminPayments = lazy(() => import("./pages/admin/Payments"));
 const VettingQueueV2 = lazy(() => import("./pages/admin/VettingQueueV2"));
-const VettingWorkspaceV2 = lazy(() => import("./pages/admin/VettingWorkspaceV2"));
 const AdminTalentDirectory = lazy(() => import("./pages/admin/TalentDirectory/AdminTalentDirectory"));
 const AdminTalentProfileView = lazy(() => import("./pages/admin/TalentDirectory/AdminTalentProfileView"));
 const AdminHireRequestsList = lazy(() => import("./pages/admin/HireRequests/AdminHireRequestsList"));
@@ -263,11 +265,6 @@ const App = () => {
               <BrowserRouter>
                 <ScrollToTop />
                 <DevZoneIndicator zone={zone} />
-                <Suspense fallback={
-                  <div className="min-h-screen flex items-center justify-center bg-white">
-                    <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
-                  </div>
-                }>
                 <Routes>
               {/* Marketing Zone (opslyhr.com) */}
               {zone === Zone.MARKETING && (
@@ -469,7 +466,6 @@ const App = () => {
                 </ZoneGuard>
               } />
             </Routes>
-            </Suspense>
           </BrowserRouter>
         </ErrorBoundary>
         </TooltipProvider>

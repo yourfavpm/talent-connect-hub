@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Outlet, useLocation, Link } from "react-router-dom";
 import TalentSidebar from "./TalentSidebar";
 import TalentTopbar from "./TalentTopbar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertCircle, ArrowRight } from "lucide-react";
+import { AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 
 const TalentLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -42,7 +42,13 @@ const TalentLayout = () => {
           />
           <main className="flex-1 overflow-y-auto overflow-x-hidden w-full relative">
             <div className="p-4 sm:p-6 lg:p-8 mx-auto w-full max-w-7xl animate-fade-in pb-20">
-              <Outlet />
+              <Suspense fallback={
+                <div className="flex items-center justify-center min-h-[400px]">
+                  <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+                </div>
+              }>
+                <Outlet />
+              </Suspense>
             </div>
           </main>
         </div>

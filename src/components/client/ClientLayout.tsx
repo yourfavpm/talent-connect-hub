@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import ClientSidebar from "./ClientSidebar";
 import ClientTopbar from "./ClientTopbar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 const ClientLayout = () => {
   const navigate = useNavigate();
@@ -46,7 +47,13 @@ const ClientLayout = () => {
           />
           <main className="flex-1 overflow-y-auto overflow-x-hidden w-full relative">
             <div className="p-4 sm:p-6 lg:p-8 mx-auto w-full max-w-7xl animate-fade-in pb-20">
-              <Outlet />
+              <Suspense fallback={
+                <div className="flex items-center justify-center min-h-[400px]">
+                  <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+                </div>
+              }>
+                <Outlet />
+              </Suspense>
             </div>
           </main>
         </div>
