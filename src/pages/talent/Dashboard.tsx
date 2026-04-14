@@ -235,7 +235,7 @@ const TalentDashboard = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fade-in font-light">
+    <div className="w-full space-y-8 animate-fade-in font-light">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -292,7 +292,7 @@ const TalentDashboard = () => {
       </div>
 
       {/* ── KPI Numeric Strip ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-6">
         {[
           { label: "Active Contracts", value: stats.activeAssignments, icon: FileText, color: "blue" },
           { label: "Pending Timesheets", value: stats.pendingTimesheets, icon: Clock, color: "indigo" },
@@ -313,7 +313,7 @@ const TalentDashboard = () => {
 
 
       {/* ── Dashboard Grid Section ───────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
         {/* Active Contracts Row */}
         <div className="bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-sm flex flex-col h-full">
           <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">

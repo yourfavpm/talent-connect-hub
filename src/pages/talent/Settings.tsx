@@ -554,70 +554,67 @@ const TalentSettings = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto min-h-[calc(100vh-120px)] px-4 sm:px-6">
+    <div className="w-full min-h-screen">
       
-      {/* ── Page Header (Mobile Only) ───────────────── */}
-      <div className="mb-8 block md:hidden">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Settings</h1>
-        <p className="text-[14px] text-slate-500 mt-1">Manage your platform preferences.</p>
+      {/* ── Page Header (Desktop/Mobile) ───────────────── */}
+      <div className="mb-12">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Account Settings</h1>
+        <p className="text-[14px] md:text-[15px] text-slate-500 mt-1.5 font-medium">Configure your platform experience and professional security.</p>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-16 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-12 items-start">
         
-        {/* ── MIDDLE COLUMN: Settings Navigation ─────────────────────────── */}
-        <aside className="w-full md:w-[280px] shrink-0 sticky top-10 self-start z-10">
+        {/* ── SETTINGS NAVIGATION ─────────────────────────── */}
+        <aside className="w-full shrink-0 lg:sticky lg:top-10 z-10">
           
-          {/* Mobile Horizontal Scroll Tabs */}
-          <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-4 scrollbar-none border-b border-slate-100 mb-8 -mx-4 px-4">
+          {/* Mobile Navigation - Better fit, no bleeding */}
+          <div className="lg:hidden grid grid-cols-2 sm:grid-cols-3 gap-2 mb-8">
             {SECTIONS.map((section) => (
               <button
                 key={section.id}
                 onClick={() => setActiveTab(section.id)}
                 className={clsx(
-                  "flex items-center gap-2.5 px-5 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap border",
+                  "flex items-center gap-2 px-3 py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all border",
                   activeTab === section.id 
-                    ? "bg-slate-900 text-white border-slate-900 shadow-md"
-                    : "text-slate-500 hover:bg-slate-50 border-slate-100"
+                    ? "bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/10"
+                    : "bg-white text-slate-400 border-slate-100 hover:border-slate-200"
                 )}
               >
                 <section.icon className="h-3.5 w-3.5" />
-                {section.label}
+                <span className="truncate">{section.label}</span>
               </button>
             ))}
           </div>
 
-          {/* Desktop Vertical Structured Navigation */}
-          <nav className="hidden md:flex flex-col gap-1.5 p-1 bg-white border border-slate-100 rounded-2xl">
+          {/* Desktop Navigation - Refined, lighter feel */}
+          <nav className="hidden lg:flex flex-col gap-1 p-1 bg-slate-50/50 border border-slate-100 rounded-[24px]">
              {SECTIONS.map((section) => (
                 <button
                    key={section.id}
                    onClick={() => setActiveTab(section.id)}
                    className={clsx(
-                      "group flex flex-col items-start px-5 py-4 transition-all relative rounded-xl text-left",
+                      "group flex flex-col items-start px-6 py-5 transition-all relative rounded-[20px] text-left",
                       activeTab === section.id 
-                         ? "bg-slate-50/80 border border-slate-100 shadow-sm" 
-                         : "hover:bg-slate-50/50 border border-transparent"
+                         ? "bg-white border border-slate-100 shadow-sm" 
+                         : "hover:bg-white/60 border border-transparent"
                    )}
                 >
-                   {/* Left Indicator Bar */}
-                   {activeTab === section.id && (
-                     <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-[2px] bg-slate-900 rounded-r" />
-                   )}
-                   
-                   <div className="flex items-center gap-3.5 mb-1">
-                      <section.icon className={clsx(
-                        "h-[16px] w-[16px] transition-colors",
-                        activeTab === section.id ? "text-slate-900" : "text-slate-400 group-hover:text-slate-500"
-                      )} />
+                   <div className="flex items-center gap-4 mb-1">
+                      <div className={clsx(
+                        "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
+                        activeTab === section.id ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-400 group-hover:bg-white group-hover:text-slate-600 border border-transparent group-hover:border-slate-200"
+                      )}>
+                        <section.icon className="h-4 w-4" />
+                      </div>
                       <span className={clsx(
-                        "text-[14px] transition-colors leading-none",
-                        activeTab === section.id ? "font-bold text-slate-900" : "font-semibold text-slate-500 group-hover:text-slate-700"
+                        "text-[15px] transition-colors leading-none",
+                        activeTab === section.id ? "font-bold text-slate-900" : "font-semibold text-slate-500 group-hover:text-slate-800"
                       )}>{section.label}</span>
                    </div>
                    
                    {section.sub && (
                      <span className={clsx(
-                       "text-[11px] pl-[30px] transition-colors line-clamp-1",
+                       "text-[11px] pl-12 transition-colors line-clamp-1",
                        activeTab === section.id ? "text-slate-500 font-medium" : "text-slate-400 group-hover:text-slate-500 font-normal"
                      )}>
                        {section.sub}
@@ -628,16 +625,16 @@ const TalentSettings = () => {
           </nav>
         </aside>
 
-        {/* ── RIGHT COLUMN: Content Panel ───────────────────────────────── */}
-        <main className="flex-1 w-full max-w-[720px] min-w-0 bg-white border border-slate-100 rounded-2xl p-4 md:p-8 shadow-sm">
-           {renderContent()}
+        {/* ── CONTENT PANEL ───────────────────────────────── */}
+        <main className="flex-1 w-full min-w-0 bg-white border border-slate-100 rounded-[32px] p-6 md:p-10 lg:p-12 shadow-sm">
+           <div className="max-w-4xl">
+             {renderContent()}
+           </div>
         </main>
-
 
       </div>
     </div>
   );
 };
-
 
 export default TalentSettings;

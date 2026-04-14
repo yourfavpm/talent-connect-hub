@@ -320,7 +320,8 @@ const OnboardingV2 = () => {
           </aside>
 
           {/* ── Main content ─────────────────────────────────────────── */}
-          <main className="flex-1 p-4 lg:p-10 max-w-2xl mx-auto w-full">
+          <main className="flex-1 p-4 lg:p-10 xl:p-14 w-full min-w-0">
+            <div className="max-w-5xl mx-auto xl:mx-0">
             <Card className="bg-white shadow-[0_2px_10px_-3px_rgba(0,0,0,0.02)] border-slate-100/50 rounded-xl overflow-hidden">
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-center justify-between mb-6">

@@ -41,7 +41,7 @@ const TalentLayout = () => {
             onLogout={() => signOut()}
           />
           <main className="flex-1 overflow-y-auto overflow-x-hidden w-full relative">
-            <div className="p-4 sm:p-6 lg:p-8 mx-auto w-full max-w-7xl animate-fade-in pb-20">
+            <div className="p-4 sm:p-8 lg:p-12 w-full animate-fade-in pb-20">
               <Suspense fallback={
                 <div className="flex items-center justify-center min-h-[400px]">
                   <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
