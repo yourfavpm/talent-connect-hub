@@ -120,7 +120,7 @@ const AcademyManagement = () => {
                     <div className="flex flex-wrap flex-col sm:flex-row items-center gap-4">
                         <Button 
                             variant="outline" 
-                            onClick={() => navigate("/admin/academy/courses")}
+                            onClick={() => navigate("/academy/courses")}
                             className="h-12 px-6 rounded-xl font-bold gap-2 text-slate-700 bg-white border-slate-200 hover:bg-slate-50 shadow-sm"
                         >
                             <BookOpen className="w-4 h-4" /> Manage Courses

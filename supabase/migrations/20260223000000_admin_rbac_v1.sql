@@ -151,6 +151,7 @@ JOIN public.roles r ON (
         ELSE 'Operations Admin'
     END = r.name
 )
+WHERE ur.role IN ('super_admin', 'operations_admin', 'vetting_admin', 'finance_admin', 'support_admin')
 ON CONFLICT DO NOTHING;
 
 -- 5. Enable RLS

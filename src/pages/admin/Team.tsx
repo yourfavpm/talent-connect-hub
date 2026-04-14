@@ -88,7 +88,7 @@ const AdminTeam = () => {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedAdmin, setSelectedAdmin] = useState<AdminWithRoles | null>(null);
-    const [formData, setFormData] = useState({ name: "", email: "", role_id: "" });
+    const [formData, setFormData] = useState({ name: "", email: "", password: "", role_id: "" });
     const [editData, setEditData] = useState({ role_id: "" });
 
     useEffect(() => {
@@ -135,20 +135,73 @@ const AdminTeam = () => {
     const handleAddAdmin = async () => {
         try {
             setSubmitting(true);
-            const { error } = await supabase.rpc('invite_admin', {
-                p_email: formData.email,
-                p_full_name: formData.name,
-                p_role_id: formData.role_id
+            
+            // 1. Create Auth Account using edge function
+            const { data: authData, error: createError } = await supabase.functions.invoke('create-user', {
+                body: {
+                    email: formData.email,
+                    password: formData.password,
+                    role: "operations_admin", // Default macro zone role
+                    firstName: formData.name.split(' ')[0],
+                    lastName: formData.name.split(' ').slice(1).join(' ')
+                }
             });
 
-            if (error) throw error;
+            if (createError) throw new Error(createError.message || "Failed to create Auth user");
+            
+            const userId = authData?.user?.id;
+            if (!userId) throw new Error("No user ID returned from creation");
 
-            toast.success("Admin invited successfully");
+            // 2. Insert into admin_users (now the FK constraint will pass)
+            const { error: adminUserError } = await supabase.from('admin_users').insert({
+                id: userId,
+                email: formData.email,
+                full_name: formData.name,
+                status: 'active'
+            });
+
+            if (adminUserError) throw new Error("Failed to insert admin profile: " + adminUserError.message);
+
+            // 3. Bind the chosen RBAC role in admin_roles
+            const { error: adminRoleError } = await supabase.from('admin_roles').insert({
+                admin_id: userId,
+                role_id: formData.role_id
+            });
+
+            if (adminRoleError) throw new Error("Failed to bind RBAC role: " + adminRoleError.message);
+
+            // 4. Send Branded "You have been invited" Email
+            const emailHtml = `
+                <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 16px; border: 1px solid #f1f5f9;">
+                    <h2 style="color: #0f172a; margin-bottom: 20px; font-weight: 800; font-size: 24px;">Welcome to OPSlyHR Administration Room</h2>
+                    <p style="color: #475569; line-height: 1.6; margin-bottom: 24px; font-size: 15px;">
+                        Hello ${formData.name},<br><br>
+                        A secure administrator account has been provisioned for you. Your assigned role and permissions are now active.
+                    </p>
+                    <div style="background: #f8fafc; padding: 24px; border-radius: 12px; margin-bottom: 28px; border-left: 4px solid #ef4444;">
+                        <p style="margin: 0; color: #334155; font-size: 14px;"><strong>Admin Portal:</strong> <a href="https://app.opslyhr.com/auth/login" style="color: #2563eb;">Login Here</a></p>
+                        <p style="margin: 12px 0 0 0; color: #334155; font-size: 14px;"><strong>Email:</strong> ${formData.email}</p>
+                        <p style="margin: 12px 0 0 0; color: #334155; font-size: 14px;"><strong>Temporary Password:</strong> <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${formData.password}</code></p>
+                    </div>
+                    <p style="color: #64748b; font-size: 13px; font-style: italic;">For security purposes, please sign in and navigate to Settings > Security to change your password immediately.</p>
+                </div>
+            `;
+
+            await supabase.functions.invoke('send-email', {
+                body: {
+                    to: formData.email,
+                    subject: "Your OPSlyHR Admin Access Provisioned",
+                    htmlTemplate: emailHtml
+                }
+            });
+
+            toast.success("Admin provisioned successfully and credentials emailed");
             setIsAddDialogOpen(false);
-            setFormData({ name: "", email: "", role_id: "" });
+            setFormData({ name: "", email: "", password: "", role_id: "" });
             fetchAdmins();
         } catch (error: any) {
-            toast.error("Invitation failed: " + error.message);
+            console.error("Provisioning error:", error);
+            toast.error("Provisioning failed: " + error.message);
         } finally {
             setSubmitting(false);
         }
@@ -234,7 +287,7 @@ const AdminTeam = () => {
                         className="h-9 bg-gray-900 hover:bg-gray-800 text-white font-bold border-0 shadow-sm"
                         onClick={() => setIsAddDialogOpen(true)}
                     >
-                        <Plus className="h-4 w-4 mr-2" /> Invite Admin
+                        <Plus className="h-4 w-4 mr-2" /> Provision Admin
                     </Button>
                 </div>
             </div>
@@ -398,9 +451,9 @@ const AdminTeam = () => {
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-bold">Invite New Admin</DialogTitle>
+                        <DialogTitle className="text-xl font-bold">Provision Admin Account</DialogTitle>
                         <DialogDescription className="text-xs">
-                            This will create an internal admin account. Access will be granted immediately.
+                            This creates the account and sends the credentials. Access will be granted immediately.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
@@ -420,6 +473,17 @@ const AdminTeam = () => {
                                 type="email"
                                 value={formData.email} 
                                 onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                className="h-10 text-sm border-gray-200"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-gray-400">Temporary Password</Label>
+                            <Input 
+                                id="password" 
+                                type="text"
+                                placeholder="Secure password"
+                                value={formData.password} 
+                                onChange={(e) => setFormData({...formData, password: e.target.value})}
                                 className="h-10 text-sm border-gray-200"
                             />
                         </div>
@@ -444,11 +508,11 @@ const AdminTeam = () => {
                         <Button variant="ghost" onClick={() => setIsAddDialogOpen(false)} disabled={submitting} className="font-bold text-gray-500">Cancel</Button>
                         <Button 
                             onClick={handleAddAdmin} 
-                            disabled={submitting || !formData.email || !formData.role_id}
+                            disabled={submitting || !formData.email || !formData.password || !formData.role_id}
                             className="bg-gray-900 hover:bg-gray-800 text-white font-bold h-10 px-8"
                         >
                             {submitting ? <Clock className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
-                            Send Invitation
+                            Provision Account
                         </Button>
                     </DialogFooter>
                 </DialogContent>
