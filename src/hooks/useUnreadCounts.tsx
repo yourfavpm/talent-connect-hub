@@ -28,7 +28,7 @@ export const useUnreadCounts = () => {
                     .from("notifications")
                     .select("*", { count: "exact", head: true })
                     .eq("user_id", user.id)
-                    .eq("read", false);
+                    .is("read_at", null);
 
                 // 2. Admin Specifics
                 let adminOffers = 0;
