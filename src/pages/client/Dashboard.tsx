@@ -114,7 +114,7 @@ const ClientDashboard = () => {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 font-sans">
+    <div className="w-full max-w-none space-y-6 font-sans">
       
       {/* 1. Welcome Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

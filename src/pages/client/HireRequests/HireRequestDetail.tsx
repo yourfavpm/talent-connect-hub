@@ -85,7 +85,7 @@ export default function HireRequestDetail() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <div className="w-full max-w-none px-4 sm:px-6 py-8">
         <Skeleton className="h-10 w-64 mb-6" />
         <Skeleton className="h-64 rounded-2xl mb-6" />
         <Skeleton className="h-96 rounded-2xl" />
@@ -95,7 +95,7 @@ export default function HireRequestDetail() {
 
   if (!request) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 text-center">
+      <div className="w-full max-w-none px-4 sm:px-6 py-12 text-center">
         <AlertCircle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
         <h2 className="text-xl font-bold text-slate-900 mb-2">Request Not Found</h2>
         <p className="text-slate-500 mb-6">This hire request doesn't exist or you don't have permission to view it.</p>
@@ -105,7 +105,7 @@ export default function HireRequestDetail() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 font-sans pb-32 animate-fade-in">
+    <div className="w-full max-w-none px-4 sm:px-6 py-8 font-sans pb-32 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">

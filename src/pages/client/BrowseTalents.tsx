@@ -67,7 +67,8 @@ const BrowseTalents = () => {
   
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto flex flex-col font-sans px-4 py-8">
+    return (
+      <div className="flex flex-col font-sans px-4 py-8">
          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12">
           <div className="space-y-1">
             <Skeleton className="h-8 w-64" />
@@ -80,7 +81,8 @@ const BrowseTalents = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto flex flex-col font-sans px-4 py-8">
+  return (
+    <div className="flex flex-col font-sans px-4 py-8">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 shrink-0">

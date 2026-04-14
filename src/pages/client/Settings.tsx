@@ -420,7 +420,7 @@ const ClientSettings = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-20">
+    <div className="w-full max-w-none space-y-6 pb-20">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Settings</h1>
         <p className="text-sm text-gray-500 mt-1">Manage your company account and preferences.</p>

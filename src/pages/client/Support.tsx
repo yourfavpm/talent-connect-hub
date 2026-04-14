@@ -131,7 +131,7 @@ export default function Support() {
     if (loading) return <div className="p-8">Loading support tickets...</div>;
 
     return (
-        <div className="space-y-6 animate-fade-in max-w-6xl mx-auto">
+        <div className="space-y-6 animate-fade-in w-full max-w-none">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground">Support Center</h1>
