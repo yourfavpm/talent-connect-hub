@@ -165,9 +165,30 @@ ALTER TABLE public.admin_invites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Basic Policies (Admins can view roles/permissions)
-CREATE POLICY "Admins can view roles" ON public.roles FOR SELECT USING (EXISTS (SELECT 1 FROM public.admin_users WHERE id = auth.uid()));
-CREATE POLICY "Admins can view permissions" ON public.permissions FOR SELECT USING (EXISTS (SELECT 1 FROM public.admin_users WHERE id = auth.uid()));
-CREATE POLICY "Admins can view team" ON public.admin_users FOR SELECT USING (EXISTS (SELECT 1 FROM public.admin_users WHERE id = auth.uid()));
+DROP POLICY IF EXISTS "Admins can view roles" ON public.roles;
+CREATE POLICY "Admins can view roles" ON public.roles FOR SELECT USING (
+    auth.uid() IN (SELECT user_id FROM public.user_roles WHERE role IN ('super_admin', 'operations_admin', 'finance_admin', 'support_admin'))
+);
+
+DROP POLICY IF EXISTS "Admins can view permissions" ON public.permissions;
+CREATE POLICY "Admins can view permissions" ON public.permissions FOR SELECT USING (
+    auth.uid() IN (SELECT user_id FROM public.user_roles WHERE role IN ('super_admin', 'operations_admin', 'finance_admin', 'support_admin'))
+);
+
+DROP POLICY IF EXISTS "Admins can view team" ON public.admin_users;
+CREATE POLICY "Admins can view team" ON public.admin_users FOR SELECT USING (
+    auth.uid() IN (SELECT user_id FROM public.user_roles WHERE role IN ('super_admin', 'operations_admin', 'finance_admin', 'support_admin'))
+);
+
+DROP POLICY IF EXISTS "Admins can view admin_roles" ON public.admin_roles;
+CREATE POLICY "Admins can view admin_roles" ON public.admin_roles FOR SELECT USING (
+    auth.uid() IN (SELECT user_id FROM public.user_roles WHERE role IN ('super_admin', 'operations_admin', 'finance_admin', 'support_admin'))
+);
+
+DROP POLICY IF EXISTS "Admins can view role_permissions" ON public.role_permissions;
+CREATE POLICY "Admins can view role_permissions" ON public.role_permissions FOR SELECT USING (
+    auth.uid() IN (SELECT user_id FROM public.user_roles WHERE role IN ('super_admin', 'operations_admin', 'finance_admin', 'support_admin'))
+);
 
 -- Write access restricted to those with team.manage permission
 CREATE OR REPLACE FUNCTION public.has_permission(p_key TEXT)
