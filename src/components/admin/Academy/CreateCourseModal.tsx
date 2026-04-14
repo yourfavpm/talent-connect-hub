@@ -63,8 +63,9 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                 bonus_description: editCourse.bonus_description || "",
                 tools: editCourse.tools || [],
                 curriculum: editCourse.curriculum || [],
-                who_this_is_for: editCourse.who_this_is_for || [],
-                what_you_will_learn: editCourse.what_you_will_learn || [],
+                who_this_is_for: editCourse.who_is_it_for || [],
+                what_you_will_learn: editCourse.what_youll_learn || [],
+                cohort_slots: editCourse.slots_total || 50,
             });
         }
     }, [editCourse]);
@@ -86,8 +87,18 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
     const handleSave = async () => {
         setLoading(true);
         try {
+            const { cohort_slots, who_this_is_for, what_you_will_learn, ...rest } = formData;
+            
+            // Remove the raw datastore keys injected during state setup for edits to avoid PGRST duplication errors
+            if ('slots_total' in rest) delete (rest as any).slots_total;
+            if ('who_is_it_for' in rest) delete (rest as any).who_is_it_for;
+            if ('what_youll_learn' in rest) delete (rest as any).what_youll_learn;
+
             const courseData = {
-                ...formData,
+                ...rest,
+                slots_total: cohort_slots,
+                who_is_it_for: who_this_is_for,
+                what_youll_learn: what_you_will_learn,
                 updated_at: new Date().toISOString()
             };
 
