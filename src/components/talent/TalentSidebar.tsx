@@ -209,7 +209,6 @@ const TalentSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
           {!isCollapsed ? (
             <Link to="/" className="flex flex-col">
               <img src="/images/logoplain.png" alt="OPSlyHR" className="h-[48px] w-auto animate-fade-in object-contain -ml-4" />
-              <span className="text-[10px] font-bold text-blue-600/60 tracking-[0.15em] uppercase mt-[-4px] ml-1">Talent Portal</span>
             </Link>
           ) : (
              <Link to="/">

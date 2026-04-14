@@ -51,7 +51,7 @@ const TalentSignup = () => {
     setLoading(true);
     setErrors({});
 
-    // Validate form
+    // 1. Validate form
     const result = talentSignupSchema.safeParse(formData);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -63,6 +63,27 @@ const TalentSignup = () => {
       setErrors(fieldErrors);
       setLoading(false);
       return;
+    }
+
+    // 2. Business Logic: Check email uniqueness for Talent
+    try {
+      const { data: existence, error: existenceError } = await supabase
+        .rpc('check_user_role_existence', { p_email: formData.email });
+
+      if (!existenceError && existence && existence.length > 0) {
+        const { has_client_role } = existence[0];
+        if (has_client_role) {
+          toast({
+            title: "Email conflict",
+            description: "This email is already registered as a Client. Talent accounts must use a different email.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+      }
+    } catch (checkErr) {
+      console.warn("Uniqueness check skipped:", checkErr);
     }
 
     try {

@@ -140,29 +140,41 @@ const Login = () => {
         return;
       }
 
-      // 4. Multi-role Redirection Logic (If not specifically going to a portal)
+      // 4. Smart Redirection Logic
+      const hasClient = userRoles.includes("client");
+      const hasAdmin = userRoles.some(r => ["super_admin", "operations_admin"].includes(r));
+      const hasTalent = userRoles.includes("talent");
+      const hasStudent = userRoles.includes("student");
+
+      // CASE A: Client prioritisation (Primary entry for clients)
+      // Since clients must have unique emails, they will likely only have this role.
+      if (hasClient) {
+        redirectToZone(Zone.CLIENT, "/dashboard");
+        return;
+      }
+
+      // CASE B: Respect Portal/Zone Context
+      // If the user specified a portal (via URL or Subdomain) and has that role, go there directly.
+      if (portal && userRoles.includes(portal)) {
+        if (portal === "talent") redirectToZone(Zone.TALENT, "/dashboard");
+        else if (portal === "student") redirectToZone(Zone.ACADEMY, "/dashboard");
+        else if (portal === "admin" && hasAdmin) redirectToZone(Zone.ADMIN, "/dashboard");
+        return;
+      }
+
+      // CASE C: Multi-role ambiguity (e.g., Talent + Student on generic app zone)
       if (userRoles.length > 1) {
         // If they have a returnTo, respect it first
         if (returnTo) {
-          window.location.href = returnTo.startsWith('http') ? returnTo : returnTo;
+          window.location.href = returnTo;
           return;
         }
-
-        // If they specify a portal in URL which matches one of their roles, use it
-        if (portal && userRoles.includes(portal)) {
-          if (portal === "client") redirectToZone(Zone.CLIENT, "/dashboard");
-          else if (portal === "talent") redirectToZone(Zone.TALENT, "/dashboard");
-          else if (portal === "admin") redirectToZone(Zone.ADMIN, "/dashboard");
-          else if (portal === "student") redirectToZone(Zone.ACADEMY, "/dashboard");
-          return;
-        }
-
-        // Otherwise use role selector but pass portal context
+        // Otherwise use role selector
         navigate(`/auth/select-role?portal=${portal}`);
         return;
       }
 
-      // 5. Single-role Redirection (Strict matching)
+      // CASE D: Single-role Redirection (Standard)
       if (userRoles.length === 1) {
         const primaryRole = userRoles[0];
         if (primaryRole === "super_admin" || primaryRole === "operations_admin") {
@@ -174,7 +186,6 @@ const Login = () => {
         } else if (primaryRole === "student") {
           redirectToZone(Zone.ACADEMY, "/dashboard");
         } else {
-          // Fallback based on portal URL param if role is unrecognized
           handlePortalFallback(portal);
         }
         return;
