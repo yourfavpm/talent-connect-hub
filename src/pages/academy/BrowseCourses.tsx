@@ -8,8 +8,23 @@ import { ArrowRight, Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 
+interface AcademyCourse {
+    id: string;
+    slug: string; // added
+    title: string;
+    description: string;
+    level: string;
+    duration: string;
+    outcome?: string; // added
+    image_url: string;
+    price: number;
+    category: string;
+    is_live: boolean;
+    created_at: string;
+}
+
 const BrowseCourses = () => {
-    const [dbCourses, setDbCourses] = useState<any[]>([]);
+    const [dbCourses, setDbCourses] = useState<AcademyCourse[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
@@ -27,7 +42,7 @@ const BrowseCourses = () => {
                     .order("created_at", { ascending: false });
                 
                 if (!error && data) {
-                    setDbCourses(data);
+                    setDbCourses(data as AcademyCourse[]);
                 }
             } catch (err) {
                 console.error("Failed to fetch courses from DB:", err);

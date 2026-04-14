@@ -9,44 +9,75 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { generateTalentContractTerms } from "@/utils/contractGeneration";
-import { FileText, Send, DollarSign, Clock, Search, Briefcase } from "lucide-react";
+import { FileText, Send, DollarSign, Clock, Search } from "lucide-react";
 import { sendTalentContractReceivedEmail, sendAdminContractFullySignedEmail } from "@/lib/email/triggers";
 
+interface Contract {
+  id: string;
+  status: string;
+  created_at: string;
+  talent_contract_terms?: string;
+  preview_talent_terms?: string;
+  talent_rate?: string | number;
+  hourly_rate?: number;
+  taskive_margin?: number;
+  offer_id?: string;
+  contract_number?: string;
+  role_title?: string;
+  weekly_hours?: number;
+  admin_sent_at?: string;
+  contract_terms?: string;
+  client_signed_at?: string;
+  talent_signed_at?: string;
+  start_date?: string;
+  temp_talent_rate?: string | number;
+  clients?: {
+    company_name: string;
+    user_id: string;
+    profiles: {
+      email: string;
+    };
+  };
+  talents?: {
+    first_name: string;
+    last_name: string;
+    user_id: string;
+    profiles: {
+      email: string;
+    };
+  };
+}
+
 const AdminContracts = () => {
-  const [contracts, setContracts] = useState<any[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedContract, setSelectedContract] = useState<any>(null);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    fetchContracts();
-  }, [statusFilter]);
 
   const fetchContracts = async () => {
     try {
       setLoading(true);
       let query = supabase
-        .from("contracts")
+        .from("contracts" as any)
         .select(`
           *,
           clients (company_name, user_id, profiles(email)),
           talents (first_name, last_name, user_id, profiles(email))
         `)
-        .not("client_signed_at", "is", null) // Client must have signed
-        .not("talent_signed_at", "is", null) // Talent must have signed
         .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter as any);
+        query = query.eq("status", statusFilter);
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
-      setContracts(data || []);
-    } catch (error: any) {
+      setContracts((data as unknown as Contract[]) || []);
+    } catch (err) {
+      const error = err as Error;
       toast({
         title: "Error fetching contracts",
         description: error.message,
@@ -57,21 +88,22 @@ const AdminContracts = () => {
     }
   };
 
-  const handleGenerateTalentContract = async (contract: any) => {
+  useEffect(() => {
+    fetchContracts();
+  }, [statusFilter]);
+
+  const handleGenerateTalentContract = async (contract: Contract) => {
     try {
-      // Calculate talent rate if missing, though it should be there.
-      const talentRate = contract.talent_rate || (contract.hourly_rate * (1 - (contract.taskive_margin || 20) / 100)).toFixed(2);
+      const talentRate = contract.talent_rate || (contract.hourly_rate! * (1 - (contract.taskive_margin || 20) / 100)).toFixed(2);
+      const terms = generateTalentContractTerms(contract, talentRate as any);
 
-      const terms = generateTalentContractTerms(contract, talentRate);
-
-      const { error } = await supabase
-        .from("contracts")
+      const { error } = await (supabase
+        .from("contracts" as any)
         .update({ talent_contract_terms: terms } as any)
-        .eq("id", contract.id);
+        .eq("id", contract.id));
 
       if (error) throw error;
 
-      // Trigger Email to Talent
       try {
         if (contract.talents?.profiles?.email) {
           await sendTalentContractReceivedEmail({
@@ -89,7 +121,8 @@ const AdminContracts = () => {
         description: "The subcontractor agreement has been generated and talent notified.",
       });
       fetchContracts();
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       toast({
         title: "Error",
         description: error.message,
@@ -98,20 +131,20 @@ const AdminContracts = () => {
     }
   };
 
-  const handleSendToClient = async (contractId: string) => {
+  const handleSendToClient = async (contract: Contract) => {
     try {
-      await supabase
-        .from("contracts")
-        .update({ admin_sent_at: new Date().toISOString() })
-        .eq("id", contractId);
+      const { error } = await (supabase
+        .from("contracts" as any)
+        .update({ admin_sent_at: new Date().toISOString() } as any)
+        .eq("id", contract.id));
 
-      // Also update the offer status
-      const contract = contracts.find((c) => c.id === contractId);
-      if (contract?.offer_id) {
-        await supabase
-          .from("offers")
-          .update({ status: "sent_to_client" })
-          .eq("id", contract.offer_id);
+      if (error) throw error;
+
+      if (contract.offer_id) {
+        await (supabase
+          .from("job_offers" as any)
+          .update({ status: "contract_sent" } as any)
+          .eq("id", contract.offer_id));
       }
 
       toast({
@@ -120,7 +153,8 @@ const AdminContracts = () => {
       });
 
       fetchContracts();
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       toast({
         title: "Error",
         description: error.message,
@@ -131,16 +165,17 @@ const AdminContracts = () => {
 
   const handleActivateContract = async (contractId: string) => {
     try {
-      await supabase
-        .from("contracts")
-        .update({ status: "active" })
-        .eq("id", contractId);
+      const { error } = await (supabase
+        .from("contracts" as any)
+        .update({ status: "active" } as any)
+        .eq("id", contractId));
 
-      // Trigger Admin/System Email for fully signed
+      if (error) throw error;
+
       const contract = contracts.find(c => c.id === contractId);
       try {
         await sendAdminContractFullySignedEmail({
-          adminEmail: "admin@opslyhr.com", // Fallback or dynamic
+          adminEmail: "admin@opslyhr.com",
           contractId: contractId,
           clientName: contract?.clients?.company_name || "Client",
           talentName: `${contract?.talents?.first_name} ${contract?.talents?.last_name}`
@@ -155,7 +190,8 @@ const AdminContracts = () => {
       });
 
       fetchContracts();
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       toast({
         title: "Error",
         description: error.message,
@@ -273,7 +309,7 @@ const AdminContracts = () => {
                               {contract.contract_terms || "No terms generated yet."}
                             </div>
                             <div className="flex justify-end gap-2">
-                              <Button onClick={() => handleSendToClient(contract.id)}>
+                              <Button onClick={() => handleSendToClient(contract)}>
                                 <Send className="h-4 w-4 mr-2" />
                                 Confirm & Send to Client
                               </Button>
@@ -283,16 +319,12 @@ const AdminContracts = () => {
                       </Dialog>
                     )}
 
-                    {/* Client Signed -> Generate Talent Contract (With Preview/Edit) */}
                     {contract.client_signed_at && !contract.talent_contract_terms && (
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button variant="secondary" onClick={() => {
-                            // Pre-generate terms for preview
-                            const talentRate = contract.talent_rate || (contract.hourly_rate * (1 - (contract.taskive_margin || 20) / 100)).toFixed(2);
-                            const terms = generateTalentContractTerms(contract, talentRate);
-                            // Store temporarily in a local state if possible, or just hack it into the object for the dialog to read?
-                            // Better to use a state for 'previewTerms'
+                            const talentRate = contract.talent_rate || (contract.hourly_rate! * (1 - (contract.taskive_margin || 20) / 100)).toFixed(2);
+                            const terms = generateTalentContractTerms(contract, talentRate as any);
                             setSelectedContract({ ...contract, preview_talent_terms: terms, temp_talent_rate: talentRate });
                           }}>
                             <FileText className="h-4 w-4 mr-2" />
@@ -307,7 +339,18 @@ const AdminContracts = () => {
                             <div className="grid grid-cols-2 gap-4 bg-muted/20 p-4 rounded-lg">
                               <div>
                                 <Label>Talent Rate ($/hr)</Label>
-                                <div className="font-mono text-lg font-semibold">${selectedContract?.temp_talent_rate || selectedContract?.talent_rate}</div>
+                                <Input
+                                  value={selectedContract?.temp_talent_rate || ""}
+                                  onChange={(e) => {
+                                    if (selectedContract) {
+                                      setSelectedContract({
+                                        ...selectedContract,
+                                        temp_talent_rate: e.target.value
+                                      });
+                                    }
+                                  }}
+                                  className="max-w-[150px]"
+                                />
                               </div>
                               <div>
                                 <Label>Role</Label>
@@ -318,30 +361,26 @@ const AdminContracts = () => {
                               <Label>Contract Terms (Editable)</Label>
                               <textarea
                                 className="w-full h-64 p-3 text-xs font-mono border rounded-md"
-                                value={selectedContract?.preview_talent_terms}
-                                onChange={(e) => setSelectedContract({ ...selectedContract, preview_talent_terms: e.target.value })}
+                                value={selectedContract?.preview_talent_terms || ""}
+                                onChange={(e) => setSelectedContract(prev => prev ? { ...prev, preview_talent_terms: e.target.value } : null)}
                               />
                             </div>
                             <div className="flex justify-end gap-2">
-                              <Button onClick={async () => {
-                                try {
-                                  const { error } = await supabase
-                                    .from("contracts")
-                                    .update({ talent_contract_terms: selectedContract.preview_talent_terms } as any)
-                                    .eq("id", contract.id);
-                                  if (error) throw error;
-
-                                  // Also set status to 'waiting_for_talent' if appropriate, or keep keeping track via null signatures
-                                  // Ideally we notify talent here
-                                  toast({
-                                    title: "Talent Contract Generated",
-                                    description: "Terms saved and ready for talent signature.",
-                                  });
-                                  fetchContracts();
-                                } catch (e: any) {
-                                  toast({ title: "Error", description: e.message, variant: "destructive" });
-                                }
-                              }}>
+                              <Button
+                                onClick={async () => {
+                                  try {
+                                    const { error } = await (supabase
+                                      .from("contracts" as any)
+                                      .update({ talent_contract_terms: selectedContract!.preview_talent_terms } as any)
+                                      .eq("id", selectedContract!.id));
+                                    if (error) throw error;
+                                    toast({ title: "Success", description: "Contract updated" });
+                                    fetchContracts();
+                                  } catch (err: any) {
+                                    toast({ title: "Error", description: err.message, variant: "destructive" });
+                                  }
+                                }}
+                              >
                                 <Send className="h-4 w-4 mr-2" />
                                 Save & Enable for Talent
                               </Button>
@@ -351,10 +390,6 @@ const AdminContracts = () => {
                       </Dialog>
                     )}
 
-                    {/* Talent Contract Generated -> Send to Talent (Assuming logic exists or manual handling for now) */}
-                    {/* For now, just show status or manual activation if talent signed could be handled outside or via 'Activate' if both signed */}
-
-                    {/* Both Signed -> Activate */}
                     {contract.client_signed_at && contract.talent_signed_at && contract.status !== "active" && (
                       <Button className="bg-success hover:bg-success/90" onClick={() => handleActivateContract(contract.id)}>
                         Activate
@@ -371,9 +406,7 @@ const AdminContracts = () => {
                         <DialogHeader>
                           <DialogTitle>Contract: {selectedContract?.contract_number}</DialogTitle>
                         </DialogHeader>
-                        {/* ... details ... */}
                         <div className="space-y-6 mt-4">
-                          {/* ... existing fields ... */}
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <Label className="text-muted-foreground">Status</Label>

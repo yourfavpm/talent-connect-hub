@@ -117,9 +117,13 @@ const AcademyManagement = () => {
                         <p className="text-slate-500 font-medium mt-2">Oversee cohorts, sessions, and academic performance.</p>
                     </div>
                     
-                    <div className="flex items-center gap-4">
-                        <Button variant="outline" className="h-12 px-6 rounded-xl font-bold gap-2">
-                            <Filter className="w-4 h-4" /> Filter
+                    <div className="flex flex-wrap flex-col sm:flex-row items-center gap-4">
+                        <Button 
+                            variant="outline" 
+                            onClick={() => navigate("/admin/academy/courses")}
+                            className="h-12 px-6 rounded-xl font-bold gap-2 text-slate-700 bg-white border-slate-200 hover:bg-slate-50 shadow-sm"
+                        >
+                            <BookOpen className="w-4 h-4" /> Manage Courses
                         </Button>
                         <Button className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold gap-2 shadow-lg shadow-blue-200">
                             <Plus className="w-4 h-4" /> Create New Cohort

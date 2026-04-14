@@ -58,7 +58,7 @@ const RoleSelection = () => {
     };
 
     fetchUserRoles();
-  }, [navigate]);
+  }, [navigate, portal]);
 
   const handleRoleSelect = (role: string) => {
     switch (role) {

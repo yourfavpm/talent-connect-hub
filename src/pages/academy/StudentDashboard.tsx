@@ -24,6 +24,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import CourseCard from "@/components/academy/CourseCard";
 import StudentOnboardingModal from "@/components/academy/StudentOnboardingModal";
+import CourseDetail from "./CourseDetail";
 
 interface Enrollment {
   id: string;
@@ -66,11 +67,12 @@ const StudentDashboard = () => {
 
   const [nextSession, setNextSession] = useState<Session | null>(null);
 
-  const [dbCourses, setDbCourses] = useState<any[]>([]);
+  const [dbCourses, setDbCourses] = useState<Record<string, unknown>[]>([]);
   const [activeTab, setActiveTab] = useState("learning");
   const [searchQuery, setSearchQuery] = useState("");
   const [courseFilter, setCourseFilter] = useState("All");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [selectedCourseSlug, setSelectedCourseSlug] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,12 +89,13 @@ const StudentDashboard = () => {
         setShowOnboarding(true);
       }
 
-      // 1. Fetch enrollments with cohort details
-      const { data: enrollmentsData, error: enrollError } = await (supabase
+      const enrollRequest = supabase
         .from("academy_enrollments")
         .select("*, cohorts(*)")
         .eq("user_id", user.id)
-        .eq("enrollment_status", "active") as any);
+        .eq("enrollment_status", "active");
+        
+      const { data: enrollmentsData, error: enrollError } = await enrollRequest;
 
       if (enrollError) {
         console.error("Error fetching enrollments:", enrollError);
@@ -126,8 +129,8 @@ const StudentDashboard = () => {
 
           // Overwrite with DB metadata if available
           if (dbMetaData) {
-            dbMetaData.forEach((curr: any) => {
-              metaMap[curr.slug] = curr;
+            dbMetaData.forEach((curr: Record<string, unknown>) => {
+              metaMap[curr.slug as string] = curr as unknown as CourseMetadata;
             });
           }
           
@@ -137,7 +140,7 @@ const StudentDashboard = () => {
           const cohortIds = typedEnrollments.map(e => e.cohort_id).filter(Boolean);
           if (cohortIds.length > 0) {
             const now = new Date().toISOString();
-            const { data: sessionData, error: sessionError } = await (supabase
+            const sessionRequest = supabase
               .from("sessions")
               .select("*")
               .in("cohort_id", cohortIds)
@@ -146,7 +149,9 @@ const StudentDashboard = () => {
               .order("session_date", { ascending: true })
               .order("start_time", { ascending: true })
               .limit(1)
-              .single() as any);
+              .single();
+              
+            const { data: sessionData, error: sessionError } = await sessionRequest;
 
             if (!sessionError && sessionData) {
               setNextSession(sessionData as Session);
@@ -239,7 +244,7 @@ const StudentDashboard = () => {
         </div>
 
         <AnimatePresence mode="wait">
-          {activeTab === "learning" && (
+          {!selectedCourseSlug && activeTab === "learning" && (
             <motion.div
               key="learning"
               initial={{ opacity: 0, y: 20 }}
@@ -385,7 +390,7 @@ const StudentDashboard = () => {
             </motion.div>
           )}
 
-          {activeTab === "catalog" && (
+          {!selectedCourseSlug && activeTab === "catalog" && (
             <motion.div
               key="catalog"
               initial={{ opacity: 0, x: 20 }}
@@ -425,13 +430,17 @@ const StudentDashboard = () => {
               {/* Course Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {filteredCourses.map((course) => (
-                  <CourseCard key={course.slug} course={course} />
+                  <CourseCard 
+                    key={course.slug} 
+                    course={course} 
+                    onViewDetails={(slug) => setSelectedCourseSlug(slug)}
+                  />
                 ))}
               </div>
             </motion.div>
           )}
 
-          {activeTab === "profile" && (
+          {!selectedCourseSlug && activeTab === "profile" && (
             <motion.div
               key="profile"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -487,7 +496,7 @@ const StudentDashboard = () => {
             </motion.div>
           )}
 
-          {activeTab === "notifications" && (
+          {!selectedCourseSlug && activeTab === "notifications" && (
             <motion.div
               key="notifications"
               initial={{ opacity: 0, y: 10 }}
@@ -505,6 +514,22 @@ const StudentDashboard = () => {
                   <p className="text-slate-500 font-medium italic">You're all caught up! No new notifications.</p>
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {selectedCourseSlug && (
+            <motion.div
+              key="coursedetail"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mt-8"
+            >
+              <CourseDetail 
+                inlineSlug={selectedCourseSlug} 
+                onBack={() => setSelectedCourseSlug(null)}
+                onEnroll={(slug) => navigate(`/checkout/${slug}?from=dashboard`)}
+              />
             </motion.div>
           )}
         </AnimatePresence>

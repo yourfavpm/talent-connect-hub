@@ -172,6 +172,7 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                     <TabButton id="basic" label="Basic Info" icon={Layout} />
                     <TabButton id="pricing" label="Pricing & Status" icon={Clock} />
                     <TabButton id="content" label="Rich Content" icon={Layers} />
+                    <TabButton id="audience" label="Audience & Details" icon={Users} />
                     <TabButton id="curriculum" label="Curriculum" icon={Award} />
                 </div>
 
@@ -380,6 +381,90 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                                                 <button onClick={() => handleRemoveItem('tools', i)} className="p-2 text-slate-300 hover:text-red-500"><X className="w-4 h-4" /></button>
                                             </div>
                                         ))}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {activeTab === "audience" && (
+                            <motion.div 
+                                key="audience"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-12 max-w-4xl"
+                            >
+                                <div className="grid grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-xs font-bold text-slate-900 uppercase tracking-widest border-l-4 border-indigo-500 pl-4">What You'll Learn</label>
+                                            <Button variant="ghost" size="sm" onClick={() => handleAddItem('what_you_will_learn', '')} className="text-indigo-600 hover:bg-indigo-50 gap-1 p-1 h-8">
+                                                <Plus className="w-4 h-4" /> Add
+                                            </Button>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {formData.what_you_will_learn.map((item, i) => (
+                                                <div key={i} className="flex gap-2">
+                                                    <input 
+                                                        type="text" 
+                                                        className="flex-grow h-10 px-4 bg-slate-50 rounded-xl font-medium text-sm border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all"
+                                                        value={item}
+                                                        onChange={e => {
+                                                            const newItems = [...formData.what_you_will_learn];
+                                                            newItems[i] = e.target.value;
+                                                            setFormData({ ...formData, what_you_will_learn: newItems });
+                                                        }}
+                                                    />
+                                                    <button onClick={() => handleRemoveItem('what_you_will_learn', i)} className="p-2 text-slate-300 hover:text-red-500"><X className="w-4 h-4" /></button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-xs font-bold text-slate-900 uppercase tracking-widest border-l-4 border-purple-500 pl-4">Who This Is For</label>
+                                            <Button variant="ghost" size="sm" onClick={() => handleAddItem('who_this_is_for', '')} className="text-purple-600 hover:bg-purple-50 gap-1 p-1 h-8">
+                                                <Plus className="w-4 h-4" /> Add
+                                            </Button>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {formData.who_this_is_for.map((item, i) => (
+                                                <div key={i} className="flex gap-2">
+                                                    <input 
+                                                        type="text" 
+                                                        className="flex-grow h-10 px-4 bg-slate-50 rounded-xl font-medium text-sm border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all"
+                                                        value={item}
+                                                        onChange={e => {
+                                                            const newItems = [...formData.who_this_is_for];
+                                                            newItems[i] = e.target.value;
+                                                            setFormData({ ...formData, who_this_is_for: newItems });
+                                                        }}
+                                                    />
+                                                    <button onClick={() => handleRemoveItem('who_this_is_for', i)} className="p-2 text-slate-300 hover:text-red-500"><X className="w-4 h-4" /></button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6 pt-8 border-t border-slate-100">
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Cohort Slots Maximum</label>
+                                        <input 
+                                            type="number" 
+                                            className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                            value={formData.cohort_slots}
+                                            onChange={e => setFormData({ ...formData, cohort_slots: parseInt(e.target.value) || 0 })}
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Bonus Content Summary</label>
+                                        <input 
+                                            type="text" 
+                                            className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                            value={formData.bonus_content}
+                                            onChange={e => setFormData({ ...formData, bonus_content: e.target.value })}
+                                            placeholder="e.g. 1-on-1 Career Coaching session"
+                                        />
                                     </div>
                                 </div>
                             </motion.div>

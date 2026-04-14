@@ -14,10 +14,27 @@ import RejectTalentDrawer from "./components/drawers/RejectTalentDrawer";
 import ApproveTalentDrawer from "./components/drawers/ApproveTalentDrawer";
 import { TalentVettingStatus, StepStatus, TalentProfileStep, StepChangeRequest } from "@/types/talent";
 
+interface VettingProfile {
+    id: string;
+    user_id: string;
+    status: string;
+    assigned_manager?: string;
+    [key: string]: unknown;
+}
+
+interface VettingSection {
+    id: string;
+    user_id: string;
+    section_key: string;
+    status: string;
+    data: unknown;
+    updated_at: string;
+}
+
 const VettingWorkspace = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [talent, setTalent] = useState<any>(null);
+    const [talent, setTalent] = useState<VettingProfile | null>(null);
     const [steps, setSteps] = useState<TalentProfileStep[]>([]);
     const [changeRequests, setChangeRequests] = useState<StepChangeRequest[]>([]);
     const [activeStep, setActiveStep] = useState<string>("basic_info");
@@ -41,49 +58,57 @@ const VettingWorkspace = () => {
             setLoading(true);
             
             // 1. Fetch Talent Profile
-            const { data: profile, error: profileError } = await supabase.from("talent_profiles")
+            const { data: profileData, error: profileError } = await supabase.from("talent_profiles")
                 .select("*")
-                .eq("id", id)
+                .eq("id", id as string)
                 .maybeSingle();
+            
+            const profile = profileData as VettingProfile | null;
 
             if (profileError) throw profileError;
             if (!profile) throw new Error("Profile not found");
 
             // Auto-start review if submitted
-            if (profile.status === 'SUBMITTED') {
-                await supabase.rpc("admin_start_review", { p_talent_user_id: profile.user_id });
+            if (profile && profile.status === 'SUBMITTED') {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                await (supabase.rpc as any)("admin_start_review", { p_talent_user_id: profile.user_id });
                 // Re-fetch to get updated status
                 return fetchVettingData();
             }
 
             // Fetch legacy talent data for supporting components that expect it
-            const { data: legacyTalent } = await supabase
+            const { data: legacyTalentData } = await supabase
                 .from("talents")
                 .select("*")
                 .eq("user_id", profile.user_id)
                 .maybeSingle();
+            
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const legacyTalent = legacyTalentData as any;
 
             // Fetch sections
-            const { data: sectionsData, error: sectionsError } = await supabase.from("talent_profile_sections")
+            const { data: sectionsDataRaw, error: sectionsError } = await supabase.from("talent_profile_sections")
                 .select("*")
                 .eq("user_id", profile.user_id);
+            
+            const sectionsData = (sectionsDataRaw || []) as VettingSection[];
 
             if (sectionsError) throw sectionsError;
 
             // Map data for UI
-            const mergedTalentData = {
+            const mergedTalentData: VettingProfile = {
                 ...legacyTalent,
                 ...profile,
                 id: profile.id, 
                 user_id: profile.user_id,
-                vetting_status: profile.status // Ensure naming consistency for components
+                vetting_status: profile.status
             };
 
             setTalent(mergedTalentData);
             
             // Fetch assigned manager
-            if (profile.assigned_manager || (legacyTalent as any)?.assigned_manager) {
-                const managerId = profile.assigned_manager || (legacyTalent as any)?.assigned_manager;
+            const managerId = profile.assigned_manager || (legacyTalent?.assigned_manager as string | undefined);
+            if (managerId) {
                 const { data: managerData } = await supabase
                     .from("profiles")
                     .select("first_name, last_name, email")
@@ -98,15 +123,20 @@ const VettingWorkspace = () => {
             }
 
             // Map sections to the "steps" format expected by StepNavigator/StepViewer
-            const mappedSteps = (sectionsData || []).map(s => ({
+            const mappedSteps = sectionsData.map(s => ({
                 id: s.id,
+                talent_id: profile.id, // satisfying TalentProfileStep interface
                 step_key: s.section_key,
-                status: s.status.toLowerCase(), // UI expects lowercase
+                status: (s.status.toLowerCase() as StepStatus), // UI expects lowercase cast to StepStatus
                 data: s.data,
-                last_reviewed_at: s.updated_at // Use updated_at as last reviewed
+                last_submitted_at: null,
+                last_reviewed_at: s.updated_at, // Use updated_at as last reviewed
+                reviewed_by: null,
+                created_at: s.updated_at,
+                updated_at: s.updated_at
             }));
 
-            setSteps(mappedSteps as any);
+            setSteps(mappedSteps);
 
             // 3. Fetch Change Requests/Actions (Log)
             const { data: actionData } = await supabase.from("vetting_actions")
@@ -114,18 +144,18 @@ const VettingWorkspace = () => {
                 .eq("user_id", profile.user_id)
                 .order("created_at", { ascending: false });
 
-            setChangeRequests((actionData as any) || []);
+            setChangeRequests((actionData as unknown as StepChangeRequest[]) || []);
 
-        } catch (error: any) {
-            toast.error("Failed to load vetting workspace: " + error.message);
-        } finally {
+        } catch (err) {
+            const error = err as Error;
             setLoading(false);
+            toast.error(error.message || "Failed to fetch vetting data");
         }
     }, [id]);
 
     useEffect(() => {
         if (id) fetchVettingData();
-    }, [id]);
+    }, [id, fetchVettingData]);
 
     if (loading) return (
         <div className="h-screen flex items-center justify-center bg-[#F9FAFB]">

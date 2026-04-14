@@ -39,8 +39,8 @@ const AcademySignup = () => {
 
             // 2. Assign Student Role (via user_roles table)
             if (data.user) {
-                const { error: roleError } = await (supabase
-                    .from("user_roles") as any)
+                const { error: roleError } = await supabase
+                    .from("user_roles")
                     .insert([{ 
                         user_id: data.user.id, 
                         role: "student" 
@@ -62,10 +62,11 @@ const AcademySignup = () => {
             } else {
                 navigate("/login");
             }
-        } catch (err: any) {
+        } catch (err) {
+            const error = err as Error;
             toast({
                 title: "Signup failed",
-                description: err.message,
+                description: error.message,
                 variant: "destructive",
             });
         } finally {

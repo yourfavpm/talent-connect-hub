@@ -40,7 +40,7 @@ interface Course {
     tools: string[];
     what_youll_learn: string[];
     learning_outcomes: string[];
-    curriculum: any[];
+    curriculum: { week: string; title: string; details: string[]; }[];
     who_is_it_for: string[];
     bonus_description?: string;
     slots_total: number;
@@ -58,11 +58,18 @@ interface Course {
     slotsFilled?: number;
 }
 
-const CourseDetail = () => {
-    const { slug } = useParams<{ slug: string }>();
+interface CourseDetailProps {
+    inlineSlug?: string;
+    onBack?: () => void;
+    onEnroll?: (slug: string) => void;
+}
+
+const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
+    const params = useParams<{ slug: string }>();
     const { search, pathname } = useLocation();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const slug = inlineSlug || params.slug;
     
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
@@ -114,12 +121,18 @@ const CourseDetail = () => {
 
     const handleEnroll = (e: React.MouseEvent) => {
         e.preventDefault();
-        if (!user) {
-            // Local Academy signup instead of global Auth Hub redirect
-            navigate(`/signup?redirect=/dashboard`);
+        
+        if (onEnroll && slug) {
+            onEnroll(slug);
             return;
         }
-        navigate({ pathname: "/dashboard", search });
+
+        if (!user) {
+            // Local Academy signup instead of global Auth Hub redirect
+            navigate(`/signup?redirect=/checkout/${course.slug}`);
+            return;
+        }
+        navigate(`/checkout/${course.slug}`);
     };
 
     useEffect(() => {
@@ -188,9 +201,15 @@ const CourseDetail = () => {
             {/* HERO */}
             <section className="pt-24 pb-20 md:pt-32 md:pb-24 px-4 bg-slate-50 border-b border-slate-100 relative overflow-hidden">
                 <div className="container max-w-[1600px] mx-auto relative z-10">
-                    <Link to="/courses" className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10 hover:text-blue-600 transition-colors">
-                        <ArrowLeft className="w-3.5 h-3.5" /> Back to Catalog
-                    </Link>
+                    {onBack ? (
+                        <button onClick={onBack} className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10 hover:text-blue-600 transition-colors">
+                            <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+                        </button>
+                    ) : (
+                        <Link to="/courses" className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10 hover:text-blue-600 transition-colors">
+                            <ArrowLeft className="w-3.5 h-3.5" /> Back to Catalog
+                        </Link>
+                    )}
 
                     <div className="flex flex-col lg:flex-row gap-12 lg:gap-24 items-start">
                         <div className="flex-grow max-w-[900px]">

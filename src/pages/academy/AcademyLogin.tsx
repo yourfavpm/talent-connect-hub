@@ -34,7 +34,6 @@ const AcademyLogin = () => {
                 description: "Redirecting to your student dashboard...",
             });
 
-            // Fix for localhost: Ensure zone=ACADEMY is preserved
             const isLocal = window.location.hostname === "localhost" || window.location.hostname.endsWith(".localhost");
             if (isLocal && !redirectPath.includes("zone=")) {
                 const connector = redirectPath.includes("?") ? "&" : "?";
@@ -42,10 +41,11 @@ const AcademyLogin = () => {
             } else {
                 navigate(redirectPath);
             }
-        } catch (err: any) {
+        } catch (err) {
+            const error = err as Error;
             toast({
                 title: "Login failed",
-                description: err.message,
+                description: error.message,
                 variant: "destructive",
             });
         } finally {

@@ -120,11 +120,11 @@ const CohortDetail = () => {
                 supabase.from("submissions").select("*, assignments(title), profiles:student_id(full_name, email)").order("created_at", { ascending: false })
             ]);
 
-            setStudents((studentsRes.data as any) || []);
+            setStudents((studentsRes.data as unknown as Student[]) || []);
             setSessions((sessionsRes.data as Session[]) || []);
             setAnnouncements((announcementsRes.data as Announcement[]) || []);
             setAssignments((assignmentsRes.data as Assignment[]) || []);
-            setSubmissions((submissionsRes.data as any) || []);
+            setSubmissions((submissionsRes.data as unknown as Submission[]) || []);
 
         } catch (err) {
             console.error("Error fetching cohort detail:", err);
@@ -147,6 +147,7 @@ const CohortDetail = () => {
         if (!newSession.title || !newSession.date) return;
         setIsSaving(true);
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { data, error } = await (supabase.from("sessions") as any).insert([{
                 cohort_id: id,
                 title: newSession.title,
@@ -171,6 +172,7 @@ const CohortDetail = () => {
         if (!newAnnouncement.title || !newAnnouncement.content) return;
         setIsSaving(true);
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { data, error } = await (supabase.from("announcements") as any).insert([{
                 cohort_id: id,
                 title: newAnnouncement.title,
@@ -192,6 +194,7 @@ const CohortDetail = () => {
         if (!newAssignment.title || !newAssignment.deadline) return;
         setIsSaving(true);
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { data, error } = await (supabase.from("assignments") as any).insert([{
                 cohort_id: id,
                 title: newAssignment.title,
@@ -212,6 +215,7 @@ const CohortDetail = () => {
 
     const handleReviewSubmission = async (subId: string) => {
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { error } = await (supabase.from("submissions") as any).update({ status: 'reviewed' }).eq("id", subId);
             if (error) throw error;
             setSubmissions(prev => prev.map(s => s.id === subId ? { ...s, status: 'reviewed' } : s));
@@ -313,11 +317,11 @@ const CohortDetail = () => {
                                 <tbody className="divide-y divide-slate-100">
                                     {students.map((student) => (
                                         <tr key={student.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-8 py-6 font-bold text-slate-900">{(student as any).student_name}</td>
-                                            <td className="px-8 py-6 text-sm text-slate-500 font-medium">{(student as any).student_email}</td>
+                                            <td className="px-8 py-6 font-bold text-slate-900">{student.student_name}</td>
+                                            <td className="px-8 py-6 text-sm text-slate-500 font-medium">{student.student_email}</td>
                                             <td className="px-8 py-6 text-sm text-slate-500 font-medium">{new Date(student.created_at).toLocaleDateString()}</td>
                                             <td className="px-8 py-6">
-                                                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded uppercase tracking-wider">{(student as any).enrollment_status}</span>
+                                                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded uppercase tracking-wider">{student.enrollment_status}</span>
                                             </td>
                                             <td className="px-8 py-6 text-right">
                                                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg"><MoreVertical className="w-4 h-4 text-slate-400" /></Button>

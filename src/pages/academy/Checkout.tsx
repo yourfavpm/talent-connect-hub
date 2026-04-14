@@ -13,6 +13,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { PaystackService } from "@/lib/paystack";
+import { ACADEMY_COURSES } from "@/data/academy-courses";
 
 const Checkout = () => {
     const { slug } = useParams();
@@ -22,7 +24,7 @@ const Checkout = () => {
     const { toast } = useToast();
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
-    const [course, setCourse] = useState<any>(null);
+    const [course, setCourse] = useState<Record<string, unknown> | null>(null);
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {
@@ -36,6 +38,15 @@ const Checkout = () => {
 
             if (!error && data) {
                 setCourse(data);
+            } else {
+                const staticCourse = ACADEMY_COURSES.find(c => c.slug === slug);
+                if (staticCourse) {
+                    setCourse({ 
+                        ...staticCourse,
+                        price_naira: staticCourse.priceNaira || 0,
+                        price_usd: staticCourse.priceUSD || 0
+                    } as unknown as Record<string, unknown>);
+                }
             }
             setLoading(false);
         };
@@ -43,21 +54,63 @@ const Checkout = () => {
     }, [slug]);
 
     const handlePayment = async () => {
+        if (!user || !user.email) {
+            toast({ title: "Error", description: "You must be logged in with a valid email.", variant: "destructive" });
+            return;
+        }
+
         setProcessing(true);
         
-        // Simulate payment delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
         try {
-            const { error: enrollError } = await (supabase
-                .from("academy_enrollments") as any)
-                .insert({
-                    user_id: user?.id,
+            const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+            
+            if (!paystackPublicKey) {
+                // Simulated fallback if no key is configured
+                console.warn("Paystack key missing, using simulated payment");
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                return processEnrollment("simulated_ref_" + Date.now());
+            }
+
+            const paystack = new PaystackService({ publicKey: paystackPublicKey });
+            const amountKobo = Math.round((course.price_naira || 0) * 100);
+            const reference = `ENR_${user.id.substring(0, 8)}_${Date.now()}`;
+
+            await paystack.initializePayment({
+                amount: amountKobo,
+                email: user.email,
+                reference: reference,
+                metadata: {
+                    course_id: course.slug,
+                    user_id: user.id,
+                    type: 'academy_enrollment'
+                },
+                onSuccess: async (response) => {
+                    await processEnrollment(response.reference);
+                },
+                onClose: () => {
+                    toast({ title: "Cancelled", description: "Payment was cancelled." });
+                    setProcessing(false);
+                }
+            });
+        } catch (err: unknown) {
+            console.error("Payment error:", err);
+            const errorMessage = err instanceof Error ? err.message : "Failed to initialize payment";
+            toast({ title: "Error", description: errorMessage, variant: "destructive" });
+            setProcessing(false);
+        }
+    };
+
+    const processEnrollment = async (reference: string) => {
+        try {
+            const enrollRequest = supabase.from("academy_enrollments");
+            const { error: enrollError } = await enrollRequest.insert({
+                user_id: user?.id,
                     course_id: course.slug,
                     course_name: course.title,
                     enrollment_status: "active",
                     price_naira: course.price_naira,
-                    payment_status: "paid"
+                    payment_status: "paid",
+                    payment_reference: reference // Assuming we save this if available
                 });
 
             if (enrollError) throw enrollError;
@@ -68,16 +121,16 @@ const Checkout = () => {
                 description: `Welcome to ${course.title}. Let's get started.`,
             });
 
-            // Brief delay before redirecting to dashboard
             setTimeout(() => {
                 navigate("/dashboard");
             }, 3000);
 
-        } catch (err) {
+        } catch (err: unknown) {
             console.error("Enrollment error:", err);
+            const errorMessage = err instanceof Error ? err.message : "Something went wrong during enrollment. Please contact support.";
             toast({
                 title: "Error",
-                description: "Something went wrong during enrollment. Please try again.",
+                description: errorMessage,
                 variant: "destructive"
             });
         } finally {
@@ -118,10 +171,10 @@ const Checkout = () => {
                         >
                             <div className="lg:col-span-2 space-y-8">
                                 <button 
-                                    onClick={() => navigate(-1)}
+                                    onClick={() => searchParams.get("from") === "dashboard" ? navigate("/dashboard") : navigate(-1)}
                                     className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-sm transition-colors"
                                 >
-                                    <ArrowLeft className="w-4 h-4" /> Back to Program
+                                    <ArrowLeft className="w-4 h-4" /> {searchParams.get("from") === "dashboard" ? "Back to Dashboard" : "Back to Program"}
                                 </button>
                                 
                                 <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8 md:p-12">

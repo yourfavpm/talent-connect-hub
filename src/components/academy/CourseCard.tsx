@@ -15,9 +15,10 @@ interface CourseCardProps {
         image_url?: string;
         is_live?: boolean;
     };
+    onViewDetails?: (slug: string) => void;
 }
 
-const CourseCard = ({ course }: CourseCardProps) => {
+const CourseCard = ({ course, onViewDetails }: CourseCardProps) => {
     const levelColor = course.level === "Beginner" 
         ? "bg-blue-50 text-blue-600 border-blue-100" 
         : "bg-amber-50 text-amber-600 border-amber-100";
@@ -67,13 +68,23 @@ const CourseCard = ({ course }: CourseCardProps) => {
                         </div>
                     )}
 
-                    <Link 
-                        to={`/courses/${course.slug}`}
-                        className="flex items-center justify-between w-full h-11 px-4 rounded-xl bg-slate-50 text-slate-900 text-xs font-bold group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm"
-                    >
-                        <span>View Program Details</span>
-                        <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
-                    </Link>
+                    {onViewDetails ? (
+                        <button 
+                            onClick={() => onViewDetails(course.slug)}
+                            className="flex items-center justify-between w-full h-11 px-4 rounded-xl bg-slate-50 text-slate-900 text-xs font-bold group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm"
+                        >
+                            <span>View Program Details</span>
+                            <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
+                        </button>
+                    ) : (
+                        <Link 
+                            to={`/courses/${course.slug}`}
+                            className="flex items-center justify-between w-full h-11 px-4 rounded-xl bg-slate-50 text-slate-900 text-xs font-bold group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm"
+                        >
+                            <span>View Program Details</span>
+                            <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                    )}
                 </div>
             </div>
             {course.is_live && (
