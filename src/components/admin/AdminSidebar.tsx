@@ -95,9 +95,6 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
         <NavLink
           to={getInternalPath(item.href)}
           onClick={() => setMobileOpen(false)}
-        <NavLink
-          to={getInternalPath(item.href)}
-          onClick={() => setMobileOpen(false)}
           className={cn(
             "flex items-center gap-3 rounded-xl transition-all outline-none",
             isCollapsed ? "justify-center p-3" : "px-3 py-2 w-full",
