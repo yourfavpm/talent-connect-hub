@@ -6,6 +6,8 @@ DO $$ BEGIN
     ALTER TYPE public.talent_status ADD VALUE IF NOT EXISTS 'submitted';
     ALTER TYPE public.talent_status ADD VALUE IF NOT EXISTS 'in_review';
     ALTER TYPE public.talent_status ADD VALUE IF NOT EXISTS 'changes_requested';
+    ALTER TYPE public.talent_status ADD VALUE IF NOT EXISTS 'approved';
+    ALTER TYPE public.talent_status ADD VALUE IF NOT EXISTS 'rejected';
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
