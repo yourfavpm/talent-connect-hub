@@ -103,7 +103,7 @@ const TalentDashboard = () => {
             last_name: lastName,
             email: user.email || "",
             onboarding_completed: false,
-            onboarding_status: "not_started",
+            onboarding_status: "draft",
             current_step: 1,
           } as any)
           .select()
@@ -120,7 +120,7 @@ const TalentDashboard = () => {
                 last_name: lastName,
                 email: user.email || "",
                 onboarding_completed: false,
-                onboarding_status: "not_started",
+                onboarding_status: "draft",
                 current_step: 1,
               } as any)
               .select()
@@ -178,7 +178,7 @@ const TalentDashboard = () => {
         talent: talentData ? {
           ...(talentData as any),
           vetting_status: profile?.status || (talentData as any).vetting_status || "DRAFT",
-          onboarding_status: profile?.status === "DRAFT" ? "not_started" : "submitted",
+          onboarding_status: profile?.status === "DRAFT" ? "draft" : "submitted",
           current_step: profile?.current_step || (talentData as any).current_step || 1,
           profile_completion: profile?.completion_percent || (talentData as any).profile_completion || 0,
           assigned_manager_name: managerName
