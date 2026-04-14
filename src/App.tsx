@@ -29,7 +29,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import OnboardingV2 from "./pages/talent/OnboardingV2";
 import ClientOnboarding from "@/pages/client/Onboarding";
 import BrowseTalents from "@/pages/client/BrowseTalents";
-import AdminVettingWorkspaceRouter from "./pages/admin/VettingWorkspaceV2";
+import VettingWorkspaceV2 from "./pages/admin/VettingWorkspaceV2";
 
 // --- Lazy Loading Secondary Pages ---
 
