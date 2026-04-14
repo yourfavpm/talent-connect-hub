@@ -169,6 +169,23 @@ const VettingWorkspaceV2 = () => {
           .from("v2_talent_profiles").select("*").eq("id", id).single();
         if (updated) setProfile(updated as unknown as V2Profile);
       }
+      // Auto-transition draft profiles to in_review when admin opens workspace
+      else if (profileData.status === "draft") {
+        await (supabase.from("v2_talent_profiles") as any)
+          .update({ status: "in_review", updated_at: new Date().toISOString() })
+          .eq("user_id", profileData.user_id);
+        // Log the action
+        await (supabase.from("v2_vetting_actions") as any)
+          .insert({
+            user_id: profileData.user_id,
+            admin_id: user?.id,
+            action: "START_REVIEW",
+            note: "Admin started review on draft profile",
+          });
+        const { data: updated } = await supabase
+          .from("v2_talent_profiles").select("*").eq("id", id).single();
+        if (updated) setProfile(updated as unknown as V2Profile);
+      }
 
       // Fetch sections
       const { data: s } = await supabase
@@ -268,6 +285,16 @@ const VettingWorkspaceV2 = () => {
         p_vetting_level_text: vettingLevelText,
       });
       if (error) throw error;
+
+      // Sync to legacy talents table
+      await supabase
+        .from("talents")
+        .update({
+          vetting_status: "fully_vetted",
+          onboarding_completed: true,
+        } as any)
+        .eq("user_id", profile.user_id);
+
       toast({ title: "Talent Vetted!", description: "Profile is now visible to clients." });
       fetchData();
     } catch (err: any) {
@@ -379,7 +406,8 @@ const VettingWorkspaceV2 = () => {
     return s && ["approved", "submitted", "resubmitted"].includes(s.status);
   });
   
-  const canFinalize = allMandatorySubmitted && !!vettingLevelText;
+  const allSectionsApproved = sections.length > 0 && sections.every(s => s.status === "approved");
+  const canFinalize = !!vettingLevelText;
 
   // ── Render ──────────────────────────────────────────────────────────
 
@@ -520,12 +548,57 @@ const VettingWorkspaceV2 = () => {
           </div>
         </div>
 
-        {!allMandatorySubmitted && profile.status !== "vetted" && (
-            <div className="px-8 pb-4 bg-white flex justify-end">
-               <span className="text-xs font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1 rounded">
-                 Required: Basic Info, Pro Details, Work History
-               </span>
+        {/* ── Confirm Talent Vetting Panel ──────────────────────────── */}
+        {profile.status !== "vetted" && (
+          <div className="px-8 py-6 bg-emerald-50/50 border-t border-emerald-100 flex flex-col lg:flex-row lg:items-center gap-6 justify-between">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+                <Shield className="h-6 w-6 text-emerald-700" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-emerald-900 uppercase tracking-wider">Confirm Talent Vetting</h3>
+                <p className="text-xs text-emerald-700/70 font-medium">
+                  {allSectionsApproved
+                    ? "All sections approved. Ready to confirm."
+                    : allMandatorySubmitted
+                    ? "Mandatory sections submitted. You may confirm now — remaining submitted sections will be auto-approved."
+                    : "Mandatory sections (Basic Info, Professional Details, Work History) must be at least submitted before confirming."}
+                </p>
+              </div>
             </div>
+            <div className="flex items-center gap-4">
+              <Select value={vettingLevelText} onValueChange={setVettingLevelText}>
+                <SelectTrigger className="w-[180px] h-11 bg-white border-emerald-200 rounded-lg text-sm font-bold">
+                  <SelectValue placeholder="Select vetting level..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEVEL_OPTIONS.map(lvl => (
+                    <SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={finalizeVetting}
+                disabled={actionPending || !canFinalize}
+                className="h-11 px-8 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200/50 font-bold text-sm rounded-lg"
+              >
+                {actionPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                Confirm Talent
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {profile.status === "vetted" && (
+          <div className="px-8 py-4 bg-emerald-50 border-t border-emerald-100 flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+            <span className="text-sm font-bold text-emerald-800">Talent Vetted & Visible to Clients</span>
+            {profile.vetting_level_text && (
+              <Badge className="bg-emerald-100 text-emerald-700 font-bold shadow-none border-none ml-2">
+                Level: {profile.vetting_level_text || (profile as any).vetting_level_text}
+              </Badge>
+            )}
+          </div>
         )}
       </div>
 

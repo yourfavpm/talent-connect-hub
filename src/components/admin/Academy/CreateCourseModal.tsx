@@ -51,7 +51,8 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
         who_this_is_for: [] as string[],
         what_you_will_learn: [] as string[],
         cohort_slots: 50,
-        bonus_description: ""
+        bonus_description: "",
+        image_url: ""
     });
 
     useEffect(() => {
@@ -62,7 +63,12 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                 learning_outcomes: editCourse.learning_outcomes || [],
                 bonus_description: editCourse.bonus_description || "",
                 tools: editCourse.tools || [],
-                curriculum: editCourse.curriculum || [],
+                curriculum: (editCourse.curriculum || []).map((item: any) => ({
+                    ...item,
+                    week: item.week || '',
+                    title: item.title || '',
+                    details: Array.isArray(item.details) ? item.details : [],
+                })),
                 who_this_is_for: editCourse.who_is_it_for || [],
                 what_you_will_learn: editCourse.what_youll_learn || [],
                 cohort_slots: editCourse.slots_total || 50,
@@ -94,13 +100,31 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
             if ('who_is_it_for' in rest) delete (rest as any).who_is_it_for;
             if ('what_youll_learn' in rest) delete (rest as any).what_youll_learn;
 
-            const courseData = {
-                ...rest,
+            const courseData: Record<string, any> = {
+                title: rest.title,
+                slug: rest.slug,
+                tagline: rest.tagline,
+                description: rest.description,
+                price_naira: rest.price_naira,
+                price_usd: rest.price_usd,
+                level: rest.level,
+                is_live: rest.is_live,
+                duration: rest.duration,
+                image_url: rest.image_url,
+                learning_outcomes: rest.learning_outcomes,
+                tools: rest.tools,
+                curriculum: rest.curriculum,
+                bonus_description: rest.bonus_description,
                 slots_total: cohort_slots,
                 who_is_it_for: who_this_is_for,
                 what_youll_learn: what_you_will_learn,
                 updated_at: new Date().toISOString()
             };
+
+            // Only include columns that exist in the schema
+            // is_flagship and category may exist via academy_hub_core migration
+            if (rest.is_flagship !== undefined) courseData.is_flagship = rest.is_flagship;
+            if (rest.category !== undefined) courseData.category = rest.category;
 
             let error;
             if (editCourse) {
@@ -510,20 +534,20 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                                             <div className="grid grid-cols-4 gap-6">
                                                 <input 
                                                     className="h-12 px-5 bg-white rounded-xl font-bold text-xs uppercase tracking-widest text-blue-600"
-                                                    value={item.week}
+                                                    value={item.week || ''}
                                                     onChange={e => {
                                                         const newCur = [...formData.curriculum];
-                                                        newCur[i].week = e.target.value;
+                                                        newCur[i] = { ...newCur[i], week: e.target.value };
                                                         setFormData({ ...formData, curriculum: newCur });
                                                     }}
                                                 />
                                                 <input 
                                                     className="col-span-3 h-12 px-5 bg-white rounded-xl font-bold text-slate-900"
                                                     placeholder="Focus Title (e.g. AI Workflow Fundamentals)"
-                                                    value={item.title}
+                                                    value={item.title || ''}
                                                     onChange={e => {
                                                         const newCur = [...formData.curriculum];
-                                                        newCur[i].title = e.target.value;
+                                                        newCur[i] = { ...newCur[i], title: e.target.value };
                                                         setFormData({ ...formData, curriculum: newCur });
                                                     }}
                                                 />
@@ -534,10 +558,10 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                                                 <textarea 
                                                     className="w-full h-24 p-5 bg-white rounded-2xl border-transparent focus:ring-2 focus:ring-blue-600 transition-all font-medium text-sm resize-none"
                                                     placeholder="Topic 1, Topic 2, Topic 3 (comma separated)"
-                                                    value={item.details.join(", ")}
+                                                    value={Array.isArray(item.details) ? item.details.join(", ") : (item.details || '')}
                                                     onChange={e => {
                                                         const newCur = [...formData.curriculum];
-                                                        newCur[i].details = e.target.value.split(",").map(t => t.trim());
+                                                        newCur[i] = { ...newCur[i], details: e.target.value.split(",").map(t => t.trim()) };
                                                         setFormData({ ...formData, curriculum: newCur });
                                                     }}
                                                 />
