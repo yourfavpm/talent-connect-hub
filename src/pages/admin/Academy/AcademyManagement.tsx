@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { getInternalPath } from "@/utils/subdomain";
 
 interface CohortStats {
     totalStudents: number;
@@ -120,7 +121,7 @@ const AcademyManagement = () => {
                         <Button 
                             variant="outline" 
                             className="h-12 px-6 rounded-xl font-bold text-slate-600 border-slate-200 hover:bg-slate-50"
-                            onClick={() => navigate("/admin/academy/courses")}
+                            onClick={() => navigate(getInternalPath("/admin/academy/courses"))}
                         >
                             <BookOpen className="mr-2 w-4 h-4 text-blue-600" />
                             Manage Courses

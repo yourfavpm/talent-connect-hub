@@ -517,6 +517,8 @@ const VettingWorkspaceV2 = () => {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+          </div>
+        </div>
 
         {!allMandatorySubmitted && profile.status !== "vetted" && (
             <div className="px-8 pb-4 bg-white flex justify-end">

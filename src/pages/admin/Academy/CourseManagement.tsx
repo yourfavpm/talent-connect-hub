@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import CreateCourseModal from "@/components/admin/Academy/CreateCourseModal";
+import { getZoneUrl, Zone } from "@/utils/subdomain";
 
 interface Course {
     id: string;
@@ -198,9 +199,9 @@ const CourseManagement = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        <Link to={`/admin/academy/courses/${course.slug}`} className="text-blue-600 hover:text-blue-700 font-bold text-xs flex items-center gap-1">
-                                            View Details <ExternalLink className="w-3.5 h-3.5" />
-                                        </Link>
+                                        <a href={getZoneUrl(Zone.ACADEMY, `/courses/${course.slug}`)} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-bold text-xs flex items-center gap-1">
+                                            View in Academy <ExternalLink className="w-3.5 h-3.5" />
+                                        </a>
                                     </div>
                                 </div>
                             </div>
