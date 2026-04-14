@@ -67,7 +67,6 @@ const BrowseTalents = () => {
   
   if (loading) {
     return (
-    return (
       <div className="flex flex-col font-sans px-4 py-8">
          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12">
           <div className="space-y-1">
@@ -80,7 +79,6 @@ const BrowseTalents = () => {
     );
   }
 
-  return (
   return (
     <div className="flex flex-col font-sans px-4 py-8">
       
