@@ -164,7 +164,15 @@ const VettingWorkspaceV2 = () => {
 
       // Auto-start review if strictly submitted/resubmitted or revett_pending
       if (["submitted", "resubmitted", "revett_pending"].includes(profileData.status)) {
-        await (supabase.rpc as any)("v2_admin_start_review", { p_talent_user_id: profileData.user_id });
+        await (supabase.from("v2_talent_profiles") as any)
+          .update({ status: "in_review", updated_at: new Date().toISOString() })
+          .eq("user_id", profileData.user_id);
+        await (supabase.from("v2_vetting_actions") as any)
+          .insert({
+            user_id: profileData.user_id,
+            admin_id: user?.id,
+            action: "START_REVIEW",
+          });
         const { data: updated } = await supabase
           .from("v2_talent_profiles").select("*").eq("id", id).single();
         if (updated) setProfile(updated as unknown as V2Profile);
@@ -233,11 +241,35 @@ const VettingWorkspaceV2 = () => {
     if (!profile) return;
     setActionPending(true);
     try {
-      const { error } = await (supabase.rpc as any)("v2_admin_approve_section", {
-        p_talent_user_id: profile.user_id,
-        p_section_key: sectionKey,
-      });
-      if (error) throw error;
+      // 1. Update section status to approved
+      const { error: secError } = await (supabase.from("v2_profile_sections") as any)
+        .update({
+          status: "approved",
+          approved_at: new Date().toISOString(),
+          requested_changes: {},
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", profile.user_id)
+        .eq("section_key", sectionKey);
+
+      if (secError) throw secError;
+
+      // 2. Auto-transition profile status if still submitted/resubmitted/draft
+      if (["submitted", "resubmitted", "draft"].includes(profile.status)) {
+        await (supabase.from("v2_talent_profiles") as any)
+          .update({ status: "in_review", updated_at: new Date().toISOString() })
+          .eq("user_id", profile.user_id);
+      }
+
+      // 3. Log the action
+      await (supabase.from("v2_vetting_actions") as any)
+        .insert({
+          user_id: profile.user_id,
+          admin_id: user?.id,
+          action: "APPROVE_SECTION",
+          section_key: sectionKey,
+        });
+
       toast({ title: "Section Approved", description: `"${SECTION_LABELS[sectionKey]}" has been approved.` });
       fetchData();
     } catch (err: any) {
@@ -254,14 +286,41 @@ const VettingWorkspaceV2 = () => {
     }
     setActionPending(true);
     try {
-      const { fields } = { fields: changeFields.split(",").map(f => f.trim()).filter(Boolean) };
-      const { error } = await (supabase.rpc as any)("v2_admin_request_changes", {
-        p_talent_user_id: profile.user_id,
-        p_section_key: sectionKey,
-        p_note: changeNote,
-        p_fields: fields,
-      });
-      if (error) throw error;
+      const fields = changeFields.split(",").map(f => f.trim()).filter(Boolean);
+
+      // 1. Update section status
+      const { error: secError } = await (supabase.from("v2_profile_sections") as any)
+        .update({
+          status: "changes_requested",
+          requested_changes: {
+            note: changeNote,
+            fields: fields,
+            requested_by: user?.id,
+            requested_at: new Date().toISOString(),
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", profile.user_id)
+        .eq("section_key", sectionKey);
+
+      if (secError) throw secError;
+
+      // 2. Update profile status
+      await (supabase.from("v2_talent_profiles") as any)
+        .update({ status: "changes_requested", updated_at: new Date().toISOString() })
+        .eq("user_id", profile.user_id);
+
+      // 3. Log the action
+      await (supabase.from("v2_vetting_actions") as any)
+        .insert({
+          user_id: profile.user_id,
+          admin_id: user?.id,
+          action: "REQUEST_CHANGES",
+          section_key: sectionKey,
+          note: changeNote,
+          meta: { fields },
+        });
+
       toast({ title: "Changes Requested", description: "Talent has been notified." });
       setChangeNote("");
       setChangeFields("");
@@ -280,13 +339,40 @@ const VettingWorkspaceV2 = () => {
     }
     setActionPending(true);
     try {
-      const { error } = await (supabase.rpc as any)("v2_admin_finalize_vetting", {
-        p_talent_user_id: profile.user_id,
-        p_vetting_level_text: vettingLevelText,
-      });
-      if (error) throw error;
+      // 1. Auto-approve any submitted/resubmitted sections
+      await (supabase.from("v2_profile_sections") as any)
+        .update({
+          status: "approved",
+          approved_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", profile.user_id)
+        .in("status", ["submitted", "resubmitted"]);
 
-      // Sync to legacy talents table
+      // 2. Update v2 profile to vetted & visible
+      const { error: profileError } = await (supabase.from("v2_talent_profiles") as any)
+        .update({
+          status: "vetted",
+          vetting_level_text: vettingLevelText,
+          vetted_at: new Date().toISOString(),
+          visible_to_clients: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", profile.user_id);
+
+      if (profileError) throw profileError;
+
+      // 3. Log the vetting action
+      await (supabase.from("v2_vetting_actions") as any)
+        .insert({
+          user_id: profile.user_id,
+          admin_id: user?.id,
+          action: "MARK_VETTED",
+          note: `Profile finalized. Level: ${vettingLevelText}`,
+          meta: { vetting_level_text: vettingLevelText },
+        });
+
+      // 4. Sync to legacy talents table
       await supabase
         .from("talents")
         .update({
@@ -308,11 +394,22 @@ const VettingWorkspaceV2 = () => {
     if (!profile || managerId === "unassigned") return;
     setActionPending(true);
     try {
-      const { error } = await (supabase.rpc as any)("v2_admin_assign_manager", {
-        p_talent_user_id: profile.user_id,
-        p_manager_admin_id: managerId
-      });
+      const { error } = await (supabase.from("v2_talent_profiles") as any)
+        .update({
+          talent_manager_admin_id: managerId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", profile.user_id);
       if (error) throw error;
+
+      await (supabase.from("v2_vetting_actions") as any)
+        .insert({
+          user_id: profile.user_id,
+          admin_id: user?.id,
+          action: "ASSIGN_MANAGER",
+          note: `Assigned talent manager ID: ${managerId}`,
+        });
+
       toast({ title: "Manager Assigned" });
       setSelectedManagerId(managerId);
       fetchData();
@@ -330,14 +427,15 @@ const VettingWorkspaceV2 = () => {
     }
     setActionPending(true);
     try {
-      // 1. Call the new RPC to log the action & create internal notification
-      const { error: rpcError } = await (supabase.rpc as any)("v2_admin_send_vetting_note", {
-        p_talent_user_id: profile.user_id,
-        p_subject: noteSubject,
-        p_body: noteBody
-      });
-
-      if (rpcError) throw rpcError;
+      // 1. Log the vetting note action directly
+      await (supabase.from("v2_vetting_actions") as any)
+        .insert({
+          user_id: profile.user_id,
+          admin_id: user?.id,
+          action: "VETTING_NOTE_SENT",
+          note: noteBody,
+          meta: { subject: noteSubject },
+        });
 
       // 2. Trigger the external email via Edge Function
       const brandedHtml = getBrandedEmailHtml(noteBody, noteSubject);
