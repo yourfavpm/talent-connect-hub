@@ -39,6 +39,11 @@ const ProtectedRoute = ({ children, allowedRoles, portalType }: ProtectedRoutePr
     if (userRole) {
       const hasAccess = allowedRoles.includes(userRole);
       if (!hasAccess) {
+        // Redirection logic to keep user in their correct portal
+        if (isAdminRole(userRole)) {
+            window.location.href = getZoneUrl(Zone.ADMIN, "/dashboard");
+            return null;
+        }
         if (userRole === "talent") {
             window.location.href = getZoneUrl(Zone.TALENT, "/dashboard");
             return null;
@@ -47,22 +52,25 @@ const ProtectedRoute = ({ children, allowedRoles, portalType }: ProtectedRoutePr
             window.location.href = getZoneUrl(Zone.CLIENT, "/dashboard");
             return null;
         }
-        if (isAdminRole(userRole)) {
-            window.location.href = getZoneUrl(Zone.ADMIN, "/dashboard");
+        if (userRole === "student") {
+            window.location.href = getZoneUrl(Zone.ACADEMY, "/dashboard");
             return null;
         }
+        
+        // Final fallback if role doesn't match any portal
         window.location.href = getZoneUrl(Zone.AUTH, `/auth/login?portal=${portalType}`);
         return null;
       }
     } else {
       // 2) No role yet: for client/talent portals, allow access (onboarding is optional).
-      //    They can complete onboarding later from their dashboard.
-      if (!isAdminGate && (portalType === "client" || portalType === "talent")) {
-        // Allow access - onboarding is not mandatory
-        return <>{children}</>;
+      //    But make sure they are on the right portal requested during signup!
+      if (!isAdminGate) {
+        if (portalType === "client" || portalType === "talent") {
+          return <>{children}</>;
+        }
       }
 
-      // 3) Admin portal: no role means no access.
+      // 3) Admin/Academy portal or no specific role: no access.
       window.location.href = getZoneUrl(Zone.AUTH, `/auth/login?portal=${portalType}`);
       return null;
     }

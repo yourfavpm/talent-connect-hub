@@ -32,7 +32,7 @@ export const requestVerificationEmail = async (
     userId: string,
     email: string,
     firstName: string,
-    portal: 'talent' | 'client' = 'talent'
+    portal: 'talent' | 'client'
 ): Promise<boolean> => {
     try {
         const { error } = await supabase.functions.invoke('auth-verification/request', {

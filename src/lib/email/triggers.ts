@@ -14,14 +14,14 @@ const ADMIN_URL = 'https://admin.opslyhr.com';
  * Send talent verification required email (Secure Custom Flow)
  */
 export const requestTalentVerification = async (userId: string, email: string, firstName: string) => {
-    return await requestVerificationEmail(userId, email, firstName);
+    return await requestVerificationEmail(userId, email, firstName, 'talent');
 };
 
 /**
  * Send client verification required email (Secure Custom Flow)
  */
 export const requestClientVerification = async (userId: string, email: string, contactName: string) => {
-    return await requestVerificationEmail(userId, email, contactName);
+    return await requestVerificationEmail(userId, email, contactName, 'client');
 };
 
 /**

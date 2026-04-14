@@ -144,40 +144,59 @@ const Login = () => {
       if (userRoles.length > 1) {
         // If they have a returnTo, respect it first
         if (returnTo) {
-          if (returnTo.startsWith('http')) {
-            window.location.href = returnTo;
-          } else {
-            navigate(returnTo);
-          }
+          window.location.href = returnTo.startsWith('http') ? returnTo : returnTo;
           return;
         }
+
+        // If they specify a portal in URL which matches one of their roles, use it
+        if (portal && userRoles.includes(portal)) {
+          if (portal === "client") redirectToZone(Zone.CLIENT, "/dashboard");
+          else if (portal === "talent") redirectToZone(Zone.TALENT, "/dashboard");
+          else if (portal === "admin") redirectToZone(Zone.ADMIN, "/dashboard");
+          else if (portal === "student") redirectToZone(Zone.ACADEMY, "/dashboard");
+          return;
+        }
+
         // Otherwise use role selector but pass portal context
         navigate(`/auth/select-role?portal=${portal}`);
         return;
       }
 
-      // 5. Single-role Redirection
-      if (userRoles.includes("super_admin") || userRoles.includes("operations_admin")) {
-        redirectToZone(Zone.ADMIN, "/dashboard");
-      } else if (userRoles.includes("talent")) {
-        redirectToZone(Zone.TALENT, "/dashboard");
-      } else if (userRoles.includes("client")) {
-        redirectToZone(Zone.CLIENT, "/dashboard");
-      } else if (userRoles.includes("student")) {
-        redirectToZone(Zone.ACADEMY, "/dashboard");
-      } else {
-        // Fallback: If no roles defined in user_roles, use the portal param or default
-        if (portal === "admin") {
+      // 5. Single-role Redirection (Strict matching)
+      if (userRoles.length === 1) {
+        const primaryRole = userRoles[0];
+        if (primaryRole === "super_admin" || primaryRole === "operations_admin") {
           redirectToZone(Zone.ADMIN, "/dashboard");
-        } else if (portal === "talent") {
+        } else if (primaryRole === "talent") {
           redirectToZone(Zone.TALENT, "/dashboard");
-        } else {
+        } else if (primaryRole === "client") {
           redirectToZone(Zone.CLIENT, "/dashboard");
+        } else if (primaryRole === "student") {
+          redirectToZone(Zone.ACADEMY, "/dashboard");
+        } else {
+          // Fallback based on portal URL param if role is unrecognized
+          handlePortalFallback(portal);
         }
+        return;
       }
+
+      // 6. Final Fallback: No roles defined in user_roles yet
+      handlePortalFallback(portal);
     } catch (err: unknown) {
       setError(getFriendlyErrorMessage(err));
       setLoading(false);
+    }
+  };
+
+  const handlePortalFallback = (portalParam: string | null) => {
+    if (portalParam === "admin") {
+      redirectToZone(Zone.ADMIN, "/dashboard");
+    } else if (portalParam === "talent") {
+      redirectToZone(Zone.TALENT, "/dashboard");
+    } else if (portalParam === "student") {
+      redirectToZone(Zone.ACADEMY, "/dashboard");
+    } else {
+      redirectToZone(Zone.CLIENT, "/dashboard");
     }
   };
 
