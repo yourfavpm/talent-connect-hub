@@ -34,7 +34,7 @@ export default function AdminJobs() {
       const [jobsRes, appsRes] = await Promise.all([
         supabase.from("jobs").select(`
           *,
-          clients(contact_name, company_name, profiles(email))
+          clients(primary_contact_name, company_name, profiles(email))
         `).order("created_at", { ascending: false }),
         (supabase.from("job_applications") as any).select(`
           id, job_id, status, talents(first_name, last_name)
@@ -95,7 +95,7 @@ export default function AdminJobs() {
         if (job?.clients?.profiles?.email) {
           await sendClientJobLiveEmail({
             email: job.clients.profiles.email,
-            contactName: job.clients.contact_name || 'there',
+            contactName: job.clients.primary_contact_name || 'there',
             jobTitle: job.title,
             jobId: id
           });

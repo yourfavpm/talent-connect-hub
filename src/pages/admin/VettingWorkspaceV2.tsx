@@ -573,7 +573,7 @@ const VettingWorkspaceV2 = () => {
           <div className="p-10">
             {activeTab === "timeline" ? (
               // Timeline view
-              <div className="max-w-2xl">
+              <div className="w-full">
                 <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                    <Clock className="h-5 w-5 text-slate-400" /> Vetting Audit Log
                 </h2>
@@ -630,7 +630,7 @@ const VettingWorkspaceV2 = () => {
                     No data submitted for this section.
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-8 mb-10 max-w-3xl">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-10 w-full">
                     {Object.entries(currentSection.data).map(([field, value]) => {
                       if (field === "id") return null;
                       const isDocUrl = typeof value === "string" && (
@@ -683,7 +683,7 @@ const VettingWorkspaceV2 = () => {
 
                 {/* ── Admin actions ──────────────────────────────── */}
                 {currentSection && currentSection.status !== "approved" && (
-                  <div className="border border-slate-200 rounded-xl overflow-hidden mt-8 max-w-2xl bg-slate-50">
+                  <div className="border border-slate-200 rounded-xl overflow-hidden mt-8 w-full bg-slate-50">
                     <div className="bg-slate-100/50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                        <h3 className="font-bold text-slate-800 flex items-center gap-2">
                           <Shield className="h-4 w-4 text-indigo-500" /> Section Actions

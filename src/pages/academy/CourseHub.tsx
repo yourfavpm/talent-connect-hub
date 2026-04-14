@@ -196,7 +196,7 @@ const CourseHub = () => {
         <div className="min-h-screen bg-slate-50/50 pb-20 font-inter">
             {/* Top Navigation Bar */}
             <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
-                <div className="container max-w-7xl mx-auto h-20 flex items-center justify-between px-6">
+                <div className="w-full px-6 lg:px-10 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-6">
                         <Link to="/dashboard" className="p-2 hover:bg-slate-50 rounded-lg transition-colors group">
                             <ArrowLeft className="w-5 h-5 text-slate-400 group-hover:text-slate-900" />
@@ -227,7 +227,7 @@ const CourseHub = () => {
                 </div>
             </div>
 
-            <div className="container max-w-7xl mx-auto px-6 py-10">
+            <div className="w-full px-6 lg:px-10 py-10">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                     
                     {/* Main Content Area */}

@@ -178,7 +178,7 @@ const Checkout = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="grid grid-cols-1 lg:grid-cols-4 gap-10"
+                            className="grid grid-cols-1 lg:grid-cols-4 gap-10 w-full"
                         >
                             <div className="lg:col-span-3 space-y-8">
                                 <button 
