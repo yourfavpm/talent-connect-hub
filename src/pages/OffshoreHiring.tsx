@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Globe, ShieldCheck, Banknote, Clock, CheckCircle2, MapPin } from "lucide-react";
+import { Zone, getZoneUrl } from "@/utils/subdomain";
 import SEO from "@/components/SEO";
 
 const OffshoreHiring = () => {
@@ -37,15 +38,14 @@ const OffshoreHiring = () => {
                                 Access vetted EMEA-based operators with centralized compliance, billing, and coordination. SCALE your workforce without international entity complexity.
                             </p>
                             
-                            <Button 
-                                size="lg" 
-                                className="h-14 px-10 text-base rounded-xl bg-slate-900 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-sm" 
-                                asChild
-                            >
-                                <Link to="/auth/signup?portal=client">
+                            <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}>
+                                <Button 
+                                    size="lg" 
+                                    className="h-14 px-10 text-base rounded-xl bg-slate-900 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-sm" 
+                                >
                                     Explore Global Hiring <ArrowRight className="ml-2 h-4 w-4" />
-                                </Link>
-                            </Button>
+                                </Button>
+                            </a>
                         </motion.div>
                     </div>
 
@@ -268,16 +268,15 @@ const OffshoreHiring = () => {
                         transition={{ duration: 0.6 }}
                     >
                         <h2 className="text-4xl md:text-6xl font-semibold text-slate-900 mb-12 tracking-tight">Scale Globally. <br /> Operate Seamlessly.</h2>
-                        <Button 
-                            size="lg" 
-                            variant="outline"
-                            className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none" 
-                            asChild
-                        >
-                            <Link to="/auth/signup?portal=client">
+                        <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}>
+                            <Button 
+                                size="lg" 
+                                variant="outline"
+                                className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none" 
+                            >
                                 Start Global Engagement <ArrowRight className="ml-2 h-5 w-5" />
-                            </Link>
-                        </Button>
+                            </Button>
+                        </a>
                     </motion.div>
                 </div>
             </section>

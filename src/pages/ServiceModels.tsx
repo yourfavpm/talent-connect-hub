@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Check, ArrowRight, Building2, Globe, Clock, Shield, Users, Zap, Briefcase, Layout, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Zone, getZoneUrl } from "@/utils/subdomain";
 import SEO from "@/components/SEO";
 
 const AccordionItem = ({ question, answer }: { question: string; answer: string }) => {
@@ -217,9 +218,9 @@ const ServiceModels = () => {
                                 </div>
                             </div>
 
-                            <Link to="/auth/signup?portal=client" className="mt-auto inline-flex items-center text-sm font-bold text-blue-600 hover:text-blue-700 transition-all group-hover:translate-x-1">
+                            <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")} className="mt-auto inline-flex items-center text-sm font-bold text-blue-600 hover:text-blue-700 transition-all group-hover:translate-x-1">
                                 Get Started <ArrowRight className="ml-2 w-4 h-4" />
-                            </Link>
+                            </a>
                         </div>
 
                         {/* Column 2: Structured Trial-to-Hire */}
@@ -252,9 +253,9 @@ const ServiceModels = () => {
                                 </div>
                             </div>
 
-                            <Link to="/auth/signup?portal=client" className="mt-auto inline-flex items-center text-sm font-bold text-blue-600 hover:text-blue-700 transition-all group-hover:translate-x-1">
+                            <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")} className="mt-auto inline-flex items-center text-sm font-bold text-blue-600 hover:text-blue-700 transition-all group-hover:translate-x-1">
                                 Get Started <ArrowRight className="ml-2 w-4 h-4" />
-                            </Link>
+                            </a>
                         </div>
 
                         {/* Column 3: Project & Operational Support */}
@@ -284,9 +285,9 @@ const ServiceModels = () => {
                                 </div>
                             </div>
 
-                            <Link to="/auth/signup?portal=client" className="mt-auto inline-flex items-center text-sm font-bold text-blue-600 hover:text-blue-700 transition-all group-hover:translate-x-1">
+                            <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")} className="mt-auto inline-flex items-center text-sm font-bold text-blue-600 hover:text-blue-700 transition-all group-hover:translate-x-1">
                                 Get Started <ArrowRight className="ml-2 w-4 h-4" />
-                            </Link>
+                            </a>
                         </div>
                     </div>
 

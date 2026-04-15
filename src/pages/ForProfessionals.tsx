@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check, DollarSign, ShieldCheck, Briefcase, Zap, Globe, Lock, ArrowRight, UserCheck, Star, TrendingUp, Shield, Users } from "lucide-react";
 import { motion } from "framer-motion";
+import { Zone, getZoneUrl } from "@/utils/subdomain";
 import SEO from "@/components/SEO";
 
 const ForProfessionals = () => {
@@ -29,14 +30,15 @@ const ForProfessionals = () => {
                                 Work with ambitious companies through structured, vetted engagements — with contracts, compliance, and payments handled centrally.
                             </p>
                             <div className="flex flex-col sm:flex-row items-start justify-start gap-8 w-full sm:w-auto">
-                                <Button 
-                                    size="lg" 
-                                    variant="outline"
-                                    className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold transition-all duration-300 shadow-none w-full sm:w-auto" 
-                                    asChild
-                                >
-                                    <Link to="/auth/signup?portal=talent">Apply as Talent</Link>
-                                </Button>
+                                <a href={getZoneUrl(Zone.AUTH, "/auth/signup/talent")} className="w-full sm:w-auto">
+                                    <Button 
+                                        size="lg" 
+                                        variant="outline"
+                                        className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold transition-all duration-300 shadow-none w-full" 
+                                    >
+                                        Apply as Talent
+                                    </Button>
+                                </a>
                                 
                                 <Link 
                                     to="#"

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check, Clock, Globe, Shield, Zap, Search, UserCheck, Layout, CreditCard, Award, TrendingUp, Users, ArrowRight, Star, Target, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Zone, getZoneUrl } from "@/utils/subdomain";
 import SEO from "@/components/SEO";
 
 const ForCompanies = () => {
@@ -373,14 +374,13 @@ const ForCompanies = () => {
                                     <div className="text-sm font-semibold text-slate-800">{model.ideal}</div>
                                 </div>
 
-                                <Button 
-                                    className={`w-full py-6 rounded-full font-bold text-sm shadow-none border ${model.recommended ? 'bg-blue-600 hover:bg-blue-700 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
-                                    asChild
-                                >
-                                    <Link to="/auth/signup?portal=client">
+                                <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")} className="w-full">
+                                    <Button 
+                                        className={`w-full py-6 rounded-full font-bold text-sm shadow-none border ${model.recommended ? 'bg-blue-600 hover:bg-blue-700 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
+                                    >
                                         {model.cta}
-                                    </Link>
-                                </Button>
+                                    </Button>
+                                </a>
                             </motion.div>
                         ))}
                     </div>

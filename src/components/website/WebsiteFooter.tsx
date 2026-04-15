@@ -41,16 +41,22 @@ const WebsiteFooter = () => {
               <h4 className="text-[10px] font-bold text-slate-950 uppercase tracking-widest">For Companies</h4>
               <ul className="space-y-2">
                 {[
+                  { label: "Hire Talent", href: getZoneUrl(Zone.AUTH, "/auth/signup/client") },
                   { label: "Direct Hire", to: "/direct-hire" },
                   { label: "Trial-to-Hire", to: "/trial-to-hire" },
                   { label: "One-Time Projects", to: "/project-engagement" },
-                  { label: "Offshore Hiring", to: "/offshore-hiring" },
                   { label: "Book Consultation", to: "/book-consultation" }
                 ].map((link, i) => (
                   <li key={i}>
-                    <Link to={link.to} className="text-xs text-slate-500 hover:text-blue-600 font-medium transition-colors">
-                      {link.label}
-                    </Link>
+                    {link.href ? (
+                      <a href={link.href} className="text-xs text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link to={link.to!} className="text-xs text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -61,10 +67,10 @@ const WebsiteFooter = () => {
               <h4 className="text-[10px] font-bold text-slate-950 uppercase tracking-widest">For Professionals</h4>
               <ul className="space-y-2">
                 {[
-                  { label: "Apply as Talent", href: getZoneUrl(Zone.AUTH, "/auth/signup?portal=talent") },
+                  { label: "Apply as Talent", href: getZoneUrl(Zone.AUTH, "/auth/signup/talent") },
                   { label: "Vetting Process", to: "/vetting-process" },
                   { label: "Talent Dashboard", href: getZoneUrl(Zone.AUTH, "/auth/login?portal=talent") },
-                  { label: "Opportunities", href: getZoneUrl(Zone.AUTH, "/auth/signup?portal=talent") },
+                  { label: "Opportunities", href: getZoneUrl(Zone.AUTH, "/auth/signup/talent") },
                   { label: "Support", to: "/contact" }
                 ].map((link, i) => (
                   <li key={i}>

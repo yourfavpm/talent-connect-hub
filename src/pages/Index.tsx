@@ -6,6 +6,8 @@ import { ArrowRight, CheckCircle, Clock, Globe, Shield, Users, Zap, Briefcase, L
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { Zone, getZoneUrl } from "@/utils/subdomain";
+
 const Index = () => {
   const [activeStep, setActiveStep] = useState(1);
 
@@ -102,11 +104,11 @@ const Index = () => {
                   Schedule a call
                 </Button>
               </Link>
-              <Link to="/auth/signup/talent" className="w-full sm:w-auto">
+              <a href={getZoneUrl(Zone.AUTH, "/auth/signup/talent")} className="w-full sm:w-auto">
                 <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-700 hover:bg-slate-100/80 rounded-full font-semibold flex items-center justify-center lg:justify-start gap-2 w-full">
                   Apply as talent <ArrowRight className="w-4 h-4" />
                 </Button>
-              </Link>
+              </a>
             </div>
             
             {/* MOBILE ONLY: FEATURED TALENT CARD */}

@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Target, Clock, Users, Shield, Zap, Layout, Terminal } from "lucide-react";
+import { Zone, getZoneUrl } from "@/utils/subdomain";
 import SEO from "@/components/SEO";
 
 const ProjectEngagement = () => {
@@ -33,16 +34,15 @@ const ProjectEngagement = () => {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row items-start justify-start gap-8">
-                  <Button 
-                      size="lg" 
-                      variant="outline"
-                      className="h-14 px-10 text-base rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none w-full sm:w-auto" 
-                      asChild
-                  >
-                    <Link to="/auth/signup?portal=client">
-                      Request Project Scope <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
+                    <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")} className="w-full sm:w-auto">
+                      <Button 
+                          size="lg" 
+                          variant="outline"
+                          className="h-14 px-10 text-base rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none w-full" 
+                      >
+                        Request Project Scope <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </a>
                   
                   <Link 
                       to="/service-models"
@@ -291,16 +291,15 @@ const ProjectEngagement = () => {
               transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-6xl font-semibold text-slate-900 mb-12 tracking-tight">Execute High-Impact <br /> Initiatives with Precision.</h2>
-            <Button 
-                size="lg" 
-                variant="outline"
-                className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none" 
-                asChild
-            >
-              <Link to="/auth/signup?portal=client">
+            <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}>
+              <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none" 
+              >
                 Start a Project <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
+              </Button>
+            </a>
           </motion.div>
         </div>
       </section>

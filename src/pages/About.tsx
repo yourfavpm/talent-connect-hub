@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Globe, ShieldCheck, Zap, Users, Shield, Target, CheckCircle2 } from "lucide-react";
+import { Zone, getZoneUrl } from "@/utils/subdomain";
 import SEO from "@/components/SEO";
 
 const About = () => {
@@ -212,26 +213,24 @@ const About = () => {
                             OPSlyHR exists to reduce friction in operational hiring and create predictable outcomes for companies and professionals alike.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                            <Button 
-                                size="lg" 
-                                variant="outline"
-                                className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none shrink-0" 
-                                asChild
-                            >
-                                <Link to="/auth/signup?portal=client">
+                            <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}>
+                                <Button 
+                                    size="lg" 
+                                    variant="outline"
+                                    className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none shrink-0" 
+                                >
                                     Request Talent <ArrowRight className="ml-2 h-5 w-5" />
-                                </Link>
-                            </Button>
-                            <Button 
-                                size="lg" 
-                                variant="outline"
-                                className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none shrink-0" 
-                                asChild
-                            >
-                                <Link to="/auth/signup?portal=talent">
+                                </Button>
+                            </a>
+                            <a href={getZoneUrl(Zone.AUTH, "/auth/signup/talent")}>
+                                <Button 
+                                    size="lg" 
+                                    variant="outline"
+                                    className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none shrink-0" 
+                                >
                                     Apply as Talent <ArrowRight className="ml-2 h-5 w-5" />
-                                </Link>
-                            </Button>
+                                </Button>
+                            </a>
                         </div>
                     </motion.div>
                 </div>
