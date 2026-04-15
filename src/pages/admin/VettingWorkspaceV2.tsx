@@ -357,7 +357,7 @@ const VettingWorkspaceV2 = () => {
           visible_to_clients: true,
           locked_onboarding: true,
           updated_at: new Date().toISOString(),
-        })
+        } as any)
         .eq("user_id", profile.user_id);
 
       if (profileError) throw profileError;

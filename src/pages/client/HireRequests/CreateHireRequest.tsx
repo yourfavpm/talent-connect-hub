@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { getInternalPath } from "@/utils/subdomain";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,9 +24,12 @@ export default function CreateHireRequest() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
+  const { id } = useParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [requestId, setRequestId] = useState<string | null>(id || null);
+  const [loading, setLoading] = useState(!!id);
 
   const [formData, setFormData] = useState({
     service_model: "",
@@ -43,6 +46,48 @@ export default function CreateHireRequest() {
     fixed_budget: "",
     hours_per_week: "",
   });
+
+  useEffect(() => {
+    if (id) {
+      fetchDraft(id);
+    }
+  }, [id]);
+
+  const fetchDraft = async (reqId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("hr_v2_hire_requests")
+        .select("*")
+        .eq("id", reqId)
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setFormData({
+          service_model: data.service_model || "",
+          title: data.title || "",
+          role_summary: data.role_summary || "",
+          responsibilities: data.responsibilities || "",
+          requirements: data.requirements || "",
+          location_preference: data.location_preference || "",
+          timezone_overlap: data.timezone_overlap || "",
+          engagement_type: data.engagement_type || "",
+          budget_type: data.budget_type || "hourly",
+          budget_min: data.budget_min?.toString() || "",
+          budget_max: data.budget_max?.toString() || "",
+          fixed_budget: data.fixed_budget?.toString() || "",
+          hours_per_week: data.hours_per_week?.toString() || "",
+        });
+        // Jump to last possible step based on data? No, let user go through flow
+        // or just set currentStep to 4 if reviewing? Better to let them start at 1.
+      }
+    } catch (error: any) {
+      console.error("Error fetching draft:", error);
+      toast({ title: "Failed to load draft", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const updateForm = (key: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -80,13 +125,14 @@ export default function CreateHireRequest() {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
-  const handleSubmit = async () => {
+  const upsertDraft = async (showToast = true) => {
+    if (!formData.service_model && !formData.title) return null;
+    
     setSubmitting(true);
     try {
-      // 1. We construct the payload for the RPC
       const payload = {
-        service_model: formData.service_model,
-        title: formData.title,
+        service_model: formData.service_model || null,
+        title: formData.title || "Untitled Draft",
         role_summary: formData.role_summary,
         responsibilities: formData.responsibilities,
         requirements: formData.requirements,
@@ -101,20 +147,58 @@ export default function CreateHireRequest() {
         requires_timesheets: formData.budget_type === 'hourly'
       };
 
-      // 2. Call the RPC to create, log the event, and get the new ID
-      const { data: newId, error } = await (supabase as any).rpc('hr_v2_create_request', { payload });
+      if (requestId) {
+        // Update
+        const { error } = await (supabase as any).rpc('hr_v2_update_request', { 
+          req_id: requestId, 
+          payload 
+        });
+        if (error) throw error;
+      } else {
+        // Create
+        const { data: newId, error } = await (supabase as any).rpc('hr_v2_create_request', { 
+          payload 
+        });
+        if (error) throw error;
+        setRequestId(newId);
+        // Silently update URL if we just created it
+        window.history.replaceState(null, '', getInternalPath(`/client/hire-requests/${newId}`));
+        return newId;
+      }
+
+      if (showToast) {
+        toast({ title: "Draft Saved", description: "Your progress has been saved." });
+      }
+      return requestId;
+    } catch (error: any) {
+      console.error("Draft save error:", error);
+      if (showToast) {
+        toast({ title: "Failed to save draft", description: error.message, variant: "destructive" });
+      }
+      return null;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      // 1. Ensure latest state is saved
+      const finalId = await upsertDraft(false);
+      if (!finalId) throw new Error("Could not save draft before submission");
+
+      // 2. Call the RPC to submit
+      const { error } = await (supabase as any).rpc('hr_v2_submit_request', { req_id: finalId });
 
       if (error) throw error;
-
-      // Automatically submit it for review too, saving an extra click
-      await (supabase as any).rpc('hr_v2_submit_request', { req_id: newId });
 
       toast({
         title: "Hire Request Submitted",
         description: "Your request has been submitted to OPSlyHR Admins for review.",
       });
 
-      navigate(getInternalPath(`/client/hire-requests/${newId}`));
+      navigate(getInternalPath(`/client/hire-requests/${finalId}`));
 
     } catch (error: any) {
       console.error("Submission error:", error);
@@ -460,15 +544,26 @@ export default function CreateHireRequest() {
             ← Back
           </Button>
           
-          {currentStep < STEPS.length ? (
-            <Button onClick={handleNext} className="bg-slate-900 text-white hover:bg-slate-800 px-8 font-medium">
-              Continue <ChevronRight className="w-4 h-4 ml-1" />
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => upsertDraft(true)} 
+              disabled={submitting || !formData.service_model}
+              className="text-slate-600 font-medium"
+            >
+              Save as Draft
             </Button>
-          ) : (
-            <Button onClick={handleSubmit} disabled={submitting} className="bg-brand-primary text-white hover:bg-brand-primary/90 px-8 font-medium shadow-md">
-              {submitting ? "Submitting..." : "Submit Hire Request"}
-            </Button>
-          )}
+            
+            {currentStep < STEPS.length ? (
+              <Button onClick={handleNext} className="bg-slate-900 text-white hover:bg-slate-800 px-8 font-medium">
+                Continue <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            ) : (
+              <Button onClick={handleSubmit} disabled={submitting} className="bg-brand-primary text-white hover:bg-brand-primary/90 px-8 font-medium shadow-md">
+                {submitting ? "Submitting..." : "Submit Hire Request"}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

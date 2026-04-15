@@ -143,7 +143,7 @@ export default function HireRequestsList() {
                       <Eye className="mr-2 h-4 w-4" /> View Details
                     </DropdownMenuItem>
                     {req.status === "draft" && (
-                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/client/hire-requests/${req.id}`)); }}>
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/client/hire-requests/new/${req.id}`)); }}>
                         <FileText className="mr-2 h-4 w-4" /> Edit & Submit
                       </DropdownMenuItem>
                     )}

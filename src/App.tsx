@@ -356,6 +356,7 @@ const App = () => {
                                   <>
                                     <Route path="hire-requests" element={<HireRequestsList />} />
                                     <Route path="hire-requests/new" element={<CreateHireRequest />} />
+                                    <Route path="hire-requests/new/:id" element={<CreateHireRequest />} />
                                     <Route path="hire-requests/:id" element={<HireRequestDetail />} />
                                     <Route path="jobs/*" element={<Navigate to="/hire-requests" replace />} />
                                   </>
