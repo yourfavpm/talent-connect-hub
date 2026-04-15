@@ -15,22 +15,31 @@ import {
   sendTalentAccountCreatedEmail, 
   requestTalentVerification
 } from "@/lib/email/triggers";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const talentSignupSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters").max(50),
   lastName: z.string().min(2, "Last name must be at least 2 characters").max(50),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  heardFrom: z.string().min(1, "Please tell us how you heard about us"),
 });
 
 type TalentSignupData = z.infer<typeof talentSignupSchema>;
 
 const TalentSignup = () => {
-  const [formData, setFormData] = useState<TalentSignupData & { firstName: string; lastName: string; email: string; password: string }>({
+  const [formData, setFormData] = useState<TalentSignupData>({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
+    heardFrom: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -99,7 +108,8 @@ const TalentSignup = () => {
           data: { 
             first_name: formData.firstName, 
             last_name: formData.lastName, 
-            portal: "talent" 
+            portal: "talent",
+            heard_from: formData.heardFrom
           },
         },
       });
@@ -340,6 +350,29 @@ const TalentSignup = () => {
                 </button>
               </div>
               {errors.password && <p className="text-xs text-red-500 font-medium">{errors.password}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="heardFrom" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">How did you hear about us?</Label>
+              <Select 
+                value={formData.heardFrom} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, heardFrom: value }))}
+              >
+                <SelectTrigger className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800">
+                  <SelectValue placeholder="Select an option" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="linkedin">LinkedIn</SelectItem>
+                  <SelectItem value="twitter">Twitter / X</SelectItem>
+                  <SelectItem value="facebook">Facebook</SelectItem>
+                  <SelectItem value="google">Search Engine (Google/Bing)</SelectItem>
+                  <SelectItem value="referral">Friend or Colleague</SelectItem>
+                  <SelectItem value="domain_assistant">The Domain Assistant</SelectItem>
+                  <SelectItem value="blog">Blog or Article</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.heardFrom && <p className="text-xs text-red-500 font-medium">{errors.heardFrom}</p>}
             </div>
 
             <Button 

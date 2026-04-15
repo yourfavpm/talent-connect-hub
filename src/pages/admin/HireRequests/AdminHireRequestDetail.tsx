@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getInternalPath } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { sendInvitedToApplyEmail } from "@/lib/email/triggers";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -79,6 +81,8 @@ interface EventRow {
 export default function AdminHireRequestDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, userRole } = useAuth();
+  const isTalentManager = userRole === "talent_manager";
   const { toast } = useToast();
 
   const [request, setRequest] = useState<HireRequest | null>(null);
@@ -97,6 +101,12 @@ export default function AdminHireRequestDetail() {
   const [loadingVettedTalents, setLoadingVettedTalents] = useState(false);
   const [selectedTalentForShortlist, setSelectedTalentForShortlist] = useState<(ProfileSnippet & { id: string }) | null>(null);
   const [shortlistReason, setShortlistReason] = useState("");
+
+  // Invite dialog
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [inviteSearch, setInviteSearch] = useState("");
+  const [managedTalents, setManagedTalents] = useState<(ProfileSnippet & { id: string, user_id: string })[]>([]);
+  const [loadingManagedTalents, setLoadingManagedTalents] = useState(false);
 
   // Schedule dialog
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
@@ -120,6 +130,34 @@ export default function AdminHireRequestDetail() {
       setLoadingVettedTalents(false);
     }
   }, []);
+
+  const fetchManagedTalents = useCallback(async () => {
+    if (!user) return;
+    setLoadingManagedTalents(true);
+    try {
+      // Fetch talents where this admin is the manager
+      const { data: v2Profiles } = await supabase
+        .from("v2_talent_profiles")
+        .select("user_id, talents:user_id(first_name, last_name, email, primary_role)")
+        .eq("talent_manager_admin_id", user.id);
+      
+      const formatted = (v2Profiles || []).map(p => ({
+        id: p.user_id, // Applications table uses user_id
+        user_id: p.user_id,
+        email: (p.talents as any)?.email,
+        first_name: (p.talents as any)?.first_name || "Unknown",
+        last_name: (p.talents as any)?.last_name || "",
+        title: (p.talents as any)?.primary_role || "Talent",
+        skills: [],
+        avatar_url: null
+      }));
+      setManagedTalents(formatted);
+    } catch (err) {
+      console.error("Failed to load managed talents:", err);
+    } finally {
+      setLoadingManagedTalents(false);
+    }
+  }, [user]);
 
   /* ── open shortlist dialog → load talents ───────────────── */
   const openShortlistDialog = useCallback(() => {
@@ -271,6 +309,32 @@ export default function AdminHireRequestDetail() {
   const handleFinalizeHire = (talentId: string) =>
     callRpc("hr_v2_admin_finalize_hire", { req_id: id, t_user_id: talentId }, "🎉 Hire finalized!");
 
+  const handleInviteToApply = async (talent: any) => {
+    setActionLoading("invite");
+    try {
+      const { error } = await supabase.rpc("hr_v2_admin_invite_talent_to_apply", {
+        req_id: id,
+        t_user_id: talent.user_id
+      });
+      if (error) throw error;
+
+      // Send email
+      await sendInvitedToApplyEmail({
+        email: (talent as any).email || "", // We might need to fetch email
+        firstName: talent.first_name,
+        jobTitle: request?.title || "Job Opportunity",
+        jobId: id as string
+      });
+
+      toast({ title: "Invitation Sent", description: `${talent.first_name} has been invited to apply.` });
+      fetchData();
+    } catch (err: any) {
+      toast({ title: "Invite failed", description: err.message, variant: "destructive" });
+    } finally {
+      setActionLoading("");
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const map: Record<string, { label: string; className: string }> = {
       draft: { label: "Draft", className: "bg-slate-100 text-slate-600" },
@@ -344,24 +408,32 @@ export default function AdminHireRequestDetail() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {request.status === "submitted" && (
+          {!isTalentManager && request.status === "submitted" && (
             <Button onClick={handleApprove} disabled={!!actionLoading} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-9 text-sm">
               <CheckCircle2 className="w-4 h-4 mr-1.5" /> Approve
             </Button>
           )}
-          {request.status === "approved" && (
+          {!isTalentManager && request.status === "approved" && (
             <Button onClick={handlePublish} disabled={!!actionLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm h-9 text-sm">
               <Play className="w-4 h-4 mr-1.5" /> Publish
             </Button>
           )}
-          {request.status === "published" && (
+          {!isTalentManager && request.status === "published" && (
             <Button variant="outline" onClick={openShortlistDialog} className="h-9 text-sm border-slate-200">
               <UserPlus className="w-4 h-4 mr-1.5" /> Shortlist Talent
             </Button>
           )}
-          {request.status === "approved" && (
+          {!isTalentManager && request.status === "approved" && (
             <Button variant="outline" onClick={openShortlistDialog} className="h-9 text-sm border-slate-200">
               <UserPlus className="w-4 h-4 mr-1.5" /> Pre-match Talent
+            </Button>
+          )}
+          {isTalentManager && (
+            <Button 
+                onClick={() => { setShowInviteDialog(true); fetchManagedTalents(); }} 
+                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm h-9 text-sm font-bold"
+            >
+              <UserPlus className="w-4 h-4 mr-1.5" /> Invite Candidates
             </Button>
           )}
         </div>
@@ -702,6 +774,70 @@ export default function AdminHireRequestDetail() {
             <Button onClick={handleScheduleInterview} disabled={!calendlyLink || !scheduledTime || !!actionLoading} className="bg-blue-600 text-white hover:bg-blue-700">
               <Calendar className="w-4 h-4 mr-1.5" /> Schedule
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Invite My Talents Dialog ─────────────────────────── */}
+      <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
+        <DialogContent className="sm:max-w-xl max-h-[80vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100 bg-slate-50/50">
+            <DialogTitle className="text-lg font-bold text-slate-900">Invite My Candidates</DialogTitle>
+            <p className="text-xs text-slate-500 font-medium">Select talents you manage to invite them to apply for this role.</p>
+          </DialogHeader>
+          
+          <div className="px-6 py-4 border-b border-slate-100">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input 
+                placeholder="Search my talents..." 
+                value={inviteSearch} 
+                onChange={(e) => setInviteSearch(e.target.value)} 
+                className="pl-9 h-10 bg-slate-50 border-slate-100 text-sm focus:ring-indigo-500/10" 
+              />
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-auto p-4 space-y-2">
+            {loadingManagedTalents ? (
+              <div className="py-20 text-center"><Loader2 className="h-10 w-10 text-slate-200 animate-spin mx-auto" /><p className="mt-4 text-sm text-slate-400 font-medium">Loading your talents...</p></div>
+            ) : managedTalents.filter(t => `${t.first_name} ${t.last_name}`.toLowerCase().includes(inviteSearch.toLowerCase())).length === 0 ? (
+              <div className="py-20 text-center text-slate-400 text-sm font-medium">No managed talents found matching your search.</div>
+            ) : (
+              managedTalents
+                .filter(t => `${t.first_name} ${t.last_name}`.toLowerCase().includes(inviteSearch.toLowerCase()))
+                .map((talent) => {
+                  const alreadyInvited = applications.some(a => a.talent_user_id === talent.user_id);
+                  return (
+                    <div 
+                      key={talent.id} 
+                      className={`flex items-center justify-between p-4 rounded-xl border transition-all ${alreadyInvited ? "bg-slate-50 border-slate-100 opacity-60" : "bg-white border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30"}`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold text-sm">
+                          {talent.first_name?.[0]}{talent.last_name?.[0]}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 text-sm">{talent.first_name} {talent.last_name}</h4>
+                          <p className="text-xs text-slate-500 font-medium">{talent.title}</p>
+                        </div>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        disabled={alreadyInvited || actionLoading === "invite"}
+                        onClick={() => handleInviteToApply(talent)}
+                        className={`font-bold text-xs h-8 px-4 ${alreadyInvited ? "bg-slate-100 text-slate-400 border-none" : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"}`}
+                      >
+                        {alreadyInvited ? "Already Invited" : "Invite"}
+                      </Button>
+                    </div>
+                  );
+                })
+            )}
+          </div>
+          
+          <DialogFooter className="p-4 bg-slate-50 border-t border-slate-100">
+            <Button variant="ghost" onClick={() => setShowInviteDialog(false)} className="text-slate-500 font-bold text-sm">Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

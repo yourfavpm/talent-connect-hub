@@ -157,8 +157,9 @@ const AdminDashboard = () => {
           ? supabase.from("v2_talent_profiles").select("*, talents:talents(first_name, last_name, email)").eq("talent_manager_admin_id", user.id)
           : supabase.from("v2_talent_profiles").select("*, talents:talents(first_name, last_name, email)"))
           .order("created_at", { ascending: false }).limit(5),
-        supabase.from("jobs").select("*, clients(company_name)").order("created_at", { ascending: false }).limit(5),
-        supabase.from("support_tickets").select("*").order("created_at", { ascending: false }).limit(5)
+        supabase.from("jobs").select("*", { count: "exact", head: true }).in("status", ["submitted", "under_review"]),
+        supabase.from("support_tickets").select("*", { count: "exact", head: true }).order("created_at", { ascending: false }).limit(5),
+        supabase.from("v2_talent_profiles").select("id", { count: "exact", head: true }).eq("talent_manager_admin_id", user.id)
       ]);
 
       const invoiceSum = (invoicesData || []).reduce((acc: number, curr: any) => acc + (Number(curr.total_amount) || 0), 0);
@@ -199,6 +200,7 @@ const AdminDashboard = () => {
           pendingInterviews: pendingInterviewsCount || 0,
           invoiceTotal: invoiceSum,
           assignedHired: hiredCount,
+          totalAssigned: (latestJobs as any) || 0, // Reuse the 7th promise result slot
         },
         queues: {
           talents: pendingProfiles.map((p: any) => ({
@@ -259,7 +261,7 @@ const AdminDashboard = () => {
   }
 
   const { stats, queues, recentActivity, vettingVersion } = dashboardData || { 
-    stats: { pendingVetting: 0, pendingJobs: 0, activeContracts: 0, outstandingInvoices: 0, openTickets: 0, pendingInterviews: 0, invoiceTotal: 0, assignedHired: 0 },
+    stats: { pendingVetting: 0, pendingJobs: 0, activeContracts: 0, outstandingInvoices: 0, openTickets: 0, pendingInterviews: 0, invoiceTotal: 0, assignedHired: 0, totalAssigned: 0 },
     queues: { talents: [], jobs: [], tickets: [] },
     recentActivity: [],
     vettingVersion: "v2"
@@ -372,6 +374,16 @@ const AdminDashboard = () => {
           <p className="text-3xl font-extrabold text-slate-900">{stats.openTickets}</p>
         </Link>
 
+        {isTalentManager && (
+          <div className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm text-left">
+            <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600 mb-4">
+              <UserCheck className="h-5 w-5" />
+            </div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Talent Assigned</p>
+            <p className="text-3xl font-extrabold text-slate-900">{stats.totalAssigned}</p>
+          </div>
+        )}
+
         <div className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm text-left">
           <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 mb-4">
             <Calendar className="h-5 w-5" />
@@ -391,11 +403,11 @@ const AdminDashboard = () => {
             <div className="border-b border-slate-100 bg-slate-50/50 py-5 px-8 flex flex-row items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-3">
                 <Users className="h-4 w-4 text-slate-400" />
-                Vetting Hotlist
+                {isTalentManager ? "My Managed Talent" : "Vetting Hotlist"}
               </h3>
-              <Link to={getInternalPath("/admin/vetting")}>
+              <Link to={getInternalPath(isTalentManager ? "/admin/my-talents" : "/admin/vetting")}>
                 <Button variant="ghost" size="sm" className="h-8 text-xs font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest">
-                  View Full Queue <ArrowRight className="h-3 w-3 ml-2" />
+                  {isTalentManager ? "View All Profiles" : "View Full Queue"} <ArrowRight className="h-3 w-3 ml-2" />
                 </Button>
               </Link>
             </div>
@@ -408,9 +420,9 @@ const AdminDashboard = () => {
                     <TableRow className="border-slate-100">
                       <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">Talent Name</TableHead>
                       <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">Core Role</TableHead>
-                      <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">Submission Date</TableHead>
+                      <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">{isTalentManager ? "Date Added" : "Submission Date"}</TableHead>
                       <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">Status</TableHead>
-                      <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8 text-right">Review</TableHead>
+                      <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8 text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -421,8 +433,10 @@ const AdminDashboard = () => {
                         <TableCell className="py-4 px-8 text-sm text-slate-400 font-medium">{new Date(t.created_at || '').toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</TableCell>
                         <TableCell className="py-4 px-8">{getStatusBadge(t.vetting_status || 'unvetted')}</TableCell>
                         <TableCell className="py-4 px-8 text-right">
-                          <Link to={getInternalPath(vettingVersion === "v2" ? `/admin/vetting/${t.id}` : `/admin/talents/${t.id}`)}>
-                            <Button variant="outline" size="sm" className="h-8 px-4 text-[10px] font-bold uppercase tracking-widest border-slate-200">Review Profile</Button>
+                          <Link to={getInternalPath(isTalentManager || vettingVersion === "v2" ? `/admin/talents/${t.id}` : vettingVersion === "v2" ? `/admin/vetting/${t.id}` : `/admin/talents/${t.id}`)}>
+                            <Button variant="outline" size="sm" className="h-8 px-4 text-[10px] font-bold uppercase tracking-widest border-slate-200">
+                              {isTalentManager ? "View Profile" : "Review Profile"}
+                            </Button>
                           </Link>
                         </TableCell>
                       </TableRow>

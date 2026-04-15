@@ -17,7 +17,8 @@ import {
   MapPin,
   Clock,
   Download,
-  FileText
+  FileText,
+  Compass
 } from "lucide-react";
 import { toast } from "sonner";
 import TalentActionsDrawers from "./components/TalentActionsDrawers";
@@ -34,6 +35,7 @@ interface TalentData {
   timezone: string | null;
   country: string | null;
   availability: string | null;
+  heard_from: string | null;
 }
 
 interface ProfileData {
@@ -87,7 +89,8 @@ const AdminTalentProfileView = () => {
         .from("v2_talent_profiles")
         .select(`
           *,
-          talents:user_id (*)
+          talents:user_id (*),
+          profiles:user_id (heard_from)
         `)
         .eq("id", id)
         .single();
@@ -164,9 +167,10 @@ const AdminTalentProfileView = () => {
   const displayTimezone = (basicSection.timezone as string) || talent?.timezone || "Timezone unknown";
   const displayEmail = (basicSection.email as string) || (basicSection.contactEmail as string) || talent?.email;
   const displayAvailability = (profSection.availability as string) || talent?.availability || "Availability unknown";
+  const displayHeardFrom = talent?.heard_from || (tp as any).profiles?.heard_from || "Source unknown";
 
   return (
-    <div className="w-full max-w-none space-y-8 pb-20 font-[Inter]">
+    <div className="w-full max-w-none space-y-8 pb-20 font-sans">
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 pb-8">
         <div className="flex items-start gap-5">
@@ -286,6 +290,9 @@ const AdminTalentProfileView = () => {
                    </div>
                    <div className="flex items-center gap-3 text-sm text-slate-600 font-medium">
                      <Clock className="h-4 w-4 text-slate-400" /> {displayAvailability}
+                   </div>
+                   <div className="flex items-center gap-3 text-sm text-slate-600 font-medium capitalize">
+                     <Compass className="h-4 w-4 text-slate-400" /> {displayHeardFrom?.replace('_', ' ')}
                    </div>
                  </div>
              </CardContent>
