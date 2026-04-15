@@ -81,8 +81,6 @@ const TalentActionsDrawers = ({
   const fetchAdmins = async () => {
     try {
       // Fetch from admin_users and manually include role information
-      // Since admin_users doesn''t have a direct relation in JS types yet, 
-      // we''ll fetch admin_users and then their roles from user_roles
       const { data: adminUsers, error: adminError } = await supabase
         .from("admin_users")
         .select("id, full_name, email, status");
@@ -93,20 +91,38 @@ const TalentActionsDrawers = ({
         .from("user_roles")
         .select("user_id, role");
       
-      if (roleError) throw roleError;
+      if (roleError) {
+        console.warn("Could not fetch user_roles, defaulting to generic Admin label:", roleError);
+      }
 
-      const combined = (adminUsers || []).map(admin => ({
-        user_id: admin.id,
-        first_name: admin.full_name?.split(' ')[0] || '',
-        last_name: admin.full_name?.split(' ').slice(1).join(' ') || '',
-        email: admin.email,
-        role: userRoles?.find(ur => ur.user_id === admin.id)?.role || 'Admin'
-      }));
+      const combined = (adminUsers || []).map(admin => {
+        const userRole = userRoles?.find(ur => ur.user_id === admin.id);
+        // Map common role formats to a friendly label
+        let displayRole = 'Admin';
+        if (userRole) {
+          const r = userRole.role?.toLowerCase();
+          if (r === 'super admin' || r === 'super_admin') displayRole = 'Super Admin';
+          else if (r === 'talent_manager') displayRole = 'Talent Manager';
+          else if (r === 'operations_admin') displayRole = 'Ops Admin';
+          else displayRole = userRole.role;
+        }
+
+        return {
+          user_id: admin.id,
+          first_name: admin.full_name?.split(' ')[0] || '',
+          last_name: admin.full_name?.split(' ').slice(1).join(' ') || '',
+          email: admin.email,
+          role: displayRole
+        };
+      });
 
       setAdmins(combined);
-    } catch (err) {
+      if (combined.length === 0) {
+        toast.error("No administrators found in the system.");
+      }
+    } catch (err: any) {
       console.error("Error fetching admins:", err);
-      toast.error("Failed to load administrators");
+      toast.error("Failed to load administrators: " + (err.message || 'Unknown error'));
     }
   };
 

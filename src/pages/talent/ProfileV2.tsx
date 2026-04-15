@@ -64,7 +64,7 @@ const ProfileV2 = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<V2Profile | null>(null);
   const [sections, setSections] = useState<V2Section[]>([]);
-  const [managerData, setManagerData] = useState<{first_name: string; last_name: string} | null>(null);
+  const [managerData, setManagerData] = useState<{full_name: string; email: string} | null>(null);
   const [savingSection, setSavingSection] = useState<string | null>(null);
   const [resubmitting, setResubmitting] = useState(false);
   const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
@@ -100,8 +100,17 @@ const ProfileV2 = () => {
         setProfile(p as unknown as V2Profile);
         
         if (p.talent_manager_admin_id) {
-          const { data: mgr } = await supabase.from("profiles").select("first_name, last_name").eq("id", (p as any).talent_manager_admin_id).maybeSingle() as { data: any | null };
-          if (mgr) setManagerData(mgr);
+          const { data: mgr } = await supabase
+            .from("admin_users")
+            .select("full_name, email")
+            .eq("id", (p as any).talent_manager_admin_id)
+            .maybeSingle();
+          if (mgr) {
+            setManagerData({
+              full_name: mgr.full_name || "Admin",
+              email: mgr.email || ""
+            });
+          }
         }
 
         const { data: s } = await supabase
@@ -355,14 +364,20 @@ const ProfileV2 = () => {
               </CardContent>
               
               {managerData && (
-                <div className="bg-slate-50/50 px-6 py-4 border-t border-slate-100 flex items-center justify-between group cursor-pointer hover:bg-slate-50 transition-colors">
+                <div 
+                  className="bg-slate-50/50 px-6 py-4 border-t border-slate-100 flex items-center justify-between group cursor-pointer hover:bg-slate-50 transition-colors"
+                  onClick={() => managerData.email && window.open(`mailto:${managerData.email}`)}
+                >
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 text-[10px] font-bold">
-                      {(managerData.first_name?.[0] || "") + (managerData.last_name?.[0] || "")}
+                      {managerData.full_name?.[0] || "A"}
                     </div>
                     <div>
                       <p className="text-[9px] font-bold uppercase text-slate-400 tracking-tighter">Assigned Manager</p>
-                      <p className="text-[12px] font-bold text-slate-700">{managerData.first_name} {managerData.last_name}</p>
+                      <p className="text-[12px] font-bold text-slate-700 leading-tight">{managerData.full_name}</p>
+                      {managerData.email && (
+                        <p className="text-[10px] text-slate-400 font-medium truncate max-w-[140px]">{managerData.email}</p>
+                      )}
                     </div>
                   </div>
                   <Mail className="h-4 w-4 text-slate-300 group-hover:text-slate-900 transition-colors" />

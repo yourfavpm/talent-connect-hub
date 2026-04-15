@@ -160,14 +160,20 @@ const VettingWorkspaceV2 = () => {
         .from("user_roles")
         .select("user_id, role");
       
-      if (roleError) throw roleError;
-
       if (adminUsers) {
         setManagers((adminUsers as any[]).map(admin => {
-          const role = userRoles?.find(ur => ur.user_id === admin.id)?.role || 'Admin';
+          const userRole = userRoles?.find(ur => ur.user_id === admin.id);
+          let displayRole = 'Admin';
+          if (userRole) {
+            const r = userRole.role?.toLowerCase();
+            if (r === 'super admin' || r === 'super_admin') displayRole = 'Super Admin';
+            else if (r === 'talent_manager') displayRole = 'Talent Manager';
+            else if (r === 'operations_admin') displayRole = 'Ops Admin';
+            else displayRole = userRole.role;
+          }
           return {
             id: admin.id,
-            name: `${admin.full_name} (${role.replace(/_/g, ' ')})`
+            name: `${admin.full_name} (${displayRole})`
           };
         }));
       }

@@ -111,13 +111,12 @@ const AdminTalentProfileView = () => {
 
       if (pData.talent_manager_admin_id) {
         const { data: mData } = await supabase
-          .from("profiles")
-          .select("first_name, last_name")
+          .from("admin_users")
+          .select("full_name")
           .eq("id", pData.talent_manager_admin_id)
           .single();
         if (mData) {
-          const m = mData as { first_name: string | null; last_name: string | null };
-          setManagerName(`${m.first_name || ""} ${m.last_name || ""}`);
+          setManagerName(mData.full_name || "Admin");
         }
       } else {
         setManagerName("");

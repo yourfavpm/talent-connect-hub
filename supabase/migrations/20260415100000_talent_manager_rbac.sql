@@ -75,12 +75,75 @@ USING (
     talent_manager_admin_id = auth.uid()
 );
 
--- C. Hire Requests Policy (Full Visibility)
-DROP POLICY IF EXISTS "Admins can view all hire requests" ON public.hire_requests;
-CREATE POLICY "Admins can view all hire requests" ON public.hire_requests
+-- C. Hire Requests Policy (Full Visibility for matching)
+DROP POLICY IF EXISTS "Admins can view all hire requests" ON public.hr_v2_hire_requests;
+CREATE POLICY "Admins can view all hire requests" ON public.hr_v2_hire_requests
 FOR SELECT
 USING (
     public.has_permission('hire_requests.view_all')
+);
+
+-- D. Jobs Policy (Full Visibility for matching)
+DROP POLICY IF EXISTS "Admins can view all jobs" ON public.jobs;
+CREATE POLICY "Admins can view all jobs" ON public.jobs
+FOR SELECT
+USING (
+    public.has_permission('hire_requests.view_all')
+);
+
+-- E. RBAC Visibility Fixes
+-- Ensure Talent Managers and Super Admins (v1) can view the admin list for assignment
+-- Note: We use lower(role::text) to handle case-sensitivity across different role naming conventions
+-- without failing on Enum types.
+DROP POLICY IF EXISTS "Admins can view team" ON public.admin_users;
+CREATE POLICY "Admins can view team" ON public.admin_users
+FOR SELECT
+USING (
+    EXISTS (
+        SELECT 1 FROM public.user_roles 
+        WHERE user_id = auth.uid() 
+        AND lower(role::text) IN ('super_admin', 'operations_admin', 'talent_manager', 'admin', 'super admin')
+    )
+);
+
+DROP POLICY IF EXISTS "Admins can view role_permissions" ON public.role_permissions;
+CREATE POLICY "Admins can view role_permissions" ON public.role_permissions
+FOR SELECT
+USING (
+    EXISTS (
+        SELECT 1 FROM public.user_roles 
+        WHERE user_id = auth.uid() 
+        AND lower(role::text) IN ('super_admin', 'operations_admin', 'talent_manager', 'admin', 'super admin')
+    )
+);
+
+DROP POLICY IF EXISTS "Admins can view user_roles" ON public.user_roles;
+CREATE POLICY "Admins can view user_roles" ON public.user_roles
+FOR SELECT
+USING (
+    EXISTS (
+        SELECT 1 FROM public.user_roles 
+        WHERE user_id = auth.uid() 
+        AND lower(role::text) IN ('super_admin', 'operations_admin', 'talent_manager', 'admin', 'super admin')
+    )
+);
+
+-- F. Talent Visibility of Manager
+-- Allow talents to see their assigned manager's name and email
+DROP POLICY IF EXISTS "Talents can view their assigned manager" ON public.admin_users;
+CREATE POLICY "Talents can view their assigned manager" ON public.admin_users
+FOR SELECT
+USING (
+    EXISTS (
+        SELECT 1 FROM public.v2_talent_profiles 
+        WHERE user_id = auth.uid() 
+        AND talent_manager_admin_id = admin_users.id
+    ) OR 
+    EXISTS (
+        SELECT 1 FROM public.talents 
+        WHERE user_id = auth.uid() 
+        AND talent_manager_admin_id = admin_users.id
+    )
 );
 
 COMMIT;

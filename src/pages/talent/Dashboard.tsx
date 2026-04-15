@@ -167,10 +167,12 @@ const TalentDashboard = () => {
       const profile = (profileV2Res as any).data;
       const sections = (sectionsRes as any).data || [];
       let managerName = "";
+      let managerEmail = "";
       if (profile?.talent_manager_admin_id) {
-        const { data: managerData } = await (supabase.from("profiles" as any).select("first_name, last_name").eq("id", profile.talent_manager_admin_id).maybeSingle() as any);
+        const { data: managerData } = await (supabase.from("admin_users" as any).select("full_name, email").eq("id", profile.talent_manager_admin_id).maybeSingle() as any);
         if (managerData) {
-          managerName = `${managerData.first_name || ""} ${managerData.last_name || ""}`.trim();
+          managerName = managerData.full_name || "Admin";
+          managerEmail = managerData.email || "";
         }
       }
  
@@ -181,7 +183,8 @@ const TalentDashboard = () => {
           onboarding_status: profile?.status === "DRAFT" ? "draft" : "submitted",
           current_step: profile?.current_step || (talentData as any).current_step || 1,
           profile_completion: profile?.completion_percent || (talentData as any).profile_completion || 0,
-          assigned_manager_name: managerName
+          assigned_manager_name: managerName,
+          assigned_manager_email: managerEmail
         } : null,
         stats: {
           applications: (applicationsRes as any).count || 0,
@@ -286,7 +289,12 @@ const TalentDashboard = () => {
           <div className="inline-flex items-center gap-3 px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl">
             <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Talent Manager</span>
             <div className="h-3 w-px bg-blue-200" />
-            <span className="text-[13px] font-semibold text-blue-900">{talent.assigned_manager_name}</span>
+            <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
+              <span className="text-[13px] font-semibold text-blue-900">{talent.assigned_manager_name}</span>
+              {talent.assigned_manager_email && (
+                <span className="text-[11px] text-blue-600/70 font-medium font-mono">{talent.assigned_manager_email}</span>
+              )}
+            </div>
           </div>
         )}
       </div>
