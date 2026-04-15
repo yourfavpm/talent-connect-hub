@@ -123,41 +123,44 @@ const ClientTalentProfile = () => {
   if (!talent) return null;
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-blue-100 selection:text-blue-900 border-x border-slate-50 max-w-[1600px] mx-auto">
-      <div className="max-w-6xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans selection:bg-blue-100 selection:text-blue-900 border-x border-slate-50 max-w-[1440px] mx-auto">
+      <div className="max-w-[1280px] mx-auto px-6 py-12">
         <Button 
           variant="ghost" 
           onClick={() => navigate(-1)}
-          className="mb-12 -ml-4 text-slate-400 hover:text-slate-900 group hover:bg-transparent"
+          className="mb-10 -ml-4 text-slate-400 hover:text-slate-900 group hover:bg-transparent"
         >
           <ArrowLeft className="w-4 h-4 mr-3 group-hover:-translate-x-2 transition-transform duration-500" />
           <span className="text-[10px] font-black uppercase tracking-[0.2em]">Exit to Catalog</span>
         </Button>
+        
+        {/* New Spacing Strategy: Header is full width, content uses optimized 2-column grid */}
+        <div className="space-y-10">
+          <TalentProfileHeader talent={talent} onInvite={handleInvite} onMessage={() => navigate(getInternalPath(`/client/messages`))} />
 
-        <TalentProfileHeader talent={talent} onInvite={handleInvite} onMessage={() => navigate(getInternalPath(`/client/messages`))} />
-
-        <div className="flex flex-col lg:flex-row gap-20">
-          <div className="flex-1 min-w-0">
-            <TalentSections talent={talent} />
-          </div>
-          
-          <div className="w-full lg:w-[360px] shrink-0">
-            <TalentActionPanel 
-              talent={talent} 
-              onInvite={handleInvite}
-              onMessage={() => navigate(getInternalPath(`/client/messages`))}
-            />
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-12 items-start">
+            <div className="flex-1 min-w-0 space-y-8">
+              <TalentSections talent={talent} />
+            </div>
             
-            <div className="mt-12 group cursor-pointer" onClick={handleRequestCV}>
-               <div className="p-8 rounded-[2rem] border border-dashed border-slate-200 group-hover:border-blue-300 group-hover:bg-blue-50/30 transition-all duration-500 text-center">
-                 <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 group-hover:text-blue-600">Confidentiality Notice</div>
-                 <div className="text-[11px] text-slate-500 font-medium leading-relaxed mb-6">
-                   Full resumes contain PII and are shared via our Talent Success team.
+            <div className="w-full shrink-0 space-y-8">
+              <TalentActionPanel 
+                talent={talent} 
+                onInvite={handleInvite}
+                onMessage={() => navigate(getInternalPath(`/client/messages`))}
+              />
+              
+              <div className="group cursor-pointer" onClick={handleRequestCV}>
+                 <div className="p-8 rounded-3xl bg-white border border-slate-100 group-hover:border-blue-300 group-hover:bg-blue-50/30 transition-all duration-500 text-center shadow-sm">
+                   <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 group-hover:text-blue-600">Confidentiality Notice</div>
+                   <p className="text-[12px] text-slate-500 font-medium leading-relaxed mb-6">
+                     Full resumes contain PII and are shared via our Talent Success team.
+                   </p>
+                   <Button variant="outline" className="w-full h-12 rounded-xl font-bold uppercase tracking-widest text-[10px] bg-white border-slate-200 text-slate-900 group-hover:border-blue-600 group-hover:text-blue-600 transition-all">
+                      Request Comprehensive CV
+                   </Button>
                  </div>
-                 <Button variant="outline" className="w-full h-12 rounded-xl font-bold uppercase tracking-widest text-[10px] bg-white border-slate-100 text-slate-900 group-hover:border-blue-600 transition-colors">
-                    Request Comprehensive CV
-                 </Button>
-               </div>
+              </div>
             </div>
           </div>
         </div>
