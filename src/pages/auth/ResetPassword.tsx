@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft, Mail, ArrowRight, Shield } from "lucide-react";
+import Logo from "@/components/Logo";
 import { sendTalentPasswordResetEmail, sendClientPasswordResetEmail } from "@/lib/email/triggers";
 
 const ResetPassword = () => {
@@ -59,67 +60,125 @@ const ResetPassword = () => {
 
   if (sent) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-8">
-        <div className="max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Mail className="h-8 w-8 text-success" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Check your email</h1>
-          <p className="text-muted-foreground mb-6">
-            We've sent a password reset link to <strong>{email}</strong>
-          </p>
-          <Link to={`/auth/login?portal=${portal}`}>
-            <Button variant="outline" className="w-full">
-              Back to sign in
-            </Button>
-          </Link>
+      <div className="min-h-screen bg-white flex flex-col-reverse lg:flex-row font-inter overflow-x-hidden">
+        {/* BRAND SIDE */}
+        <div className="lg:w-[45%] bg-slate-50/80 border-r border-slate-100 p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden">
+            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl -z-10" />
+            <div className="relative z-10">
+                <Link to="/" className="inline-block mb-16 lg:mb-24">
+                    <Logo showText={false} imgHeight="h-56" />
+                </Link>
+                <div className="max-w-md">
+                    <h2 className="text-2xl lg:text-3xl font-semibold text-slate-900 leading-tight mb-4 tracking-tight">Recover your account.</h2>
+                    <p className="text-slate-500 text-lg font-medium leading-relaxed mb-10">We've sent a recovery link to your email to help you get back to work smoothly.</p>
+                </div>
+            </div>
+            {/* Professional Image Integration */}
+            <div className="absolute bottom-0 left-0 w-full h-[35%] xl:h-[40%] hidden lg:block overflow-hidden">
+                <img src="/images/auth-vetted-team.png" alt="OPSlyHR Professionals" className="w-full h-full object-cover object-top opacity-90 mix-blend-multiply" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-100/20 via-transparent to-slate-50/80" />
+            </div>
+        </div>
+
+        {/* CONTENT SIDE */}
+        <div className="lg:w-[55%] flex flex-col justify-center px-6 lg:px-20 xl:px-32 py-12 bg-white relative">
+            <div className="max-w-[440px] w-full mx-auto text-center">
+                <div className="bg-white border border-slate-100 rounded-2xl p-8 md:p-10 shadow-sm shadow-slate-200/40 relative">
+                    <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <Mail className="h-8 w-8 text-blue-600" />
+                    </div>
+                    <h1 className="text-2xl font-semibold text-slate-900 mb-2">Check your email</h1>
+                    <p className="text-slate-500 text-sm font-medium mb-8">
+                        We've sent a password reset link to <strong>{email}</strong>
+                    </p>
+                    <Link to={`/auth/login?portal=${portal}`}>
+                        <Button className="w-full h-[54px] bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-all shadow-sm">
+                            Back to sign in
+                        </Button>
+                    </Link>
+                </div>
+            </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-8">
-      <div className="max-w-md w-full">
-        <Link
-          to={`/auth/login?portal=${portal}`}
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to sign in
-        </Link>
+    <div className="min-h-screen flex flex-col-reverse lg:flex-row bg-white font-inter overflow-x-hidden">
+      {/* BRAND SIDE PANEL */}
+      <div className="lg:w-[45%] bg-slate-50/80 border-r border-slate-100 p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden">
+        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl -z-10" />
+        <div className="relative z-10">
+          <Link to="/" className="inline-block mb-16 lg:mb-24">
+            <Logo showText={false} imgHeight="h-56" />
+          </Link>
 
-        <div className="mb-8">
-          <img src="/images/logocolored.png" alt="OPSlyHR" className="h-40 mb-6" />
-          <h1 className="text-3xl font-bold text-foreground">Reset password</h1>
-          <p className="text-muted-foreground mt-2">
-            Enter your email and we'll send you a reset link
-          </p>
-        </div>
-
-        <form onSubmit={handleReset} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="h-[54px] rounded-xl"
-            />
+          <div className="max-w-md">
+            <h2 className="text-2xl lg:text-3xl font-semibold text-slate-900 leading-tight mb-4 tracking-tight">
+              Password Recovery
+            </h2>
+            <p className="text-slate-500 text-lg font-medium leading-relaxed mb-10">
+              Don't worry, it happens. Enter your professional email and we'll help you securely reset your credentials.
+            </p>
+            <div className="flex items-center gap-3 py-6 border-t border-slate-200/60">
+                <Shield className="w-5 h-5 text-blue-600/40" />
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Secure Verification</span>
+            </div>
           </div>
+        </div>
+        
+        {/* Professional Image Integration */}
+        <div className="absolute bottom-0 left-0 w-full h-[35%] xl:h-[40%] hidden lg:block overflow-hidden">
+          <img 
+            src="/images/auth-vetted-team.png" 
+            alt="OPSlyHR Professionals" 
+            className="w-full h-full object-cover object-top opacity-90 mix-blend-multiply" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-100/20 via-transparent to-slate-50/80" />
+        </div>
+      </div>
 
-          <Button
-            type="submit"
-            className="w-full h-[54px] rounded-xl"
-            size="lg"
-            disabled={loading}
+      {/* CONTENT SIDE (FORM) */}
+      <div className="lg:w-[55%] flex flex-col justify-center px-6 lg:px-20 xl:px-32 py-12 bg-white relative">
+        <div className="max-w-[440px] w-full mx-auto">
+          <Link
+            to={`/auth/login?portal=${portal}`}
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-900 mb-8 transition-colors text-sm font-semibold"
           >
-            {loading ? "Sending..." : "Send reset link"}
-          </Button>
-        </form>
+            <ArrowLeft className="h-4 w-4" />
+            Back to sign in
+          </Link>
+
+          <div className="bg-white border border-slate-100 rounded-2xl p-8 md:p-10 shadow-sm shadow-slate-200/40 relative">
+            <div className="mb-6">
+              <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-1">Reset password</h1>
+              <p className="text-slate-500 text-sm font-medium">Enter your email to receive a reset link.</p>
+            </div>
+
+            <form onSubmit={handleReset} className="space-y-6">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800 placeholder:text-slate-300 transition-all font-inter"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-[54px] bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-all duration-300 gap-2 shadow-sm"
+                disabled={loading}
+              >
+                {loading ? "Sending..." : <>Send Reset Link <ArrowRight className="w-4 h-4" /></>}
+              </Button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -277,7 +277,15 @@ const Signup = () => {
           </div>
         </div>
 
-
+        {/* Professional Image Integration */}
+        <div className="absolute bottom-0 left-0 w-full h-[35%] xl:h-[40%] hidden lg:block overflow-hidden">
+          <img 
+            src="/images/auth-vetted-team.png" 
+            alt="OPSlyHR Professionals" 
+            className="w-full h-full object-cover object-top opacity-90 mix-blend-multiply" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-100/20 via-transparent to-slate-50/80" />
+        </div>
       </div>
 
       <div id="form" className="lg:w-[60%] flex flex-col justify-center px-6 lg:px-20 xl:px-32 py-12 bg-white relative">

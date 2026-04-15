@@ -21,17 +21,17 @@ const SignupHub = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 py-12">
       <div className="max-w-5xl w-full">
         {/* Logo */}
-        <div className="flex justify-center mb-12">
-            <Logo variant="light" showText={false} imgHeight="h-56" />
+        <div className="flex justify-center mb-8 md:mb-12">
+            <Logo variant="light" showText={false} imgHeight="h-32 md:h-56" />
         </div>
         
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
+          className="text-center mb-10 md:mb-16"
         >
-          <h1 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
+          <h1 className="text-3xl md:text-5xl font-black text-white mb-3 tracking-tight">
             Get Started with OPSlyHR
           </h1>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
@@ -40,7 +40,7 @@ const SignupHub = () => {
         </motion.div>
 
         {/* Signup Options Grid */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 gap-4 md:gap-8 mb-12">
           {/* Talent Option */}
           <motion.button
             initial={{ opacity: 0, x: -20 }}
@@ -52,10 +52,10 @@ const SignupHub = () => {
             className="group relative block text-left"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 rounded-3xl blur-xl opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
-            <div className="relative bg-white rounded-3xl p-8 md:p-12 shadow-2xl transition-all duration-300 hover:shadow-2xl hover:scale-105">
-              <div className="flex items-start justify-between mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center">
-                  <Users className="w-8 h-8 text-blue-600" />
+            <div className="relative bg-white rounded-3xl p-6 md:p-12 shadow-2xl transition-all duration-300 hover:shadow-2xl hover:scale-105">
+              <div className="flex items-start justify-between mb-4 md:mb-6">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center">
+                  <Users className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
                 </div>
                 <ArrowRight
                   className={`w-6 h-6 text-slate-300 transition-all duration-300 ${
@@ -66,15 +66,15 @@ const SignupHub = () => {
                 />
               </div>
 
-              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">
+              <h2 className="text-xl md:text-3xl font-bold text-slate-900 mb-2">
                 For Professionals
               </h2>
 
-              <p className="text-slate-600 mb-4 text-base leading-relaxed">
+              <p className="text-slate-600 mb-4 text-sm md:text-base leading-relaxed">
                 Join our talent network and access global remote work opportunities with competitive compensation.
               </p>
 
-              <div className="space-y-3 mb-8">
+              <div className="hidden sm:block space-y-3 mb-8">
                 <div className="flex items-center gap-3">
                   <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
                   <span className="text-sm font-medium text-slate-700">
@@ -112,10 +112,10 @@ const SignupHub = () => {
             className="group relative block text-left"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-3xl blur-xl opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
-            <div className="relative bg-white rounded-3xl p-8 md:p-12 shadow-2xl transition-all duration-300 hover:shadow-2xl hover:scale-105">
-              <div className="flex items-start justify-between mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-2xl flex items-center justify-center">
-                  <Building2 className="w-8 h-8 text-emerald-600" />
+            <div className="relative bg-white rounded-3xl p-6 md:p-12 shadow-2xl transition-all duration-300 hover:shadow-2xl hover:scale-105">
+              <div className="flex items-start justify-between mb-4 md:mb-6">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-2xl flex items-center justify-center">
+                  <Building2 className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" />
                 </div>
                 <ArrowRight
                   className={`w-6 h-6 text-slate-300 transition-all duration-300 ${
@@ -126,15 +126,15 @@ const SignupHub = () => {
                 />
               </div>
 
-              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">
+              <h2 className="text-xl md:text-3xl font-bold text-slate-900 mb-2">
                 For Companies
               </h2>
 
-              <p className="text-slate-600 mb-4 text-base leading-relaxed">
+              <p className="text-slate-600 mb-4 text-sm md:text-base leading-relaxed">
                 Build your global team with vetted professionals. Scale fast with flexible hiring models.
               </p>
 
-              <div className="space-y-3 mb-8">
+              <div className="hidden sm:block space-y-3 mb-8">
                 <div className="flex items-center gap-3">
                   <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
                   <span className="text-sm font-medium text-slate-700">
