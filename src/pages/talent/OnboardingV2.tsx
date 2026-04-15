@@ -94,13 +94,13 @@ const OnboardingV2 = () => {
     const load = async () => {
       try {
         // Ensure V2 profile exists
-        await (supabase.from("v2_talent_profiles" as any).upsert({ user_id: user.id }, { onConflict: "user_id" }) as any);
+        await (supabase.from("v2_talent_profiles").upsert({ user_id: user.id }, { onConflict: "user_id" }) as any);
 
-        const { data: profile } = await supabase
+        const { data: profile } = await (supabase
           .from("v2_talent_profiles")
           .select("*")
           .eq("user_id", user.id)
-          .single() as { data: V2Profile | null };
+          .single() as Promise<{ data: V2Profile | null }>);
 
         if (profile?.locked_onboarding && profile.status !== "changes_requested") {
           navigate("/talent/profile");
@@ -112,10 +112,10 @@ const OnboardingV2 = () => {
         }
 
         // Load sections and hydrate form
-        const { data: sections } = await supabase
+        const { data: sections } = await (supabase
           .from("v2_profile_sections")
           .select("*")
-          .eq("user_id", user.id) as { data: V2Section[] | null };
+          .eq("user_id", user.id) as Promise<{ data: V2Section[] | null }>);
 
         if (sections && sections.length > 0) {
           const merged: Record<string, unknown> = {};

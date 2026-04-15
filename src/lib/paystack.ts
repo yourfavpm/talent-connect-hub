@@ -6,12 +6,20 @@ interface PaystackConfig {
   publicKey: string;
 }
 
+interface PaystackResponse {
+  reference: string;
+  status: string;
+  trans: string;
+  transaction: string;
+  message: string;
+}
+
 interface InitializePaymentParams {
   email: string;
   amount: number; // amount in Naira
   reference: string;
-  metadata: Record<string, any>;
-  onSuccess?: (response: any) => void;
+  metadata: Record<string, unknown>;
+  onSuccess?: (response: PaystackResponse) => void;
   onClose?: () => void;
 }
 
@@ -51,7 +59,7 @@ export class PaystackService {
               onClose?.();
               reject(new Error("Payment cancelled"));
             },
-            onSuccess(response: any) {
+            onSuccess(response: PaystackResponse) {
               console.log("Payment successful:", response);
               if (onSuccess) onSuccess(response);
               resolve(response);

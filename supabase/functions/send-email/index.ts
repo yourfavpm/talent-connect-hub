@@ -22,6 +22,16 @@ function renderTemplate(template: string, variables: Record<string, string>): st
   return rendered
 }
 
+interface EmailRequest {
+  templateKey?: string;
+  htmlTemplate?: string;
+  subject?: string;
+  to: string;
+  toName?: string;
+  variables?: Record<string, any>;
+  priority?: string;
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -30,7 +40,8 @@ serve(async (req) => {
 
   try {
     // ── 2. Parse the request body ───────────────────────────────────
-    const { templateKey, htmlTemplate, subject, to, toName, variables, priority } = await req.json()
+    const body = await req.json() as EmailRequest;
+    const { templateKey, htmlTemplate, subject, to, variables } = body;
 
     if (!to) {
       return new Response(

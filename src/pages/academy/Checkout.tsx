@@ -16,6 +16,16 @@ import { useToast } from "@/hooks/use-toast";
 import { PaystackService } from "@/lib/paystack";
 import { ACADEMY_COURSES } from "@/data/academy-courses";
 
+interface AcademyCourse {
+    id?: string;
+    slug: string;
+    title: string;
+    price_naira: number;
+    price_usd: number;
+    level?: string;
+    image_url?: string;
+}
+
 const Checkout = () => {
     const { slug } = useParams();
     const [searchParams] = useSearchParams();
@@ -24,17 +34,17 @@ const Checkout = () => {
     const { toast } = useToast();
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
-    const [course, setCourse] = useState<Record<string, unknown> | null>(null);
+    const [course, setCourse] = useState<AcademyCourse | null>(null);
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {
         const fetchCourse = async () => {
             if (!slug) return;
-            const { data, error } = await supabase
+            const { data, error } = await (supabase
                 .from("academy_courses")
                 .select("*")
                 .eq("slug", slug)
-                .single();
+                .single() as any);
 
             if (!error && data) {
                 setCourse(data);
@@ -45,7 +55,7 @@ const Checkout = () => {
                         ...staticCourse,
                         price_naira: staticCourse.priceNaira || 0,
                         price_usd: staticCourse.priceUSD || 0
-                    } as unknown as Record<string, unknown>);
+                    } as AcademyCourse);
                 }
             }
             setLoading(false);
@@ -54,8 +64,8 @@ const Checkout = () => {
     }, [slug]);
 
     const handlePayment = async () => {
-        if (!user || !user.email) {
-            toast({ title: "Error", description: "You must be logged in with a valid email.", variant: "destructive" });
+        if (!user || !user.email || !course) {
+            toast({ title: "Error", description: "Missing course or user data.", variant: "destructive" });
             return;
         }
 
@@ -105,7 +115,7 @@ const Checkout = () => {
             if (!user || !course) throw new Error("Missing user or course data");
 
             const enrolledAt = new Date().toISOString();
-            const { data: enrollmentData, error: enrollError } = await supabase
+            const { data: enrollmentData, error: enrollError } = await (supabase
                 .from("academy_enrollments")
                 .insert({
                     user_id: user.id,
@@ -119,7 +129,7 @@ const Checkout = () => {
                     enrollment_date: enrolledAt
                 })
                 .select("id")
-                .single();
+                .single() as any);
 
             if (enrollError) {
                 console.error("Supabase enrollment error detail:", enrollError);
@@ -128,7 +138,7 @@ const Checkout = () => {
 
             // Record the successful transaction
             if (enrollmentData?.id) {
-                const { error: txError } = await supabase
+                const { error: txError } = await (supabase
                     .from("course_transactions")
                     .insert({
                         enrollment_id: enrollmentData.id,
@@ -140,7 +150,7 @@ const Checkout = () => {
                         status: "success",
                         payment_method: "paystack",
                         paid_at: enrolledAt
-                    });
+                    }) as any);
                 
                 if (txError) {
                     console.error("Failed to record transaction locally:", txError);

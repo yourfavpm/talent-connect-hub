@@ -29,6 +29,13 @@ function generateToken(): string {
   return Array.from(array, dec => dec.toString(16).padStart(8, '0')).join('')
 }
 
+interface VerificationRequest {
+  userId: string;
+  email: string;
+  firstName: string;
+  portal?: 'talent' | 'client';
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -45,7 +52,8 @@ serve(async (req) => {
 
     // --- Action: Request (Generate and Send) ---
     if (req.method === 'POST' && action === 'request') {
-      const { userId, email, firstName, portal = 'talent' } = await req.json()
+      const body = await req.json() as VerificationRequest;
+      const { userId, email, firstName, portal = 'talent' } = body;
 
       if (!userId || !email) {
         throw new Error('Missing required user information')

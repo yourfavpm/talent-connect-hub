@@ -187,9 +187,40 @@ const StudentDashboard = () => {
 
   const hasActiveEnrollments = enrollments.length > 0;
 
-  const hybridCourses = [
-    ...dbCourses,
-    ...ACADEMY_COURSES.filter(sc => !dbCourses.some(dc => dc.slug === sc.slug))
+  interface Course {
+    slug: string;
+    title: string;
+    description: string;
+    level: string;
+    duration: string;
+    outcome?: string;
+    image_url?: string;
+    is_live?: boolean;
+  }
+
+  const hybridCourses: Course[] = [
+    ...(dbCourses as any[]).map(c => ({
+        slug: c.slug,
+        title: c.title,
+        description: c.description,
+        level: c.level,
+        duration: c.duration,
+        outcome: c.outcome,
+        image_url: c.image_url,
+        is_live: c.is_live
+    })),
+    ...ACADEMY_COURSES
+        .filter(sc => !dbCourses.some(dc => dc.slug === sc.slug))
+        .map(sc => ({
+            slug: sc.slug,
+            title: sc.title,
+            description: sc.description,
+            level: sc.level,
+            duration: sc.duration,
+            outcome: sc.outcome,
+            image_url: sc.image || "",
+            is_live: true
+        }))
   ];
 
   const filteredCourses = hybridCourses.filter(course => {

@@ -40,7 +40,7 @@ interface Course {
     tools: string[];
     what_youll_learn: string[];
     learning_outcomes: string[];
-    curriculum: { week: string; title: string; details: string[]; }[];
+    curriculum: CurriculumWeek[];
     who_is_it_for: string[];
     bonus_description?: string;
     slots_total: number;
@@ -56,12 +56,6 @@ interface Course {
     bonusDescription?: string;
     slotsTotal?: number;
     slotsFilled?: number;
-}
-
-interface CourseDetailProps {
-    inlineSlug?: string;
-    onBack?: () => void;
-    onEnroll?: (slug: string) => void;
 }
 
 const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {

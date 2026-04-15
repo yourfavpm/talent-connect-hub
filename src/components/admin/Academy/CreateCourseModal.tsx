@@ -51,8 +51,7 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
         who_this_is_for: [] as string[],
         what_you_will_learn: [] as string[],
         cohort_slots: 50,
-        bonus_description: "",
-        image_url: ""
+        bonus_description: ""
     });
 
     useEffect(() => {

@@ -128,10 +128,10 @@ const CourseHub = () => {
 
             // 2. Fetch Sessions, Announcements, Assignments & Submissions in Parallel
             const [sessionsRes, announcementsRes, assignmentsRes, submissionsRes] = await Promise.all([
-                supabase.from("sessions").select("*").eq("cohort_id", cohortId).order("session_date", { ascending: true }),
-                supabase.from("announcements").select("*").eq("cohort_id", cohortId).order("created_at", { ascending: false }),
-                supabase.from("assignments").select("*").eq("cohort_id", cohortId).order("due_date", { ascending: true }),
-                supabase.from("submissions").select("*").eq("user_id", user.id)
+                (supabase.from("sessions").select("*").eq("cohort_id", cohortId).order("session_date", { ascending: true }) as Promise<{ data: Session[] | null }>),
+                (supabase.from("announcements").select("*").eq("cohort_id", cohortId).order("created_at", { ascending: false }) as Promise<{ data: Announcement[] | null }>),
+                (supabase.from("assignments").select("*").eq("cohort_id", cohortId).order("due_date", { ascending: true }) as Promise<{ data: Assignment[] | null }>),
+                (supabase.from("submissions").select("*").eq("user_id", user.id) as Promise<{ data: Submission[] | null }>)
             ]);
 
             setSessions(sessionsRes.data || []);
@@ -149,12 +149,12 @@ const CourseHub = () => {
         setIsSubmitting(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            const { error } = await (supabase.from("submissions" as any).insert({
+            const { error } = await (supabase.from("submissions").insert({
                 assignment_id: selectedAssignment.id,
                 user_id: user?.id,
                 submission_content: submissionContent,
                 status: 'submitted'
-            }) as Promise<{ error: any }>);
+            }) as any);
 
             if (error) throw error;
 

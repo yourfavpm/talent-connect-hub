@@ -191,8 +191,8 @@ const ApplyForm = () => {
                     const { data: { user } } = await supabase.auth.getUser();
                     if (user) {
                         const { error: roleError } = await (supabase
-                                .from("user_roles" as any)
-                                .upsert({ user_id: user.id, role: "student" } as any, { onConflict: 'user_id,role' }) as any);
+                                .from("user_roles")
+                                .upsert({ user_id: user.id, role: "student" as any }, { onConflict: 'user_id,role' }) as any);
                         
                         if (roleError) console.error("Failed to assign student role:", roleError);
                     }

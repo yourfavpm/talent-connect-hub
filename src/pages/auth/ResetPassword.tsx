@@ -26,12 +26,18 @@ const ResetPassword = () => {
       console.log(`Requesting password reset for ${email} in ${portal} portal`);
       
       if (portal === 'talent') {
-        // Fetch talent name first if possible (optional, use placeholder if not found)
-        const { data: profile } = await supabase.from('profiles').select('first_name').eq('email', email).maybeSingle();
+        const { data: profile } = await (supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('email', email)
+          .maybeSingle() as Promise<{ data: { first_name: string } | null; error: any }>);
         await sendTalentPasswordResetEmail(email, profile?.first_name || "Talent", redirectUrl);
       } else {
-        // Client portal
-        const { data: client } = await supabase.from('clients').select('company_name').eq('primary_contact_email', email).maybeSingle() as any;
+        const { data: client } = await (supabase
+          .from('clients')
+          .select('company_name')
+          .eq('primary_contact_email', email)
+          .maybeSingle() as Promise<{ data: { company_name: string } | null; error: any }>);
         await sendClientPasswordResetEmail(email, client?.company_name || "Client", redirectUrl);
       }
 

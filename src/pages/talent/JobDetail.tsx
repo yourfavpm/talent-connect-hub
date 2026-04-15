@@ -36,6 +36,32 @@ const CURRENCIES = [
 ];
 
 
+interface Job {
+    id: string;
+    title: string;
+    role_needed: string;
+    location: string;
+    service_model: string;
+    status: string;
+    work_mode: string;
+    preferred_currency: string;
+    budget_min: number;
+    budget_max: number;
+    salary_type: string;
+    duration: string;
+    weekly_hours: number;
+    experience_required: number;
+    responsibilities: string;
+    required_skills: string[];
+    special_notes: string;
+}
+
+interface JobApplication {
+    id: string;
+    status: string;
+    created_at: string;
+}
+
 const TalentJobDetail = () => {
     const { id } = useParams();
     const { user } = useAuth();
@@ -48,13 +74,13 @@ const TalentJobDetail = () => {
     const { data: job, isLoading: jobLoading } = useQuery({
         queryKey: ['job', id],
         queryFn: async () => {
-            const { data, error } = await supabase
+            const { data, error } = await (supabase
                 .from('jobs')
                 .select('*, client:clients(company_name)')
                 .eq('id', id)
-                .single();
+                .single() as any);
             if (error) throw error;
-            return data;
+            return data as Job;
         },
         enabled: !!id
     });
@@ -65,16 +91,16 @@ const TalentJobDetail = () => {
         queryFn: async () => {
             if (!user?.id) return null;
             // Get talent ID first
-            const { data: talent } = await supabase.from('talents').select('id').eq('user_id', user.id).single();
+            const { data: talent } = await (supabase.from('talents').select('id').eq('user_id', user.id).single() as any);
             if (!talent) return null;
 
-            const { data } = await supabase
+            const { data } = await (supabase
                 .from('job_applications')
                 .select('id, status, created_at')
                 .eq('job_id', id)
                 .eq('talent_id', talent.id)
-                .maybeSingle();
-            return data;
+                .maybeSingle() as any);
+            return data as JobApplication;
         },
         enabled: !!id && !!user?.id
     });
