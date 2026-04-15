@@ -4,6 +4,7 @@ import { Menu, X, ChevronDown, ArrowRight, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zone, getZoneUrl } from "@/utils/subdomain";
+import Logo from "@/components/Logo";
 
 const WebsiteNavbar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -63,11 +64,11 @@ const WebsiteNavbar = () => {
 
     return (
         <nav className="fixed top-0 z-[100] w-full bg-white border-b border-slate-100 font-inter">
-            <div className="max-w-[1440px] mx-auto px-6 md:px-10 h-[72px] flex items-center justify-between">
+            <div className="max-w-[1440px] mx-auto px-6 md:px-10 h-24 flex items-center justify-between">
                 
                 {/* Left: Logo */}
-                <Link to="/" className="flex items-center shrink-0 -ml-4 lg:-ml-6 py-2 transition-transform hover:scale-[1.02]">
-                    <img src="/images/logocolored.png" alt="OPSlyHR" className="h-32" />
+                <Link to="/" className="flex items-center shrink-0 -ml-4 lg:-ml-6 py-2 transition-transform hover:scale-[1.05]">
+                    <Logo showText={false} imgHeight="h-48" />
                 </Link>
 
                 {/* Center: Desktop Nav */}
@@ -182,8 +183,8 @@ const WebsiteNavbar = () => {
                             className="fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white z-[120] lg:hidden shadow-2xl flex flex-col"
                         >
                             {/* Header */}
-                            <div className="h-[72px] px-6 flex items-center justify-between border-b border-slate-100">
-                                <img src="/images/logocolored.png" alt="OPSlyHR" className="h-24 -ml-4" />
+                            <div className="h-24 px-6 flex items-center justify-between border-b border-slate-100">
+                                <Logo showText={false} imgHeight="h-32" className="-ml-6" />
                                 <button onClick={toggleMenu} className="p-2 text-slate-500 hover:text-slate-900">
                                     <X className="h-6 w-6" />
                                 </button>

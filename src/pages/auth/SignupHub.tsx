@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Building2 } from "lucide-react";
 import { motion } from "framer-motion";
+import Logo from "@/components/Logo";
 
 const SignupHub = () => {
   const navigate = useNavigate();
@@ -19,6 +20,11 @@ const SignupHub = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 py-12">
       <div className="max-w-5xl w-full">
+        {/* Logo */}
+        <div className="flex justify-center mb-12">
+            <Logo variant="light" showText={false} imgHeight="h-56" />
+        </div>
+        
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

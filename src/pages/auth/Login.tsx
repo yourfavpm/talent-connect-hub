@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Star, Shield, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Logo from "@/components/Logo";
 
 import { getFriendlyErrorMessage } from "@/utils/errorHandling";
 import { Zone, redirectToZone, getCurrentZone } from "@/utils/subdomain";
@@ -263,7 +264,7 @@ const Login = () => {
         
         <div className="relative z-10">
           <Link to="/" className="inline-block mb-16 lg:mb-24">
-            <img src="/images/logocolored.png" alt="OPSlyHR" className="h-32" />
+            <Logo showText={false} imgHeight="h-56" />
           </Link>
 
           <div className="max-w-md">
@@ -307,7 +308,7 @@ const Login = () => {
         {/* Mobile Header (Refined) */}
         <div className="lg:hidden flex flex-col items-center mb-10 text-center">
           <Link to="/" className="mb-6">
-            <img src="/images/logocolored.png" alt="OPSlyHR" className="h-28" />
+            <Logo showText={false} imgHeight="h-44" />
           </Link>
           <h1 className="text-2xl font-semibold text-slate-900 tracking-tight leading-tight mb-3">
             Welcome back.

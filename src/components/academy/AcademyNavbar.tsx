@@ -5,6 +5,7 @@ import { Menu, X, ChevronDown, ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zone, getZoneUrl } from "@/utils/subdomain";
+import Logo from "@/components/Logo";
 
 const AcademyNavbar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -45,12 +46,12 @@ const AcademyNavbar = () => {
 
     return (
         <nav className="fixed top-0 z-[100] w-full bg-white border-b border-slate-100 font-inter">
-            <div className="max-w-[1440px] mx-auto px-6 md:px-10 h-[72px] flex items-center justify-between">
+            <div className="max-w-[1440px] mx-auto px-6 md:px-10 h-24 flex items-center justify-between">
                 
                 {/* Left: Logo */}
-                <Link to="/" className="flex items-center shrink-0 -ml-4 lg:-ml-6 py-2 transition-transform hover:scale-[1.02]">
-                    <img src="/images/logocolored.png" alt="OPSly Academy" className="h-32" />
-                    <span className="ml-2 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded tracking-tighter uppercase">Academy</span>
+                <Link to="/" className="flex items-center shrink-0 -ml-4 lg:-ml-6 py-2 transition-transform hover:scale-[1.05]">
+                    <Logo showText={false} imgHeight="h-48" />
+                    <span className="ml-0 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded tracking-tighter uppercase relative -left-4">Academy</span>
                 </Link>
 
                 {/* Center: Desktop Nav */}
@@ -108,10 +109,10 @@ const AcademyNavbar = () => {
                             className="fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white z-[120] lg:hidden shadow-2xl flex flex-col"
                         >
                             {/* Header */}
-                            <div className="h-[72px] px-6 flex items-center justify-between border-b border-slate-100">
-                                <Link to="/" className="flex items-center -ml-4">
-                                    <img src="/images/logocolored.png" alt="OPSly Academy" className="h-24" />
-                                    <span className="ml-1 text-[8px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded tracking-tighter uppercase">Academy</span>
+                            <div className="h-24 px-6 flex items-center justify-between border-b border-slate-100">
+                                <Link to="/" className="flex items-center -ml-6">
+                                    <Logo showText={false} imgHeight="h-32" />
+                                    <span className="ml-0 text-[8px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded tracking-tighter uppercase relative -left-3">Academy</span>
                                 </Link>
                                 <button onClick={toggleMenu} className="p-2 text-slate-500 hover:text-slate-900">
                                     <X className="h-6 w-6" />

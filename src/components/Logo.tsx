@@ -2,19 +2,28 @@ interface LogoProps {
   className?: string;
   showText?: boolean;
   variant?: "light" | "dark";
+  imgHeight?: string;
 }
 
-const Logo = ({ className = "", showText = true, variant = "dark" }: LogoProps) => {
+const Logo = ({ 
+  className = "", 
+  showText = true, 
+  variant = "dark",
+  imgHeight = "h-40" 
+}: LogoProps) => {
   const logoPath = variant === "light" ? "/images/logoplain.png" : "/images/logocolored.png";
+  
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <div className={`flex items-center gap-3 ${className} transition-all duration-300`}>
       <img 
         src={logoPath} 
         alt="OPSlyHR" 
-        className="h-32 w-auto object-contain"
+        className={`${imgHeight} w-auto object-contain filter drop-shadow-sm brightness-[1.02]`}
       />
       {showText && (
-        <span className="text-lg font-black text-slate-900 tracking-tight hidden sm:inline">OPSlyHR</span>
+        <span className="text-xl font-black text-slate-900 tracking-tighter hidden sm:inline antialiased">
+          OPSlyHR
+        </span>
       )}
     </div>
   );

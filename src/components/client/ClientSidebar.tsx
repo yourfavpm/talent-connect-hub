@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getInternalPath } from "@/utils/subdomain";
+import Logo from "@/components/Logo";
 
 const navigation = [
   { name: "Dashboard", href: "/client/dashboard", icon: LayoutDashboard, iconColor: "text-blue-600", bgColor: "bg-blue-50" },
@@ -146,14 +147,14 @@ const ClientSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
         )}
       >
         {/* Logo Header */}
-        <div className="flex items-center justify-between px-6 h-20 shrink-0 pt-2">
+        <div className="flex items-center justify-between px-6 h-24 shrink-0 pt-4">
           {!isCollapsed ? (
             <Link to="/" className="flex flex-col">
-              <img src="/images/logocolored.png" alt="OPSlyHR" className="h-[48px] w-auto animate-fade-in object-contain -ml-4" />
+              <Logo showText={false} imgHeight="h-56" className="-ml-8" />
             </Link>
           ) : (
              <Link to="/">
-               <img src="/images/logocolored.png" alt="T" className="h-7 w-auto mx-auto animate-fade-in" />
+               <Logo showText={false} imgHeight="h-10" className="mx-auto" />
              </Link>
           )}
         </div>
