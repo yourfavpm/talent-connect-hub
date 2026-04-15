@@ -11,7 +11,7 @@ const AcademyFooter = () => {
                     {/* Brand & Mission Block */}
                     <div className="lg:col-span-4 space-y-6">
                         <Link to="/" className="inline-block">
-                            <img src="/images/logoplain.png" alt="OPSly Academy" className="h-16 w-auto brightness-0 invert" />
+                            <img src="/images/logocolored.png" alt="OPSly Academy" className="h-16 w-auto brightness-0 invert" />
                         </Link>
                         <p className="text-xs text-slate-400 leading-relaxed font-light max-w-sm">
                             OPSly Academy is a career-accelerating learning ecosystem designed to equip African operations professionals with high-income skills and connect them to global remote opportunities.

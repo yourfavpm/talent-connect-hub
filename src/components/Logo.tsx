@@ -5,7 +5,7 @@ interface LogoProps {
 }
 
 const Logo = ({ className = "", showText = true, variant = "dark" }: LogoProps) => {
-  const logoPath = variant === "light" ? "/images/logocolored.png" : "/images/logoplain.png";
+  const logoPath = variant === "light" ? "/images/logoplain.png" : "/images/logocolored.png";
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <img 

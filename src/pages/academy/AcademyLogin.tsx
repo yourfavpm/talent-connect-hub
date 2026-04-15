@@ -61,7 +61,7 @@ const AcademyLogin = () => {
                 <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
                 
                 <div className="relative z-10 max-w-lg">
-                    <img src="/images/logoplain.png" alt="OPSly Academy" className="h-40 mb-12" />
+                    <img src="/images/logocolored.png" alt="OPSly Academy" className="h-40 mb-12" />
                     <h1 className="text-5xl font-bold text-white tracking-tight leading-[1.1] mb-8">
                         The Future of <br />
                         <span className="text-blue-400">Operations Mastery.</span>
@@ -76,7 +76,7 @@ const AcademyLogin = () => {
             <div className="flex-1 flex flex-col justify-center px-6 md:px-20 lg:px-32 py-20 bg-white">
                 <div className="max-w-md w-full mx-auto">
                     <div className="lg:hidden mb-12">
-                         <img src="/images/logoplain.png" alt="OPSly Academy" className="h-20" />
+                         <img src="/images/logocolored.png" alt="OPSly Academy" className="h-20" />
                     </div>
 
                     <div className="mb-12">

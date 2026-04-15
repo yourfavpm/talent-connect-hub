@@ -131,7 +131,7 @@ export const TalentOnboardingWelcome = ({
       <Body style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
         <Container style={{ maxWidth: '600px', margin: '0 auto' }}>
           <Img 
-            src="https://www.opslyhr.com/images/logoplain.png" 
+            src="https://www.opslyhr.com/images/logocolored.png" 
             alt="OPSlyHR" 
             style={{ height: 48, marginBottom: 40 }}
           />

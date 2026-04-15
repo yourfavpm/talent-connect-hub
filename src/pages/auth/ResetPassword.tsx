@@ -90,7 +90,7 @@ const ResetPassword = () => {
         </Link>
 
         <div className="mb-8">
-          <img src="/images/logoplain.png" alt="OPSlyHR" className="h-40 mb-6" />
+          <img src="/images/logocolored.png" alt="OPSlyHR" className="h-40 mb-6" />
           <h1 className="text-3xl font-bold text-foreground">Reset password</h1>
           <p className="text-muted-foreground mt-2">
             Enter your email and we'll send you a reset link

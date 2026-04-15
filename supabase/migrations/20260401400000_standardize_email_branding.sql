@@ -29,7 +29,7 @@ UPDATE public.email_templates SET body_html = E'<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <div class="header"><img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" class="logo-img"></div>
+    <div class="header"><img src="https://opslyhr.com/images/logoplain.png" alt="OPSlyHR" class="logo-img"></div>
     <div class="content">
       <div class="greeting">Hi {{first_name}},</div>
       <div class="message">Welcome to OPSlyHR! Your account has been created. Please verify your email to access exclusive opportunities.</div>
@@ -64,7 +64,7 @@ UPDATE public.email_templates SET body_html = E'<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <div class="header"><img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" class="logo-img"></div>
+    <div class="header"><img src="https://opslyhr.com/images/logoplain.png" alt="OPSlyHR" class="logo-img"></div>
     <div class="content">
       <div class="greeting">Hi {{first_name}},</div>
       <div class="message">Verification is the first step to becoming part of our elite talent network. Please verify your email below.</div>
@@ -99,7 +99,7 @@ UPDATE public.email_templates SET body_html = E'<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <div class="header"><img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" class="logo-img"></div>
+    <div class="header"><img src="https://opslyhr.com/images/logoplain.png" alt="OPSlyHR" class="logo-img"></div>
     <div class="content">
       <div class="greeting">Welcome to the Network, {{first_name}}!</div>
       <div class="message">We''re thrilled to have you here. Next, complete your documentation to begin the vetting process.</div>
@@ -139,7 +139,7 @@ UPDATE public.email_templates SET body_html = E'<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <div class="header"><img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" class="logo-img"></div>
+    <div class="header"><img src="https://opslyhr.com/images/logoplain.png" alt="OPSlyHR" class="logo-img"></div>
     <div class="content">
       <div class="greeting">Hi {{first_name}} from {{company_name}},</div>
       <div class="message">Welcome to OPSlyHR! We help you hire and manage world-class product and ops talent with zero friction.</div>
@@ -177,7 +177,7 @@ UPDATE public.email_templates SET body_html = E'<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <div class="header"><img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" class="logo-img"></div>
+    <div class="header"><img src="https://opslyhr.com/images/logoplain.png" alt="OPSlyHR" class="logo-img"></div>
     <div class="content">
       <div class="greeting">Hi {{first_name}}, We''ve Received Your Vetting Request</div>
       <div class="message">Our team of experts is currently reviewing your documentation. We''ll notify you as soon as the review is complete.</div>
@@ -212,7 +212,7 @@ UPDATE public.email_templates SET body_html = E'<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <div class="header"><img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" class="logo-img"></div>
+    <div class="header"><img src="https://opslyhr.com/images/logoplain.png" alt="OPSlyHR" class="logo-img"></div>
     <div class="content">
       <div class="greeting">Congratulations, {{talent_name}}!</div>
       <div class="success-box">✓ You have been fully vetted and approved.</div>
@@ -252,7 +252,7 @@ UPDATE public.email_templates SET body_html = E'<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <div class="header"><img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" class="logo-img"></div>
+    <div class="header"><img src="https://opslyhr.com/images/logoplain.png" alt="OPSlyHR" class="logo-img"></div>
     <div class="content">
       <div class="greeting">Hi {{first_name}}, New Contract for Review</div>
       <div class="message">A new contract has been generated for you (ID: {{contract_id}}). Please review the terms and sign to begin.</div>
@@ -287,7 +287,7 @@ UPDATE public.email_templates SET body_html = E'<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <div class="header"><img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" class="logo-img"></div>
+    <div class="header"><img src="https://opslyhr.com/images/logoplain.png" alt="OPSlyHR" class="logo-img"></div>
     <div class="content">
       <div class="greeting">New Invoice Ready, {{client_name}}</div>
       <div class="message">Your invoice #{{invoice_id}} for the amount of {{amount}} is ready. Due date: {{due_date}}.</div>

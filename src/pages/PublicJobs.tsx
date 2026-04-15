@@ -110,7 +110,7 @@ const PublicJobs = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-16 object-contain" />
+                            <img src="/images/logocolored.png" alt="OPSlyHR" className="h-16 object-contain" />
                             <div className="h-6 w-px bg-slate-200 mx-2 hidden md:block" />
                             <h1 className="text-lg font-bold text-slate-900 tracking-tight">Job Board</h1>
                         </div>

@@ -49,7 +49,7 @@ const AcademyNavbar = () => {
                 
                 {/* Left: Logo */}
                 <Link to="/" className="flex items-center shrink-0 -ml-4 lg:-ml-6 py-2 transition-transform hover:scale-[1.02]">
-                    <img src="/images/logoplain.png" alt="OPSly Academy" className="h-32" />
+                    <img src="/images/logocolored.png" alt="OPSly Academy" className="h-32" />
                     <span className="ml-2 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded tracking-tighter uppercase">Academy</span>
                 </Link>
 
@@ -110,7 +110,7 @@ const AcademyNavbar = () => {
                             {/* Header */}
                             <div className="h-[72px] px-6 flex items-center justify-between border-b border-slate-100">
                                 <Link to="/" className="flex items-center -ml-4">
-                                    <img src="/images/logoplain.png" alt="OPSly Academy" className="h-24" />
+                                    <img src="/images/logocolored.png" alt="OPSly Academy" className="h-24" />
                                     <span className="ml-1 text-[8px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded tracking-tighter uppercase">Academy</span>
                                 </Link>
                                 <button onClick={toggleMenu} className="p-2 text-slate-500 hover:text-slate-900">

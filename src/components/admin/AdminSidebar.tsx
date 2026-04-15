@@ -165,11 +165,11 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
         <div className="flex items-center justify-between px-6 h-20 shrink-0 pt-2 text-right">
           {!isCollapsed ? (
             <Link to="/" className="flex flex-col">
-              <img src="/images/logoplain.png" alt="OPSlyHR" className="h-[48px] w-auto animate-fade-in object-contain -ml-4" />
+              <img src="/images/logocolored.png" alt="OPSlyHR" className="h-[48px] w-auto animate-fade-in object-contain -ml-4" />
             </Link>
           ) : (
              <Link to="/">
-               <img src="/images/logoplain.png" alt="T" className="h-7 w-auto mx-auto animate-fade-in" />
+               <img src="/images/logocolored.png" alt="T" className="h-7 w-auto mx-auto animate-fade-in" />
              </Link>
           )}
         </div>

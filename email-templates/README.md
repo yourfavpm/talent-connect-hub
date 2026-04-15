@@ -197,7 +197,7 @@ export const TalentOnboardingWelcome = ({ firstName, dashboardLink }) => (
     <Body style={bodyStyling}>
       <Container style={containerStyle}>
         {/* Header */}
-        <Img src="https://www.opslyhr.com/images/logoplain.png" alt="OPSlyHR" style={{ height: 48 }} />
+        <Img src="https://www.opslyhr.com/images/logocolored.png" alt="OPSlyHR" style={{ height: 48 }} />
         
         {/* Content */}
         <Text style={greetingStyle}>Welcome to the OPSlyHR Network</Text>

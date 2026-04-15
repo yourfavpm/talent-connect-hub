@@ -11,7 +11,7 @@ const WebsiteFooter = () => {
           {/* Brand & Mission Block */}
           <div className="lg:col-span-4 space-y-6">
             <Link to="/" className="inline-block">
-              <img src="/images/logoplain.png" alt="OPSlyHR" className="h-16 w-auto" />
+              <img src="/images/logocolored.png" alt="OPSlyHR" className="h-16 w-auto" />
             </Link>
             <p className="text-xs text-slate-400 leading-relaxed font-light max-w-sm">
               OPSlyHR connects vetted product and operations professionals across EMEA with growth-focused companies globally.

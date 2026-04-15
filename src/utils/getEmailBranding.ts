@@ -4,7 +4,7 @@
  */
 export const getBrandedEmailHtml = (body: string, title?: string) => {
   const brandColor = "#0f2147";
-  const logoUrl = "https://opslyhr.com/images/logoplain.png";
+  const logoUrl = "https://opslyhr.com/images/logocolored.png";
   const brandName = "OPSlyHR";
 
   return `
