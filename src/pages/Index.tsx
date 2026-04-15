@@ -97,14 +97,14 @@ const Index = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-14 w-full">
-              <Link to="/auth/login" className="w-full sm:w-auto">
+              <Link to="/book-consultation" className="w-full sm:w-auto">
                 <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/10 transition-all font-semibold w-full">
-                  Get Matched With Talent
+                  Schedule a call
                 </Button>
               </Link>
-              <Link to="/book-consultation" className="w-full sm:w-auto">
+              <Link to="/auth/signup/talent" className="w-full sm:w-auto">
                 <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-700 hover:bg-slate-100/80 rounded-full font-semibold flex items-center justify-center lg:justify-start gap-2 w-full">
-                  Book a Strategy Call <ArrowRight className="w-4 h-4" />
+                  Apply as talent <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>

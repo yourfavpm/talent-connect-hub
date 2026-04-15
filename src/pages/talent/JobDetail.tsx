@@ -134,7 +134,7 @@ const TalentJobDetail = () => {
                     hire_request_id: id,
                     talent_user_id: user.id,
                     status: 'applied',
-                    cover_note: coverLetter
+                    note: coverLetter
                 });
                 if (error) throw error;
             } else {
@@ -347,7 +347,7 @@ const TalentJobDetail = () => {
                                             <DialogTrigger asChild>
                                                 <Button size="lg" className="w-full h-16 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-blue-500/20 group transition-all hover:-translate-y-1">
                                                     Apply for Role <ArrowLeft className="h-4 w-4 ml-4 rotate-180 transition-transform group-hover:translate-x-1" />
-                                                                                                </DialogTrigger>
+                                                </DialogTrigger>
                                                 <DialogContent className="sm:max-w-3xl p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-white">
                                                     <DialogHeader className="px-12 py-12 bg-slate-900 text-white space-y-4">
                                                         <div className="h-12 w-12 bg-blue-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg mb-2">
@@ -394,7 +394,6 @@ const TalentJobDetail = () => {
                                                     </div>
                                                 </DialogContent>
                                             </Dialog>
-</Dialog>
                                     ) : (
                                         <div className="space-y-4 pt-4 border-t border-slate-50">
                                             <p className="text-xs text-center font-bold text-slate-400 uppercase tracking-widest">Application Tracked</p>
