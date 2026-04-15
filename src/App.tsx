@@ -129,6 +129,15 @@ const AdminTalentProfileView = lazy(() => import("./pages/admin/TalentDirectory/
 const AdminHireRequestsList = lazy(() => import("./pages/admin/HireRequests/AdminHireRequestsList"));
 const AdminHireRequestDetail = lazy(() => import("./pages/admin/HireRequests/AdminHireRequestDetail"));
 
+// Academy
+const AcademyHome = lazy(() => import("./pages/academy/AcademyHome"));
+const BrowseCourses = lazy(() => import("./pages/academy/BrowseCourses"));
+const CourseDetail = lazy(() => import("./pages/academy/CourseDetail"));
+const CourseHub = lazy(() => import("./pages/academy/CourseHub"));
+const AcademyManagement = lazy(() => import("./pages/admin/Academy/AcademyManagement"));
+const CourseManagement = lazy(() => import("./pages/admin/Academy/CourseManagement"));
+const CohortDetail = lazy(() => import("./pages/admin/Academy/CohortDetail"));
+
 // Admin Settings Sections
 const OrganizationSettings = lazy(() => import("@/pages/admin/Settings/sections/Organization"));
 const ServiceModelsSettings = lazy(() => import("@/pages/admin/Settings/sections/ServiceModels"));
@@ -291,6 +300,17 @@ const App = () => {
                   <Route path="*" element={<Navigate to="/auth/login" replace />} />
                 </>
               )}
+              
+              {/* Academy Zone (academy.opslyhr.com) */}
+              {zone === Zone.ACADEMY && (
+                <>
+                  <Route index element={<AcademyHome />} />
+                  <Route path="browse" element={<BrowseCourses />} />
+                  <Route path="courses/:courseId" element={<CourseDetail />} />
+                  <Route path="hub" element={<CourseHub />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </>
+              )}
 
               {/* Protected Portal Zones (Shared Path handling via absolute redirects) */}
               <Route path="/*" element={
@@ -397,6 +417,11 @@ const App = () => {
                           <Route path="consultations/:id" element={<AdminConsultationDetail />} />
                           <Route path="support" element={<AdminSupport />} />
                           <Route path="support/:id" element={<AdminSupportDetail />} />
+                          <Route path="academy">
+                            <Route index element={<AcademyManagement />} />
+                            <Route path="courses" element={<CourseManagement />} />
+                            <Route path="cohorts/:id" element={<CohortDetail />} />
+                          </Route>
                           <Route path="team">
                             <Route index element={<AdminTeam />} />
                             <Route path="admins/:id" element={<AdminDetail />} />

@@ -149,17 +149,27 @@ const VettingWorkspaceV2 = () => {
       if (profileData.vetting_level_text) setVettingLevelText(profileData.vetting_level_text);
       if (profileData.talent_manager_admin_id) setSelectedManagerId(profileData.talent_manager_admin_id);
 
-      // Fetch all managers (admins)
-      const { data: adminUsers } = await supabase
-        .from("profiles")
-        .select("id, first_name, last_name, role")
-        .in("role", ["SUPER_ADMIN", "ADMIN"]);
-        
+      // Fetch all admins and their roles using the new RBAC system
+      const { data: adminUsers, error: adminError } = await supabase
+        .from("admin_users")
+        .select("id, full_name, email");
+      
+      if (adminError) throw adminError;
+
+      const { data: userRoles, error: roleError } = await supabase
+        .from("user_roles")
+        .select("user_id, role");
+      
+      if (roleError) throw roleError;
+
       if (adminUsers) {
-        setManagers((adminUsers as any[]).map(u => ({
-          id: u.id,
-          name: `${u.first_name || ""} ${u.last_name || ""}`.trim() || "Admin"
-        })));
+        setManagers((adminUsers as any[]).map(admin => {
+          const role = userRoles?.find(ur => ur.user_id === admin.id)?.role || 'Admin';
+          return {
+            id: admin.id,
+            name: `${admin.full_name} (${role.replace(/_/g, ' ')})`
+          };
+        }));
       }
 
       // Auto-start review if strictly submitted/resubmitted or revett_pending
@@ -422,6 +432,14 @@ const VettingWorkspaceV2 = () => {
         })
         .eq("user_id", profile.user_id);
       if (error) throw error;
+      
+      // Sync to base talents table
+      if (profile.user_id) {
+         await supabase
+           .from("talents")
+           .update({ talent_manager_admin_id: managerId } as any)
+           .eq("user_id", profile.user_id);
+      }
 
       await (supabase.from("v2_vetting_actions") as any)
         .insert({

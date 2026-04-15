@@ -167,7 +167,7 @@ const AdminTalentProfileView = () => {
   const displayAvailability = (profSection.availability as string) || talent?.availability || "Availability unknown";
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-20 font-[Inter]">
+    <div className="w-full max-w-none space-y-8 pb-20 font-[Inter]">
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 pb-8">
         <div className="flex items-start gap-5">

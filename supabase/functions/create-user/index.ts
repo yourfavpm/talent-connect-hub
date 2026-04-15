@@ -12,27 +12,59 @@ serve(async (req) => {
     }
 
     try {
+        const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+        const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+        
         const supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-            { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY,
+            { 
+                global: { 
+                    headers: { 
+                        Authorization: req.headers.get('Authorization')!,
+                        apikey: SUPABASE_ANON_KEY
+                    } 
+                } 
+            }
         )
 
         // Verify user is super_admin
         const {
             data: { user },
+            error: authError
         } = await supabaseClient.auth.getUser()
 
-        if (!user) throw new Error('Unauthorized')
+        if (authError || !user) {
+            console.error("Auth verification failed:", authError);
+            return new Response(
+                JSON.stringify({ 
+                    error: 'Unauthorized: Invalid JWT', 
+                    details: authError?.message || 'No user session found',
+                    debug: { hasUrl: !!SUPABASE_URL, hasKey: !!SUPABASE_ANON_KEY }
+                }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+            )
+        }
 
-        const { data: roles } = await supabaseClient
+        const { data: roles, error: roleError } = await supabaseClient
             .from('user_roles')
             .select('role')
             .eq('user_id', user.id)
             .single()
 
-        if (!roles || roles.role !== 'super_admin') {
-            throw new Error('Unauthorized: Super Admin access required')
+        // Accept both new ('Super Admin') and legacy ('super_admin') role names
+        const userHasRequiredRole = roles?.role === 'Super Admin' || roles?.role === 'super_admin';
+
+        if (roleError || !roles || !userHasRequiredRole) {
+            console.error("Role check failed for user:", user.id, "Role found:", roles?.role || 'none');
+            return new Response(
+                JSON.stringify({ 
+                    error: 'Unauthorized: Super Admin access required', 
+                    message: `Required: Super Admin. Found: ${roles?.role || 'None'}.`,
+                    details: roleError?.message 
+                }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+            )
         }
 
         // Now use Service Role to create user
@@ -57,11 +89,11 @@ serve(async (req) => {
         if (createError) throw createError
 
         // Assign Role
-        const { error: roleError } = await supabaseAdmin
+        const { error: assignRoleError } = await supabaseAdmin
             .from('user_roles')
             .insert({ user_id: newUser.user.id, role })
 
-        if (roleError) throw roleError
+        if (assignRoleError) throw assignRoleError
 
         // Create Profile
         const { error: profileError } = await supabaseAdmin

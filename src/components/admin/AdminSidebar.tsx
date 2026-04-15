@@ -34,7 +34,7 @@ const navigation = [
   { name: "Vetting", href: "/admin/vetting", icon: ShieldCheck, badgeKey: "vetting", roles: ["super_admin", "operations_admin", "vetting_admin"] },
   { name: "Talents", href: "/admin/talents", icon: UserPlus, roles: ["super_admin", "operations_admin", "vetting_admin"] },
   ...(FEATURES.hire_request_v2_enabled
-    ? [{ name: "Hire Requests", href: "/admin/hire-requests", icon: ClipboardList, roles: ["super_admin", "operations_admin"] }]
+    ? [{ name: "Hire Requests", href: "/admin/hire-requests", icon: ClipboardList, roles: ["super_admin", "operations_admin", "talent_manager"] }]
     : []),
   { name: "Jobs", href: "/admin/jobs", icon: Briefcase, badgeKey: "jobs", roles: ["super_admin", "operations_admin"] },
   { name: "Timesheets", href: "/admin/timesheets", icon: Clock, badgeKey: "timesheets", roles: ["super_admin", "operations_admin", "finance_admin"] },

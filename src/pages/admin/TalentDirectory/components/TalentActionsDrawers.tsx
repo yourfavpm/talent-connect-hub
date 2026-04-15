@@ -22,6 +22,7 @@ import {
   Users
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface TalentActionsDrawersProps {
@@ -79,30 +80,57 @@ const TalentActionsDrawers = ({
 
   const fetchAdmins = async () => {
     try {
-      const { data } = await supabase.from("profiles").select("user_id, first_name, last_name, email");
-      setAdmins(data || []);
+      // Fetch from admin_users and manually include role information
+      // Since admin_users doesn''t have a direct relation in JS types yet, 
+      // we''ll fetch admin_users and then their roles from user_roles
+      const { data: adminUsers, error: adminError } = await supabase
+        .from("admin_users")
+        .select("id, full_name, email, status");
+      
+      if (adminError) throw adminError;
+
+      const { data: userRoles, error: roleError } = await supabase
+        .from("user_roles")
+        .select("user_id, role");
+      
+      if (roleError) throw roleError;
+
+      const combined = (adminUsers || []).map(admin => ({
+        user_id: admin.id,
+        first_name: admin.full_name?.split(' ')[0] || '',
+        last_name: admin.full_name?.split(' ').slice(1).join(' ') || '',
+        email: admin.email,
+        role: userRoles?.find(ur => ur.user_id === admin.id)?.role || 'Admin'
+      }));
+
+      setAdmins(combined);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching admins:", err);
+      toast.error("Failed to load administrators");
     }
   };
 
   const handleAssignManager = async () => {
     setLoading(true);
     try {
-      const { error } = await (supabase.from("v2_talent_profiles" as any) as any)
-        .update({ assigned_talent_manager: selectedAdminId } as any)
+      // Update v2_talent_profiles
+      const { error: tpError } = await supabase
+        .from("v2_talent_profiles" as any)
+        .update({ talent_manager_admin_id: selectedAdminId } as any)
         .eq("id", tp.id);
       
-      if (error) throw error;
+      if (tpError) throw tpError;
 
-      // Sync to legacy talents table if exists
-      if (tp.talents?.id) {
-         await (supabase.from("talents" as any) as any)
-           .update({ assigned_manager: selectedAdminId } as any)
-           .eq("id", tp.talents.id);
+      // Sync to base talents table
+      if (tp.user_id) {
+         const { error: tError } = await supabase
+           .from("talents")
+           .update({ talent_manager_admin_id: selectedAdminId } as any)
+           .eq("user_id", tp.user_id);
+         if (tError) console.error("Sync to talents table failed:", tError);
       }
 
-      toast.success("Manager assigned");
+      toast.success("Talent Manager assigned successfully");
       setAssignOpen(false);
       onSuccess();
     } catch (err: any) {
@@ -238,7 +266,12 @@ const TalentActionsDrawers = ({
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-bold text-slate-900">{admin.first_name} {admin.last_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold text-slate-900">{admin.first_name} {admin.last_name}</p>
+                        <Badge variant="outline" className="text-[8px] uppercase tracking-tighter px-1 h-3.5 border-slate-200 text-slate-400 font-bold">
+                          {admin.role.replace(/_/g, ' ')}
+                        </Badge>
+                      </div>
                       <p className="text-[10px] text-slate-500">{admin.email}</p>
                     </div>
                   </div>

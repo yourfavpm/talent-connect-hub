@@ -159,7 +159,7 @@ const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) =>
   };
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-10">
+    <div className="space-y-6 w-full max-w-none pb-10">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">

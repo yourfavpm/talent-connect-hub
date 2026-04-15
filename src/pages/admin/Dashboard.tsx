@@ -126,20 +126,16 @@ const AdminDashboard = () => {
         }
       }
 
-      // 3. Fetch Queues
+      // 3. Fetch Queues (Talent Managers now see Hire Requests globally)
       const [
         { data: pendingJobsData },
         { data: openTicketsData },
       ] = await Promise.all([
-        isTalentManager
-          ? Promise.resolve({ data: [] as any[] })
-          : supabase.from("jobs").select("*, clients(company_name)").in("status", ["submitted", "under_review"]).order("created_at", { ascending: false }).limit(5),
-        isTalentManager
-          ? Promise.resolve({ data: [] as any[] })
-          : supabase.from("support_tickets").select("*").in("status", ["open", "in_progress"]).order("created_at", { ascending: false }).limit(5),
+        supabase.from("jobs").select("*, clients(company_name)").in("status", ["submitted", "under_review"]).order("created_at", { ascending: false }).limit(5),
+        supabase.from("support_tickets").select("*").in("status", ["open", "in_progress"]).order("created_at", { ascending: false }).limit(5),
       ]);
-
-      // 4. Global counts
+ 
+      // 4. Global counts (Allow Talent Manager to see global opportunity counts)
       const [
         { count: submittedJobsCount },
         { count: activeContractsCount },
@@ -151,18 +147,18 @@ const AdminDashboard = () => {
         { data: latestJobs },
         { data: latestTickets }
       ] = await Promise.all([
-        isTalentManager ? Promise.resolve({ count: 0 }) : supabase.from("jobs").select("id", { count: "exact", head: true }).in("status", ["submitted", "under_review"]),
-        isTalentManager ? Promise.resolve({ count: 0 }) : supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("jobs").select("id", { count: "exact", head: true }).in("status", ["submitted", "under_review"]),
+        supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
         isTalentManager ? Promise.resolve({ data: [] }) : supabase.from("invoices").select("total_amount, status").neq("status", "paid"),
-        isTalentManager ? Promise.resolve({ count: 0 }) : supabase.from("support_tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
+        supabase.from("support_tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
         supabase.from("interviews").select("id", { count: "exact", head: true }).eq("status", "scheduled"), 
-        isTalentManager ? Promise.resolve({ data: [] }) : supabase.from("offers").select("*, talents(first_name, last_name)").order("created_at", { ascending: false }).limit(5),
+        supabase.from("offers").select("*, talents(first_name, last_name)").order("created_at", { ascending: false }).limit(5),
         (isTalentManager
           ? supabase.from("v2_talent_profiles").select("*, talents:talents(first_name, last_name, email)").eq("talent_manager_admin_id", user.id)
           : supabase.from("v2_talent_profiles").select("*, talents:talents(first_name, last_name, email)"))
           .order("created_at", { ascending: false }).limit(5),
-        isTalentManager ? Promise.resolve({ data: [] }) : supabase.from("jobs").select("*, clients(company_name)").order("created_at", { ascending: false }).limit(5),
-        isTalentManager ? Promise.resolve({ data: [] }) : supabase.from("support_tickets").select("*").order("created_at", { ascending: false }).limit(5)
+        supabase.from("jobs").select("*, clients(company_name)").order("created_at", { ascending: false }).limit(5),
+        supabase.from("support_tickets").select("*").order("created_at", { ascending: false }).limit(5)
       ]);
 
       const invoiceSum = (invoicesData || []).reduce((acc: number, curr: any) => acc + (Number(curr.total_amount) || 0), 0);
