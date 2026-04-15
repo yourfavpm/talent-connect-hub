@@ -54,7 +54,7 @@ const VerifyEmail = () => {
                         </p>
                         <Button 
                             onClick={handleContinue} 
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 h-auto text-lg rounded-xl shadow-lg shadow-emerald-100 transition-all hover:scale-105 active:scale-95"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 h-[54px] text-lg rounded-xl shadow-lg shadow-emerald-100 transition-all hover:scale-105 active:scale-95"
                         >
                             Continue to Login
                         </Button>
@@ -73,7 +73,7 @@ const VerifyEmail = () => {
                         <Button 
                             onClick={handleContinue} 
                             variant="outline"
-                            className="px-8 py-6 h-auto rounded-xl border-2 hover:bg-slate-50 transition-all font-bold uppercase tracking-widest text-[13px]"
+                            className="px-8 h-[54px] rounded-xl border-2 hover:bg-slate-50 transition-all font-bold uppercase tracking-widest text-[13px]"
                         >
                             Back to Login
                         </Button>
@@ -91,7 +91,7 @@ const VerifyEmail = () => {
                         </p>
                         <Button 
                             onClick={handleContinue} 
-                            className="bg-brand-primary hover:bg-brand-secondary text-white px-8 py-6 h-auto text-lg rounded-xl transition-all"
+                            className="bg-brand-primary hover:bg-brand-secondary text-white px-8 h-[54px] text-lg rounded-xl transition-all"
                         >
                             Go to Login
                         </Button>
@@ -111,7 +111,7 @@ const VerifyEmail = () => {
                         <Button 
                             onClick={handleContinue} 
                             variant="outline"
-                            className="px-8 py-6 h-auto rounded-xl border-2 transition-all font-bold uppercase tracking-widest text-[13px]"
+                            className="px-8 h-[54px] rounded-xl border-2 transition-all font-bold uppercase tracking-widest text-[13px]"
                         >
                             Return to Login
                         </Button>

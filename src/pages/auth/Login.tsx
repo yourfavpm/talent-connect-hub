@@ -351,7 +351,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800 placeholder:text-slate-300 transition-all"
+                  className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800 placeholder:text-slate-300 transition-all"
                 />
               </div>
 
@@ -373,7 +373,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="h-11 pr-12 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800 placeholder:text-slate-300 transition-all"
+                    className="h-[54px] pr-12 border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800 placeholder:text-slate-300 transition-all"
                   />
                   <button
                     type="button"
@@ -387,7 +387,7 @@ const Login = () => {
 
               <Button 
                 type="submit" 
-                className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-all duration-300 gap-2 mt-2 shadow-sm" 
+                className="w-full h-[54px] bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-all duration-300 gap-2 mt-2 shadow-sm" 
                 disabled={loading}
               >
                 {loading ? (

@@ -107,13 +107,13 @@ const ResetPassword = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="h-12"
+              className="h-[54px] rounded-xl"
             />
           </div>
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full h-[54px] rounded-xl"
             size="lg"
             disabled={loading}
           >

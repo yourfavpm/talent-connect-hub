@@ -29,7 +29,7 @@ const CheckEmail = () => {
                 <div className="space-y-4">
                     <Link to="/auth/login" className="block">
                         <Button 
-                            className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold shadow-lg shadow-slate-200 transition-all active:scale-95"
+                            className="w-full h-[54px] bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold shadow-lg shadow-slate-200 transition-all active:scale-95"
                         >
                             Return to Login
                         </Button>

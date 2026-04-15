@@ -60,29 +60,9 @@ const AdminSignup = () => {
             user_id: data.user.id,
             role: "super_admin",
           }, { onConflict: "user_id, role" });
-        // Note: Unique constraint is (user_id, role). 
-        // If user re-signs up? Auth blocks re-signup.
 
         if (roleError) {
           console.error("Role assignment failed:", roleError);
-          // Continue anyway, manual fix might be needed if RLS blocks this.
-          // Actually, RLS 'Admins can view all roles' etc.
-          // INSERT policy for public? No.
-          // If RLS blocks insert, this fails.
-          // '20251223191333...sql' didn't show INSERT policy for public users on user_roles.
-          // Wait. user_roles has NO generic insert policy.
-          // Meaning: A regular user CANNOT insert their own role via Client API.
-          // MY PLAN WILL FAIL if RLS is strict.
-
-          // Workaround: Use RPC? Or is there a policy?
-          // Migration Step 994:
-          // CREATE POLICY "Super admins can manage roles" ...
-          // No policy for "Authenticated user can insert their own role".
-
-          // CRITICAL: Regular users CANNOT self-assign 'super_admin'.
-          // That would be a security hole.
-          // So this frontend page CANNOT work unless I use a Service Role Key (not available in client)
-          // OR if I have an RPC function 'claim_super_admin' that checks whitelist.
         }
       }
 
@@ -107,7 +87,7 @@ const AdminSignup = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-lg p-8 shadow-2xl">
+      <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-2xl">
         <div className="text-center mb-8">
           <img src="/images/logoplain.png" alt="OPSlyHR" className="h-40 mx-auto mb-4 opacity-80" />
           <div className="flex items-center justify-center gap-2 text-red-500 mb-2">
@@ -128,7 +108,7 @@ const AdminSignup = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="bg-slate-950 border-slate-800 text-white focus:ring-red-500/50"
+              className="h-[54px] rounded-xl bg-slate-950 border-slate-800 text-white focus:ring-red-500/50"
             />
           </div>
 
@@ -141,7 +121,7 @@ const AdminSignup = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-slate-950 border-slate-800 text-white pr-10 focus:ring-red-500/50"
+                className="h-[54px] rounded-xl bg-slate-950 border-slate-800 text-white pr-10 focus:ring-red-500/50"
               />
               <button
                 type="button"
@@ -153,7 +133,7 @@ const AdminSignup = () => {
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white" disabled={loading}>
+          <Button type="submit" className="w-full h-[54px] rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold" disabled={loading}>
             {loading ? "Verifying..." : "Initialize Admin Access"}
           </Button>
         </form>

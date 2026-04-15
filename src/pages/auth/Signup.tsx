@@ -18,6 +18,13 @@ import {
   requestTalentVerification,
   requestClientVerification
 } from "@/lib/email/triggers";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const clientSignupSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters").max(100),
@@ -31,6 +38,7 @@ const talentSignupSchema = z.object({
   lastName: z.string().min(2, "Last name must be at least 2 characters").max(50),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  heardFrom: z.string().min(1, "Please tell us how you heard about us"),
 });
 
 const Signup = () => {
@@ -45,6 +53,7 @@ const Signup = () => {
     lastName: "",
     email: "",
     password: "",
+    heardFrom: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -68,7 +77,7 @@ const Signup = () => {
     // Validate form based on portal
     const schema = isTalent ? talentSignupSchema : clientSignupSchema;
     const dataToValidate = isTalent
-      ? { firstName: formData.firstName, lastName: formData.lastName, email: formData.email, password: formData.password }
+      ? { firstName: formData.firstName, lastName: formData.lastName, email: formData.email, password: formData.password, heardFrom: formData.heardFrom }
       : { companyName: formData.companyName, fullName: formData.fullName, email: formData.email, password: formData.password };
 
     const result = schema.safeParse(dataToValidate);
@@ -93,7 +102,7 @@ const Signup = () => {
         options: {
           emailRedirectTo: redirectUrl,
           data: isTalent
-            ? { first_name: formData.firstName, last_name: formData.lastName, portal: "talent" }
+            ? { first_name: formData.firstName, last_name: formData.lastName, heard_from: formData.heardFrom, portal: "talent" }
             : { full_name: formData.fullName, company_name: formData.companyName, portal: "client" },
         },
       });
@@ -292,7 +301,7 @@ const Signup = () => {
           <div className="flex bg-slate-50 p-1 rounded-xl mb-10 border border-slate-100">
             <button
               onClick={() => navigate("/auth/signup?portal=talent")}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+              className={`flex-1 py-3 text-xs font-semibold rounded-lg transition-all ${
                 isTalent ? "bg-white text-blue-600 shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-600"
               }`}
             >
@@ -300,7 +309,7 @@ const Signup = () => {
             </button>
             <button
               onClick={() => navigate("/auth/signup?portal=client")}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+              className={`flex-1 py-3 text-xs font-semibold rounded-lg transition-all ${
                 !isTalent ? "bg-white text-blue-600 shadow-sm border border-slate-100" : "text-slate-400 hover:text-slate-600"
               }`}
             >
@@ -333,7 +342,7 @@ const Signup = () => {
                     value={formData.firstName}
                     onChange={handleChange}
                     required
-                    className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                    className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                   />
                   {errors.firstName && <p className="text-xs text-red-500 font-medium">{errors.firstName}</p>}
                 </div>
@@ -347,7 +356,7 @@ const Signup = () => {
                     value={formData.lastName}
                     onChange={handleChange}
                     required
-                    className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                    className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                   />
                   {errors.lastName && <p className="text-xs text-red-500 font-medium">{errors.lastName}</p>}
                 </div>
@@ -365,7 +374,7 @@ const Signup = () => {
                     value={formData.companyName}
                     onChange={handleChange}
                     required
-                    className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                    className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                   />
                   {errors.companyName && <p className="text-xs text-red-500 font-medium">{errors.companyName}</p>}
                 </div>
@@ -379,7 +388,7 @@ const Signup = () => {
                     value={formData.fullName}
                     onChange={handleChange}
                     required
-                    className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                    className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                   />
                   {errors.fullName && <p className="text-xs text-red-500 font-medium">{errors.fullName}</p>}
                 </div>
@@ -396,7 +405,7 @@ const Signup = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
               />
               {errors.email && <p className="text-xs text-red-500 font-medium">{errors.email}</p>}
             </div>
@@ -412,7 +421,7 @@ const Signup = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="h-11 pr-10 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                  className="h-[54px] pr-10 border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                 />
                 <button
                   type="button"
@@ -425,9 +434,34 @@ const Signup = () => {
               {errors.password && <p className="text-xs text-red-500 font-medium">{errors.password}</p>}
             </div>
 
+            {isTalent && (
+              <div className="space-y-1.5">
+                <Label htmlFor="heardFrom" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">How did you hear about us?</Label>
+                <Select 
+                  value={formData.heardFrom} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, heardFrom: value }))}
+                >
+                  <SelectTrigger className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800">
+                    <SelectValue placeholder="Select an option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="linkedin">LinkedIn</SelectItem>
+                    <SelectItem value="twitter">Twitter / X</SelectItem>
+                    <SelectItem value="facebook">Facebook</SelectItem>
+                    <SelectItem value="google">Search Engine (Google/Bing)</SelectItem>
+                    <SelectItem value="referral">Friend or Colleague</SelectItem>
+                    <SelectItem value="domain_assistant">The Domain Assistant</SelectItem>
+                    <SelectItem value="blog">Blog or Article</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.heardFrom && <p className="text-xs text-red-500 font-medium">{errors.heardFrom}</p>}
+              </div>
+            )}
+
             <Button 
               type="submit" 
-              className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-all duration-300 gap-2 mt-2" 
+              className="w-full h-[54px] bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-all duration-300 gap-2 mt-2" 
               disabled={loading}
             >
               {loading ? "Creating Account..." : "Create Account"}

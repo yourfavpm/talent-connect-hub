@@ -293,7 +293,7 @@ const TalentSignup = () => {
                   value={formData.firstName}
                   onChange={handleChange}
                   required
-                  className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                  className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                 />
                 {errors.firstName && <p className="text-xs text-red-500 font-medium">{errors.firstName}</p>}
               </div>
@@ -307,7 +307,7 @@ const TalentSignup = () => {
                   value={formData.lastName}
                   onChange={handleChange}
                   required
-                  className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                  className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                 />
                 {errors.lastName && <p className="text-xs text-red-500 font-medium">{errors.lastName}</p>}
               </div>
@@ -323,33 +323,9 @@ const TalentSignup = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
               />
               {errors.email && <p className="text-xs text-red-500 font-medium">{errors.email}</p>}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  className="h-11 pr-10 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {errors.password && <p className="text-xs text-red-500 font-medium">{errors.password}</p>}
             </div>
 
             <div className="space-y-1.5">
@@ -358,7 +334,7 @@ const TalentSignup = () => {
                 value={formData.heardFrom} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, heardFrom: value }))}
               >
-                <SelectTrigger className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800">
+                <SelectTrigger className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800">
                   <SelectValue placeholder="Select an option" />
                 </SelectTrigger>
                 <SelectContent>
@@ -375,9 +351,33 @@ const TalentSignup = () => {
               {errors.heardFrom && <p className="text-xs text-red-500 font-medium">{errors.heardFrom}</p>}
             </div>
 
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="h-[54px] pr-10 border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {errors.password && <p className="text-xs text-red-500 font-medium">{errors.password}</p>}
+            </div>
+
             <Button 
               type="submit" 
-              className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-all duration-300 gap-2 mt-2" 
+              className="w-full h-[54px] bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-all duration-300 gap-2 mt-2" 
               disabled={loading}
             >
               {loading ? "Creating Account..." : "Create Account"}
