@@ -424,8 +424,9 @@ const App = () => {
                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                   </Routes>
                 </ZoneGuard>
-              </Routes>
-            </Suspense>
+              } />
+            </Routes>
+          </Suspense>
           </BrowserRouter>
         </ErrorBoundary>
         </TooltipProvider>
