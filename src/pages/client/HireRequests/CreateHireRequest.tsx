@@ -20,6 +20,22 @@ import { Check, ChevronRight, X, ArrowLeft, Briefcase, Clock, Calendar, Globe, B
 
 const STEPS = ["Model", "Basics", "Details", "Review"];
 
+interface HireRequest {
+  service_model: string | null;
+  title: string | null;
+  role_summary: string | null;
+  responsibilities: string | null;
+  requirements: string | null;
+  location_preference: string | null;
+  timezone_overlap: string | null;
+  engagement_type: string | null;
+  budget_type: string | null;
+  budget_min: number | null;
+  budget_max: number | null;
+  fixed_budget: number | null;
+  hours_per_week: number | null;
+}
+
 export default function CreateHireRequest() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -63,23 +79,22 @@ export default function CreateHireRequest() {
 
       if (error) throw error;
       if (data) {
+        const d = data as HireRequest;
         setFormData({
-          service_model: data.service_model || "",
-          title: data.title || "",
-          role_summary: data.role_summary || "",
-          responsibilities: data.responsibilities || "",
-          requirements: data.requirements || "",
-          location_preference: data.location_preference || "",
-          timezone_overlap: data.timezone_overlap || "",
-          engagement_type: data.engagement_type || "",
-          budget_type: data.budget_type || "hourly",
-          budget_min: data.budget_min?.toString() || "",
-          budget_max: data.budget_max?.toString() || "",
-          fixed_budget: data.fixed_budget?.toString() || "",
-          hours_per_week: data.hours_per_week?.toString() || "",
+          service_model: d.service_model || "",
+          title: d.title || "",
+          role_summary: d.role_summary || "",
+          responsibilities: d.responsibilities || "",
+          requirements: d.requirements || "",
+          location_preference: d.location_preference || "",
+          timezone_overlap: d.timezone_overlap || "",
+          engagement_type: d.engagement_type || "",
+          budget_type: d.budget_type || "hourly",
+          budget_min: d.budget_min?.toString() || "",
+          budget_max: d.budget_max?.toString() || "",
+          fixed_budget: d.fixed_budget?.toString() || "",
+          hours_per_week: d.hours_per_week?.toString() || "",
         });
-        // Jump to last possible step based on data? No, let user go through flow
-        // or just set currentStep to 4 if reviewing? Better to let them start at 1.
       }
     } catch (error: any) {
       console.error("Error fetching draft:", error);

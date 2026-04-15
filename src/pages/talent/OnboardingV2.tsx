@@ -94,7 +94,7 @@ const OnboardingV2 = () => {
     const load = async () => {
       try {
         // Ensure V2 profile exists
-        await supabase.from("v2_talent_profiles").upsert({ user_id: user.id }, { onConflict: "user_id" });
+        await (supabase.from("v2_talent_profiles" as any).upsert({ user_id: user.id }, { onConflict: "user_id" }) as any);
 
         const { data: profile } = await supabase
           .from("v2_talent_profiles")
@@ -152,10 +152,10 @@ const OnboardingV2 = () => {
     setSaving(true);
     try {
       const payload = getSectionData(currentStep, formData);
-      const { data: result, error } = await supabase.rpc("v2_save_section_data", {
+      const { data: result, error } = await (supabase.rpc("v2_save_section_data" as any, {
         p_section_key: sectionKey,
-        p_data: payload as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-      }) as { data: { progress_percent: number } | null; error: any };
+        p_data: payload as any,
+      }) as any);
       
       if (error) throw error;
       // Update local progress from RPC response
@@ -197,7 +197,7 @@ const OnboardingV2 = () => {
     try {
       // Save current step first
       await saveCurrentStep();
-      const { error } = await supabase.rpc("v2_submit_profile");
+      const { error } = await (supabase.rpc("v2_submit_profile" as any) as any);
       if (error) throw error;
       setIsLocked(true);
       toast({ title: "Profile Submitted!", description: "Your profile has been sent for vetting review." });

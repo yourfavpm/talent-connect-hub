@@ -465,7 +465,7 @@ const AdminDashboard = () => {
                       <TableRow key={j.id} className="border-slate-100 hover:bg-slate-50/50 transition-colors">
                         <TableCell className="py-4 px-8 text-sm font-bold text-slate-900">{j.title}</TableCell>
                         <TableCell className="py-4 px-8 text-sm text-slate-500 font-medium">{j.clients?.company_name || 'Standard Client'}</TableCell>
-                        <TableCell className="py-4 px-8 text-sm text-slate-500 font-bold uppercase text-[10px] tracking-widest">{j.service_model?.replace('_', ' ')}</TableCell>
+                        <TableCell className="py-4 px-8 text-slate-500 font-bold uppercase text-[10px] tracking-widest">{j.service_model?.replace('_', ' ')}</TableCell>
                         <TableCell className="py-4 px-8 text-sm text-slate-400 font-medium">{new Date(j.created_at || '').toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</TableCell>
                         <TableCell className="py-4 px-8 text-right flex justify-end gap-3">
                           <Link to={getInternalPath(`/admin/jobs/${j.id}`)}>
@@ -523,7 +523,7 @@ const AdminDashboard = () => {
                 </div>
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Awaiting Collection</p>
                 <div className="flex items-end gap-3 mb-8">
-                    <p className="text-4xl font-black tracking-tight tracking-tighter">₦{stats.invoiceTotal.toLocaleString()}</p>
+                    <p className="text-4xl font-black tracking-tighter">₦{stats.invoiceTotal.toLocaleString()}</p>
                 </div>
                 <Link to={getInternalPath("/admin/invoices")}>
                     <Button variant="outline" className="w-full h-11 bg-white/5 border-white/10 text-white font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-slate-900 transition-all rounded-lg">

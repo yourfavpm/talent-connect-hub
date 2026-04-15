@@ -591,7 +591,7 @@ const VettingWorkspaceV2 = () => {
             {/* Manager Assignment */}
             <div className="flex items-center gap-3 px-1">
                 <UserPlus className="h-4 w-4 text-slate-400" />
-                <span className="text-sm font-bold text-slate-600 whitespace-nowrap uppercase tracking-widest text-[10px]">Assigned Manager</span>
+                <span className="font-bold text-slate-600 whitespace-nowrap uppercase tracking-widest text-[10px]">Assigned Manager</span>
                 <Select value={selectedManagerId} onValueChange={assignManager} disabled={actionPending}>
                 <SelectTrigger className="w-[180px] h-9 bg-white border-slate-200 rounded-lg text-sm font-medium">
                     <SelectValue placeholder="Assign a manager..." />

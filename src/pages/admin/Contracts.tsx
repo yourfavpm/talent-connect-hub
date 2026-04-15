@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -56,7 +56,7 @@ const AdminContracts = () => {
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const { toast } = useToast();
 
-  const fetchContracts = async () => {
+  const fetchContracts = useCallback(async () => {
     try {
       setLoading(true);
       let query = supabase
@@ -86,11 +86,11 @@ const AdminContracts = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, toast]);
 
   useEffect(() => {
     fetchContracts();
-  }, [statusFilter]);
+  }, [statusFilter, fetchContracts]);
 
   const handleGenerateTalentContract = async (contract: Contract) => {
     try {
@@ -470,7 +470,7 @@ const AdminContracts = () => {
 
                             {selectedContract?.talent_contract_terms && (
                               <div className="border p-4 rounded-md bg-blue-50/50">
-                                <Label className="text-blue-600 mb-2 block flex items-center gap-2">
+                                <Label className="text-blue-600 mb-2 flex items-center gap-2">
                                   <FileText className="h-3 w-3" /> Talent/Subcontractor Agreement
                                 </Label>
                                 <div className="max-h-40 overflow-y-auto text-xs whitespace-pre-wrap bg-white p-2 rounded border">

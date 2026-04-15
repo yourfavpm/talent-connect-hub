@@ -110,7 +110,7 @@ const CourseHub = () => {
                 .select("*, cohorts!cohort_id(*)")
                 .eq("user_id", user.id)
                 .eq("course_id", slug)
-                .single() as any);
+                .single() as Promise<{ data: Enrollment & { cohorts: Cohort } | null; error: any }>);
 
             if (enrollError || !enrollData) {
                 toast({
@@ -154,7 +154,7 @@ const CourseHub = () => {
                 user_id: user?.id,
                 submission_content: submissionContent,
                 status: 'submitted'
-            }) as any);
+            }) as Promise<{ error: any }>);
 
             if (error) throw error;
 
