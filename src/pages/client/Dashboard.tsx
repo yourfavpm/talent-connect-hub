@@ -26,6 +26,7 @@ const ClientDashboard = () => {
     activeJobs: 0,
     pendingRequests: 0,
     talentsHired: 0,
+    pendingOffers: 0,
     outstandingInvoices: 0,
   });
   const verificationTriggered = useRef(false);
@@ -57,24 +58,38 @@ const ClientDashboard = () => {
           setBaseProfile(profileData);
         }
 
-        // Fetch Stats - Using hr_v2 system
+        // Fetch Stats - Using hr_v2 system and legacy tables
+        // Note: For invoices and offers, we need the clientData.id (the UUID from clients table, not user_id)
+        const queries: any[] = [
+          supabase.from("hr_v2_hire_requests").select("*", { count: "exact", head: true }).eq("client_user_id", authData.user.id).eq("status", "published"),
+          supabase.from("hr_v2_hire_requests").select("*", { count: "exact", head: true }).eq("client_user_id", authData.user.id).in("status", ["submitted", "admin_review", "approved"]),
+          supabase.from("hr_v2_hires").select("*", { count: "exact", head: true }).eq("client_user_id", authData.user.id),
+        ];
+
+        // Only add client-specific queries if we actually found a client record
+        if (clientData) {
+          queries.push(supabase.from("invoices").select("*", { count: "exact", head: true }).eq("client_id", clientData.id).eq("status", "outstanding"));
+          queries.push(supabase.from("offers").select("*", { count: "exact", head: true }).eq("client_id", clientData.id).eq("status", "pending"));
+        } else {
+          // Push dummy empty results if no client record
+          queries.push(Promise.resolve({ count: 0 }));
+          queries.push(Promise.resolve({ count: 0 }));
+        }
+
         const [
           { count: activeJobs },
           { count: pendingRequests },
           { count: hiredTalents },
-          { count: outstandingInvoices }
-        ] = await Promise.all([
-          supabase.from("hr_v2_hire_requests").select("*", { count: "exact", head: true }).eq("client_user_id", authData.user.id).eq("status", "published"),
-          supabase.from("hr_v2_hire_requests").select("*", { count: "exact", head: true }).eq("client_user_id", authData.user.id).in("status", ["submitted", "admin_review", "approved"]),
-          supabase.from("hr_v2_hires").select("*", { count: "exact", head: true }).eq("client_user_id", authData.user.id),
-          supabase.from("invoices").select("*", { count: "exact", head: true }).eq("client_user_id", authData.user.id).eq("status", "outstanding")
-        ]);
+          { count: outstandingInvoices },
+          { count: pendingOffers }
+        ] = await Promise.all(queries);
 
         setStatsData({
           activeJobs: activeJobs || 0,
           pendingRequests: pendingRequests || 0,
           talentsHired: hiredTalents || 0,
           outstandingInvoices: outstandingInvoices || 0,
+          pendingOffers: pendingOffers || 0,
         });
       }
       setLoading(false);
@@ -133,10 +148,10 @@ const ClientDashboard = () => {
   }
 
   const stats = [
-    { label: "Active Jobs", value: statsData.activeJobs.toString(), icon: Briefcase },
-    { label: "Talents Hired", value: statsData.talentsHired.toString(), icon: Users },
-    { label: "Pending Offers", value: statsData.pendingOffers.toString(), icon: Clock },
-    { label: "Outstanding Invoices", value: statsData.outstandingInvoices.toString(), icon: FileText },
+    { label: "Active Jobs", value: statsData.activeJobs, icon: Briefcase },
+    { label: "Talents Hired", value: statsData.talentsHired, icon: Users },
+    { label: "Pending Requests", value: statsData.pendingRequests, icon: Inbox },
+    { label: "Outstanding Invoices", value: statsData.outstandingInvoices, icon: FileText },
   ];
 
   return (
