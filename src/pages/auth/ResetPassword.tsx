@@ -62,21 +62,33 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen bg-white flex flex-col-reverse lg:flex-row font-inter overflow-x-hidden">
         {/* BRAND SIDE */}
-        <div className="lg:w-[45%] bg-slate-50/80 border-r border-slate-100 p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl -z-10" />
-            <div className="relative z-10">
-                <Link to="/" className="inline-block mb-16 lg:mb-24">
-                    <Logo showText={false} imgHeight="h-56" />
-                </Link>
-                <div className="max-w-md">
-                    <h2 className="text-2xl lg:text-3xl font-semibold text-slate-900 leading-tight mb-4 tracking-tight">Recover your account.</h2>
-                    <p className="text-slate-500 text-lg font-medium leading-relaxed mb-10">We've sent a recovery link to your email to help you get back to work smoothly.</p>
-                </div>
+        <div className="lg:w-[45%] relative border-r border-slate-100 flex flex-col justify-between overflow-hidden">
+            {/* Background Image with Overlay */}
+            <div className="absolute inset-0 z-0">
+                <img 
+                    src={portal === "talent" ? "/images/auth/talent-side.jpg" : "/images/auth/client-side.jpg"}
+                    alt="Background"
+                    className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px]" />
             </div>
-            {/* Professional Image Integration */}
-            <div className="absolute bottom-0 left-0 w-full h-[35%] xl:h-[40%] hidden lg:block overflow-hidden">
-                <img src="/images/auth-vetted-team.png" alt="OPSlyHR Professionals" className="w-full h-full object-cover object-top opacity-90 mix-blend-multiply" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-100/20 via-transparent to-slate-50/80" />
+
+            <div className="relative z-10 p-8 lg:p-16 flex flex-col justify-between h-full">
+                <div>
+                    <Link to="/" className="inline-block mb-16 lg:mb-24">
+                        <Logo showText={false} imgHeight="h-56" variant="light" />
+                    </Link>
+                    <div className="max-w-md">
+                        <h2 className="text-2xl lg:text-3xl font-bold text-white leading-tight mb-4 tracking-tight">Recover your account.</h2>
+                        <p className="text-slate-200 text-lg font-medium leading-relaxed mb-10 opacity-90">We've sent a recovery link to your email to help you get back to work smoothly.</p>
+                    </div>
+                </div>
+
+                <div className="mt-auto pt-10">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
+                        Secure Account Recovery
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -106,35 +118,42 @@ const ResetPassword = () => {
   return (
     <div className="min-h-screen flex flex-col-reverse lg:flex-row bg-white font-inter overflow-x-hidden">
       {/* BRAND SIDE PANEL */}
-      <div className="lg:w-[45%] bg-slate-50/80 border-r border-slate-100 p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden">
-        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl -z-10" />
-        <div className="relative z-10">
-          <Link to="/" className="inline-block mb-16 lg:mb-24">
-            <Logo showText={false} imgHeight="h-56" />
-          </Link>
+      <div className="lg:w-[45%] relative border-r border-slate-100 flex flex-col justify-between overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0 text-white">
+          <img 
+            src={portal === "talent" ? "/images/auth/talent-side.jpg" : "/images/auth/client-side.jpg"}
+            alt="Background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px]" />
+        </div>
 
-          <div className="max-w-md">
-            <h2 className="text-2xl lg:text-3xl font-semibold text-slate-900 leading-tight mb-4 tracking-tight">
-              Password Recovery
-            </h2>
-            <p className="text-slate-500 text-lg font-medium leading-relaxed mb-10">
-              Don't worry, it happens. Enter your professional email and we'll help you securely reset your credentials.
-            </p>
-            <div className="flex items-center gap-3 py-6 border-t border-slate-200/60">
-                <Shield className="w-5 h-5 text-blue-600/40" />
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Secure Verification</span>
+        <div className="relative z-10 p-8 lg:p-16 flex flex-col justify-between h-full">
+          <div>
+            <Link to="/" className="inline-block mb-16 lg:mb-24">
+              <Logo showText={false} imgHeight="h-56" variant="light" />
+            </Link>
+
+            <div className="max-w-md">
+              <h2 className="text-2xl lg:text-3xl font-bold text-white leading-tight mb-4 tracking-tight">
+                Password Recovery
+              </h2>
+              <p className="text-slate-200 text-lg font-medium leading-relaxed mb-10 opacity-90">
+                Don't worry, it happens. Enter your professional email and we'll help you securely reset your credentials.
+              </p>
+              <div className="flex items-center gap-3 py-6 border-t border-white/10">
+                  <Shield className="w-5 h-5 text-blue-400/60" />
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Secure Verification</span>
+              </div>
             </div>
           </div>
-        </div>
-        
-        {/* Professional Image Integration */}
-        <div className="absolute bottom-0 left-0 w-full h-[35%] xl:h-[40%] hidden lg:block overflow-hidden">
-          <img 
-            src="/images/auth-vetted-team.png" 
-            alt="OPSlyHR Professionals" 
-            className="w-full h-full object-cover object-top opacity-90 mix-blend-multiply" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-100/20 via-transparent to-slate-50/80" />
+
+          <div className="mt-auto pt-10">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
+              Identity Protection Standards
+            </p>
+          </div>
         </div>
       </div>
 

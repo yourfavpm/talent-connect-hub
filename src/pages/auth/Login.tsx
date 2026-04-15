@@ -258,57 +258,63 @@ const Login = () => {
   return (
     <div className="min-h-screen flex flex-col-reverse lg:flex-row bg-white font-inter overflow-x-hidden">
       {/* LEFT PANEL (CONTEXT / TRUST) - 45% on desktop */}
-      <div className="lg:w-[45%] bg-slate-50/80 border-r border-slate-100 p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden">
-        {/* Subtle background element */}
-        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl -z-10"></div>
+      <div className="lg:w-[45%] relative border-r border-slate-100 flex flex-col justify-between overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={portal === "talent" ? "/images/auth/talent-side.jpg" : "/images/auth/client-side.jpg"}
+            alt="Background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px]" />
+        </div>
         
-        <div className="relative z-10">
-          <Link to="/" className="inline-block mb-16 lg:mb-24">
-            <Logo showText={false} imgHeight="h-56" />
-          </Link>
-
-          <div className="max-w-md">
-            <h2 className="text-2xl lg:text-3xl font-semibold text-slate-900 leading-tight mb-4 tracking-tight">
-              Welcome back.
-            </h2>
-            
-            <p className="text-slate-500 text-lg font-medium leading-relaxed mb-10">
-              {portal === "talent" 
-                ? "Access your assignments, interviews, payments, and professional profile."
-                : portal === "admin"
-                ? "Manage talents, clients, and platform operations."
-                : "Manage your team, track contracts, and oversee operations."}
-            </p>
-
-            <div className="space-y-4 pt-10 border-t border-slate-200/60 transition-all duration-500">
-              {(portal === "talent" ? [
-                "Track job applications",
-                "Manage active contracts",
-                "Submit timesheets",
-                "Update professional profile"
-              ] : [
-                "Browse vetted professionals",
-                "Track engagements",
-                "Approve timesheets",
-                "Manage invoices"
-              ]).map((item, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-600/40" />
-                  <span className="text-sm font-semibold text-slate-600">{item}</span>
-                </div>
-              ))}
+        <div className="relative z-10 p-8 lg:p-16 flex flex-col justify-between h-full">
+          <div>
+            <Link to="/" className="inline-block mb-16 lg:mb-24">
+              <Logo showText={false} imgHeight="h-56" variant="light" />
+            </Link>
+  
+            <div className="max-w-md">
+              <h2 className="text-2xl lg:text-3xl font-bold text-white leading-tight mb-4 tracking-tight">
+                Welcome back.
+              </h2>
+              
+              <p className="text-slate-200 text-lg font-medium leading-relaxed mb-10 opacity-90">
+                {portal === "talent" 
+                  ? "Access your assignments, interviews, payments, and professional profile."
+                  : portal === "admin"
+                  ? "Manage talents, clients, and platform operations."
+                  : "Manage your team, track contracts, and oversee operations."}
+              </p>
+  
+              <div className="space-y-4 pt-10 border-t border-white/10 transition-all duration-500">
+                {(portal === "talent" ? [
+                  "Track job applications",
+                  "Manage active contracts",
+                  "Submit timesheets",
+                  "Update professional profile"
+                ] : [
+                  "Browse vetted professionals",
+                  "Track engagements",
+                  "Approve timesheets",
+                  "Manage invoices"
+                ]).map((item, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                    <span className="text-sm font-semibold text-white/80">{item}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Professional Image Integration */}
-        <div className="absolute bottom-0 left-0 w-full h-[35%] xl:h-[40%] hidden lg:block overflow-hidden">
-          <img 
-            src="/images/auth-vetted-team.png" 
-            alt="OPSlyHR Professionals" 
-            className="w-full h-full object-cover object-top opacity-90 mix-blend-multiply" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-100/20 via-transparent to-slate-50/80" />
+  
+          {/* Subtle Trust Footer */}
+          <div className="mt-auto pt-10">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
+              Trusted by high-growth product teams
+            </p>
+          </div>
         </div>
       </div>
 
