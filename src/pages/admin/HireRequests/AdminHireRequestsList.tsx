@@ -119,7 +119,7 @@ export default function AdminHireRequestsList() {
   }, [requests]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans animate-fade-in">
+    <div className="w-full px-4 sm:px-8 lg:px-12 py-8 font-sans animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Hire Requests</h1>

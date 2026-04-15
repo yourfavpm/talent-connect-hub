@@ -325,7 +325,7 @@ const Contracts = () => {
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="w-full max-w-none space-y-6 animate-fade-in px-4 md:px-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Contracts</h1>

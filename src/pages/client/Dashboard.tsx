@@ -22,6 +22,12 @@ const ClientDashboard = () => {
   const [baseProfile, setBaseProfile] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [statsData, setStatsData] = useState({
+    activeJobs: 0,
+    pendingRequests: 0,
+    talentsHired: 0,
+    outstandingInvoices: 0,
+  });
   const verificationTriggered = useRef(false);
   const { toast } = useToast();
 
@@ -50,6 +56,26 @@ const ClientDashboard = () => {
         if (profileData) {
           setBaseProfile(profileData);
         }
+
+        // Fetch Stats - Using hr_v2 system
+        const [
+          { count: activeJobs },
+          { count: pendingRequests },
+          { count: hiredTalents },
+          { count: outstandingInvoices }
+        ] = await Promise.all([
+          supabase.from("hr_v2_hire_requests").select("*", { count: "exact", head: true }).eq("client_user_id", authData.user.id).eq("status", "published"),
+          supabase.from("hr_v2_hire_requests").select("*", { count: "exact", head: true }).eq("client_user_id", authData.user.id).in("status", ["submitted", "admin_review", "approved"]),
+          supabase.from("hr_v2_hires").select("*", { count: "exact", head: true }).eq("client_user_id", authData.user.id),
+          supabase.from("invoices").select("*", { count: "exact", head: true }).eq("client_user_id", authData.user.id).eq("status", "outstanding")
+        ]);
+
+        setStatsData({
+          activeJobs: activeJobs || 0,
+          pendingRequests: pendingRequests || 0,
+          talentsHired: hiredTalents || 0,
+          outstandingInvoices: outstandingInvoices || 0,
+        });
       }
       setLoading(false);
     };
@@ -107,10 +133,10 @@ const ClientDashboard = () => {
   }
 
   const stats = [
-    { label: "Active Jobs", value: "0", icon: Briefcase },
-    { label: "Talents Hired", value: "0", icon: Users },
-    { label: "Pending Offers", value: "0", icon: Clock },
-    { label: "Outstanding Invoices", value: "0", icon: FileText },
+    { label: "Active Jobs", value: statsData.activeJobs.toString(), icon: Briefcase },
+    { label: "Talents Hired", value: statsData.talentsHired.toString(), icon: Users },
+    { label: "Pending Offers", value: statsData.pendingOffers.toString(), icon: Clock },
+    { label: "Outstanding Invoices", value: statsData.outstandingInvoices.toString(), icon: FileText },
   ];
 
   return (

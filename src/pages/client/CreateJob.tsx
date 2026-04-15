@@ -201,7 +201,7 @@ const CreateJob = () => {
   );
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 font-sans pb-32">
+    <div className="w-full max-w-none px-4 sm:px-6 py-8 font-sans pb-32">
       {/* Header */}
       <div className="flex items-center mb-8 gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate(getInternalPath("/client/jobs"))} className="text-gray-500 rounded-full hover:bg-gray-100">

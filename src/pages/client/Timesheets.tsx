@@ -189,7 +189,7 @@ const ClientTimesheets = () => {
     const selectedTimesheet = timesheets.find(t => t.id === viewingId);
 
     return (
-        <div className="space-y-6 animate-fade-in">
+        <div className="w-full max-w-none space-y-6 animate-fade-in px-4 md:px-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-900 to-indigo-800">

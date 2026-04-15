@@ -40,7 +40,7 @@ const ClientPayments = () => {
     }, []);
 
     return (
-        <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
+        <div className="w-full max-w-none space-y-6 animate-fade-in px-4 md:px-8">
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold">Payments & Billing</h1>

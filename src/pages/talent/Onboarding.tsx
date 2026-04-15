@@ -840,7 +840,7 @@ const TalentOnboarding = () => {
 
       {/* ── Top Bar ─────────────────────────────────────────────────────── */}
       <div className="sticky top-0 z-30 bg-white border-b border-slate-100">
-        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+        <div className="w-full px-4 sm:px-8 lg:px-12 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <span className="text-sm font-bold text-slate-900">OPSlyHR</span>
             <span className="hidden sm:block text-slate-200">|</span>
@@ -890,7 +890,7 @@ const TalentOnboarding = () => {
       )}
 
       {/* ── Main 3-panel layout ──────────────────────────────────────────── */}
-      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8">
+      <div className="w-full px-4 sm:px-8 lg:px-12 py-8">
         <div className="flex gap-8 lg:gap-12">
 
           {/* ── Left Stepper (desktop) ────────────────────────────────── */}
@@ -938,7 +938,7 @@ const TalentOnboarding = () => {
           </aside>
 
           {/* ── Form Panel ────────────────────────────────────────────── */}
-          <main className="flex-1 min-w-0 max-w-[680px]">
+          <main className="flex-1 min-w-0 max-w-none">
 
             {/* Step Header */}
             <div className="mb-6">

@@ -279,7 +279,7 @@ const ProfileV2 = () => {
 
   return (
     <FormProvider {...methods}>
-      <div className="w-full space-y-8 pb-32">
+      <div className="w-full max-w-none space-y-8 pb-32">
         
         {/* ── Page Title (Desktop Only) ────────────────────────────── */}
         <div className="hidden md:block">

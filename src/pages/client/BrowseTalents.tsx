@@ -40,7 +40,7 @@ const BrowseTalents = () => {
   };
 
   const handleSelectTalent = (talent: any) => {
-    navigate(`/client/browse-talents/${talent.talent_id}`);
+    navigate(getInternalPath(`/client/browse-talents/${talent.talent_id}`));
   };
 
   const handleResetFilters = () => {

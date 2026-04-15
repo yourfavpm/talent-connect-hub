@@ -298,7 +298,7 @@ export default function AdminHireRequestDetail() {
   /* ── Loading / not found states ───────────────────────────── */
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <div className="w-full px-4 sm:px-8 lg:px-12 py-8">
         <Skeleton className="h-10 w-48 mb-6" />
         <Skeleton className="h-64 rounded-2xl mb-6" />
         <Skeleton className="h-96 rounded-2xl" />
@@ -308,7 +308,7 @@ export default function AdminHireRequestDetail() {
 
   if (!request) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 text-center">
+      <div className="w-full px-4 sm:px-8 lg:px-12 py-12 text-center">
         <AlertCircle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
         <h2 className="text-xl font-bold text-slate-900 mb-2">Request Not Found</h2>
         <Button onClick={() => navigate(getInternalPath("/admin/hire-requests"))}>Back to Requests</Button>
@@ -320,7 +320,7 @@ export default function AdminHireRequestDetail() {
   const shortlistedTalentIds = new Set(shortlist.map(s => s.talent_user_id));
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 font-sans pb-32 animate-fade-in">
+    <div className="w-full px-4 sm:px-8 lg:px-12 py-8 font-sans pb-32 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-4">
@@ -357,6 +357,11 @@ export default function AdminHireRequestDetail() {
           {request.status === "published" && (
             <Button variant="outline" onClick={openShortlistDialog} className="h-9 text-sm border-slate-200">
               <UserPlus className="w-4 h-4 mr-1.5" /> Shortlist Talent
+            </Button>
+          )}
+          {request.status === "approved" && (
+            <Button variant="outline" onClick={openShortlistDialog} className="h-9 text-sm border-slate-200">
+              <UserPlus className="w-4 h-4 mr-1.5" /> Pre-match Talent
             </Button>
           )}
         </div>
@@ -419,10 +424,18 @@ export default function AdminHireRequestDetail() {
             <div className="text-center py-16 bg-white border border-dashed border-slate-200 rounded-xl">
               <Users className="h-10 w-10 text-slate-300 mx-auto mb-4" />
               <h3 className="text-sm font-bold text-slate-900 mb-1">No applicants yet</h3>
-              <p className="text-sm text-slate-500">{request.status === "published" ? "Applicants will appear once vetted talents apply." : "Publish this request to start receiving applications."}</p>
+              <p className="text-sm text-slate-500 mb-6">{request.status === "published" ? "Applicants will appear once vetted talents apply." : "Publish this request to start receiving applications."}</p>
+              <Button onClick={openShortlistDialog} variant="outline" size="sm">
+                <UserPlus className="w-4 h-4 mr-2" /> Add Talent Manually
+              </Button>
             </div>
           ) : (
             <div className="space-y-3">
+              <div className="flex justify-end mb-4">
+                <Button onClick={openShortlistDialog} variant="outline" size="sm">
+                  <UserPlus className="w-4 h-4 mr-2" /> Add Talent
+                </Button>
+              </div>
               {applications.map((app) => (
                 <div key={app.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">

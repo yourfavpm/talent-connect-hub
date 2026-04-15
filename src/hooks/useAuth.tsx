@@ -42,20 +42,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetchingForUser.current = userId;
     setRoleLoading(true);
     try {
-      const { data: roleData, error: roleError } = await supabase
+      const { data: roleRecords, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", userId)
-        .maybeSingle();
+        .eq("user_id", userId);
 
       if (roleError) {
         console.error("Error fetching user role:", roleError);
-      } else {
-        setUserRole(roleData?.role ?? null);
+        setRoleLoading(false);
+        fetchingForUser.current = null;
+        return;
       }
 
+      // Handle multiple roles by picking the first one (or prioritizing admin roles)
+      const roles = roleRecords?.map(r => r.role) || [];
+      const primaryRole = roles[0] || null;
+      
+      setUserRole(primaryRole);
+
       let perms: string[] = [];
-      if (isAdminRole(roleData?.role)) {
+      if (isAdminRole(primaryRole)) {
           const { data: permData, error: permError } = await supabase
             .rpc('get_admin_permissions' as any, { p_admin_id: userId });
 
@@ -68,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Cache the result for this session
-      roleCache.set(userId, { role: roleData?.role ?? null, permissions: perms });
+      roleCache.set(userId, { role: primaryRole, permissions: perms });
     } catch (error) {
       console.error("Error in fetchUserRole:", error);
     } finally {

@@ -159,15 +159,15 @@ const ClientOnboarding = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
+      <header className="border-b bg-card w-full">
+        <div className="w-full px-4 sm:px-8 lg:px-12 py-4">
           <Logo />
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="w-full px-4 sm:px-8 lg:px-12 py-8 max-w-none">
         {/* Progress Steps */}
-        <div className="flex items-center justify-center mb-8">
+        <div className="flex items-center justify-start mb-12">
           {steps.map((s, index) => (
             <div key={s.number} className="flex items-center">
               <div
@@ -181,7 +181,7 @@ const ClientOnboarding = () => {
               </div>
               {index < steps.length - 1 && (
                 <div
-                  className={`w-16 h-0.5 mx-2 ${
+                  className={`flex-1 min-w-[100px] h-0.5 mx-4 ${
                     step > s.number ? "bg-primary" : "bg-muted"
                   }`}
                 />

@@ -107,7 +107,7 @@ const TalentMessages = () => {
   // Let's keep them separated to respect existing routes: `TalentMessages` is the List View. `TalentMessageThread` is the List View (Left) + Chat View (Right).
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col md:flex-row bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+    <div className="h-[calc(100vh-100px)] flex flex-col md:flex-row bg-white border border-gray-200 shadow-sm overflow-hidden w-full">
       
       {/* Left Pane: Conversation List */}
       <div className="w-full md:w-80 lg:w-[350px] flex flex-col border-r border-gray-200 bg-gray-50/30 h-full">

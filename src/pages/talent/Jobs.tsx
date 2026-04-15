@@ -294,7 +294,7 @@ const TalentJobs = () => {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-10 animate-fade-in">
+      <div className="w-full p-4 md:p-8 space-y-10 animate-fade-in">
         <div className="space-y-3">
           <div className="h-8 w-48 bg-slate-100 animate-pulse rounded-md" />
           <div className="h-4 w-64 bg-slate-50 animate-pulse rounded-md" />
@@ -373,7 +373,7 @@ const TalentJobs = () => {
   const interviewsScheduled = applications.filter((app) => app.status === "interview_scheduled").length;
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-10 animate-fade-in min-h-[calc(100vh-100px)]">
+    <div className="w-full p-4 md:p-8 space-y-10 animate-fade-in min-h-[calc(100vh-100px)]">
       
       {/* ── Page Header Strip ─────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
@@ -418,10 +418,30 @@ const TalentJobs = () => {
           <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
             <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-100">
               {[
-                { label: "Open Jobs", value: jobs.length, icon: Briefcase, color: "text-blue-600" },
-                { label: "Submitted", value: applications.length, icon: FileText, color: "text-indigo-600" },
-                { label: "Interviews", value: interviewsScheduled, icon: Timer, color: "text-amber-600" },
-                { label: "Active Contracts", value: activeContracts.length, icon: CheckCircle, color: "text-emerald-600" }
+                { 
+                  label: "Open Jobs", 
+                  value: jobs.length + (FEATURES.hire_request_v2_enabled ? v2Requests.length : 0), 
+                  icon: Briefcase, 
+                  color: "text-blue-600" 
+                },
+                { 
+                  label: "Applied", 
+                  value: applications.length + (FEATURES.hire_request_v2_enabled ? v2Applications.length : 0), 
+                  icon: FileText, 
+                  color: "text-indigo-600" 
+                },
+                { 
+                  label: "Interviews", 
+                  value: interviewsScheduled, 
+                  icon: Timer, 
+                  color: "text-amber-600" 
+                },
+                { 
+                  label: "Active Contracts", 
+                  value: activeContracts.length, 
+                  icon: CheckCircle, 
+                  color: "text-emerald-600" 
+                }
               ].map((kpi, i) => (
                 <div key={i} className="px-8 py-7 flex items-center justify-between hover:bg-slate-50/30 transition-colors">
                   <div className="space-y-1.5">
@@ -463,46 +483,69 @@ const TalentJobs = () => {
               </div>
 
               <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
-                {applications.length > 0 ? (
-                  <div className="divide-y divide-slate-50">
-                    {applications.slice(0, 5).map((app) => (
-                      <div key={app.id} className="group p-6 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer">
-                        <div className="flex items-center gap-5">
-                          <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-blue-600 transition-all border border-transparent group-hover:border-slate-100">
-                             <FileText className="h-5 w-5" />
-                          </div>
-                          <div className="space-y-1">
-                             <div className="text-[14px] font-bold text-slate-900">
-                               Applied for <span className="text-blue-600">{app.jobs?.title}</span>
-                             </div>
-                             <div className="flex items-center gap-2 text-[12px] text-slate-500">
-                               <span className="font-medium text-slate-400">{app.jobs?.clients?.company_name}</span>
-                               <span className="h-1 w-1 rounded-full bg-slate-300" />
-                               <span>{format(new Date(app.created_at), "MMM d, yyyy")}</span>
-                             </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <Badge variant="outline" className="text-[10px] font-bold text-slate-500 bg-white border-slate-200/60 px-3 py-1 tracking-wider uppercase">
-                            {app.status.replace("_", " ")}
-                          </Badge>
+                {(() => {
+                  const activities = [
+                    ...applications.map(app => ({
+                      id: app.id,
+                      type: 'application',
+                      title: 'Applied for',
+                      jobTitle: app.jobs?.title,
+                      clientName: app.jobs?.clients?.company_name,
+                      date: app.created_at,
+                      status: app.status
+                    })),
+                    ...v2Requests.map(req => ({
+                      id: (req as any).id,
+                      type: 'job_posted',
+                      title: 'New Job Posted',
+                      jobTitle: (req as any).title,
+                      clientName: 'OPSlyHR Partner',
+                      date: (req as any).published_at || (req as any).created_at,
+                      status: 'Open'
+                    }))
+                  ].sort((a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime()).slice(0, 5);
 
-                          <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
+                  return activities.length > 0 ? (
+                    <div className="divide-y divide-slate-50">
+                      {activities.map((activity) => (
+                        <div key={activity.id} className="group p-6 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => activity.type === 'job_posted' ? setTab('opslyhr') : navigate('/talent/applications')}>
+                          <div className="flex items-center gap-5">
+                            <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-blue-600 transition-all border border-transparent group-hover:border-slate-100">
+                               {activity.type === 'application' ? <FileText className="h-5 w-5" /> : <Briefcase className="h-5 w-5" />}
+                            </div>
+                            <div className="space-y-1">
+                               <div className="text-[14px] font-bold text-slate-900">
+                                 {activity.title} <span className="text-blue-600">{activity.jobTitle}</span>
+                               </div>
+                               <div className="flex items-center gap-2 text-[12px] text-slate-500">
+                                 <span className="font-medium text-slate-400">{activity.clientName}</span>
+                                 <span className="h-1 w-1 rounded-full bg-slate-300" />
+                                 <span>{activity.date ? format(new Date(activity.date as string), "MMM d, yyyy") : 'Recently'}</span>
+                               </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <Badge variant="outline" className={clsx("text-[10px] font-bold px-3 py-1 tracking-wider uppercase", activity.type === 'job_posted' ? "text-emerald-600 bg-emerald-50 border-emerald-100" : "text-slate-500 bg-white border-slate-200/60")}>
+                              {(activity.status as string).replace("_", " ")}
+                            </Badge>
+
+                            <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
+                          </div>
                         </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-24 text-center space-y-4">
+                      <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
+                        <Briefcase className="h-8 w-8 text-slate-300" />
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="py-24 text-center space-y-4">
-                    <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
-                      <Briefcase className="h-8 w-8 text-slate-300" />
+                      <div className="space-y-1">
+                        <p className="text-[15px] font-bold text-slate-900">No activity yet</p>
+                        <p className="text-[13px] text-slate-500 max-w-[240px] mx-auto italic">Start applying to jobs to track your professional journey.</p>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-[15px] font-bold text-slate-900">No activity yet</p>
-                      <p className="text-[13px] text-slate-500 max-w-[240px] mx-auto italic">Start applying to jobs to track your professional journey.</p>
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             </div>
             

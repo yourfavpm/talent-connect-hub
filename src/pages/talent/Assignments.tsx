@@ -170,7 +170,7 @@ const TalentAssignments = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col space-y-6 max-w-5xl mx-auto">
+      <div className="flex flex-col space-y-6 w-full animate-fade-in">
         <div className="h-10 w-48 bg-gray-100 animate-pulse rounded" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-gray-100 animate-pulse rounded-lg" />)}
@@ -247,7 +247,7 @@ const TalentAssignments = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-5xl mx-auto">
+    <div className="space-y-8 animate-fade-in w-full">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Assignments</h1>

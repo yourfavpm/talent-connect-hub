@@ -50,7 +50,7 @@ const ClientSignup = () => {
     setLoading(true);
     setErrors({});
 
-    // 1. Validate form
+    // Validate form
     const result = clientSignupSchema.safeParse(formData);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -62,28 +62,6 @@ const ClientSignup = () => {
       setErrors(fieldErrors);
       setLoading(false);
       return;
-    }
-
-    // 2. Business Logic: Check email uniqueness for Client
-    try {
-      const { data: existence, error: existenceError } = await supabase
-        .rpc('check_user_role_existence', { p_email: formData.email });
-
-      if (!existenceError && existence && existence.length > 0) {
-        const { user_exists } = existence[0];
-        if (user_exists) {
-          toast({
-            title: "Email already registered",
-            description: "Clients must use a unique business email. This email is already associated with an account.",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-      }
-    } catch (checkErr) {
-      console.warn("Uniqueness check skipped:", checkErr);
-      // Continue if RPC is missing, but this is less than ideal
     }
 
     try {
@@ -104,15 +82,8 @@ const ClientSignup = () => {
 
       if (error) throw error;
 
+      // Send email notifications after successful signup
       if (data.user) {
-        // Assign client role
-        const { error: roleError } = await supabase
-          .from("user_roles")
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .insert({ user_id: data.user.id, role: "client" } as any);
-        
-        if (roleError) console.error("Failed to assign client role:", roleError);
-        
         try {
           // Secure Verification Flow
           if (!data.session) {

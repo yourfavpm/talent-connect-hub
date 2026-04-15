@@ -123,7 +123,7 @@ const TalentTimesheets = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col space-y-6 max-w-5xl mx-auto">
+      <div className="flex flex-col space-y-6 w-full animate-fade-in mx-auto px-4 md:px-8">
         <div className="h-10 w-48 bg-gray-100 animate-pulse rounded" />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-gray-100 animate-pulse rounded-lg" />)}
@@ -192,7 +192,7 @@ const TalentTimesheets = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-5xl mx-auto">
+    <div className="space-y-8 animate-fade-in w-full p-4 md:p-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
