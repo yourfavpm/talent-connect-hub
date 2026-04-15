@@ -73,9 +73,18 @@ const AdminSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColla
   const isCollapsed = collapsed && !mobileOpen;
 
   const baseNavigation = userRole === "talent_manager" ? talentManagerNavigation : navigation;
-  const filteredNavigation = baseNavigation.filter(item =>
-    !userRole || (userRole && item.roles.includes(userRole))
-  );
+  
+  const filteredNavigation = baseNavigation.filter(item => {
+    if (!userRole) return false;
+    
+    // Strict enforcement for talent_manager: ONLY show items from talentManagerNavigation
+    if (userRole === "talent_manager") {
+      return item.roles.includes("talent_manager");
+    }
+    
+    // For other roles, use standard inclusion
+    return item.roles.includes(userRole);
+  });
 
   const getBadgeCount = (badgeKey?: string) => {
     switch(badgeKey) {

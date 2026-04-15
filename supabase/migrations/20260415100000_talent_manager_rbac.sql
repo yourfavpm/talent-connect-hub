@@ -2,6 +2,11 @@
 -- This migration adds the 'Talent Manager' role and the necessary infrastructure 
 -- to restrict their view to assigned talents.
 
+-- Add talent_manager to the legacy app_role enum
+-- Note: This must run outside of a transaction block in some Postgres versions
+-- so we keep it separate from the main BEGIN/COMMIT block if needed.
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'talent_manager';
+
 BEGIN;
 
 -- 1. Create the 'Talent Manager' role
@@ -92,41 +97,37 @@ USING (
 );
 
 -- E. RBAC Visibility Fixes
+-- Patch is_admin to include new roles and be case-insensitive
+CREATE OR REPLACE FUNCTION public.is_admin(_user_id UUID)
+RETURNS BOOLEAN
+LANGUAGE SQL
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.user_roles
+    WHERE user_id = _user_id
+      AND lower(role::text) IN ('super_admin', 'operations_admin', 'vetting_admin', 'finance_admin', 'support_admin', 'talent_manager', 'admin', 'super admin')
+  )
+$$;
+
 -- Ensure Talent Managers and Super Admins (v1) can view the admin list for assignment
--- Note: We use lower(role::text) to handle case-sensitivity across different role naming conventions
--- without failing on Enum types.
 DROP POLICY IF EXISTS "Admins can view team" ON public.admin_users;
 CREATE POLICY "Admins can view team" ON public.admin_users
 FOR SELECT
-USING (
-    EXISTS (
-        SELECT 1 FROM public.user_roles 
-        WHERE user_id = auth.uid() 
-        AND lower(role::text) IN ('super_admin', 'operations_admin', 'talent_manager', 'admin', 'super admin')
-    )
-);
+USING ( public.is_admin(auth.uid()) );
 
 DROP POLICY IF EXISTS "Admins can view role_permissions" ON public.role_permissions;
 CREATE POLICY "Admins can view role_permissions" ON public.role_permissions
 FOR SELECT
-USING (
-    EXISTS (
-        SELECT 1 FROM public.user_roles 
-        WHERE user_id = auth.uid() 
-        AND lower(role::text) IN ('super_admin', 'operations_admin', 'talent_manager', 'admin', 'super admin')
-    )
-);
+USING ( public.is_admin(auth.uid()) );
 
 DROP POLICY IF EXISTS "Admins can view user_roles" ON public.user_roles;
 CREATE POLICY "Admins can view user_roles" ON public.user_roles
 FOR SELECT
-USING (
-    EXISTS (
-        SELECT 1 FROM public.user_roles 
-        WHERE user_id = auth.uid() 
-        AND lower(role::text) IN ('super_admin', 'operations_admin', 'talent_manager', 'admin', 'super admin')
-    )
-);
+USING ( auth.uid() = user_id OR public.is_admin(auth.uid()) );
 
 -- F. Talent Visibility of Manager
 -- Allow talents to see their assigned manager's name and email

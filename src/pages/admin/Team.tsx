@@ -136,12 +136,18 @@ const AdminTeam = () => {
         try {
             setSubmitting(true);
             
+            // Get the role name for the legacy user_roles system
+            const selectedRole = roles.find(r => r.id === formData.role_id);
+            const roleForLegacySystem = selectedRole 
+                ? selectedRole.name.toLowerCase().replace(/ /g, '_')
+                : "operations_admin";
+
             // 1. Create Auth Account using edge function
             const { data: authData, error: createError } = await supabase.functions.invoke('create-user', {
                 body: {
                     email: formData.email,
                     password: formData.password,
-                    role: "operations_admin", // Default macro zone role
+                    role: roleForLegacySystem, 
                     firstName: formData.name.split(' ')[0],
                     lastName: formData.name.split(' ').slice(1).join(' ')
                 }

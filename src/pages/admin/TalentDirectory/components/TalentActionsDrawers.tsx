@@ -80,32 +80,25 @@ const TalentActionsDrawers = ({
 
   const fetchAdmins = async () => {
     try {
-      // Fetch from admin_users and manually include role information
-      const { data: adminUsers, error: adminError } = await supabase
+      // Fetch all admins and their roles using the new RBAC system
+      const { data: adminsWithRoles, error: adminError } = await supabase
         .from("admin_users")
-        .select("id, full_name, email, status");
+        .select(`
+          id, 
+          full_name, 
+          email,
+          admin_roles (
+            roles (
+              name
+            )
+          )
+        `);
       
       if (adminError) throw adminError;
 
-      const { data: userRoles, error: roleError } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
-      
-      if (roleError) {
-        console.warn("Could not fetch user_roles, defaulting to generic Admin label:", roleError);
-      }
-
-      const combined = (adminUsers || []).map(admin => {
-        const userRole = userRoles?.find(ur => ur.user_id === admin.id);
-        // Map common role formats to a friendly label
-        let displayRole = 'Admin';
-        if (userRole) {
-          const r = userRole.role?.toLowerCase();
-          if (r === 'super admin' || r === 'super_admin') displayRole = 'Super Admin';
-          else if (r === 'talent_manager') displayRole = 'Talent Manager';
-          else if (r === 'operations_admin') displayRole = 'Ops Admin';
-          else displayRole = userRole.role;
-        }
+      const combined = (adminsWithRoles || []).map(admin => {
+        const roles = admin.admin_roles?.map((ar: any) => ar.roles?.name) || [];
+        const displayRole = roles[0] || 'Admin';
 
         return {
           user_id: admin.id,

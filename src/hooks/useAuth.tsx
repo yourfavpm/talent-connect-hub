@@ -42,21 +42,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetchingForUser.current = userId;
     setRoleLoading(true);
     try {
-      const { data: roleRecords, error: roleError } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId);
+      // 1. Try to fetch from the new RBAC system first (admin_roles/roles)
+      const { data: adminRoleData } = await supabase
+        .from("admin_roles")
+        .select("role:roles(name)")
+        .eq("admin_id", userId)
+        .maybeSingle();
 
-      if (roleError) {
-        console.error("Error fetching user role:", roleError);
-        setRoleLoading(false);
-        fetchingForUser.current = null;
-        return;
+      let primaryRole: string | null = null;
+
+      if (adminRoleData && (adminRoleData as any).role) {
+        // Map "Talent Manager" -> "talent_manager" for consistent internal logic
+        primaryRole = (adminRoleData as any).role.name
+          .toLowerCase()
+          .replace(/ /g, "_");
+      } else {
+        // 2. Fallback to legacy user_roles
+        const { data: roleRecords, error: roleError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId);
+
+        if (roleError) {
+          console.error("Error fetching user role:", roleError);
+          setRoleLoading(false);
+          fetchingForUser.current = null;
+          return;
+        }
+
+        const roles = roleRecords?.map(r => r.role) || [];
+        primaryRole = roles[0] || null;
       }
-
-      // Handle multiple roles by picking the first one (or prioritizing admin roles)
-      const roles = roleRecords?.map(r => r.role) || [];
-      const primaryRole = roles[0] || null;
       
       setUserRole(primaryRole);
 

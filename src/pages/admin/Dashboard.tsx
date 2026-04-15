@@ -325,8 +325,8 @@ const AdminDashboard = () => {
           </p>
           <p className="text-3xl font-extrabold text-slate-900">{stats.pendingVetting}</p>
         </Link>
-
-        {viewMode === "personal" && (
+        
+        {isTalentManager && (
           <div className="group rounded-xl border border-indigo-200 bg-indigo-50/30 p-6 shadow-sm transition-all text-left">
             <div className="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center text-white mb-4">
               <UserCheck className="h-5 w-5" />
@@ -336,13 +336,15 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        <Link to={getInternalPath("/admin/jobs")} className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-400 transition-all text-left">
-          <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 mb-4 group-hover:bg-amber-600 group-hover:text-white transition-colors">
-            <Briefcase className="h-5 w-5" />
-          </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Job Approvals</p>
-          <p className="text-3xl font-extrabold text-slate-900">{stats.pendingJobs}</p>
-        </Link>
+        {!isTalentManager && (
+          <Link to={getInternalPath("/admin/jobs")} className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-400 transition-all text-left">
+            <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 mb-4 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+              <Briefcase className="h-5 w-5" />
+            </div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Job Approvals</p>
+            <p className="text-3xl font-extrabold text-slate-900">{stats.pendingJobs}</p>
+          </Link>
+        )}
 
         <Link to={getInternalPath("/admin/contracts")} className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-400 transition-all text-left">
           <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600 mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
@@ -352,13 +354,15 @@ const AdminDashboard = () => {
           <p className="text-3xl font-extrabold text-slate-900">{stats.activeContracts}</p>
         </Link>
         
-        <Link to={getInternalPath("/admin/invoices")} className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-400 transition-all text-left">
-          <div className="w-10 h-10 bg-rose-50 rounded-lg flex items-center justify-center text-rose-600 mb-4 group-hover:bg-rose-600 group-hover:text-white transition-colors">
-            <Receipt className="h-5 w-5" />
-          </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Unpaid Invoices</p>
-          <p className="text-3xl font-extrabold text-slate-900">{stats.outstandingInvoices}</p>
-        </Link>
+        {!isTalentManager && (
+          <Link to={getInternalPath("/admin/invoices")} className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-400 transition-all text-left">
+            <div className="w-10 h-10 bg-rose-50 rounded-lg flex items-center justify-center text-rose-600 mb-4 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+              <Receipt className="h-5 w-5" />
+            </div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Unpaid Invoices</p>
+            <p className="text-3xl font-extrabold text-slate-900">{stats.outstandingInvoices}</p>
+          </Link>
+        )}
 
         <Link to={getInternalPath("/admin/support")} className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:border-blue-400 transition-all text-left">
           <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center text-slate-600 mb-4 group-hover:bg-slate-900 group-hover:text-white transition-colors">
@@ -429,53 +433,55 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* QUEUE 2: Job Approvals */}
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div className="border-b border-slate-100 bg-slate-50/50 py-5 px-8 flex flex-row items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-3">
-                <Briefcase className="h-4 w-4 text-slate-400" />
-                Opportunities Pending Approval
-              </h3>
-              <Link to={getInternalPath("/admin/jobs")}>
-                <Button variant="ghost" size="sm" className="h-8 text-xs font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest">
-                  Manage All Jobs <ArrowRight className="h-3 w-3 ml-2" />
-                </Button>
-              </Link>
-            </div>
-            <div className="p-0">
-              {queues.jobs.length === 0 ? (
-                <div className="p-12 text-center text-sm text-slate-500 font-medium bg-white">No jobs pending approval.</div>
-              ) : (
-                <Table>
-                  <TableHeader className="bg-slate-50/30">
-                    <TableRow className="border-slate-100">
-                      <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">Listing Title</TableHead>
-                      <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">Client Entity</TableHead>
-                      <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">Model</TableHead>
-                      <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">Posted</TableHead>
-                      <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8 text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {queues.jobs.map((j) => (
-                      <TableRow key={j.id} className="border-slate-100 hover:bg-slate-50/50 transition-colors">
-                        <TableCell className="py-4 px-8 text-sm font-bold text-slate-900">{j.title}</TableCell>
-                        <TableCell className="py-4 px-8 text-sm text-slate-500 font-medium">{j.clients?.company_name || 'Standard Client'}</TableCell>
-                        <TableCell className="py-4 px-8 text-slate-500 font-bold uppercase text-[10px] tracking-widest">{j.service_model?.replace('_', ' ')}</TableCell>
-                        <TableCell className="py-4 px-8 text-sm text-slate-400 font-medium">{new Date(j.created_at || '').toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</TableCell>
-                        <TableCell className="py-4 px-8 text-right flex justify-end gap-3">
-                          <Link to={getInternalPath(`/admin/jobs/${j.id}`)}>
-                            <Button variant="outline" size="sm" className="h-8 px-4 text-[10px] font-bold uppercase tracking-widest border-slate-200">View</Button>
-                          </Link>
-                          <Button variant="default" size="sm" className="h-8 px-4 text-[10px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-sm" onClick={() => handleApproveJob(j.id)}>Publish</Button>
-                        </TableCell>
+          {/* QUEUE 2: Job Approvals - Hidden for Talent Managers */}
+          {!isTalentManager && (
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="border-b border-slate-100 bg-slate-50/50 py-5 px-8 flex flex-row items-center justify-between">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-3">
+                  <Briefcase className="h-4 w-4 text-slate-400" />
+                  Opportunities Pending Approval
+                </h3>
+                <Link to={getInternalPath("/admin/jobs")}>
+                  <Button variant="ghost" size="sm" className="h-8 text-xs font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest">
+                    Manage All Jobs <ArrowRight className="h-3 w-3 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+              <div className="p-0">
+                {queues.jobs.length === 0 ? (
+                  <div className="p-12 text-center text-sm text-slate-500 font-medium bg-white">No jobs pending approval.</div>
+                ) : (
+                  <Table>
+                    <TableHeader className="bg-slate-50/30">
+                      <TableRow className="border-slate-100">
+                        <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">Listing Title</TableHead>
+                        <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">Client Entity</TableHead>
+                        <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">Model</TableHead>
+                        <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8">Posted</TableHead>
+                        <TableHead className="font-bold text-[10px] text-slate-400 uppercase tracking-widest py-4 px-8 text-right">Action</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
+                    </TableHeader>
+                    <TableBody>
+                      {queues.jobs.map((j) => (
+                        <TableRow key={j.id} className="border-slate-100 hover:bg-slate-50/50 transition-colors">
+                          <TableCell className="py-4 px-8 text-sm font-bold text-slate-900">{j.title}</TableCell>
+                          <TableCell className="py-4 px-8 text-sm text-slate-500 font-medium">{j.clients?.company_name || 'Standard Client'}</TableCell>
+                          <TableCell className="py-4 px-8 text-slate-500 font-bold uppercase text-[10px] tracking-widest">{j.service_model?.replace('_', ' ')}</TableCell>
+                          <TableCell className="py-4 px-8 text-sm text-slate-400 font-medium">{new Date(j.created_at || '').toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</TableCell>
+                          <TableCell className="py-4 px-8 text-right flex justify-end gap-3">
+                            <Link to={getInternalPath(`/admin/jobs/${j.id}`)}>
+                              <Button variant="outline" size="sm" className="h-8 px-4 text-[10px] font-bold uppercase tracking-widest border-slate-200">View</Button>
+                            </Link>
+                            <Button variant="default" size="sm" className="h-8 px-4 text-[10px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-sm" onClick={() => handleApproveJob(j.id)}>Publish</Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
 
@@ -507,27 +513,29 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Finance Snapshot */}
-          <div className="rounded-xl border-none bg-slate-900 text-white shadow-xl shadow-slate-200 p-8 overflow-hidden relative group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150 duration-700" />
-            <div className="relative">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-white/10 rounded-lg">
-                        <Wallet className="h-4 w-4 text-emerald-400" />
-                    </div>
-                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Liquidity Status</h3>
-                </div>
-                <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Awaiting Collection</p>
-                <div className="flex items-end gap-3 mb-8">
-                    <p className="text-4xl font-black tracking-tighter">₦{stats.invoiceTotal.toLocaleString()}</p>
-                </div>
-                <Link to={getInternalPath("/admin/invoices")}>
-                    <Button variant="outline" className="w-full h-11 bg-white/5 border-white/10 text-white font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-slate-900 transition-all rounded-lg">
-                    Reconciliation Hub <ArrowRight className="h-3 w-3 ml-2" />
-                    </Button>
-                </Link>
+          {/* Finance Snapshot - Hidden for Talent Managers */}
+          {!isTalentManager && (
+            <div className="rounded-xl border-none bg-slate-900 text-white shadow-xl shadow-slate-200 p-8 overflow-hidden relative group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150 duration-700" />
+              <div className="relative">
+                  <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-white/10 rounded-lg">
+                          <Wallet className="h-4 w-4 text-emerald-400" />
+                      </div>
+                      <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Liquidity Status</h3>
+                  </div>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Awaiting Collection</p>
+                  <div className="flex items-end gap-3 mb-8">
+                      <p className="text-4xl font-black tracking-tighter">₦{stats.invoiceTotal.toLocaleString()}</p>
+                  </div>
+                  <Link to={getInternalPath("/admin/invoices")}>
+                      <Button variant="outline" className="w-full h-11 bg-white/5 border-white/10 text-white font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-slate-900 transition-all rounded-lg">
+                      Reconciliation Hub <ArrowRight className="h-3 w-3 ml-2" />
+                      </Button>
+                  </Link>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Activity Feed */}
           <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
