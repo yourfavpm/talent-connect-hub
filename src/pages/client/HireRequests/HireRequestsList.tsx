@@ -13,12 +13,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { Search, Plus, MoreHorizontal, FileText, AlertCircle, Briefcase, Eye, Calendar, Clock } from "lucide-react";
 import { format } from "date-fns";
 
 export default function HireRequestsList() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,19 +33,35 @@ export default function HireRequestsList() {
   }, [user]);
 
   const fetchRequests = async () => {
+    if (!user) return;
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("hr_v2_hire_requests")
         .select(`
           *,
           hr_v2_shortlists(count),
           hr_v2_interviews(count)
         `)
+        .eq("client_user_id", user.id)
         .order("created_at", { ascending: false });
 
-      setRequests(data || []);
-    } catch (error) {
+      if (error) {
+        console.error("Error fetching hire requests:", error);
+        toast({ 
+          title: "Failed to load requests", 
+          description: error.message, 
+          variant: "destructive" 
+        });
+      } else {
+        setRequests(data || []);
+      }
+    } catch (error: any) {
       console.error("Error fetching hire requests:", error);
+      toast({ 
+        title: "Unexpected error", 
+        description: "Failed to load your hire requests. Please try again.", 
+        variant: "destructive" 
+      });
     } finally {
       setLoading(false);
     }
