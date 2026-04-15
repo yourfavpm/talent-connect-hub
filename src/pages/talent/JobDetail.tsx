@@ -347,54 +347,54 @@ const TalentJobDetail = () => {
                                             <DialogTrigger asChild>
                                                 <Button size="lg" className="w-full h-16 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-blue-500/20 group transition-all hover:-translate-y-1">
                                                     Apply for Role <ArrowLeft className="h-4 w-4 ml-4 rotate-180 transition-transform group-hover:translate-x-1" />
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-white">
-                                                <DialogHeader className="p-10 bg-slate-900 text-white space-y-4">
-                                                    <div className="h-12 w-12 bg-blue-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
-                                                        <Zap className="h-6 w-6" />
-                                                    </div>
-                                                    <div>
-                                                        <DialogTitle className="text-2xl font-black tracking-tight underline decoration-blue-500 decoration-4 underline-offset-8 inline-block">Submit Your Application</DialogTitle>
-                                                        <DialogDescription className="text-slate-400 font-medium text-base pt-3 leading-relaxed">
-                                                            Applying for <span className="text-white font-bold">{job.title}</span>. Your professional credentials will be reviewed by our success team.
-                                                        </DialogDescription>
-                                                    </div>
-                                                </DialogHeader>
-                                                
-                                                <div className="px-10 pt-10 pb-14 space-y-8 bg-white">
-                                                    <div className="space-y-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <MessageSquare className="h-4 w-4 text-blue-600" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cover Note (Optional)</span>
+                                                                                                </DialogTrigger>
+                                                <DialogContent className="sm:max-w-3xl p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-white">
+                                                    <DialogHeader className="px-12 py-12 bg-slate-900 text-white space-y-4">
+                                                        <div className="h-12 w-12 bg-blue-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg mb-2">
+                                                            <Zap className="h-6 w-6" />
                                                         </div>
-                                                        <Textarea 
-                                                            placeholder="Why are you the perfect fit for this role?" 
-                                                            className="min-h-[160px] rounded-2xl border-slate-100 bg-slate-50/50 p-6 font-medium text-slate-600 focus:ring-2 focus:ring-blue-600 transition-all text-base border outline-none"
-                                                            value={coverLetter}
-                                                            onChange={(e) => setCoverLetter(e.target.value)}
-                                                        />
-                                                    </div>
+                                                        <div className="space-y-1">
+                                                            <DialogTitle className="text-3xl font-black tracking-tight underline decoration-blue-500 decoration-4 underline-offset-8 inline-block">Submit Your Application</DialogTitle>
+                                                            <DialogDescription className="text-slate-400 font-medium text-base pt-2 leading-relaxed">
+                                                                Applying for <span className="text-white font-bold">{job.title}</span>. Your professional credentials will be reviewed by our success team.
+                                                            </DialogDescription>
+                                                        </div>
+                                                    </DialogHeader>
+                                                    
+                                                    <div className="px-12 pt-10 pb-16 space-y-10 bg-white">
+                                                        <div className="space-y-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <MessageSquare className="h-4 w-4 text-blue-600" />
+                                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cover Note (Optional)</span>
+                                                            </div>
+                                                            <Textarea 
+                                                                placeholder="Why are you the perfect fit for this role?" 
+                                                                className="min-h-[160px] rounded-2xl border-slate-100 bg-slate-50/50 p-6 font-medium text-slate-600 focus:ring-2 focus:ring-blue-600 text-base font-medium leading-relaxed transition-all border outline-none"
+                                                                value={coverLetter}
+                                                                onChange={(e) => setCoverLetter(e.target.value)}
+                                                            />
+                                                        </div>
 
-                                                    <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center gap-4">
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            onClick={() => setApplyDialogOpen(false)} 
-                                                            className="w-full sm:w-auto rounded-xl h-16 px-10 font-black uppercase tracking-[0.2em] text-[10px] text-slate-400 hover:text-slate-900 transition-all"
-                                                        >
-                                                            Abandon
-                                                        </Button>
-                                                        <Button 
-                                                            onClick={() => applyMutation.mutate()} 
-                                                            disabled={applyMutation.isPending}
-                                                            className="w-full sm:flex-1 h-16 px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-blue-500/20 transition-all hover:-translate-y-0.5"
-                                                        >
-                                                            {applyMutation.isPending ? "Syncing..." : "Finalize Application"}
-                                                        </Button>
+                                                        <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center gap-6">
+                                                            <Button 
+                                                                variant="ghost" 
+                                                                onClick={() => setApplyDialogOpen(false)} 
+                                                                className="w-full sm:w-auto rounded-xl h-16 px-10 font-black uppercase tracking-[0.2em] text-[10px] text-slate-400 hover:text-slate-900 transition-all font-sans"
+                                                            >
+                                                                Abandon
+                                                            </Button>
+                                                            <Button 
+                                                                onClick={() => applyMutation.mutate()} 
+                                                                disabled={applyMutation.isPending}
+                                                                className="w-full sm:flex-1 h-16 px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-blue-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0 font-sans"
+                                                            >
+                                                                {applyMutation.isPending ? "Syncing..." : "Finalize Application"}
+                                                            </Button>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </DialogContent>
-                                        </Dialog>
+                                                </DialogContent>
+                                            </Dialog>
+</Dialog>
                                     ) : (
                                         <div className="space-y-4 pt-4 border-t border-slate-50">
                                             <p className="text-xs text-center font-bold text-slate-400 uppercase tracking-widest">Application Tracked</p>

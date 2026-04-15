@@ -952,42 +952,42 @@ const TalentJobs = () => {
                           Apply for this role
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-xl bg-white rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
-                        <DialogHeader className="px-10 py-10 bg-slate-900 text-white space-y-3">
+                      <DialogContent className="sm:max-w-3xl bg-white rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
+                        <DialogHeader className="px-12 py-12 bg-slate-900 text-white space-y-4">
                           <div className="h-12 w-12 bg-blue-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg mb-2">
                              <FileText className="h-6 w-6" />
                           </div>
-                          <div>
-                            <DialogTitle className="text-2xl font-black tracking-tight underline decoration-blue-500 decoration-4 underline-offset-4 inline-block">Confirm Application</DialogTitle>
-                            <DialogDescription className="text-slate-400 font-medium text-[13px] pt-1">
+                          <div className="space-y-1">
+                            <DialogTitle className="text-3xl font-black tracking-tight underline decoration-blue-500 decoration-4 underline-offset-8 inline-block">Confirm Application</DialogTitle>
+                            <DialogDescription className="text-slate-400 font-medium text-base pt-2 leading-relaxed">
                               Submit your professional credentials for <span className="text-white font-bold">{selectedJob.title}</span>.
                             </DialogDescription>
                           </div>
                         </DialogHeader>
                         
-                        <div className="px-10 pt-10 pb-14 space-y-8 bg-white">
+                        <div className="px-12 pt-10 pb-16 space-y-10 bg-white">
                           <div className="space-y-4">
                             <Label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Cover Note (Optional)</Label>
                             <Textarea 
                               placeholder="Tell the client why you're a great fit for this role..."
-                              className="min-h-[160px] p-6 bg-slate-50/50 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-600 text-[14px] font-medium leading-relaxed transition-all border outline-none"
+                              className="min-h-[160px] p-6 bg-slate-50/50 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-600 text-base font-medium leading-relaxed transition-all border outline-none"
                               value={coverLetter}
                               onChange={(e) => setCoverLetter(e.target.value)}
                             />
                           </div>
                           
-                          <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-50">
+                          <div className="flex flex-col sm:flex-row gap-6 pt-8 border-t border-slate-50">
                              <Button 
                                variant="ghost" 
                                onClick={() => setApplyDialogOpen(false)} 
-                               className="flex-1 h-16 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
+                               className="flex-1 h-16 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all font-sans"
                              >
                                Abandon
                              </Button>
                              <Button 
                                onClick={handleApply} 
                                disabled={applying}
-                               className="flex-[2] h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                               className="flex-[2] h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0 font-sans"
                              >
                                {applying ? "Syncing..." : "Finalize Application"}
                              </Button>
@@ -1115,35 +1115,35 @@ const TalentJobs = () => {
       {/* V2 Hire Request Apply Dialog */}
       {FEATURES.hire_request_v2_enabled && (
         <Dialog open={v2ApplyDialogOpen} onOpenChange={setV2ApplyDialogOpen}>
-          <DialogContent className="sm:max-w-xl bg-white rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
-            <DialogHeader className="px-10 py-10 bg-slate-900 text-white space-y-3">
+          <DialogContent className="sm:max-w-3xl bg-white rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
+            <DialogHeader className="px-12 py-12 bg-slate-900 text-white space-y-4">
               <div className="h-12 w-12 bg-blue-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg mb-2">
                  <Zap className="h-6 w-6" />
               </div>
-              <div>
-                <DialogTitle className="text-2xl font-black tracking-tight underline decoration-blue-500 decoration-4 underline-offset-4 inline-block">Apply for Hire Request</DialogTitle>
-                <DialogDescription className="text-slate-400 font-medium text-[13px] pt-1">
+              <div className="space-y-1">
+                <DialogTitle className="text-3xl font-black tracking-tight underline decoration-blue-500 decoration-4 underline-offset-8 inline-block">Apply for Hire Request</DialogTitle>
+                <DialogDescription className="text-slate-400 font-medium text-base pt-2">
                   Tell the admin team why you're a perfect match for this request.
                 </DialogDescription>
               </div>
             </DialogHeader>
 
-            <div className="px-10 pt-10 pb-14 space-y-10 bg-white">
+            <div className="px-12 pt-10 pb-16 space-y-10 bg-white">
               <div className="space-y-4">
                 <Label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Application Note (Optional)</Label>
                 <Textarea
                   placeholder="Highlight your relevant experience and interest..."
-                  className="min-h-[140px] p-6 bg-slate-50/50 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-600 text-[14px] font-medium leading-relaxed transition-all border outline-none"
+                  className="min-h-[160px] p-6 bg-slate-50/50 border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-600 text-base font-medium leading-relaxed transition-all border outline-none"
                   value={v2ApplyNote}
                   onChange={(e) => setV2ApplyNote(e.target.value)}
                 />
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-50">
+              <div className="flex flex-col sm:flex-row gap-6 pt-8 border-t border-slate-50">
                 <Button 
                   variant="ghost" 
                   onClick={() => { setV2ApplyDialogOpen(false); setV2ApplyNote(""); setV2ApplyingFor(null); }} 
-                  className="flex-1 h-16 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all"
+                  className="flex-1 h-16 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all font-sans"
                 >
                   Abandon
                 </Button>
