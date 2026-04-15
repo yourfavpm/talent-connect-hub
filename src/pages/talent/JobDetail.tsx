@@ -1,14 +1,27 @@
-
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getInternalPath } from "@/utils/subdomain";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Briefcase, MapPin, DollarSign, Clock, CheckCircle, Calendar, Globe, UserCheck } from "lucide-react";
+import { 
+    ArrowLeft, 
+    Briefcase, 
+    MapPin, 
+    DollarSign, 
+    Clock, 
+    CheckCircle, 
+    Calendar, 
+    Globe, 
+    UserCheck,
+    Zap,
+    ShieldCheck,
+    Building2,
+    FileText,
+    MessageSquare
+} from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -19,12 +32,8 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-
-const SERVICE_MODELS = [
-    { value: "full_time", label: "Full-Time Hire" },
-    { value: "trial_to_hire", label: "Trial-to-Hire" },
-    { value: "one_time_project", label: "One-Time Project" },
-];
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 
 const CURRENCIES = [
     { value: "USD", label: "USD ($)", symbol: "$" },
@@ -35,33 +44,6 @@ const CURRENCIES = [
     { value: "ZAR", label: "ZAR (R)", symbol: "R" },
 ];
 
-
-interface Job {
-    id: string;
-    title: string;
-    role_needed: string;
-    location: string;
-    service_model: string;
-    status: string;
-    work_mode: string;
-    preferred_currency: string;
-    budget_min: number;
-    budget_max: number;
-    salary_type: string;
-    duration: string;
-    weekly_hours: number;
-    experience_required: number;
-    responsibilities: string;
-    required_skills: string[];
-    special_notes: string;
-}
-
-interface JobApplication {
-    id: string;
-    status: string;
-    created_at: string;
-}
-
 const TalentJobDetail = () => {
     const { id } = useParams();
     const { user } = useAuth();
@@ -69,61 +51,116 @@ const TalentJobDetail = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [applyDialogOpen, setApplyDialogOpen] = useState(false);
+    const [coverLetter, setCoverLetter] = useState("");
 
-    // 1. Fetch Job
+    // 1. Fetch Job (Handles both legacy and V2)
     const { data: job, isLoading: jobLoading } = useQuery({
-        queryKey: ['job', id],
+        queryKey: ['talent_job_detail', id],
         queryFn: async () => {
-            const { data, error } = await (supabase
+            // First try looking in hr_v2_hire_requests (The new standard)
+            const { data: v2Job, error: v2Error } = await supabase
+                .from('hr_v2_hire_requests')
+                .select('*')
+                .eq('id', id)
+                .single();
+            
+            if (v2Job) {
+                return {
+                    ...v2Job,
+                    isV2: true,
+                    company_name: "Verified OPSly Partner"
+                };
+            }
+
+            // Fallback to legacy jobs table
+            const { data: legacyJob, error: legacyError } = await supabase
                 .from('jobs')
                 .select('*, client:clients(company_name)')
                 .eq('id', id)
-                .single() as any);
-            if (error) throw error;
-            return data as Job;
+                .single();
+            
+            if (legacyJob) {
+                return {
+                    ...legacyJob,
+                    isV2: false,
+                    company_name: legacyJob.client?.company_name || "Enterprise Partner"
+                };
+            }
+
+            throw new Error("Job not discovered in any catalog.");
         },
         enabled: !!id
     });
 
-    // 2. Check if already applied
-    const { data: existingApplication, isLoading: appCheckLoading } = useQuery({
-        queryKey: ['my_application', id, user?.id],
+    // 2. Check application status
+    const { data: application, isLoading: appCheckLoading } = useQuery({
+        queryKey: ['job_application_status', id, user?.id],
         queryFn: async () => {
             if (!user?.id) return null;
-            // Get talent ID first
-            const { data: talent } = await (supabase.from('talents').select('id').eq('user_id', user.id).single() as any);
-            if (!talent) return null;
+            
+            // Check legacy applications
+            const { data: talent } = await supabase.from('talents').select('id').eq('user_id', user.id).maybeSingle();
+            if (talent) {
+                const { data: legacyApp } = await supabase
+                    .from('job_applications')
+                    .select('id, status, created_at')
+                    .eq('job_id', id)
+                    .eq('talent_id', talent.id)
+                    .maybeSingle();
+                if (legacyApp) return { ...legacyApp, isV2: false };
+            }
 
-            const { data } = await (supabase
-                .from('job_applications')
+            // Check V2 applications
+            const { data: v2App } = await supabase
+                .from('hr_v2_applications')
                 .select('id, status, created_at')
-                .eq('job_id', id)
-                .eq('talent_id', talent.id)
-                .maybeSingle() as any);
-            return data as JobApplication;
+                .eq('hire_request_id', id)
+                .eq('talent_user_id', user.id)
+                .maybeSingle();
+            
+            if (v2App) return { ...v2App, isV2: true };
+
+            return null;
         },
         enabled: !!id && !!user?.id
     });
 
     const applyMutation = useMutation({
         mutationFn: async () => {
-            const { data: talent } = await supabase.from('talents').select('id').eq('user_id', user?.id).single();
-            if (!talent) throw new Error("Talent profile not found");
+            if (!job || !user) throw new Error("Missing context");
 
-            const { error } = await supabase.from('job_applications').insert({
-                job_id: id,
-                talent_id: talent.id,
-                status: 'pending'
-            });
-            if (error) throw error;
+            if (job.isV2) {
+                const { error } = await supabase.from('hr_v2_applications').insert({
+                    hire_request_id: id,
+                    talent_user_id: user.id,
+                    status: 'applied',
+                    cover_note: coverLetter
+                });
+                if (error) throw error;
+            } else {
+                const { data: talent } = await supabase.from('talents').select('id').eq('user_id', user.id).single();
+                if (!talent) throw new Error("Talent profile not found");
+                
+                const { error } = await supabase.from('job_applications').insert({
+                    job_id: id,
+                    talent_id: talent.id,
+                    status: 'pending',
+                    cover_letter: coverLetter
+                });
+                if (error) throw error;
+            }
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['my_application', id] });
+            queryClient.invalidateQueries({ queryKey: ['job_application_status', id] });
             setApplyDialogOpen(false);
-            toast({ title: "Applied!", description: "Your application has been submitted successfully." });
+            setCoverLetter("");
+            toast({ 
+                title: "Application Seamlessly Sent", 
+                description: "You've successfully taken the first step toward this opportunity.",
+            });
         },
         onError: (error: any) => {
-            toast({ title: "Error", description: error.message, variant: "destructive" });
+            toast({ title: "Submission Failed", description: error.message, variant: "destructive" });
         }
     });
 
@@ -131,140 +168,254 @@ const TalentJobDetail = () => {
         return CURRENCIES.find(c => c.value === code)?.symbol || "$";
     };
 
-    if (jobLoading || appCheckLoading) return <div className="p-8 text-center">Loading job details...</div>;
-    if (!job) return <div className="p-8 text-center">Job not found</div>;
-
-    return (
-        <div className="space-y-6 max-w-5xl mx-auto p-6 animate-fade-in">
-            <Button variant="ghost" size="sm" asChild className="mb-4">
-                <Link to={getInternalPath("/talent/jobs")}><ArrowLeft className="h-4 w-4 mr-2" /> Back to Jobs</Link>
-            </Button>
-
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                <div className="flex-1">
-                    <h1 className="text-3xl font-bold text-slate-900">{job.title}</h1>
-                    <div className="flex flex-wrap items-center gap-4 text-slate-500 mt-3">
-                        <span className="flex items-center gap-1"><Briefcase className="h-4 w-4" /> {job.role_needed?.replace('_', ' ') || 'Role'}</span>
-                        <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {job.location || job.location}</span>
-                        <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> {job.service_model?.replace('_', ' ')}</span>
-                        <Badge variant={job.status === 'published' ? 'default' : 'secondary'}>{job.status}</Badge>
-                    </div>
+    if (jobLoading || appCheckLoading) return (
+        <div className="max-w-[1280px] mx-auto p-8 space-y-12">
+            <Skeleton className="h-10 w-32 rounded-xl" />
+            <Skeleton className="h-64 w-full rounded-[2.5rem]" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div className="lg:col-span-8 space-y-8">
+                   <Skeleton className="h-96 w-full rounded-3xl" />
                 </div>
-
-                <div className="flex-shrink-0">
-                    {existingApplication ? (
-                        <div className="flex flex-col items-end gap-2">
-                            <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50 px-3 py-1">
-                                <CheckCircle className="h-3 w-3 mr-1" /> Applied on {new Date(existingApplication.created_at).toLocaleDateString()}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">Status: {existingApplication.status}</span>
-                        </div>
-                    ) : (
-                        <Dialog open={applyDialogOpen} onOpenChange={setApplyDialogOpen}>
-                            <DialogTrigger asChild>
-                                <Button size="lg" className="bg-slate-900 hover:bg-slate-800">Apply Now</Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Apply for {job.title}</DialogTitle>
-                                    <DialogDescription>
-                                        Are you sure you want to apply for this position? Your profile will be shared with the client.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setApplyDialogOpen(false)}>Cancel</Button>
-                                    <Button onClick={() => applyMutation.mutate()} disabled={applyMutation.isPending}>
-                                        {applyMutation.isPending ? "Submitting..." : "Confirm Application"}
-                                    </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
-                    )}
+                <div className="lg:col-span-4">
+                   <Skeleton className="h-96 w-full rounded-[2rem]" />
                 </div>
             </div>
+        </div>
+    );
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Job Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                    {/* Key Stats Grid - Matching Client Portal */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-4 bg-muted/20 rounded-lg">
-                        <div>
-                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
-                                <Briefcase className="h-3 w-3" /> Service Model
-                            </span>
-                            <span className="font-medium block">
-                                {SERVICE_MODELS.find(m => m.value === job.service_model)?.label || job.service_model}
-                            </span>
+    if (!job) return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="text-center space-y-4">
+                <div className="h-16 w-16 bg-white border border-slate-100 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                    <Briefcase className="h-8 w-8 text-slate-300" />
+                </div>
+                <h1 className="text-xl font-black text-slate-900">Job Not Found</h1>
+                <Button variant="outline" onClick={() => navigate(-1)} className="rounded-xl">Go Back</Button>
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="min-h-screen bg-[#F8FAFC] font-sans selection:bg-blue-100 selection:text-blue-900 border-x border-slate-50 max-w-[1440px] mx-auto">
+            <div className="max-w-[1280px] mx-auto px-6 py-12">
+                <Button 
+                    variant="ghost" 
+                    onClick={() => navigate(-1)}
+                    className="mb-10 -ml-4 text-slate-400 hover:text-slate-900 group hover:bg-transparent"
+                >
+                    <ArrowLeft className="w-4 h-4 mr-3 group-hover:-translate-x-2 transition-transform duration-500" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Back to Jobs</span>
+                </Button>
+
+                {/* Hero Header Card */}
+                <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden mb-10 transition-all duration-500 hover:shadow-md">
+                    <div className="h-24 w-full bg-slate-900 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent opacity-50" />
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5" />
+                    </div>
+
+                    <div className="px-10 pb-10 -mt-8 relative">
+                        <div className="flex flex-col lg:flex-row gap-8 items-end justify-between">
+                            <div className="space-y-4 flex-1">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-16 w-16 bg-white rounded-3xl border border-slate-100 shadow-xl flex items-center justify-center text-slate-900">
+                                        <Briefcase className="h-8 w-8" />
+                                    </div>
+                                    <div className="space-y-0.5 pt-4">
+                                        <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{job.title}</h1>
+                                        <div className="flex items-center gap-2 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                                            <Building2 className="h-3.5 w-3.5" /> {job.company_name}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-6 pt-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest border-t border-slate-50">
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="h-4 w-4 text-slate-300" /> {job.location || job.location_preference || "Remote"}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Globe className="h-4 w-4 text-slate-300" /> {job.work_mode || "Flexible"}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="h-4 w-4 text-slate-300" /> {job.weekly_hours || 40}h / Week
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {application && (
+                                <div className="flex items-center gap-3 px-6 py-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                                    <CheckCircle className="h-5 w-5 text-emerald-600" />
+                                    <div className="space-y-0.5">
+                                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Applied for Role</p>
+                                        <p className="text-xs font-bold text-emerald-800/60">Status: {application.status.toUpperCase()}</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        <div>
-                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
-                                <Globe className="h-3 w-3" /> Work Mode
-                            </span>
-                            <span className="font-medium block capitalize">{job.work_mode}</span>
-                        </div>
-                        <div>
-                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
-                                <DollarSign className="h-3 w-3" /> Budget
-                            </span>
-                            <span className="font-medium block">
-                                {getCurrencySymbol(job.preferred_currency)}{job.budget_min} - {getCurrencySymbol(job.preferred_currency)}{job.budget_max}
-                                <span className="text-muted-foreground text-xs ml-1">/{job.salary_type}</span>
-                            </span>
-                        </div>
-                        <div>
-                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
-                                <Calendar className="h-3 w-3" /> Duration
-                            </span>
-                            <span className="font-medium block">{job.duration || "Ongoing"}</span>
-                        </div>
-                        <div>
-                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
-                                <Clock className="h-3 w-3" /> Weekly Hours
-                            </span>
-                            <span className="font-medium block">{job.weekly_hours || 40}h</span>
-                        </div>
-                        <div>
-                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
-                                <MapPin className="h-3 w-3" /> Location
-                            </span>
-                            <span className="font-medium block">{job.location || "Remote"}</span>
-                        </div>
-                        <div>
-                            <span className="text-muted-foreground text-sm flex items-center gap-1 mb-1">
-                                <UserCheck className="h-3 w-3" /> Experience
-                            </span>
-                            <span className="font-medium block">{job.experience_required}+ Years</span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                    {/* Main Content (Left) */}
+                    <div className="lg:col-span-8 space-y-10">
+                        {/* Summary / Description */}
+                        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-10 space-y-10">
+                            <div className="flex items-center gap-4">
+                                <div className="h-10 w-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-900">
+                                    <FileText className="h-5 w-5" />
+                                </div>
+                                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Role Information</h2>
+                            </div>
+                            
+                            <div className="prose prose-slate max-w-none">
+                                <h3 className="text-xl font-bold text-slate-900 mb-6 underline decoration-blue-600 decoration-4 underline-offset-8">Description & Focus</h3>
+                                <p className="text-lg text-slate-600 leading-relaxed font-medium whitespace-pre-wrap">
+                                    {job.description || job.role_summary || job.responsibilities || "No detailed description provided."}
+                                </p>
+                            </div>
+
+                            {(job.responsibilities && (job.description || job.role_summary)) && (
+                                <div className="pt-10 border-t border-slate-50">
+                                    <h3 className="text-xl font-bold text-slate-900 mb-6">Key Responsibilities</h3>
+                                    <p className="text-lg text-slate-600 leading-relaxed font-medium whitespace-pre-wrap">
+                                        {job.responsibilities}
+                                    </p>
+                                </div>
+                            )}
+
+                            {job.required_skills && job.required_skills.length > 0 && (
+                                <div className="pt-10 border-t border-slate-50 space-y-6">
+                                    <h3 className="text-xl font-bold text-slate-900">Required Competencies</h3>
+                                    <div className="flex flex-wrap gap-3">
+                                        {job.required_skills.map((skill: string) => (
+                                            <Badge key={skill} variant="secondary" className="bg-slate-50 text-slate-600 font-bold px-4 py-2 border border-slate-100 shadow-sm hover:scale-105 transition-all">
+                                                {skill}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Job Description</h3>
-                        <div className="prose prose-slate max-w-none whitespace-pre-line text-slate-600">
-                            {job.responsibilities}
-                        </div>
-                    </div>
+                    {/* Action Panel (Right) */}
+                    <div className="lg:col-span-4 space-y-8">
+                        <div className="sticky top-12 space-y-8">
+                            <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden p-10">
+                                <div className="space-y-10">
+                                    <div className="space-y-6">
+                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <Zap className="h-3 w-3 text-blue-600" /> Engagement Details
+                                        </h3>
+                                        
+                                        <div className="space-y-6">
+                                            <div className="flex items-center justify-between group">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-blue-600 transition-colors">
+                                                        <DollarSign className="h-5 w-5" />
+                                                    </div>
+                                                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Est. Budget</span>
+                                                </div>
+                                                <span className="text-base font-black text-slate-900">
+                                                  {getCurrencySymbol(job.preferred_currency)}{job.budget_min} - {getCurrencySymbol(job.preferred_currency)}{job.budget_max}
+                                                </span>
+                                            </div>
 
-                    {job.required_skills && job.required_skills.length > 0 && (
-                        <div>
-                            <h3 className="text-lg font-semibold mb-2">Required Skills</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {job.required_skills.map((skill: string) => (
-                                    <Badge key={skill} variant="secondary">{skill}</Badge>
-                                ))}
+                                            <div className="flex items-center justify-between group">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-blue-600 transition-colors">
+                                                        <Calendar className="h-5 w-5" />
+                                                    </div>
+                                                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Duration</span>
+                                                </div>
+                                                <span className="text-base font-black text-slate-900">{job.duration || "Ongoing"}</span>
+                                            </div>
+
+                                            <div className="flex items-center justify-between group">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-blue-600 transition-colors">
+                                                        <UserCheck className="h-5 w-5" />
+                                                    </div>
+                                                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Experience</span>
+                                                </div>
+                                                <span className="text-base font-black text-slate-900">{job.experience_required || 0}y+ Required</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {!application ? (
+                                        <Dialog open={applyDialogOpen} onOpenChange={setApplyDialogOpen}>
+                                            <DialogTrigger asChild>
+                                                <Button size="lg" className="w-full h-16 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-blue-500/20 group transition-all hover:-translate-y-1">
+                                                    Apply for Role <ArrowLeft className="h-4 w-4 ml-4 rotate-180 transition-transform group-hover:translate-x-1" />
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
+                                                <DialogHeader className="p-10 bg-slate-900 text-white space-y-4">
+                                                    <div className="h-12 w-12 bg-blue-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
+                                                        <Zap className="h-6 w-6" />
+                                                    </div>
+                                                    <div>
+                                                        <DialogTitle className="text-2xl font-black tracking-tight">Submit Your Application</DialogTitle>
+                                                        <DialogDescription className="text-slate-400 font-medium text-base pt-2">
+                                                            Applying for <span className="text-white font-bold">{job.title}</span>. Your professional credentials will be reviewed by our success team.
+                                                        </DialogDescription>
+                                                    </div>
+                                                </DialogHeader>
+                                                <div className="p-10 space-y-8 bg-white">
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <MessageSquare className="h-4 w-4 text-blue-600" />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cover Note (Optional)</span>
+                                                        </div>
+                                                        <Textarea 
+                                                            placeholder="Why are you the perfect fit for this role?" 
+                                                            className="min-h-[160px] rounded-2xl border-slate-100 bg-slate-50/50 p-6 font-medium text-slate-600 focus:ring-2 focus:ring-blue-600 transition-all text-base"
+                                                            value={coverLetter}
+                                                            onChange={(e) => setCoverLetter(e.target.value)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <DialogFooter className="p-10 pt-0 bg-white flex sm:justify-between items-center gap-4">
+                                                    <Button variant="ghost" onClick={() => setApplyDialogOpen(false)} className="rounded-xl h-14 px-8 font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest text-[10px]">Abandon</Button>
+                                                    <Button 
+                                                        onClick={() => applyMutation.mutate()} 
+                                                        disabled={applyMutation.isPending}
+                                                        className="h-16 px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl shadow-blue-500/20 transition-all flex-1"
+                                                    >
+                                                        {applyMutation.isPending ? "Syncing..." : "Finalize Application"}
+                                                    </Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </Dialog>
+                                    ) : (
+                                        <div className="space-y-4 pt-4 border-t border-slate-50">
+                                            <p className="text-xs text-center font-bold text-slate-400 uppercase tracking-widest">Application Tracked</p>
+                                            <Button variant="outline" className="w-full h-14 rounded-2xl border-slate-200 text-slate-400 font-bold uppercase tracking-widest text-[10px] cursor-not-allowed">
+                                               View My Application
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="bg-slate-900 p-8 rounded-[2rem] border border-slate-800 shadow-2xl relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent opacity-50" />
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="h-8 w-8 rounded-lg bg-blue-500/20 border border-blue-500/20 flex items-center justify-center">
+                                            <ShieldCheck className="w-4 h-4 text-blue-400" />
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">Verified Platform</span>
+                                    </div>
+                                    <p className="text-xs text-slate-400 leading-relaxed font-bold">
+                                        This role has been vetted for payment security and professional engagement standards.
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    )}
-
-                    {job.special_notes && (
-                        <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-100">
-                            <h4 className="text-sm font-semibold text-slate-900 mb-2">Additional Notes</h4>
-                            <p className="text-sm text-slate-600 whitespace-pre-line">{job.special_notes}</p>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

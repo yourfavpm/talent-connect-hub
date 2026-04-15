@@ -287,8 +287,7 @@ const TalentJobs = () => {
   );
 
   const openJobDetail = (job: Job) => {
-    setSelectedJob(job);
-    setIsDrawerOpen(true);
+    navigate(`/talent/jobs/${job.id}`);
   };
 
 
@@ -629,7 +628,7 @@ const TalentJobs = () => {
                       return (
                         <div
                           key={req.id}
-                          onClick={() => { setSelectedV2Request(req); setIsV2DrawerOpen(true); }}
+                          onClick={() => { navigate(`/talent/jobs/${req.id}`); }}
                           className="group px-8 py-7 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-all cursor-pointer"
                         >
                           <div className="flex-1 min-w-0 space-y-4">
