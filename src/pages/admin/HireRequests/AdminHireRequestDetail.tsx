@@ -118,6 +118,7 @@ export default function AdminHireRequestDetail() {
   const fetchVettedTalents = useCallback(async () => {
     setLoadingVettedTalents(true);
     try {
+      const { data } = await supabase
         .from("profiles")
         .select("id, first_name, last_name, email, title, skills, avatar_url, vetting_status")
         .in("vetting_status", ["fully_vetted", "approved", "vetted"])
