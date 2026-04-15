@@ -10,6 +10,7 @@ import { Trash2, Plus, CheckCircle2, Loader2, UploadCloud } from "lucide-react";
 import clsx from "clsx";
 import { RoleSelector } from "./RoleSelector";
 import { TimezoneSelector } from "./TimezoneSelector";
+import { CountrySelector } from "./CountrySelector";
 import { TagInput } from "@/components/ui/tag-input";
 
 // ── Reusable primitives ────────────────────────────────────────────────────
@@ -166,7 +167,7 @@ export const BasicInfoForm = ({ disabled }: { disabled?: boolean }) => {
           <Input className={OB_INPUT_CLASS} value={formData.phone} onChange={e => setValue("phone", e.target.value)} placeholder="+234..." disabled={disabled} />
         </FieldGroup>
         <FieldGroup label="Country" required>
-          <Input className={OB_INPUT_CLASS} value={formData.country} onChange={e => setValue("country", e.target.value)} placeholder="Nigeria" disabled={disabled} />
+          <CountrySelector value={formData.country} onChange={v => setValue("country", v)} disabled={disabled} />
         </FieldGroup>
       </div>
       <FieldGroup label="Timezone" required>

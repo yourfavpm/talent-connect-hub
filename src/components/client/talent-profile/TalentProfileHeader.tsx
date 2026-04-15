@@ -36,21 +36,21 @@ export function TalentProfileHeader({ talent, onInvite, onMessage }: TalentProfi
             </div>
           </div>
 
-          {/* Info Section */}
-          <div className="flex-1 min-w-0 lg:pt-20">
+          {/* Info Section - Added robust padding to avoid banner overlap */}
+          <div className="flex-1 min-w-0 pt-6 lg:pt-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
                     {talent.full_name}
                   </h1>
-                  <Badge variant="outline" className="hidden md:flex px-3 py-1 text-[10px] font-black text-slate-400 border-slate-200 uppercase tracking-widest bg-slate-50">
+                  <Badge variant="outline" className="px-3 py-1 text-[10px] font-black text-slate-400 border-slate-200 uppercase tracking-widest bg-slate-50">
                     ID: {talent.talent_id}
                   </Badge>
                 </div>
                 
                 <p className="text-xl md:text-2xl text-blue-600 font-bold tracking-tight">
-                  {talent.primary_role} <span className="text-slate-300 mx-2">—</span> <span className="text-slate-500">{talent.skill_level.charAt(0).toUpperCase() + talent.skill_level.slice(1)} Level</span>
+                  {talent.primary_role} <span className="text-slate-300 mx-2 hidden sm:inline">—</span> <span className="text-slate-500 block sm:inline">{talent.skill_level.charAt(0).toUpperCase() + talent.skill_level.slice(1)} Level</span>
                 </p>
               </div>
 

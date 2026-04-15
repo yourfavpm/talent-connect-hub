@@ -15,7 +15,35 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { TIMEZONE_REGIONS } from "@/lib/constants/onboarding";
+
+// Generate a comprehensive list of timezones with UTC offsets
+const getTimezones = () => {
+    try {
+        const timezones = Intl.supportedValuesOf('timeZone');
+        return timezones.map(tz => {
+            try {
+                const formatter = new Intl.DateTimeFormat('en-US', {
+                    timeZone: tz,
+                    timeZoneName: 'shortOffset',
+                });
+                const parts = formatter.formatToParts(new Date());
+                const offset = parts.find(p => p.type === 'timeZoneName')?.value || "";
+                return {
+                    value: tz,
+                    label: `(${offset}) ${tz.replace('_', ' ')}`,
+                    searchKey: tz.toLowerCase() + " " + offset.toLowerCase()
+                };
+            } catch (e) {
+                return { value: tz, label: tz, searchKey: tz.toLowerCase() };
+            }
+        }).sort((a, b) => a.label.localeCompare(b.label));
+    } catch (e) {
+        // Fallback for environments where supportedValuesOf might not exist
+        return [{ value: "UTC", label: "(UTC+0) UTC", searchKey: "utc" }];
+    }
+};
+
+const COMPREHENSIVE_TIMEZONES = getTimezones();
 
 interface TimezoneSelectorProps {
   value: string;
@@ -28,11 +56,8 @@ export function TimezoneSelector({ value, onChange, className, disabled }: Timez
   const [open, setOpen] = React.useState(false);
 
   const selectedTimezoneLabel = React.useMemo(() => {
-    for (const region of TIMEZONE_REGIONS) {
-      const tz = region.timezones.find(t => t.value === value);
-      if (tz) return tz.label;
-    }
-    return value || "Select timezone...";
+    const tz = COMPREHENSIVE_TIMEZONES.find(t => t.value === value);
+    return tz ? tz.label : value || "Select timezone...";
   }, [value]);
 
   return (
@@ -42,42 +67,41 @@ export function TimezoneSelector({ value, onChange, className, disabled }: Timez
           variant="outline"
           role="combobox"
           disabled={disabled}
-          className={cn("w-full justify-between bg-white border-slate-200 font-normal", className)}
+          className={cn("w-full justify-between bg-white border-slate-200 font-normal h-9 text-[12px] font-light", className)}
         >
-          <div className="flex items-center gap-2 truncate">
+          <div className="flex items-center gap-2 truncate text-slate-600">
             <Globe className="h-3.5 w-3.5 text-slate-400 shrink-0" />
             <span className="truncate">{selectedTimezoneLabel}</span>
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0" align="start">
+      <PopoverContent className="w-[340px] p-0 shadow-2xl border-slate-100" align="start">
         <Command>
-          <CommandInput placeholder="Search timezone or city..." />
-          <CommandList>
+          <CommandInput placeholder="Search timezone (e.g. Lagos, UTC+1)..." className="h-9" />
+          <CommandList className="max-h-[300px] overflow-y-auto scrollbar-thin">
             <CommandEmpty>No timezone found.</CommandEmpty>
-            {TIMEZONE_REGIONS.map((region) => (
-              <CommandGroup key={region.region} heading={region.region}>
-                {region.timezones.map((tz) => (
+            <CommandGroup>
+                {COMPREHENSIVE_TIMEZONES.map((tz) => (
                   <CommandItem
                     key={tz.value}
-                    value={tz.label} // Command search works on value/text
+                    value={tz.searchKey} 
                     onSelect={() => {
                       onChange(tz.value);
                       setOpen(false);
                     }}
+                    className="text-xs py-2"
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4",
+                        "mr-2 h-4 w-4 text-blue-600",
                         value === tz.value ? "opacity-100" : "opacity-0"
                       )}
                     />
                     {tz.label}
                   </CommandItem>
                 ))}
-              </CommandGroup>
-            ))}
+            </CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>
