@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -230,7 +231,7 @@ export default function AdminHireRequestDetail() {
   const callRpc = async (name: string, params: Record<string, unknown>, successMsg: string) => {
     setActionLoading(name);
     try {
-      const { error } = await (supabase as unknown as { rpc: (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }> }).rpc(name, params);
+      const { error } = await supabase.rpc(name as any, params);
       if (error) throw error;
       toast({ title: successMsg });
       fetchData();
@@ -310,7 +311,7 @@ export default function AdminHireRequestDetail() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 text-center">
         <AlertCircle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
         <h2 className="text-xl font-bold text-slate-900 mb-2">Request Not Found</h2>
-        <Button onClick={() => navigate("/admin/hire-requests")}>Back to Requests</Button>
+        <Button onClick={() => navigate(getInternalPath("/admin/hire-requests"))}>Back to Requests</Button>
       </div>
     );
   }
@@ -323,7 +324,7 @@ export default function AdminHireRequestDetail() {
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/hire-requests")} className="shrink-0 rounded-full">
+          <Button variant="ghost" size="icon" onClick={() => navigate(getInternalPath("/admin/hire-requests"))} className="shrink-0 rounded-full">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
@@ -448,7 +449,7 @@ export default function AdminHireRequestDetail() {
                     {shortlistedTalentIds.has(app.talent_user_id) && (
                       <Badge className="bg-emerald-100 text-emerald-700 border-none text-[10px]">Shortlisted</Badge>
                     )}
-                    <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => navigate(`/admin/talents/${app.talent_user_id}`)}>
+                    <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => navigate(getInternalPath(`/admin/talents/${app.talent_user_id}`))}>
                       <Eye className="w-3 h-3 mr-1" /> View
                     </Button>
                   </div>
@@ -493,7 +494,7 @@ export default function AdminHireRequestDetail() {
                           <Award className="w-3 h-3 mr-1" /> Finalize Hire
                         </Button>
                       )}
-                      <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => navigate(`/admin/talents/${item.talent_user_id}`)}>
+                      <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => navigate(getInternalPath(`/admin/talents/${item.talent_user_id}`))}>
                         <Eye className="w-3 h-3 mr-1" /> View
                       </Button>
                     </div>
@@ -639,7 +640,7 @@ export default function AdminHireRequestDetail() {
                               <Badge className="bg-emerald-100 text-emerald-700 border-none text-[10px]">Already Added</Badge>
                             ) : (
                               <>
-                                <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-400" onClick={(e) => { e.stopPropagation(); navigate(`/admin/talents/${talent.id}`); }}>
+                                <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-400" onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/admin/talents/${talent.id}`)); }}>
                                   <Eye className="w-3 h-3 mr-1" /> Profile
                                 </Button>
                                 <UserPlus className="w-4 h-4 text-emerald-500" />

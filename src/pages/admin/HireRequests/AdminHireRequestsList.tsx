@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -180,7 +181,7 @@ export default function AdminHireRequestsList() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredRequests.map((req) => (
-                  <tr key={req.id} className="hover:bg-slate-50/50 transition-colors group cursor-pointer" onClick={() => navigate(`/admin/hire-requests/${req.id}`)}>
+                  <tr key={req.id} className="hover:bg-slate-50/50 transition-colors group cursor-pointer" onClick={() => navigate(getInternalPath(`/admin/hire-requests/${req.id}`))}>
                     <td className="px-5 py-4"><div className="font-semibold text-slate-900">{req.title}</div></td>
                     <td className="px-5 py-4 text-slate-600 text-xs">{req.client_name}</td>
                     <td className="px-5 py-4 text-slate-500 capitalize text-xs">{req.service_model?.replace(/_/g, " ")}</td>
@@ -200,7 +201,7 @@ export default function AdminHireRequestsList() {
           {/* Mobile Cards */}
           <div className="md:hidden space-y-3">
             {filteredRequests.map((req) => (
-              <div key={req.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm active:scale-[0.98] transition-all" onClick={() => navigate(`/admin/hire-requests/${req.id}`)}>
+              <div key={req.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm active:scale-[0.98] transition-all" onClick={() => navigate(getInternalPath(`/admin/hire-requests/${req.id}`))}>
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-semibold text-slate-900 text-sm leading-tight">{req.title}</h3>
                   {getStatusBadge(req.status)}

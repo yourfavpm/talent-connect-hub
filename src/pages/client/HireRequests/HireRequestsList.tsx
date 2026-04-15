@@ -173,7 +173,7 @@ export default function HireRequestsList() {
             <span className="flex items-center"><Briefcase className="w-3 h-3 mr-1" /> {req.service_model?.replace(/_/g, " ")}</span>
             <span className="flex items-center"><Calendar className="w-3 h-3 mr-1" /> {format(new Date(req.created_at), "MMM d, yyyy")}</span>
           </div>
-          <div className="flex bg-slate-50 rounded-lg p-2 divide-x divide-slate-200">
+          <div className="flex bg-slate-50 rounded-lg p-2 divide-x divide-slate-200 mb-3">
             <div className="flex-1 text-center">
               <div className="text-sm font-semibold text-slate-900">{req.hr_v2_shortlists?.[0]?.count || 0}</div>
               <div className="text-[10px] text-slate-500 uppercase tracking-wider">Shortlist</div>
@@ -182,6 +182,26 @@ export default function HireRequestsList() {
               <div className="text-sm font-semibold text-slate-900">{req.hr_v2_interviews?.[0]?.count || 0}</div>
               <div className="text-[10px] text-slate-500 uppercase tracking-wider">Interviews</div>
             </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1 text-xs font-bold uppercase tracking-wider h-9"
+              onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/client/hire-requests/${req.id}`)); }}
+            >
+              <Eye className="w-3 h-3 mr-2" /> View
+            </Button>
+            {req.status === "draft" && (
+              <Button 
+                size="sm" 
+                className="flex-1 text-xs font-bold uppercase tracking-wider h-9 bg-slate-900 text-white"
+                onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/client/hire-requests/new/${req.id}`)); }}
+              >
+                <FileText className="w-3 h-3 mr-2" /> Edit & Submit
+              </Button>
+            )}
           </div>
         </div>
       ))}

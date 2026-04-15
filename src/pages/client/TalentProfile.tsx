@@ -78,8 +78,8 @@ const ClientTalentProfile = () => {
       } catch (error: any) {
         console.error("Error fetching talent:", error);
         toast({
-          title: "Error",
-          description: "Could not load talent profile. They may not be fully vetted yet.",
+          title: "Access Denied or Not Found",
+          description: "Could not load talent profile. Please refresh the page or try logging out and back in to sync your permissions.",
           variant: "destructive",
         });
         navigate(getInternalPath("/client/browse-talents"));
