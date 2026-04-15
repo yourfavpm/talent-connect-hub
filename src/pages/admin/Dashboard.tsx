@@ -145,7 +145,8 @@ const AdminDashboard = () => {
         { data: latestOffers },
         { data: latestTalents },
         { data: latestJobs },
-        { data: latestTickets }
+        { data: latestTickets },
+        { count: totalAssignedCount }
       ] = await Promise.all([
         supabase.from("jobs").select("id", { count: "exact", head: true }).in("status", ["submitted", "under_review"]),
         supabase.from("contracts").select("id", { count: "exact", head: true }).eq("status", "active"),
@@ -200,7 +201,7 @@ const AdminDashboard = () => {
           pendingInterviews: pendingInterviewsCount || 0,
           invoiceTotal: invoiceSum,
           assignedHired: hiredCount,
-          totalAssigned: (latestJobs as any) || 0, // Reuse the 7th promise result slot
+          totalAssigned: totalAssignedCount || 0,
         },
         queues: {
           talents: pendingProfiles.map((p: any) => ({

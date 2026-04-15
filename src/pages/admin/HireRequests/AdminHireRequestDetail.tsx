@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getInternalPath } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { sendInvitedToApplyEmail } from "@/lib/email/triggers";
+import { sendInvitedToApplyEmail, sendTalentApplicationShortlistedEmail } from "@/lib/email/triggers";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -118,9 +118,8 @@ export default function AdminHireRequestDetail() {
   const fetchVettedTalents = useCallback(async () => {
     setLoadingVettedTalents(true);
     try {
-      const { data } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name, title, skills, avatar_url, vetting_status")
+        .select("id, first_name, last_name, email, title, skills, avatar_url, vetting_status")
         .in("vetting_status", ["fully_vetted", "approved", "vetted"])
         .order("first_name", { ascending: true });
       setVettedTalents((data as (ProfileSnippet & { id: string })[]) || []);
@@ -142,7 +141,7 @@ export default function AdminHireRequestDetail() {
         .eq("talent_manager_admin_id", user.id);
       
       const formatted = (v2Profiles || []).map(p => ({
-        id: p.user_id, // Applications table uses user_id
+        id: p.user_id,
         user_id: p.user_id,
         email: (p.talents as any)?.email,
         first_name: (p.talents as any)?.first_name || "Unknown",
@@ -151,7 +150,28 @@ export default function AdminHireRequestDetail() {
         skills: [],
         avatar_url: null
       }));
-      setManagedTalents(formatted);
+
+      // If Super/Operations Admin, they should see ALL vetted talents for invitation too
+      if (!isTalentManager) {
+        const { data: allVetted } = await supabase
+          .from("profiles")
+          .select("id, first_name, last_name, email, title")
+          .in("vetting_status", ["fully_vetted", "approved", "vetted"]);
+        
+        const vettedFormatted = (allVetted || []).map(p => ({
+          id: p.id,
+          user_id: p.id,
+          email: p.email,
+          first_name: p.first_name || "Unknown",
+          last_name: p.last_name || "",
+          title: p.title || "Talent",
+          skills: [],
+          avatar_url: null
+        }));
+        setManagedTalents(vettedFormatted);
+      } else {
+        setManagedTalents(formatted);
+      }
     } catch (err) {
       console.error("Failed to load managed talents:", err);
     } finally {
@@ -286,6 +306,16 @@ export default function AdminHireRequestDetail() {
   const handleShortlist = async () => {
     if (!selectedTalentForShortlist) return;
     await callRpc("hr_v2_admin_shortlist_talent", { req_id: id, t_user_id: selectedTalentForShortlist.id, reason: shortlistReason }, "Talent shortlisted");
+    
+    // Branded email notification for shortlisting
+    if (selectedTalentForShortlist.email) {
+      await sendTalentApplicationShortlistedEmail({
+        email: selectedTalentForShortlist.email,
+        firstName: selectedTalentForShortlist.first_name || "Talent",
+        jobTitle: request?.title || "Job Opportunity"
+      });
+    }
+
     setShowShortlistDialog(false);
     setSelectedTalentForShortlist(null);
     setShortlistReason("");
@@ -428,14 +458,13 @@ export default function AdminHireRequestDetail() {
               <UserPlus className="w-4 h-4 mr-1.5" /> Pre-match Talent
             </Button>
           )}
-          {isTalentManager && (
-            <Button 
-                onClick={() => { setShowInviteDialog(true); fetchManagedTalents(); }} 
-                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm h-9 text-sm font-bold"
-            >
-              <UserPlus className="w-4 h-4 mr-1.5" /> Invite Candidates
-            </Button>
-          )}
+          {/* All admins can invite candidates */}
+          <Button 
+              onClick={() => { setShowInviteDialog(true); fetchManagedTalents(); }} 
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm h-9 text-sm font-bold"
+          >
+            <UserPlus className="w-4 h-4 mr-1.5" /> Invite Candidates
+          </Button>
         </div>
       </div>
 
@@ -782,15 +811,21 @@ export default function AdminHireRequestDetail() {
       <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
         <DialogContent className="sm:max-w-xl max-h-[80vh] flex flex-col p-0 overflow-hidden">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100 bg-slate-50/50">
-            <DialogTitle className="text-lg font-bold text-slate-900">Invite My Candidates</DialogTitle>
-            <p className="text-xs text-slate-500 font-medium">Select talents you manage to invite them to apply for this role.</p>
+            <DialogTitle className="text-lg font-bold text-slate-900">
+              {isTalentManager ? "Invite My Candidates" : "Invite Vetted Talents"}
+            </DialogTitle>
+            <p className="text-xs text-slate-500 font-medium">
+              {isTalentManager 
+                ? "Select talents you manage to invite them to apply for this role."
+                : "Browse and invite vetted talents from across the platform to apply."}
+            </p>
           </DialogHeader>
           
           <div className="px-6 py-4 border-b border-slate-100">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input 
-                placeholder="Search my talents..." 
+                placeholder={isTalentManager ? "Search my talents..." : "Search vetted talents..."} 
                 value={inviteSearch} 
                 onChange={(e) => setInviteSearch(e.target.value)} 
                 className="pl-9 h-10 bg-slate-50 border-slate-100 text-sm focus:ring-indigo-500/10" 
@@ -800,7 +835,7 @@ export default function AdminHireRequestDetail() {
 
           <div className="flex-1 overflow-auto p-4 space-y-2">
             {loadingManagedTalents ? (
-              <div className="py-20 text-center"><Loader2 className="h-10 w-10 text-slate-200 animate-spin mx-auto" /><p className="mt-4 text-sm text-slate-400 font-medium">Loading your talents...</p></div>
+              <div className="py-20 text-center"><Loader2 className="h-10 w-10 text-slate-200 animate-spin mx-auto" /><p className="mt-4 text-sm text-slate-400 font-medium">{isTalentManager ? "Loading your talents..." : "Loading vetted talents..."}</p></div>
             ) : managedTalents.filter(t => `${t.first_name} ${t.last_name}`.toLowerCase().includes(inviteSearch.toLowerCase())).length === 0 ? (
               <div className="py-20 text-center text-slate-400 text-sm font-medium">No managed talents found matching your search.</div>
             ) : (

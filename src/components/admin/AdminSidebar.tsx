@@ -54,6 +54,7 @@ const talentManagerNavigation = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: ["talent_manager"] },
   { name: "My Talents", href: "/admin/my-talents", icon: UserPlus, roles: ["talent_manager"] },
   { name: "Hiring Pipeline", href: "/admin/hiring-pipeline", icon: Briefcase, roles: ["talent_manager"] },
+  { name: "Hire Requests", href: "/admin/hire-requests", icon: ClipboardList, roles: ["talent_manager"] },
 ];
 
 interface AdminSidebarProps {
