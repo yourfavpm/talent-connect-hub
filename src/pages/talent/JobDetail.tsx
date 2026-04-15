@@ -362,7 +362,7 @@ const TalentJobDetail = () => {
                                                     </div>
                                                 </DialogHeader>
                                                 
-                                                <div className="p-10 space-y-8 bg-white">
+                                                <div className="px-10 pt-10 pb-14 space-y-8 bg-white">
                                                     <div className="space-y-4">
                                                         <div className="flex items-center gap-2">
                                                             <MessageSquare className="h-4 w-4 text-blue-600" />
@@ -370,24 +370,24 @@ const TalentJobDetail = () => {
                                                         </div>
                                                         <Textarea 
                                                             placeholder="Why are you the perfect fit for this role?" 
-                                                            className="min-h-[160px] rounded-2xl border-slate-100 bg-slate-50/50 p-6 font-medium text-slate-600 focus:ring-2 focus:ring-blue-600 transition-all text-base border shadow-inner"
+                                                            className="min-h-[160px] rounded-2xl border-slate-100 bg-slate-50/50 p-6 font-medium text-slate-600 focus:ring-2 focus:ring-blue-600 transition-all text-base border outline-none"
                                                             value={coverLetter}
                                                             onChange={(e) => setCoverLetter(e.target.value)}
                                                         />
                                                     </div>
 
-                                                    <div className="pt-6 border-t border-slate-50 flex flex-col sm:flex-row items-center gap-4">
+                                                    <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center gap-4">
                                                         <Button 
                                                             variant="ghost" 
                                                             onClick={() => setApplyDialogOpen(false)} 
-                                                            className="w-full sm:w-auto rounded-xl h-14 px-8 font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest text-[10px]"
+                                                            className="w-full sm:w-auto rounded-xl h-16 px-10 font-black uppercase tracking-[0.2em] text-[10px] text-slate-400 hover:text-slate-900 transition-all"
                                                         >
                                                             Abandon
                                                         </Button>
                                                         <Button 
                                                             onClick={() => applyMutation.mutate()} 
                                                             disabled={applyMutation.isPending}
-                                                            className="w-full sm:flex-1 h-16 px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl shadow-blue-500/20 transition-all active:scale-[0.98]"
+                                                            className="w-full sm:flex-1 h-16 px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-blue-500/20 transition-all hover:-translate-y-0.5"
                                                         >
                                                             {applyMutation.isPending ? "Syncing..." : "Finalize Application"}
                                                         </Button>
