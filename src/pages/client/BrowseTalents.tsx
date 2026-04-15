@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { getInternalPath } from "@/utils/subdomain";
 import { TalentListPanel } from "@/components/client/talents/TalentListPanel";
 import { FilterDrawer } from "@/components/client/talents/FilterDrawer";
 import { Search } from "lucide-react";
