@@ -20,7 +20,14 @@ import {
   UserPlus,
   ChevronRight,
   Loader2,
+  CheckSquare,
+  Square,
+  Mail,
+  X,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import BatchEmailModal from "./components/BatchEmailModal";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 // Types
@@ -68,6 +75,8 @@ const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) =>
   const [activeTab, setActiveTab] = useState(mode === "pipeline" ? "review" : "all");
   const [searchQuery, setSearchQuery] = useState("");
   const [talents, setTalents] = useState<TalentProfile[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
   const fetchTalents = async () => {
     const shouldScopeToManager = userRole === "talent_manager" || mode !== "global";
@@ -141,6 +150,30 @@ const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) =>
       }
     });
   }, [talents, activeTab, searchQuery]);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredTalents.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredTalents.map(t => t.id));
+    }
+  };
+
+  const toggleSelect = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const selectedTalentsData = useMemo(() => {
+    return talents.filter(t => selectedIds.includes(t.id)).map(t => ({
+      id: t.id,
+      email: t.talents?.email || "",
+      first_name: t.talents?.first_name || "",
+      last_name: t.talents?.last_name || ""
+    }));
+  }, [talents, selectedIds]);
 
   const getStatusBadge = (status: string, suspended: boolean) => {
     if (suspended) return <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-100 hover:bg-red-100">Suspended</Badge>;
@@ -217,6 +250,12 @@ const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) =>
           <Table>
             <TableHeader className="bg-slate-50/50">
               <TableRow className="hover:bg-transparent">
+                <TableHead className="w-[40px] py-4">
+                  <Checkbox 
+                    checked={filteredTalents.length > 0 && selectedIds.length === filteredTalents.length}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </TableHead>
                 <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-500 py-4">Talent</TableHead>
                 <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-500 py-4">Status</TableHead>
                 <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-500 py-4">Progress</TableHead>
@@ -239,9 +278,15 @@ const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) =>
                 filteredTalents.map((tp) => (
                   <TableRow 
                     key={tp.id} 
-                    className="group hover:bg-slate-50/50 cursor-pointer"
+                    className={`group hover:bg-slate-50/50 cursor-pointer ${selectedIds.includes(tp.id) ? 'bg-slate-50' : ''}`}
                     onClick={() => navigate(`/talents/${tp.id}`)}
                   >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox 
+                        checked={selectedIds.includes(tp.id)}
+                        onCheckedChange={() => toggleSelect(tp.id)}
+                      />
+                    </TableCell>
                     <TableCell className="py-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9 border border-slate-200">
@@ -309,6 +354,53 @@ const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) =>
           </div>
         </div>
       )}
+      {/* Floating Selection Bar */}
+      <AnimatePresence>
+        {selectedIds.length > 0 && (
+          <motion.div 
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4"
+          >
+            <div className="bg-slate-900 text-white rounded-2xl p-4 shadow-2xl border border-white/10 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-500 text-white h-8 w-8 rounded-lg flex items-center justify-center font-bold text-sm">
+                  {selectedIds.length}
+                </div>
+                <div>
+                  <p className="text-sm font-bold">Talents Selected</p>
+                  <p className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">Multi-select action active</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button 
+                  size="sm" 
+                  onClick={() => setIsEmailModalOpen(true)}
+                  className="bg-white text-slate-900 hover:bg-slate-100 font-bold h-9 gap-2"
+                >
+                  <Mail className="h-3.5 w-3.5" /> Broadcast Email
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setSelectedIds([])}
+                  className="text-slate-400 hover:text-white hover:bg-white/10 h-9 w-9"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <BatchEmailModal 
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        selectedTalents={selectedTalentsData}
+      />
     </div>
   );
 };
