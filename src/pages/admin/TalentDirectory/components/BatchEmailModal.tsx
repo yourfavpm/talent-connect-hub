@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,9 +13,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { sendEmail } from "@/lib/email/emailService";
-import { Mail, Loader2, CheckCircle2, AlertCircle, Info } from "lucide-react";
+import { 
+  Mail, 
+  Loader2, 
+  CheckCircle2, 
+  AlertCircle, 
+  Info,
+  Bold,
+  Italic,
+  List,
+  Type
+} from "lucide-react";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BatchEmailModalProps {
   isOpen: boolean;
@@ -35,6 +46,38 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
   const [progress, setProgress] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const applyFormat = (tag: string, placeholder: string = "") => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selection = textarea.value.substring(start, end);
+    const content = selection || placeholder;
+    
+    let formatted = "";
+    if (tag === 'ul') {
+      formatted = `\n<ul>\n  <li>${content}</li>\n</ul>\n`;
+    } else if (tag === 'li') {
+      formatted = `<li>${content}</li>`;
+    } else {
+      formatted = `<${tag}>${content}</${tag}>`;
+    }
+
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+    
+    setBody(before + formatted + after);
+    
+    // Reset focus and selection
+    setTimeout(() => {
+      textarea.focus();
+      const newPos = start + formatted.length;
+      textarea.setSelectionRange(newPos, newPos);
+    }, 0);
+  };
 
   const handleSend = async () => {
     if (!subject || !body) {
@@ -52,11 +95,11 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
     for (let i = 0; i < total; i++) {
       const talent = selectedTalents[i];
       
-      // Personalize body
+      // Personalize body (replace variables and keep HTML tags)
       const personalizedBody = body
         .replace(/{{first_name}}/g, talent.first_name || "there")
         .replace(/{{last_name}}/g, talent.last_name || "")
-        .replace(/\n/g, '<br/>'); // Simple conversion for HTML email sending if needed
+        .replace(/\n/g, '<br/>');
 
       try {
         const success = await sendEmail({
@@ -64,15 +107,38 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
           toName: `${talent.first_name} ${talent.last_name}`,
           subject: subject,
           htmlTemplate: `
-            <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
-              <div style="padding: 20px; background: white;">
-                ${personalizedBody}
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+                .header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #f1f5f9; }
+                .content { padding: 40px 30px; font-size: 16px; color: #334155; }
+                .footer { padding: 30px; border-top: 1px solid #f1f5f9; background-color: #f8fafc; font-size: 12px; color: #64748b; text-align: center; }
+                .logo { height: 32px; margin-bottom: 10px; }
+                b, strong { color: #0f172a; font-weight: 700; }
+                ul { padding-left: 20px; margin-bottom: 20px; }
+                li { margin-bottom: 8px; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                   <img src="https://opslyhr.com/images/logocolored.png" alt="OpslyHR" class="logo" />
+                </div>
+                <div class="content">
+                  ${personalizedBody}
+                </div>
+                <div class="footer">
+                  <p><strong>OpslyHR</strong> &bull; Talent Connect Hub</p>
+                  <p><a href="https://opslyhr.com" style="color: #2563eb; text-decoration: none;">opslyhr.com</a></p>
+                  <p style="margin-top: 20px; font-size: 10px; color: #94a3b8;">This is a personalized message from your Talent Manager.</p>
+                </div>
               </div>
-              <div style="padding: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
-                <p>Best regards,<br/><strong>The OPSlyHR Team</strong></p>
-                <p><a href="https://opslyhr.com" style="color: #0f2147; text-decoration: none;">opslyhr.com</a></p>
-              </div>
-            </div>
+            </body>
+            </html>
           `,
           priority: 'normal'
         });
@@ -87,7 +153,6 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
       }
 
       setProgress(Math.round(((i + 1) / total) * 100));
-      // Small delay to prevent rate limit spikes
       await new Promise(resolve => setTimeout(resolve, 300));
     }
 
@@ -113,7 +178,7 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && !isSending && resetAndClose()}>
-      <DialogContent className="sm:max-w-[600px] border-none shadow-2xl p-0 overflow-hidden bg-white">
+      <DialogContent className="sm:max-w-[700px] border-none shadow-2xl p-0 overflow-hidden bg-white">
         <DialogHeader className="p-6 bg-slate-900 text-white">
           <div className="flex items-center gap-3 mb-1">
             <div className="bg-white/10 p-2 rounded-lg">
@@ -122,7 +187,7 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
             <DialogTitle className="text-xl">Broadcast Email</DialogTitle>
           </div>
           <DialogDescription className="text-slate-400 font-medium">
-            Sending to {selectedTalents.length} selected talent{selectedTalents.length === 1 ? "" : "s"}
+            Compose your branded message for {selectedTalents.length} selected talent{selectedTalents.length === 1 ? "" : "s"}
           </DialogDescription>
         </DialogHeader>
 
@@ -137,25 +202,59 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="e.g. Important Update Regarding Your Profile"
                   disabled={isSending}
-                  className="h-12 border-slate-100 focus:ring-blue-500/10 focus:border-blue-500 font-medium"
+                  className="h-12 border-slate-100 focus:ring-blue-500/10 focus:border-blue-500 font-medium bg-slate-50/30"
                 />
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center mb-1">
                   <Label htmlFor="body" className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Message Content</Label>
-                  <div className="flex gap-2">
-                    <code className="text-[9px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{"{{first_name}}"}</code>
-                    <code className="text-[9px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{"{{last_name}}"}</code>
-                  </div>
+                  <TooltipProvider>
+                    <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-md border border-slate-100">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => applyFormat('b')}>
+                            <Bold className="h-3.5 w-3.5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Bold</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => applyFormat('i')}>
+                            <Italic className="h-3.5 w-3.5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Italic</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => applyFormat('ul', 'Item')}>
+                            <List className="h-3.5 w-3.5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Bullet List</TooltipContent>
+                      </Tooltip>
+                      <div className="w-px h-4 bg-slate-200 mx-1" />
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px] font-mono" onClick={() => applyFormat('first_name', '{{first_name}}')}>
+                             {"{fn}"}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Insert First Name</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
                 </div>
                 <Textarea
+                  ref={textareaRef}
                   id="body"
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   placeholder="Hello {{first_name}}, ..."
                   disabled={isSending}
-                  className="min-h-[250px] border-slate-100 focus:ring-blue-500/10 focus:border-blue-500 font-light resize-none leading-relaxed"
+                  className="min-h-[300px] border-slate-100 focus:ring-blue-500/10 focus:border-blue-500 font-light resize-none leading-relaxed bg-white"
                 />
               </div>
             </div>
@@ -166,7 +265,7 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
                   <span>Sending broadcast...</span>
                   <span>{progress}%</span>
                 </div>
-                <Progress value={progress} className="h-1.5 bg-slate-100" />
+                <Progress value={progress} className="h-1.5 bg-slate-100 animate-pulse" />
               </div>
             )}
 
@@ -181,8 +280,8 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
               </Button>
               <Button 
                 onClick={handleSend} 
-                disabled={isSending || selectedTalents.length === 0}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 shadow-lg shadow-slate-200"
+                disabled={isSending || !subject || !body || selectedTalents.length === 0}
+                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-10 shadow-lg shadow-slate-200 h-11"
               >
                 {isSending ? (
                   <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Sending...</>
@@ -193,36 +292,38 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
             </DialogFooter>
           </div>
         ) : (
-          <div className="p-12 flex flex-col items-center text-center space-y-6">
-            <div className="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+          <div className="p-16 flex flex-col items-center text-center space-y-6">
+            <div className="h-24 w-24 bg-emerald-50 rounded-full flex items-center justify-center">
+              <CheckCircle2 className="h-12 w-12 text-emerald-500" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-slate-900">Broadcast Complete</h3>
-              <p className="text-slate-500 mt-2">
-                Your message has been processed. 
-                {errors.length > 0 && ` ${errors.length} emails failed to deliver.`}
+              <h3 className="text-2xl font-bold text-slate-900">Broadcast Complete</h3>
+              <p className="text-slate-500 mt-2 text-lg">
+                Your messages have been delivered to {selectedTalents.length - errors.length} talent{selectedTalents.length === 1 ? "" : "s"}.
+                {errors.length > 0 && ` ${errors.length} failed.`}
               </p>
             </div>
             
             {errors.length > 0 && (
-              <div className="w-full bg-red-50 p-4 rounded-xl border border-red-100 text-left">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="w-full bg-red-50 p-6 rounded-2xl border border-red-100 text-left">
+                <div className="flex items-center gap-2 mb-3">
                   <AlertCircle className="h-4 w-4 text-red-500" />
-                  <p className="text-xs font-bold text-red-700 uppercase tracking-wider">Failed Emails</p>
+                  <p className="text-xs font-bold text-red-700 uppercase tracking-widest">Delivery Failures</p>
                 </div>
-                <ScrollArea className="h-[100px] w-full">
-                  <div className="space-y-1">
+                <ScrollArea className="h-[120px] w-full">
+                  <div className="space-y-1.5">
                     {errors.map((email, idx) => (
-                      <p key={idx} className="text-xs text-red-600 font-medium">{email}</p>
+                      <p key={idx} className="text-xs text-red-600 font-medium flex items-center gap-2">
+                        <span className="h-1 w-1 bg-red-300 rounded-full" /> {email}
+                      </p>
                     ))}
                   </div>
                 </ScrollArea>
               </div>
             )}
 
-            <Button onClick={resetAndClose} className="w-full bg-slate-900 hover:bg-slate-800 font-bold h-12 rounded-xl">
-              Done
+            <Button onClick={resetAndClose} className="w-full bg-slate-900 hover:bg-slate-800 font-bold h-14 rounded-2xl text-lg mt-4 shadow-xl shadow-slate-200">
+              Return to Directory
             </Button>
           </div>
         )}
