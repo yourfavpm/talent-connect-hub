@@ -126,15 +126,13 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
             <body>
               <div class="container">
                 <div class="header">
-                   <img src="https://opslyhr.com/images/logocolored.png" alt="OpslyHR" class="logo" />
+                   <img src="https://opslyhr.com/images/logocolored.png" alt="OpslyHR" style="height: 64px; width: auto; display: block; margin: 0 auto;" />
                 </div>
                 <div class="content">
                   ${personalizedBody}
                 </div>
                 <div class="footer">
-                  <p><strong>OpslyHR</strong> &bull; Talent Connect Hub</p>
-                  <p><a href="https://opslyhr.com" style="color: #2563eb; text-decoration: none;">opslyhr.com</a></p>
-                  <p style="margin-top: 20px; font-size: 10px; color: #94a3b8;">This is a personalized message from your Talent Manager.</p>
+                  <p>&copy; 2026 OpslyHR</p>
                 </div>
               </div>
             </body>

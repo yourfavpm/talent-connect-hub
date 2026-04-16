@@ -29,6 +29,7 @@ const SEO = ({
       <link rel="canonical" href={canonical} />
 
       {/* OpenGraph / Facebook */}
+      <meta property="og:site_name" content="OPSlyHR" />
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={canonical} />
       <meta property="og:title" content={fullTitle} />
@@ -43,6 +44,8 @@ const SEO = ({
       <meta name="twitter:image" content={ogImage} />
       
       {/* Additional SEO Best Practices */}
+      <meta name="application-name" content="OPSlyHR" />
+      <meta name="apple-mobile-web-app-title" content="OPSlyHR" />
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       <meta name="robots" content="index, follow" />
       <meta name="googlebot" content="index, follow" />
