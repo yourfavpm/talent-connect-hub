@@ -141,59 +141,58 @@ const Login = () => {
         return;
       }
 
-      // 4. Smart Redirection Logic
-      const hasClient = userRoles.includes("client");
-      const hasAdmin = userRoles.some(r => ["super_admin", "operations_admin"].includes(r));
+      // 4. Universal Redirection Logic
+      const hasAdmin = userRoles.some(r => ["super_admin", "operations_admin", "admin"].includes(r));
       const hasTalent = userRoles.includes("talent");
+      const hasClient = userRoles.includes("client");
       const hasStudent = userRoles.includes("student");
 
-      // CASE A: Client prioritisation (Primary entry for clients)
-      // Since clients must have unique emails, they will likely only have this role.
+      // Priority 1: Admin
+      if (hasAdmin) {
+        redirectToZone(Zone.ADMIN, "/dashboard");
+        return;
+      }
+
+      // Priority 2: Talent
+      if (hasTalent) {
+        redirectToZone(Zone.TALENT, "/dashboard");
+        return;
+      }
+
+      // Priority 3: Client
       if (hasClient) {
         redirectToZone(Zone.CLIENT, "/dashboard");
         return;
       }
 
-      // CASE B: Respect Portal/Zone Context
-      // If the user specified a portal (via URL or Subdomain) and has that role, go there directly.
-      if (portal && userRoles.includes(portal)) {
-        if (portal === "talent") redirectToZone(Zone.TALENT, "/dashboard");
-        else if (portal === "student") redirectToZone(Zone.ACADEMY, "/dashboard");
-        else if (portal === "admin" && hasAdmin) redirectToZone(Zone.ADMIN, "/dashboard");
+      // Priority 4: Student
+      if (hasStudent) {
+        redirectToZone(Zone.ACADEMY, "/dashboard");
         return;
       }
 
-      // CASE C: Multi-role ambiguity (e.g., Talent + Student on generic app zone)
-      if (userRoles.length > 1) {
-        // If they have a returnTo, respect it first
-        if (returnTo) {
-          window.location.href = returnTo;
-          return;
+      // 5. Context-Aware Fallback & Auto-Repair
+      const metaPortal = data.user.user_metadata?.portal;
+      
+      if (metaPortal === "talent" || portal === "talent") {
+        if (!hasTalent) {
+          await (supabase.from("user_roles") as any).insert({ user_id: data.user.id, role: "talent" });
         }
-        // Otherwise use role selector
-        navigate(`/auth/select-role?portal=${portal}`);
-        return;
-      }
-
-      // CASE D: Single-role Redirection (Standard)
-      if (userRoles.length === 1) {
-        const primaryRole = userRoles[0];
-        if (primaryRole === "super_admin" || primaryRole === "operations_admin") {
-          redirectToZone(Zone.ADMIN, "/dashboard");
-        } else if (primaryRole === "talent") {
-          redirectToZone(Zone.TALENT, "/dashboard");
-        } else if (primaryRole === "client") {
-          redirectToZone(Zone.CLIENT, "/dashboard");
-        } else if (primaryRole === "student") {
-          redirectToZone(Zone.ACADEMY, "/dashboard");
-        } else {
-          handlePortalFallback(portal);
+        redirectToZone(Zone.TALENT, "/dashboard");
+      } else if (metaPortal === "admin" || portal === "admin") {
+        redirectToZone(Zone.ADMIN, "/dashboard");
+      } else if (metaPortal === "student" || portal === "student") {
+        redirectToZone(Zone.ACADEMY, "/dashboard");
+      } else if (metaPortal === "client" || portal === "client") {
+        if (!hasClient) {
+          await (supabase.from("user_roles") as any).insert({ user_id: data.user.id, role: "client" });
         }
-        return;
+        redirectToZone(Zone.CLIENT, "/dashboard");
+      } else {
+        // Ultimate fallback
+        handlePortalFallback(portal);
       }
-
-      // 6. Final Fallback: No roles defined in user_roles yet
-      handlePortalFallback(portal);
+      return;
     } catch (err: unknown) {
       setError(getFriendlyErrorMessage(err));
       setLoading(false);

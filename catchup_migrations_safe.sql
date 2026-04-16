@@ -1432,7 +1432,7 @@ BEGIN
     -- Check all 7 sections have data
     SELECT count(*) INTO v_incomplete
     FROM (
-        SELECT unnest('["basic_info", "professional_details", "work_history", "documents", "education", "certifications", "references"]'::jsonb) AS sk
+        SELECT unnest(ARRAY['basic_info', 'professional_details', 'work_history', 'documents', 'education', 'certifications', 'references']) AS sk
     ) required_sections
     WHERE NOT EXISTS (
         SELECT 1 FROM public.v2_profile_sections
@@ -5867,7 +5867,7 @@ BEGIN
     -- We allow submission from Step 3 onwards
     SELECT count(*) INTO v_incomplete
     FROM (
-        SELECT unnest('["basic_info", "professional_details", "work_history"]'::jsonb) AS sk
+        SELECT unnest(ARRAY['basic_info', 'professional_details', 'work_history']) AS sk
     ) required_sections
     WHERE NOT EXISTS (
         SELECT 1 FROM public.v2_profile_sections
@@ -5935,7 +5935,7 @@ BEGIN
     -- Ensure mandatory sections (Basic, Pro, Work) are AT LEAST submitted
     SELECT count(*) INTO v_incomplete
     FROM (
-        SELECT unnest('["basic_info", "professional_details", "work_history"]'::jsonb) AS sk
+        SELECT unnest(ARRAY['basic_info', 'professional_details', 'work_history']) AS sk
     ) mandatories
     WHERE NOT EXISTS (
         SELECT 1 FROM public.v2_profile_sections

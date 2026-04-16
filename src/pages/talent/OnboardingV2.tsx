@@ -67,7 +67,18 @@ const OnboardingV2 = () => {
   const [progressPercent, setProgressPercent] = useState(0);
   const hydrated = useRef(false);
   const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
-
+ 
+  // Map fields to specific steps for targeted validation
+  const STEP_FIELDS: Record<number, (keyof OnboardFormValues)[]> = {
+    1: ["firstName", "lastName", "phone", "country", "timezone"],
+    2: ["roleCategory", "primaryRole", "yearsOfExperience", "availability", "headline", "shortBio"],
+    3: ["workHistory"],
+    4: ["cvUrl", "governmentIdUrl", "proofOfAddressUrl"],
+    5: ["education"],
+    6: ["certifications"],
+    7: ["references"],
+  };
+ 
   const methods = useForm<OnboardFormValues>({
     resolver: zodResolver(onboardSchema),
     mode: "onBlur",
@@ -174,10 +185,25 @@ const OnboardingV2 = () => {
   // ── Step navigation ────────────────────────────────────────────────────
 
   const goToStep = useCallback(async (targetStep: number) => {
+    // If moving forward, validate current step fields
+    if (targetStep > currentStep) {
+      const stepFields = STEP_FIELDS[currentStep] || [];
+      const isValid = await methods.trigger(stepFields as any);
+      
+      if (!isValid) {
+        toast({
+          title: "Missing Information",
+          description: "Please fill in all mandatory fields before moving to the next section.",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
     await saveCurrentStep();
     setCurrentStep(targetStep);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [saveCurrentStep]);
+  }, [saveCurrentStep, currentStep, methods, toast]);
 
   const nextStep = useCallback(async () => {
     if (currentStep >= STEPS.length) return;
@@ -193,6 +219,29 @@ const OnboardingV2 = () => {
 
   const handleSubmit = useCallback(async () => {
     if (!user) return;
+    
+    // Final validation check for ALL mandatory steps
+    const mandatorySteps = [1, 2, 3, 4, 5, 7];
+    let allValid = true;
+    for (const s of mandatorySteps) {
+      const stepFields = STEP_FIELDS[s] || [];
+      const stepValid = await methods.trigger(stepFields as any);
+      if (!stepValid) {
+        allValid = false;
+        setCurrentStep(s);
+        break;
+      }
+    }
+
+    if (!allValid) {
+      toast({
+        title: "Incomplete Profile", 
+        description: "Please complete all mandatory sections before submitting.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       // Save current step first
@@ -207,7 +256,7 @@ const OnboardingV2 = () => {
     } finally {
       setSubmitting(false);
     }
-  }, [user, saveCurrentStep, toast, navigate]);
+  }, [user, saveCurrentStep, toast, navigate, methods]);
 
   // ── File upload ────────────────────────────────────────────────────────
 
@@ -253,12 +302,7 @@ const OnboardingV2 = () => {
 
   const step = STEPS[currentStep - 1];
   const isLastStep = currentStep === STEPS.length;
-  
-  const mandatoryKeys = ["basic_info", "professional_details", "work_history"];
-  const allMandatorySubmitted = mandatoryKeys.every(key => {
-    const status = sectionStatuses[key];
-    return status && ["submitted", "resubmitted", "approved", "in_progress"].includes(status);
-  });
+  const isOptionalStep = currentStep === 6; // Certifications
 
   return (
     <FormProvider {...methods}>
@@ -352,15 +396,15 @@ const OnboardingV2 = () => {
                   </Button>
 
                   <div className="flex flex-col sm:flex-row gap-2">
-                    {!isLastStep && (
-                      <Button
-                        variant="ghost"
-                        onClick={nextStep}
-                        className="h-9 text-slate-400 hover:text-slate-900 text-[11px] font-medium px-3"
-                      >
-                        Skip Section
-                      </Button>
-                    )}
+                    {isOptionalStep && !isLastStep && (
+                       <Button
+                         variant="ghost"
+                         onClick={nextStep}
+                         className="h-9 text-slate-400 hover:text-slate-900 text-[11px] font-medium px-3"
+                       >
+                         Skip Section
+                       </Button>
+                     )}
                     
                     <Button
                       variant="outline"
@@ -371,16 +415,16 @@ const OnboardingV2 = () => {
                       <Save className="h-3.5 w-3.5" /> Save
                     </Button>
                     
-                    {((isLastStep) || (currentStep >= 3 && currentStep < STEPS.length && allMandatorySubmitted)) && (
-                      <Button
-                        onClick={handleSubmit}
-                        disabled={submitting || saving}
-                        className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold px-4 shadow-sm"
-                      >
-                        {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                        Submit for Vetting
-                      </Button>
-                    )}
+                    {isLastStep && (
+                       <Button
+                         onClick={handleSubmit}
+                         disabled={submitting || saving}
+                         className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold px-4 shadow-sm"
+                       >
+                         {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                         Submit for Vetting
+                       </Button>
+                     )}
 
                     {!isLastStep && (
                       <Button

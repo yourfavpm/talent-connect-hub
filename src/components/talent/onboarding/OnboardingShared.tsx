@@ -99,9 +99,9 @@ export const onboardSchema = z.object({
   languagesSpoken: z.array(z.string()).default([]),
   industryFocus: z.array(z.string()).default([]),
   functionalAreas: z.array(z.string()).default([]),
-  governmentIdUrl: z.string().optional(),
-  cvUrl: z.string().optional(),
-  proofOfAddressUrl: z.string().optional(),
+  governmentIdUrl: z.string().min(1, "Government ID is required"),
+  cvUrl: z.string().min(1, "Resume/CV is required"),
+  proofOfAddressUrl: z.string().min(1, "Proof of address is required"),
   portfolioUrl: z.string().optional(),
   workHistory: z.array(z.object({
     id: z.string(), companyName: z.string().min(2, "Company name required"),
