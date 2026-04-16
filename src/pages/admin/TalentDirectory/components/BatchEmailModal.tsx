@@ -117,7 +117,6 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
                 .header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #f1f5f9; }
                 .content { padding: 40px 30px; font-size: 16px; color: #334155; }
                 .footer { padding: 30px; border-top: 1px solid #f1f5f9; background-color: #f8fafc; font-size: 12px; color: #64748b; text-align: center; }
-                .logo { height: 32px; margin-bottom: 10px; }
                 b, strong { color: #0f172a; font-weight: 700; }
                 ul { padding-left: 20px; margin-bottom: 20px; }
                 li { margin-bottom: 8px; }
@@ -126,13 +125,13 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
             <body>
               <div class="container">
                 <div class="header">
-                   <img src="https://opslyhr.com/images/logocolored.png" alt="OpslyHR" style="height: 64px; width: auto; display: block; margin: 0 auto;" />
+                   <img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="height: 64px; width: auto; display: block; margin: 0 auto;" />
                 </div>
                 <div class="content">
                   ${personalizedBody}
                 </div>
                 <div class="footer">
-                  <p>&copy; 2026 OpslyHR</p>
+                  <p>&copy; 2026 OPSlyHR</p>
                 </div>
               </div>
             </body>

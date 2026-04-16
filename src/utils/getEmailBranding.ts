@@ -38,7 +38,7 @@ export const getBrandedEmailHtml = (body: string, title?: string) => {
       border-bottom: 1px solid #f1f5f9;
     }
     .logo {
-      height: 32px;
+      height: 64px;
       margin-bottom: 8px;
     }
     .content {
@@ -104,8 +104,7 @@ export const getBrandedEmailHtml = (body: string, title?: string) => {
       <a href="https://talent.opslyhr.com/dashboard" class="button">Go to Talent Portal</a>
     </div>
     <div class="footer">
-      &copy; ${new Date().getFullYear()} ${brandName} | Managed Remote Operations Expertise<br>
-      This is an automated notification from your vetting workspace.
+      &copy; 2026 OPSlyHR
     </div>
   </div>
 </body>
