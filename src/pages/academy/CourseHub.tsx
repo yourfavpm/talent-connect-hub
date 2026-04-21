@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ACADEMY_COURSES } from "@/data/academy-courses";
+
 import { 
     Calendar, 
     Video, 
@@ -94,7 +94,7 @@ const CourseHub = () => {
     const [submissionContent, setSubmissionContent] = useState("");
     const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
 
-    const courseInfo = ACADEMY_COURSES.find(c => c.slug === slug);
+    const [courseInfo, setCourseInfo] = useState<{ title: string; slug: string } | null>(null);
 
     useEffect(() => {
         const fetchHubData = async () => {
@@ -125,6 +125,14 @@ const CourseHub = () => {
             const typedEnrollData = enrollData as (Enrollment & { cohorts: Cohort });
             setEnrollment(typedEnrollData);
             const cohortId = typedEnrollData.cohort_id;
+
+            // Fetch course info from DB
+            const { data: courseData } = await supabase
+                .from("academy_courses")
+                .select("title, slug")
+                .eq("slug", slug)
+                .single();
+            if (courseData) setCourseInfo(courseData as { title: string; slug: string });
 
             // 2. Fetch Sessions, Announcements, Assignments & Submissions in Parallel
             const [sessionsRes, announcementsRes, assignmentsRes, submissionsRes] = await Promise.all([

@@ -14,7 +14,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { PaystackService } from "@/lib/paystack";
-import { ACADEMY_COURSES } from "@/data/academy-courses";
 
 interface AcademyCourse {
     id?: string;
@@ -40,23 +39,18 @@ const Checkout = () => {
     useEffect(() => {
         const fetchCourse = async () => {
             if (!slug) return;
-            const { data, error } = await (supabase
-                .from("academy_courses")
-                .select("*")
-                .eq("slug", slug)
-                .single() as any);
+            try {
+                const { data, error } = await (supabase
+                    .from("academy_courses")
+                    .select("*")
+                    .eq("slug", slug)
+                    .single() as any);
 
-            if (!error && data) {
-                setCourse(data);
-            } else {
-                const staticCourse = ACADEMY_COURSES.find(c => c.slug === slug);
-                if (staticCourse) {
-                    setCourse({ 
-                        ...staticCourse,
-                        price_naira: staticCourse.priceNaira || 0,
-                        price_usd: staticCourse.priceUSD || 0
-                    } as AcademyCourse);
+                if (!error && data) {
+                    setCourse(data);
                 }
+            } catch (err) {
+                console.error("Failed to fetch course:", err);
             }
             setLoading(false);
         };

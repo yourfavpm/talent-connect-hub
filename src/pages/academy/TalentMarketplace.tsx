@@ -14,9 +14,29 @@ import {
 import { motion } from "framer-motion";
 import { Zone, getZoneUrl } from "@/utils/subdomain";
 import TestimonialCard from "@/components/academy/TestimonialCard";
-import { ACADEMY_COURSES } from "@/data/academy-courses";
+
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { CourseTestimonial } from "@/components/academy/TestimonialCard";
 
 const TalentMarketplace = () => {
+    const [testimonials, setTestimonials] = useState<CourseTestimonial[]>([]);
+
+    useEffect(() => {
+        const fetch = async () => {
+            const { data } = await supabase
+                .from("academy_courses")
+                .select("testimonials")
+                .eq("is_live", true)
+                .not("testimonials", "is", null)
+                .limit(1)
+                .single();
+            if (data?.testimonials) {
+                setTestimonials(data.testimonials as CourseTestimonial[]);
+            }
+        };
+        fetch();
+    }, []);
     return (
         <div className="bg-white min-h-screen font-inter">
             
@@ -136,7 +156,7 @@ const TalentMarketplace = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {ACADEMY_COURSES[1].testimonials.map((testimonial, i) => (
+                        {testimonials.map((testimonial, i) => (
                             <TestimonialCard key={i} testimonial={testimonial} />
                         ))}
                     </div>

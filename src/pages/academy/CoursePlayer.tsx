@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ACADEMY_COURSES } from "@/data/academy-courses";
+
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -44,10 +44,15 @@ const CoursePlayer = () => {
 
       if (error || !data) {
         setAccess(false);
-        navigate("/dashboard"); // Take back to dashboard if no access
+        navigate("/dashboard");
       } else {
         setAccess(true);
-        const courseData = ACADEMY_COURSES.find(c => c.slug === slug);
+        // Fetch course details from DB
+        const { data: courseData } = await supabase
+          .from("academy_courses")
+          .select("*")
+          .eq("slug", slug)
+          .single();
         setCourse(courseData);
       }
       setLoading(false);

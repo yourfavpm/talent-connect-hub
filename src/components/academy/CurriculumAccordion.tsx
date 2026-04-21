@@ -4,8 +4,14 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CurriculumWeek } from "@/data/academy-courses";
 import { CheckCircle2 } from "lucide-react";
+
+// Decoupled from static data — accepts any curriculum shape
+export interface CurriculumWeek {
+    week: string;
+    title: string;
+    lessons: string[];
+}
 
 interface CurriculumAccordionProps {
     weeks: CurriculumWeek[];

@@ -1,7 +1,6 @@
 import { useParams, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { getCourseBySlug } from "@/data/academy-courses"; // Legacy fallback
 import { Button } from "@/components/ui/button";
 import { 
     ArrowRight, 
@@ -12,18 +11,22 @@ import {
     Users, 
     Award, 
     Zap,
-    Laptop,
-    Shield,
     Globe,
     TrendingUp,
-    ChevronDown,
     ArrowLeft,
     Loader2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import CurriculumAccordion from "@/components/academy/CurriculumAccordion";
+import type { CurriculumWeek } from "@/components/academy/CurriculumAccordion";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
+interface CourseDetailProps {
+    inlineSlug?: string;
+    onBack?: () => void;
+    onEnroll?: (slug: string) => void;
+}
 
 interface Course {
     id?: string;
@@ -46,16 +49,6 @@ interface Course {
     slots_total: number;
     slots_filled: number;
     next_cohort_date: string;
-    // Legacy mapping support
-    priceUSD?: number;
-    priceNaira?: number;
-    nextCohort?: string;
-    whatYoullLearn?: string[];
-    whoIsItFor?: string[];
-    outcomes?: string[];
-    bonusDescription?: string;
-    slotsTotal?: number;
-    slotsFilled?: number;
 }
 
 const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
@@ -74,7 +67,6 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
             if (!slug) return;
             
             try {
-                // 1. Try fetching from DB
                 const { data, error } = await supabase
                     .from("academy_courses")
                     .select("*")
@@ -83,32 +75,12 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                 
                 if (!error && data) {
                     setCourse(data as any);
-                    setLoading(false);
-                    return;
                 }
             } catch (err) {
-                console.warn("DB Course not found, falling back to static:", slug);
+                console.error("Failed to fetch course:", err);
+            } finally {
+                setLoading(false);
             }
-
-            // 2. Fallback to static data
-            const staticCourse = getCourseBySlug(slug);
-            if (staticCourse) {
-                const mapped: Course = {
-                    ...staticCourse,
-                    price_usd: staticCourse.priceUSD,
-                    price_naira: staticCourse.priceNaira,
-                    next_cohort_date: staticCourse.nextCohort,
-                    what_youll_learn: staticCourse.whatYoullLearn,
-                    who_is_it_for: staticCourse.whoIsItFor,
-                    learning_outcomes: staticCourse.outcomes,
-                    slots_total: staticCourse.slotsTotal,
-                    slots_filled: staticCourse.slotsFilled,
-                    bonus_description: staticCourse.bonusDescription,
-                    image_url: ""
-                };
-                setCourse(mapped);
-            }
-            setLoading(false);
         };
         fetchCourse();
     }, [slug]);
@@ -122,11 +94,10 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
         }
 
         if (!user) {
-            // Local Academy signup instead of global Auth Hub redirect
-            navigate(`/signup?redirect=/checkout/${course.slug}`);
+            navigate(`/signup?redirect=/checkout/${course?.slug}`);
             return;
         }
-        navigate(`/checkout/${course.slug}`);
+        navigate(`/checkout/${course?.slug}`);
     };
 
     useEffect(() => {
@@ -154,10 +125,10 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
         return <Navigate to="/courses" replace />;
     }
 
-    const spotsTotal = course.slots_total || course.slotsTotal || 25;
-    const spotsFilled = course.slots_filled || course.slotsFilled || 0;
+    const spotsTotal = course.slots_total || 25;
+    const spotsFilled = course.slots_filled || 0;
     const spotsLeft = spotsTotal - spotsFilled;
-    const nextCohort = course.next_cohort_date || course.nextCohort || "TBD";
+    const nextCohort = course.next_cohort_date || "TBD";
 
     return (
         <div className="bg-white min-h-screen font-inter">
@@ -244,7 +215,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                                     { label: "Outcome", val: course.outcome, icon: Award },
                                     { label: "Level", val: course.level, icon: Signal },
                                     { label: "Network", val: "Verified", icon: Users },
-                                    { label: "USD", val: `$${course.price_usd || course.priceUSD}`, icon: Globe }
+                                    { label: "USD", val: `$${course.price_usd}`, icon: Globe }
                                 ].map((item, i) => (
                                     <div key={i} className="flex flex-col">
                                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">{item.label}</span>
@@ -328,7 +299,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                         
                         <div className="lg:col-span-12">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {(course.what_youll_learn || course.whatYoullLearn || []).map((item, i) => (
+                                {(course.what_youll_learn || []).map((item, i) => (
                                     <div key={i} className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start gap-4">
                                         <div className="shrink-0 w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
                                             <CheckCircle className="w-4 h-4 text-emerald-600" />
@@ -351,7 +322,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {(course.learning_outcomes || course.outcomes || []).map((outcome, i) => (
+                        {(course.learning_outcomes || []).map((outcome, i) => (
                             <div key={i} className="bg-white p-8 rounded-2xl border border-slate-100 group hover:border-blue-200 transition-all flex flex-col h-full">
                                 <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center mb-6">
                                     <TrendingUp className="w-6 h-6" />

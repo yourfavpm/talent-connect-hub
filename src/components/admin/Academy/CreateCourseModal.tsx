@@ -13,7 +13,9 @@ import {
     Wrench,
     CheckCircle2,
     Laptop,
-    Users
+    Users,
+    MessageSquare,
+    Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -51,7 +53,10 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
         who_this_is_for: [] as string[],
         what_you_will_learn: [] as string[],
         cohort_slots: 50,
-        bonus_description: ""
+        slots_filled: 0,
+        next_cohort_date: "",
+        bonus_description: "",
+        testimonials: [] as { name: string; country: string; flag: string; before: string; after: string; income: string; quote: string; image: string }[]
     });
 
     useEffect(() => {
@@ -71,6 +76,9 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                 who_this_is_for: editCourse.who_is_it_for || [],
                 what_you_will_learn: editCourse.what_youll_learn || [],
                 cohort_slots: editCourse.slots_total || 50,
+                slots_filled: editCourse.slots_filled || 0,
+                next_cohort_date: editCourse.next_cohort_date || "",
+                testimonials: editCourse.testimonials || [],
             });
         }
     }, [editCourse]);
@@ -92,12 +100,15 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
     const handleSave = async () => {
         setLoading(true);
         try {
-            const { cohort_slots, who_this_is_for, what_you_will_learn, ...rest } = formData;
+            const { cohort_slots, slots_filled, next_cohort_date, who_this_is_for, what_you_will_learn, testimonials, ...rest } = formData;
             
             // Remove the raw datastore keys injected during state setup for edits to avoid PGRST duplication errors
             if ('slots_total' in rest) delete (rest as any).slots_total;
             if ('who_is_it_for' in rest) delete (rest as any).who_is_it_for;
             if ('what_youll_learn' in rest) delete (rest as any).what_youll_learn;
+            if ('slots_filled' in rest) delete (rest as any).slots_filled;
+            if ('next_cohort_date' in rest) delete (rest as any).next_cohort_date;
+            if ('testimonials' in rest) delete (rest as any).testimonials;
 
             const courseData: Record<string, any> = {
                 title: rest.title,
@@ -115,8 +126,11 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                 curriculum: rest.curriculum,
                 bonus_description: rest.bonus_description,
                 slots_total: cohort_slots,
+                slots_filled: slots_filled,
+                next_cohort_date: next_cohort_date || null,
                 who_is_it_for: who_this_is_for,
                 what_youll_learn: what_you_will_learn,
+                testimonials: testimonials,
                 updated_at: new Date().toISOString()
             };
 
@@ -214,6 +228,7 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                     <TabButton id="content" label="Rich Content" icon={Layers} />
                     <TabButton id="audience" label="Audience & Details" icon={Users} />
                     <TabButton id="curriculum" label="Curriculum" icon={Award} />
+                    <TabButton id="testimonials" label="Testimonials" icon={MessageSquare} />
                 </div>
 
                 {/* Content */}
@@ -361,6 +376,29 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                                         >
                                             Flagship
                                         </button>
+                                    </div>
+                                </div>
+
+                                {/* Next Cohort & Slots Filled */}
+                                <div className="grid grid-cols-2 gap-6 pt-8 border-t border-slate-100">
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Next Cohort Date</label>
+                                        <input 
+                                            type="text" 
+                                            className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                            value={formData.next_cohort_date}
+                                            onChange={e => setFormData({ ...formData, next_cohort_date: e.target.value })}
+                                            placeholder="e.g. May 5, 2026"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Slots Filled</label>
+                                        <input 
+                                            type="number" 
+                                            className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                            value={formData.slots_filled}
+                                            onChange={e => setFormData({ ...formData, slots_filled: parseInt(e.target.value) || 0 })}
+                                        />
                                     </div>
                                 </div>
                             </motion.div>
@@ -576,6 +614,94 @@ const CreateCourseModal = ({ isOpen, onClose, onSuccess, editCourse }: CreateCou
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+                            </motion.div>
+                        )}
+                        {activeTab === "testimonials" && (
+                            <motion.div 
+                                key="testimonials"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-8 max-w-4xl"
+                            >
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-900">Graduate Testimonials</h3>
+                                        <p className="text-xs text-slate-500 font-medium">Stored as JSONB — displayed on course detail & home pages.</p>
+                                    </div>
+                                    <Button 
+                                        onClick={() => handleAddItem('testimonials', { name: '', country: '', flag: '🇳🇬', before: '', after: '', income: '', quote: '', image: '' })}
+                                        className="bg-slate-900 text-white rounded-xl gap-2"
+                                    >
+                                        <Plus className="w-4 h-4" /> Add Testimonial
+                                    </Button>
+                                </div>
+
+                                <div className="space-y-6">
+                                    {formData.testimonials.map((t, i) => (
+                                        <div key={i} className="p-8 bg-slate-50 rounded-[32px] border border-slate-100 space-y-6 relative group">
+                                            <button 
+                                                onClick={() => handleRemoveItem('testimonials', i)}
+                                                className="absolute top-6 right-6 p-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                            
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <Star className="w-5 h-5 text-amber-400" />
+                                                <span className="text-sm font-bold text-slate-900">Testimonial #{i + 1}</span>
+                                            </div>
+
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Name</label>
+                                                    <input className="w-full h-10 px-4 bg-white rounded-xl font-medium text-sm" value={t.name} onChange={e => { const n = [...formData.testimonials]; n[i] = { ...n[i], name: e.target.value }; setFormData({ ...formData, testimonials: n }); }} placeholder="Amara Osei" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Country</label>
+                                                    <input className="w-full h-10 px-4 bg-white rounded-xl font-medium text-sm" value={t.country} onChange={e => { const n = [...formData.testimonials]; n[i] = { ...n[i], country: e.target.value }; setFormData({ ...formData, testimonials: n }); }} placeholder="Nigeria" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Flag Emoji</label>
+                                                    <input className="w-full h-10 px-4 bg-white rounded-xl font-medium text-sm" value={t.flag} onChange={e => { const n = [...formData.testimonials]; n[i] = { ...n[i], flag: e.target.value }; setFormData({ ...formData, testimonials: n }); }} placeholder="🇳🇬" />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Before (Role)</label>
+                                                    <input className="w-full h-10 px-4 bg-white rounded-xl font-medium text-sm" value={t.before} onChange={e => { const n = [...formData.testimonials]; n[i] = { ...n[i], before: e.target.value }; setFormData({ ...formData, testimonials: n }); }} placeholder="Customer Service Agent" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">After (Role)</label>
+                                                    <input className="w-full h-10 px-4 bg-white rounded-xl font-medium text-sm" value={t.after} onChange={e => { const n = [...formData.testimonials]; n[i] = { ...n[i], after: e.target.value }; setFormData({ ...formData, testimonials: n }); }} placeholder="AI Operations Specialist" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Income After</label>
+                                                    <input className="w-full h-10 px-4 bg-white rounded-xl font-medium text-sm" value={t.income} onChange={e => { const n = [...formData.testimonials]; n[i] = { ...n[i], income: e.target.value }; setFormData({ ...formData, testimonials: n }); }} placeholder="$2,800/mo" />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quote</label>
+                                                <textarea className="w-full h-20 p-4 bg-white rounded-2xl font-medium text-sm resize-none" value={t.quote} onChange={e => { const n = [...formData.testimonials]; n[i] = { ...n[i], quote: e.target.value }; setFormData({ ...formData, testimonials: n }); }} placeholder="Their success story..." />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Photo URL</label>
+                                                <input className="w-full h-10 px-4 bg-white rounded-xl font-medium text-sm" value={t.image} onChange={e => { const n = [...formData.testimonials]; n[i] = { ...n[i], image: e.target.value }; setFormData({ ...formData, testimonials: n }); }} placeholder="https://images.unsplash.com/..." />
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {formData.testimonials.length === 0 && (
+                                        <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200">
+                                            <MessageSquare className="w-10 h-10 text-slate-200 mx-auto mb-4" />
+                                            <p className="text-slate-400 font-bold">No testimonials yet</p>
+                                            <p className="text-xs text-slate-400 font-medium mt-1">Add graduate success stories to display on the course page.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         )}

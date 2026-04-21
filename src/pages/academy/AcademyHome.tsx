@@ -1,14 +1,79 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle, Shield, Globe, Users, Zap, Briefcase, TrendingUp, Brain, FolderOpen, Award, Rocket } from "lucide-react";
-import { motion } from "framer-motion";
-import { ACADEMY_COURSES } from "@/data/academy-courses";
+import { ArrowRight, CheckCircle, Globe, Users, Zap, TrendingUp, Brain, FolderOpen, Award, Rocket, Loader2 } from "lucide-react";
 import CourseCard from "@/components/academy/CourseCard";
 import TestimonialCard from "@/components/academy/TestimonialCard";
-import { Zone, getZoneUrl } from "@/utils/subdomain";
+import type { CourseTestimonial } from "@/components/academy/TestimonialCard";
+
+interface DynamicCourse {
+    id: string;
+    slug: string;
+    title: string;
+    tagline?: string;
+    description: string;
+    duration: string;
+    level: string;
+    outcome?: string;
+    image_url?: string;
+    is_live?: boolean;
+    is_flagship?: boolean;
+    tools: string[];
+    testimonials?: CourseTestimonial[];
+}
 
 const AcademyHome = () => {
-  const flagshipCourse = ACADEMY_COURSES.find(c => c.isFlagship) || ACADEMY_COURSES[0];
+    const [flagshipCourse, setFlagshipCourse] = useState<DynamicCourse | null>(null);
+    const [courses, setCourses] = useState<DynamicCourse[]>([]);
+    const [testimonials, setTestimonials] = useState<CourseTestimonial[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from("academy_courses")
+                    .select("*")
+                    .eq("is_live", true)
+                    .order("created_at", { ascending: false });
+
+                if (error) {
+                    console.error("Failed to fetch courses:", error);
+                    setLoading(false);
+                    return;
+                }
+
+                const allCourses = (data || []) as DynamicCourse[];
+                setCourses(allCourses);
+
+                // Find flagship course
+                const flagship = allCourses.find(c => c.is_flagship) || allCourses[0];
+                setFlagshipCourse(flagship || null);
+
+                // Extract testimonials from flagship (or first course with testimonials)
+                const courseWithTestimonials = allCourses.find(c => 
+                    Array.isArray(c.testimonials) && c.testimonials.length > 0
+                );
+                if (courseWithTestimonials?.testimonials) {
+                    setTestimonials(courseWithTestimonials.testimonials);
+                }
+            } catch (err) {
+                console.error("Error fetching academy data:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCourses();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+            </div>
+        );
+    }
 
   return (
     <div className="bg-white min-h-screen text-slate-900 font-inter">
@@ -165,6 +230,7 @@ const AcademyHome = () => {
       </section>
 
       {/* 4. FEATURED PROGRAM */}
+      {flagshipCourse && (
       <section className="py-16 md:py-24 px-3 md:px-6 bg-white overflow-hidden">
         <div className="container max-w-[1200px] mx-auto">
           <div className="bg-slate-900 rounded-2xl md:rounded-[32px] overflow-hidden flex flex-col lg:flex-row relative">
@@ -196,13 +262,13 @@ const AcademyHome = () => {
                 </Link>
             </div>
             <div className="lg:w-1/2 relative bg-slate-800 hidden lg:block overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1542744094-24638eff58bb?auto=format&fit=crop&q=80" alt="Learning" className="w-full h-full object-cover grayscale opacity-40 mix-blend-overlay" />
+                <img src={flagshipCourse.image_url || "https://images.unsplash.com/photo-1542744094-24638eff58bb?auto=format&fit=crop&q=80"} alt="Learning" className="w-full h-full object-cover grayscale opacity-40 mix-blend-overlay" />
                 <div className="absolute inset-0 bg-gradient-to-r from-slate-900 to-transparent" />
                 
                 {/* Floating Tool Badges */}
                 <div className="absolute inset-0 flex items-center justify-center p-12">
                      <div className="flex flex-wrap gap-4 justify-center max-w-sm">
-                        {flagshipCourse.tools.map(tool => (
+                        {(flagshipCourse.tools || []).map(tool => (
                             <div key={tool} className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/10 text-white rounded-xl text-xs font-bold shadow-2xl">
                                 {tool}
                             </div>
@@ -213,8 +279,10 @@ const AcademyHome = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* 5. COURSE CATALOG PREVIEW */}
+      {courses.length > 0 && (
       <section className="py-24 px-6 bg-slate-50 border-y border-slate-100">
         <div className="container max-w-[1200px] mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-16">
@@ -230,14 +298,16 @@ const AcademyHome = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {ACADEMY_COURSES.slice(0, 3).map((course) => (
+                {courses.slice(0, 3).map((course) => (
                     <CourseCard key={course.id} course={course} />
                 ))}
             </div>
         </div>
       </section>
+      )}
 
       {/* 6. TESTIMONIALS */}
+      {testimonials.length > 0 && (
       <section className="py-24 px-6 bg-white overflow-hidden">
         <div className="container max-w-[1200px] mx-auto">
           <div className="text-center mb-20 animate-slide-up">
@@ -250,12 +320,13 @@ const AcademyHome = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {ACADEMY_COURSES[0].testimonials.map((testimonial, i) => (
+            {testimonials.map((testimonial, i) => (
                 <TestimonialCard key={i} testimonial={testimonial} />
             ))}
           </div>
         </div>
       </section>
+      )}
 
       {/* 7. TALENT MARKETPLACE CTA */}
       <section className="py-24 px-6 bg-slate-900 font-inter text-white overflow-hidden relative">

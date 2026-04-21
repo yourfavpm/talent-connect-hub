@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ACADEMY_COURSES } from "@/data/academy-courses";
 import CourseCard from "@/components/academy/CourseCard";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
@@ -10,21 +9,22 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface AcademyCourse {
     id: string;
-    slug: string; // added
+    slug: string;
     title: string;
     description: string;
     level: string;
     duration: string;
-    outcome?: string; // added
+    outcome?: string;
     image_url: string;
-    price: number;
+    price_usd: number;
+    price_naira: number;
     category: string;
     is_live: boolean;
     created_at: string;
 }
 
 const BrowseCourses = () => {
-    const [dbCourses, setDbCourses] = useState<AcademyCourse[]>([]);
+    const [courses, setCourses] = useState<AcademyCourse[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
@@ -41,9 +41,10 @@ const BrowseCourses = () => {
                     .eq("is_live", true)
                     .order("created_at", { ascending: false });
                 
-                if (!error && data) {
-                    setDbCourses(data as AcademyCourse[]);
+                if (error) {
+                    console.error("Failed to fetch courses:", error);
                 }
+                setCourses((data as AcademyCourse[]) || []);
             } catch (err) {
                 console.error("Failed to fetch courses from DB:", err);
             } finally {
@@ -53,13 +54,7 @@ const BrowseCourses = () => {
         fetchCourses();
     }, []);
 
-    // HYBRID MERGE LOGIC
-    const hybridCourses = [
-        ...dbCourses,
-        ...ACADEMY_COURSES.filter(sc => !dbCourses.some(dc => dc.slug === sc.slug))
-    ];
-
-    const filteredCourses = hybridCourses.filter(course => {
+    const filteredCourses = courses.filter(course => {
         const matchesFilter = filter === "All" || course.level === filter;
         const title = course.title || "";
         const desc = course.description || "";

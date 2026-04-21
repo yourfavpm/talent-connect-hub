@@ -1,5 +1,16 @@
-import { CourseTestimonial } from "@/data/academy-courses";
 import { Quote } from "lucide-react";
+
+// Decoupled from static data — accepts any testimonial shape
+export interface CourseTestimonial {
+    name: string;
+    country: string;
+    flag: string;
+    before: string;
+    after: string;
+    income: string;
+    quote: string;
+    image: string;
+}
 
 interface TestimonialCardProps {
     testimonial: CourseTestimonial;

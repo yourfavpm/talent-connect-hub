@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ACADEMY_COURSES } from "@/data/academy-courses";
+
 import { Button } from "@/components/ui/button";
 import { 
   Play, 
@@ -107,27 +107,14 @@ const StudentDashboard = () => {
           // 2. Fetch course metadata for these enrollments
           const slugs = typedEnrollments.map(e => e.course_id);
           
-          // Hybrid Fetch: Check DB first
+          const metaMap: Record<string, CourseMetadata> = {};
+          
+          // Fetch course metadata from DB
           const { data: dbMetaData } = await supabase
             .from("academy_courses")
             .select("id, slug, title, image_url")
             .in("slug", slugs);
-          
-          const metaMap: Record<string, CourseMetadata> = {};
-          
-          // Apply static fallsbacks first
-          slugs.forEach(slug => {
-            const staticCourse = ACADEMY_COURSES.find(c => c.slug === slug);
-            if (staticCourse) {
-              metaMap[slug] = {
-                slug: staticCourse.slug,
-                title: staticCourse.title,
-                image_url: "" // static courses didn't have image_url in data usually, but we could add if needed
-              };
-            }
-          });
 
-          // Overwrite with DB metadata if available
           if (dbMetaData) {
             dbMetaData.forEach((curr: Record<string, unknown>) => {
               metaMap[curr.slug as string] = curr as unknown as CourseMetadata;
@@ -198,30 +185,16 @@ const StudentDashboard = () => {
     is_live?: boolean;
   }
 
-  const hybridCourses: Course[] = [
-    ...(dbCourses as any[]).map(c => ({
-        slug: c.slug,
-        title: c.title,
-        description: c.description,
-        level: c.level,
-        duration: c.duration,
-        outcome: c.outcome,
-        image_url: c.image_url,
-        is_live: c.is_live
-    })),
-    ...ACADEMY_COURSES
-        .filter(sc => !dbCourses.some(dc => dc.slug === sc.slug))
-        .map(sc => ({
-            slug: sc.slug,
-            title: sc.title,
-            description: sc.description,
-            level: sc.level,
-            duration: sc.duration,
-            outcome: sc.outcome,
-            image_url: sc.image || "",
-            is_live: true
-        }))
-  ];
+  const hybridCourses: Course[] = (dbCourses as any[]).map(c => ({
+      slug: c.slug,
+      title: c.title,
+      description: c.description,
+      level: c.level,
+      duration: c.duration,
+      outcome: c.outcome,
+      image_url: c.image_url,
+      is_live: c.is_live
+  }));
 
   const filteredCourses = hybridCourses.filter(course => {
     const matchesFilter = courseFilter === "All" || course.level === courseFilter;

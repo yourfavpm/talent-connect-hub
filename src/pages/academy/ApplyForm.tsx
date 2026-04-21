@@ -15,7 +15,7 @@ import {
     CreditCard
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ACADEMY_COURSES } from "@/data/academy-courses";
+import { useEffect } from "react";
 import { 
     Select, 
     SelectContent, 
@@ -48,6 +48,19 @@ const ApplyForm = () => {
     const [loadingCohorts, setLoadingCohorts] = useState(false);
     const { toast } = useToast();
     const navigate = useNavigate();
+    const [availableCourses, setAvailableCourses] = useState<{ slug: string; title: string; price_usd: number; price_naira: number }[]>([]);
+
+    useEffect(() => {
+        const fetchCourses = async () => {
+            const { data } = await supabase
+                .from("academy_courses")
+                .select("slug, title, price_usd, price_naira")
+                .eq("is_live", true)
+                .order("created_at", { ascending: false });
+            if (data) setAvailableCourses(data as any);
+        };
+        fetchCourses();
+    }, []);
     
     const [formData, setFormData] = useState({
         fullName: user?.user_metadata?.full_name || user?.user_metadata?.first_name || "",
@@ -63,7 +76,7 @@ const ApplyForm = () => {
     });
 
     const totalSteps = 3; // Simplified: Personal -> Cohort/Course -> Payment
-    const selectedCourse = ACADEMY_COURSES.find(c => c.slug === formData.course);
+    const selectedCourse = availableCourses.find(c => c.slug === formData.course);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -140,8 +153,8 @@ const ApplyForm = () => {
                 courseId: formData.course,
                 cohortId: formData.cohortId,
                 courseName: selectedCourse.title,
-                priceUSD: selectedCohort?.price_usd || selectedCourse.priceUSD,
-                priceNaira: selectedCohort?.price_naira || selectedCourse.priceNaira,
+                priceUSD: selectedCohort?.price_usd || selectedCourse.price_usd,
+                priceNaira: selectedCohort?.price_naira || selectedCourse.price_naira,
                 studentEmail: formData.email,
                 studentName: formData.fullName,
                 studentPhone: formData.phone,
@@ -149,7 +162,7 @@ const ApplyForm = () => {
             });
 
             // Convert USD to Naira (amount must be in kobo for Paystack)
-            const amountInNaira = selectedCohort?.price_naira || selectedCourse.priceNaira;
+            const amountInNaira = selectedCohort?.price_naira || selectedCourse.price_naira;
             const amountInKobo = Math.round(amountInNaira * 100);
 
             // Initialize Paystack
@@ -406,7 +419,7 @@ const ApplyForm = () => {
                                                         <SelectValue placeholder="Identify your learning path" />
                                                     </SelectTrigger>
                                                     <SelectContent className="bg-white rounded-xl border-slate-100 shadow-xl">
-                                                        {ACADEMY_COURSES.map(course => (
+                                                        {availableCourses.map(course => (
                                                             <SelectItem key={course.slug} value={course.slug} className="py-3 font-medium">
                                                                 {course.title}
                                                             </SelectItem>
@@ -527,8 +540,8 @@ const ApplyForm = () => {
                                                             </div>
                                                             <div className="text-right">
                                                                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Due</h4>
-                                                                <p className="text-2xl font-bold text-blue-600">₦{(selectedCohort?.price_naira || selectedCourse.priceNaira).toLocaleString()}</p>
-                                                                <p className="text-[10px] font-bold text-slate-400">${selectedCohort?.price_usd || selectedCourse.priceUSD} USD equivalent</p>
+                                                                <p className="text-2xl font-bold text-blue-600">₦{(selectedCohort?.price_naira || selectedCourse.price_naira).toLocaleString()}</p>
+                                                                <p className="text-[10px] font-bold text-slate-400">${selectedCohort?.price_usd || selectedCourse.price_usd} USD equivalent</p>
                                                             </div>
                                                         </div>
 

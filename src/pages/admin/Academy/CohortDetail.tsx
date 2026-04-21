@@ -16,7 +16,8 @@ import {
     ChevronRight,
     Loader2,
     MoreVertical,
-    ExternalLink
+    ExternalLink,
+    Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,7 @@ interface Student {
     student_name: string;
     student_email: string;
     enrollment_status: string;
+    is_top_grad: boolean;
     created_at: string;
 }
 
@@ -311,6 +313,7 @@ const CohortDetail = () => {
                                         <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Email</th>
                                         <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Enrolled On</th>
                                         <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Status</th>
+                                        <th className="px-8 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Top Grad</th>
                                         <th className="px-8 py-5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Action</th>
                                     </tr>
                                 </thead>
@@ -322,6 +325,22 @@ const CohortDetail = () => {
                                             <td className="px-8 py-6 text-sm text-slate-500 font-medium">{new Date(student.created_at).toLocaleDateString()}</td>
                                             <td className="px-8 py-6">
                                                 <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded uppercase tracking-wider">{student.enrollment_status}</span>
+                                            </td>
+                                            <td className="px-8 py-6 text-center">
+                                                <button 
+                                                    onClick={async () => {
+                                                        const newVal = !student.is_top_grad;
+                                                        const { error } = await (supabase.from('academy_enrollments') as any).update({ is_top_grad: newVal }).eq('id', student.id);
+                                                        if (!error) {
+                                                            setStudents(prev => prev.map(s => s.id === student.id ? { ...s, is_top_grad: newVal } : s));
+                                                            toast({ title: newVal ? '⭐ Top Grad Assigned' : 'Top Grad Removed', description: `${student.student_name} ${newVal ? 'is now' : 'is no longer'} a Top Grad.` });
+                                                        }
+                                                    }}
+                                                    className={`p-2 rounded-xl transition-all ${student.is_top_grad ? 'bg-amber-50 text-amber-500 hover:bg-amber-100' : 'bg-slate-50 text-slate-300 hover:text-amber-400 hover:bg-amber-50'}`}
+                                                    title={student.is_top_grad ? 'Remove Top Grad' : 'Mark as Top Grad'}
+                                                >
+                                                    <Star className={`w-4 h-4 ${student.is_top_grad ? 'fill-amber-400' : ''}`} />
+                                                </button>
                                             </td>
                                             <td className="px-8 py-6 text-right">
                                                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg"><MoreVertical className="w-4 h-4 text-slate-400" /></Button>
