@@ -122,7 +122,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
     }
 
     if (!course) {
-        return <Navigate to="/courses" replace />;
+        return <Navigate to="/browse" replace />;
     }
 
     const spotsTotal = course.slots_total || 25;
@@ -171,7 +171,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                             <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
                         </button>
                     ) : (
-                        <Link to="/courses" className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10 hover:text-blue-600 transition-colors">
+                        <Link to="/browse" className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10 hover:text-blue-600 transition-colors">
                             <ArrowLeft className="w-3.5 h-3.5" /> Back to Catalog
                         </Link>
                     )}

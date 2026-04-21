@@ -95,12 +95,12 @@ const AcademyHome = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-10 md:mb-12">
-                <Link to="/courses" className="w-full sm:w-auto">
+                <Link to="/browse" className="w-full sm:w-auto">
                   <Button size="lg" className="h-12 md:h-14 px-6 md:px-10 text-sm md:text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all font-semibold w-full">
                     Browse Courses
                   </Button>
                 </Link>
-                <Link to="/marketplace" className="w-full sm:w-auto">
+                <Link to="/browse" className="w-full sm:w-auto">
                   <Button variant="outline" size="lg" className="h-12 md:h-14 px-6 md:px-8 text-sm md:text-base border-white/20 text-white hover:bg-white/5 rounded-full font-semibold flex items-center justify-center gap-2 w-full">
                     Join Talent Marketplace <ArrowRight className="w-3 md:w-4 h-3 md:h-4" />
                   </Button>
@@ -355,7 +355,7 @@ const AcademyHome = () => {
                         </div>
                     ))}
                 </div>
-                <Link to="/marketplace">
+                <Link to="/browse">
                     <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all font-semibold w-full sm:w-auto shadow-xl shadow-blue-900/40">
                         Join Talent Marketplace
                     </Button>
@@ -410,7 +410,7 @@ const AcademyHome = () => {
                 Choose your learning path and start your journey towards high-income, global work opportunities today.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-               <Link to="/courses">
+               <Link to="/browse">
                    <Button size="lg" className="h-16 px-12 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all font-semibold shadow-xl shadow-blue-200/50">
                        Browse Course Catalog
                    </Button>

@@ -91,7 +91,7 @@ const StudentDashboard = () => {
 
       const enrollRequest = supabase
         .from("academy_enrollments")
-        .select("*, cohorts!cohort_id(*)")
+        .select("*, cohorts!cohort_id(*), academy_courses!course_id(slug, title, image_url)")
         .eq("user_id", user.id)
         .eq("enrollment_status", "active");
         
@@ -100,26 +100,17 @@ const StudentDashboard = () => {
       if (enrollError) {
         console.error("Error fetching enrollments:", enrollError);
       } else {
-        const typedEnrollments = enrollmentsData as Enrollment[];
-        setEnrollments(typedEnrollments || []);
+        const typedEnrollments = (enrollmentsData || []) as any[];
+        setEnrollments(typedEnrollments);
 
         if (typedEnrollments.length > 0) {
-          // 2. Fetch course metadata for these enrollments
-          const slugs = typedEnrollments.map(e => e.course_id);
-          
           const metaMap: Record<string, CourseMetadata> = {};
           
-          // Fetch course metadata from DB
-          const { data: dbMetaData } = await supabase
-            .from("academy_courses")
-            .select("id, slug, title, image_url")
-            .in("slug", slugs);
-
-          if (dbMetaData) {
-            dbMetaData.forEach((curr: Record<string, unknown>) => {
-              metaMap[curr.slug as string] = curr as unknown as CourseMetadata;
-            });
-          }
+          typedEnrollments.forEach(enroll => {
+            if (enroll.academy_courses) {
+              metaMap[enroll.course_id] = enroll.academy_courses;
+            }
+          });
           
           setCoursesMetadata(metaMap);
 
@@ -293,7 +284,7 @@ const StudentDashboard = () => {
                             <Play className="w-4 h-4 fill-current" /> Join Session
                           </Button>
                           <Link 
-                            to={`/courses/${enrollments.find(e => e.cohort_id === nextSession.cohort_id)?.course_id}/learn`}
+                            to={`/courses/${enrollments.find(e => e.cohort_id === nextSession.cohort_id)?.academy_courses?.slug}/learn`}
                             className="h-14 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all"
                           >
                             Program Hub
@@ -336,7 +327,7 @@ const StudentDashboard = () => {
                               </p>
                               
                               <Link 
-                                to={`/courses/${enrollment.course_id}/learn`}
+                                to={`/courses/${courseMeta?.slug}/learn`}
                                 className="mt-auto w-full h-14 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all"
                               >
                                 Access Hub <ArrowRight className="w-4 h-4" />

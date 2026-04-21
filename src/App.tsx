@@ -306,7 +306,9 @@ const App = () => {
                 <>
                   <Route index element={<AcademyHome />} />
                   <Route path="browse" element={<BrowseCourses />} />
-                  <Route path="courses/:courseId" element={<CourseDetail />} />
+                  <Route path="courses" element={<Navigate to="/browse" replace />} />
+                  <Route path="courses/:slug" element={<CourseDetail />} />
+                  <Route path="courses/:slug/learn" element={<CoursePlayer />} />
                   <Route path="hub" element={<CourseHub />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>

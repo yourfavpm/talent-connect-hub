@@ -21,8 +21,8 @@ const AcademyNavbar = () => {
 
     const NavLinks = [
         { name: "Home", path: "/" },
-        { name: "Courses", path: "/courses" },
-        { name: "Talent Marketplace", path: "/marketplace" },
+        { name: "Courses", path: "/browse" },
+        { name: "Talent Marketplace", path: "/browse" },
     ];
 
     if (user) {

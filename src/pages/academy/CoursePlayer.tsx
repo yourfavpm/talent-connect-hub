@@ -36,9 +36,9 @@ const CoursePlayer = () => {
 
       const { data, error } = await supabase
         .from("academy_enrollments")
-        .select("id")
+        .select("id, academy_courses!inner(slug)")
         .eq("user_id", user.id)
-        .eq("course_id", slug)
+        .eq("academy_courses.slug", slug)
         .eq("enrollment_status", "active")
         .maybeSingle();
 
