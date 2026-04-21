@@ -133,6 +133,7 @@ const AdminHireRequestDetail = lazy(() => import("./pages/admin/HireRequests/Adm
 const AcademyHome = lazy(() => import("./pages/academy/AcademyHome"));
 const BrowseCourses = lazy(() => import("./pages/academy/BrowseCourses"));
 const CourseDetail = lazy(() => import("./pages/academy/CourseDetail"));
+const CoursePlayer = lazy(() => import("./pages/academy/CoursePlayer"));
 const CourseHub = lazy(() => import("./pages/academy/CourseHub"));
 const AcademyManagement = lazy(() => import("./pages/admin/Academy/AcademyManagement"));
 const CourseManagement = lazy(() => import("./pages/admin/Academy/CourseManagement"));
