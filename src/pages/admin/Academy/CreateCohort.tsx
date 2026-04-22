@@ -116,7 +116,7 @@ const CreateCohort = () => {
 
     return (
         <div className="p-6 lg:p-10 bg-white min-h-screen font-inter">
-            <div className="max-w-4xl mx-auto">
+            <div className="w-full max-w-none">
                 <Link to={getInternalPath(`/admin/academy/courses/${slug}/cohorts`)} className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10 hover:text-blue-600 transition-colors">
                     <ArrowLeft className="w-3.5 h-3.5" /> Back to Cohorts
                 </Link>

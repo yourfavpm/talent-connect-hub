@@ -135,77 +135,69 @@ const CourseManagement = () => {
                         <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                         {filteredCourses.map((course) => (
-                            <div key={course.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hover:border-blue-400 transition-all group">
-                                <div className="p-6">
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform">
-                                            <BookOpen className="w-6 h-6" />
+                            <div key={course.id} className="bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden hover:border-blue-400 transition-all group flex flex-col md:flex-row">
+                                <div className="md:w-72 h-64 md:h-auto bg-slate-50 flex items-center justify-center p-12 shrink-0 border-r border-slate-100">
+                                    <div className="w-24 h-24 bg-blue-600 rounded-[32px] flex items-center justify-center text-white shadow-2xl shadow-blue-200 group-hover:scale-110 transition-transform">
+                                        <BookOpen className="w-12 h-12" />
+                                    </div>
+                                </div>
+                                <div className="p-10 flex flex-col justify-between flex-grow">
+                                    <div>
+                                        <div className="flex justify-between items-start mb-6">
+                                            <div className="flex gap-2">
+                                                <Badge variant="outline" className="bg-blue-50 text-blue-600 border-none font-bold uppercase text-[9px] px-3 py-1 tracking-widest">
+                                                    {course.level || 'Program'}
+                                                </Badge>
+                                                <Badge variant="outline" className="bg-slate-50 text-slate-500 border-none font-bold uppercase text-[9px] px-3 py-1 tracking-widest">
+                                                    {course.category || "Operations"}
+                                                </Badge>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm" 
+                                                    onClick={() => {
+                                                        setSelectedCourse(course);
+                                                        setIsModalOpen(true);
+                                                    }}
+                                                    className="h-10 w-10 p-0 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </Button>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm" 
+                                                    onClick={() => handleDelete(course.id)}
+                                                    className="h-10 w-10 p-0 rounded-xl bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <div className="flex gap-2">
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                onClick={() => {
-                                                    setSelectedCourse(course);
-                                                    setIsModalOpen(true);
-                                                }}
-                                                className="h-10 w-10 p-0 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600"
-                                            >
-                                                <Edit className="w-4 h-4" />
-                                            </Button>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                onClick={() => handleDelete(course.id)}
-                                                className="h-10 w-10 p-0 rounded-xl bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
+                                        <h3 className="text-3xl font-bold text-slate-900 mb-4 group-hover:text-blue-600 transition-colors leading-tight">{course.title}</h3>
+                                        <div className="flex items-center gap-6 mb-8 text-slate-400 font-bold text-[10px] uppercase tracking-widest">
+                                            <span className="flex items-center gap-2">
+                                                <div className={`w-2 h-2 rounded-full ${course.is_live ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                                                {course.is_live ? 'Live Training' : 'Self-Paced'}
+                                            </span>
+                                            <span className="w-1 h-1 bg-slate-200 rounded-full" />
+                                            <span>₦{course.price_naira.toLocaleString()}</span>
+                                            <span className="w-1 h-1 bg-slate-200 rounded-full" />
+                                            <span>${course.price_usd}</span>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Badge variant="outline" className="bg-slate-50 text-slate-500 border-none font-bold uppercase text-[9px] tracking-widest px-2.5 py-1">
-                                            {course.level}
-                                        </Badge>
-                                        <Badge variant="outline" className="bg-blue-50 text-blue-600 border-none font-bold uppercase text-[9px] tracking-widest px-2.5 py-1">
-                                            {course.category || "Operations"}
-                                        </Badge>
-                                    </div>
-
-                                    <h3 className="text-xl font-bold text-slate-900 mb-2 truncate">{course.title}</h3>
-                                    
-                                    <div className="flex items-center gap-4 py-6 border-y border-slate-50 my-6">
-                                        <div>
-                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Fee (NGN)</div>
-                                            <div className="text-lg font-bold text-slate-900 leading-none">₦{course.price_naira.toLocaleString()}</div>
-                                        </div>
-                                        <div className="w-px h-8 bg-slate-100 mx-2" />
-                                        <div>
-                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Fee (USD)</div>
-                                            <div className="text-lg font-bold text-slate-900 leading-none">${course.price_usd}</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            {course.is_live ? (
-                                                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 rounded-full text-emerald-600 text-[10px] font-bold uppercase tracking-wider border border-emerald-100/50">
-                                                    <CheckCircle2 className="w-3 h-3" /> Live Learning
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 rounded-full text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-100">
-                                                    <AlertCircle className="w-3 h-3" /> Auto-Paced
-                                                </div>
-                                            )}
-                                        </div>
-                                        <a href={getZoneUrl(Zone.ACADEMY, `/courses/${course.slug}`)} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-600 font-bold text-xs flex items-center gap-1 transition-colors">
-                                            <ExternalLink className="w-3.5 h-3.5" /> Preview
+                                    <div className="flex items-center justify-between pt-8 border-t border-slate-50">
+                                        <a href={getZoneUrl(Zone.ACADEMY, `/courses/${course.slug}`)} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-600 font-bold text-xs flex items-center gap-2 transition-colors uppercase tracking-widest text-[10px]">
+                                            <ExternalLink className="w-4 h-4" /> Preview Program
                                         </a>
-                                        <Link to={getInternalPath(`/admin/academy/courses/${course.slug}/cohorts`)} className="text-blue-600 hover:text-blue-700 font-bold text-xs flex items-center gap-1">
-                                            Manage Cohorts <ArrowRight className="w-3.5 h-3.5" />
+                                        <Link 
+                                            to={getInternalPath(`/admin/academy/courses/${course.slug}/cohorts`)} 
+                                            className="h-12 px-8 bg-slate-900 text-white rounded-2xl font-bold text-xs flex items-center gap-2 hover:bg-blue-600 transition-all shadow-lg shadow-slate-200"
+                                        >
+                                            Manage Sessions <ArrowRight className="w-4 h-4" />
                                         </Link>
                                     </div>
                                 </div>
