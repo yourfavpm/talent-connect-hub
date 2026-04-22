@@ -361,11 +361,11 @@ DECLARE
     cohort_open_until TIMESTAMPTZ;
     cohort_status TEXT;
     total_enrolled INT;
-    max_slots INT;
+    v_max_slots INT;
 BEGIN
     -- Validate cohort exists and is open
     SELECT enrollment_end_date, status, current_slots, max_slots
-    INTO cohort_open_until, cohort_status, total_enrolled, max_slots
+    INTO cohort_open_until, cohort_status, total_enrolled, v_max_slots
     FROM public.cohorts
     WHERE id = NEW.cohort_id;
     
@@ -385,7 +385,7 @@ BEGIN
     
     -- Check slots availability (only on insert)
     IF TG_OP = 'INSERT' THEN
-        IF total_enrolled >= max_slots THEN
+        IF total_enrolled >= v_max_slots THEN
             RAISE EXCEPTION 'Cohort is full. No more slots available.';
         END IF;
         

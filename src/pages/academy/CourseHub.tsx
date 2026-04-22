@@ -100,16 +100,16 @@ const CourseHub = () => {
         const fetchHubData = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                navigate("/auth/login?returnTo=" + window.location.pathname);
+                navigate("/login?returnTo=" + window.location.pathname);
                 return;
             }
 
             // 1. Fetch Enrollment & Cohort - ENFORCE active status and cohort linkage
             const { data: enrollData, error: enrollError } = await (supabase
                 .from("academy_enrollments")
-                .select("*, cohorts!cohort_id(*), academy_courses!course_id!inner(slug)")
+                .select("*, cohorts!inner(*)") // Inner join ensures they actually have a cohort
                 .eq("user_id", user.id)
-                .eq("academy_courses.slug", slug)
+                .eq("course_id", slug) // course_id already contains the slug
                 .eq("enrollment_status", "active")
                 .single() as Promise<{ data: Enrollment & { cohorts: Cohort } | null; error: any }>);
 

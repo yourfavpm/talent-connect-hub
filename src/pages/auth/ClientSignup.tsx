@@ -167,59 +167,44 @@ const ClientSignup = () => {
 
   return (
     <div className="min-h-screen flex flex-col-reverse lg:flex-row bg-white font-inter overflow-x-hidden">
-      {/* Brand Side (40%) - Dynamic Image Style */}
-      <div className="lg:w-[40%] relative border-r border-slate-100 flex flex-col justify-between overflow-hidden">
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="/images/auth/client-side.jpg"
-            alt="Background"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px]" />
-        </div>
+      {/* Brand Side (40%) - Light Style */}
+      <div className="lg:w-[40%] bg-slate-50/80 border-r border-slate-100 p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden">
+        {/* Subtle background element */}
+        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl -z-10"></div>
         
-        <div className="relative z-10 p-8 lg:p-16 flex flex-col justify-between h-full">
-          <div>
-            <Link to="/" className="inline-block mb-16 lg:mb-24">
-              <img src="/images/logoplain.png" alt="OPSlyHR" className="h-32" />
-            </Link>
-  
-            <div className="max-w-md">
-              <h2 className="text-2xl lg:text-3xl font-bold text-white leading-tight mb-4 tracking-tight">
-                Get Started
-              </h2>
-              <p className="text-slate-200 text-lg font-medium leading-relaxed mb-12 opacity-90">
-                OPSlyHR provides structured systems for hiring and managing pre-vetted product and operations talent globally.
-              </p>
-  
-              <div className="space-y-6 pt-10 border-t border-white/10 max-w-sm">
-                <div className="flex items-start gap-4">
-                  <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center shrink-0 mt-1">
-                    <Star className="w-3 h-3 text-white fill-current" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-white">Pre-Vetted Excellence</div>
-                    <div className="text-xs text-slate-300 font-medium opacity-80">Standardized evaluation of execution and outcomes.</div>
-                  </div>
+        <div>
+          <Link to="/" className="inline-block mb-16 lg:mb-24">
+            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-32" />
+          </Link>
+
+          <div className="max-w-md">
+            <h2 className="text-2xl lg:text-3xl font-semibold text-slate-900 leading-tight mb-4 tracking-tight">
+              Get Started
+            </h2>
+            <p className="text-slate-500 text-lg font-medium leading-relaxed mb-12">
+              OPSlyHR provides structured systems for hiring and managing pre-vetted product and operations talent globally.
+            </p>
+
+            <div className="space-y-6 pt-10 border-t border-slate-200/60 max-w-sm">
+              <div className="flex items-start gap-4">
+                <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center shrink-0 mt-1">
+                  <Star className="w-3 h-3 text-white fill-current" />
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shrink-0 mt-1">
-                    <Star className="w-3 h-3 text-slate-900 fill-current" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-white">Enterprise Ready</div>
-                    <div className="text-xs text-slate-300 font-medium opacity-80">Full compliance, automated invoicing, and secure payments.</div>
-                  </div>
+                <div>
+                  <div className="text-sm font-bold text-slate-900">Pre-Vetted Excellence</div>
+                  <div className="text-xs text-slate-500 font-medium">Standardized evaluation of execution and outcomes.</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-5 h-5 rounded-full bg-slate-900 flex items-center justify-center shrink-0 mt-1">
+                  <Star className="w-3 h-3 text-white fill-current" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-slate-900">Enterprise Ready</div>
+                  <div className="text-xs text-slate-500 font-medium">Full compliance, automated invoicing, and secure payments.</div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="mt-auto pt-10">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
-              The platform for high-growth operations
-            </p>
           </div>
         </div>
       </div>
@@ -228,7 +213,7 @@ const ClientSignup = () => {
         {/* Mobile Header */}
         <div className="lg:hidden flex flex-col items-center mb-10 text-center">
           <Link to="/" className="mb-6">
-            <img src="/images/logocolored.png" alt="OPSlyHR" className="h-28" />
+            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-28" />
           </Link>
           <h1 className="text-2xl font-semibold text-slate-900 tracking-tight leading-tight mb-3">
             Get Started
@@ -260,7 +245,7 @@ const ClientSignup = () => {
                 value={formData.companyName}
                 onChange={handleChange}
                 required
-                className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
               />
               {errors.companyName && <p className="text-xs text-red-500 font-medium">{errors.companyName}</p>}
             </div>
@@ -274,7 +259,7 @@ const ClientSignup = () => {
                 value={formData.fullName}
                 onChange={handleChange}
                 required
-                className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
               />
               {errors.fullName && <p className="text-xs text-red-500 font-medium">{errors.fullName}</p>}
             </div>
@@ -289,7 +274,7 @@ const ClientSignup = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="h-[54px] border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                className="h-11 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
               />
               {errors.email && <p className="text-xs text-red-500 font-medium">{errors.email}</p>}
             </div>
@@ -305,7 +290,7 @@ const ClientSignup = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="h-[54px] pr-10 border-slate-100 rounded-xl focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
+                  className="h-11 pr-10 border-slate-100 rounded-lg focus:ring-blue-600/5 focus:border-blue-500 bg-white shadow-sm text-slate-800"
                 />
                 <button
                   type="button"
@@ -320,7 +305,7 @@ const ClientSignup = () => {
 
             <Button 
               type="submit" 
-              className="w-full h-[54px] bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold transition-all duration-300 gap-2 mt-2" 
+              className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold transition-all duration-300 gap-2 mt-2" 
               disabled={loading}
             >
               {loading ? "Creating Account..." : "Create Account"}
