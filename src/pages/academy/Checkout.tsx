@@ -70,8 +70,8 @@ const Checkout = () => {
                     const { data: cohortsData } = await supabase
                          .from("cohorts")
                          .select("*")
-                         .eq("course_id", slug)
-                         .eq("status", "enrolling")
+                         .eq("course_id", data.id)
+                         .eq("status", "open")
                          .order("created_at", { ascending: false });
                     
                     if (cohortsData && cohortsData.length > 0) {
