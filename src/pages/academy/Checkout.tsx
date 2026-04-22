@@ -297,12 +297,28 @@ const Checkout = () => {
                     });
                     if (enrollErr) {
                         console.error("Enrollment insert error:", enrollErr);
+                        toast({
+                            title: "Enrollment Failed",
+                            description: "Payment succeeded, but we couldn't save your enrollment. Please contact support. Error: " + enrollErr.message,
+                            variant: "destructive"
+                        });
+                        setProcessing(false);
+                        return; // Stop the flow
                     } else {
                         console.log("Enrollment created successfully for user:", activeUserId);
                     }
                 } else {
                     console.log("Enrollment already exists:", existingEnrollment.id);
                 }
+            } else {
+                toast({
+                    title: "Authentication Error",
+                    description: "Payment succeeded, but we couldn't log you in. Please log in manually.",
+                    variant: "destructive"
+                });
+                setProcessing(false);
+                setTimeout(() => navigate("/login?redirect=/dashboard"), 3000);
+                return;
             }
 
             setSuccess(true);

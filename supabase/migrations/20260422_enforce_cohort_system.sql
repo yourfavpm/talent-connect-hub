@@ -14,6 +14,46 @@
 -- SECTION 1: ACADEMY ENROLLMENTS - ENFORCE COHORT LINKAGE
 -- ============================================================
 
+-- 1.0: FIX ORPHANED ENROLLMENTS (those without cohort_id)
+DO $$ 
+DECLARE
+    orphaned_count INT;
+BEGIN
+    SELECT COUNT(*)
+    INTO orphaned_count
+    FROM public.academy_enrollments
+    WHERE cohort_id IS NULL;
+    
+    IF orphaned_count > 0 THEN
+        RAISE NOTICE 'Found % orphaned enrollments without cohort_id. Attempting to assign...', orphaned_count;
+        
+        -- Try to assign enrollments to ANY cohort for their course
+        UPDATE public.academy_enrollments ae
+        SET cohort_id = (
+            SELECT c.id FROM public.cohorts c
+            JOIN public.academy_courses ac ON c.course_id = ac.id
+            WHERE ac.slug = ae.course_id OR ac.id = ae.course_uuid
+            LIMIT 1
+        )
+        WHERE ae.cohort_id IS NULL;
+        
+        -- If still orphaned (no matching cohorts), delete them
+        DELETE FROM public.academy_enrollments
+        WHERE cohort_id IS NULL;
+        
+        SELECT COUNT(*)
+        INTO orphaned_count
+        FROM public.academy_enrollments
+        WHERE cohort_id IS NULL;
+        
+        IF orphaned_count = 0 THEN
+            RAISE NOTICE '✓ All orphaned enrollments fixed or removed';
+        ELSE
+            RAISE WARNING '⚠ %  enrollments still without cohort_id and could not be auto-fixed', orphaned_count;
+        END IF;
+    END IF;
+END $$;
+
 -- 1.1: Ensure cohort_id is NOT NULL (REQUIRED)
 ALTER TABLE public.academy_enrollments 
     ALTER COLUMN cohort_id SET NOT NULL;
