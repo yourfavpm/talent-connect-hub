@@ -78,7 +78,7 @@ const StudentDashboard = () => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate("/auth/login?portal=student");
+        navigate("/login?redirect=/dashboard");
         return;
       }
 

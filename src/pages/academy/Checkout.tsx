@@ -291,7 +291,7 @@ const Checkout = () => {
                 if (isUserLoggedIn) {
                     navigate("/dashboard");
                 } else {
-                    navigate("/auth/login?portal=student&redirect=/dashboard");
+                    navigate("/login?redirect=/dashboard");
                 }
             }, 3000);
 
