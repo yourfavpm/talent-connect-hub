@@ -193,8 +193,11 @@ const Checkout = () => {
                     cohort_id: selectedCohortId || null,
                     type: 'academy_enrollment_frictionless'
                 },
-                onSuccess: async (response) => {
-                    await processPostPaymentSuccess(response.reference, sessionId);
+                onSuccess: (response) => {
+                    console.log("Payment confirmed by Paystack:", response.reference);
+                    setProcessing(false);
+                    setSuccess(true);
+                    processPostPaymentSuccess(response.reference, sessionId);
                 },
                 onClose: () => {
                     toast({ title: "Cancelled", description: "Payment was cancelled." });
