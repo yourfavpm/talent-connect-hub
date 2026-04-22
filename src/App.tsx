@@ -41,6 +41,17 @@ const VettingProcess = lazy(() => import("./pages/VettingProcess"));
 const PublicJobs = lazy(() => import("./pages/PublicJobs"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+// Academy
+const AcademyLayout = lazy(() => import("./components/academy/AcademyLayout"));
+const AcademyHome = lazy(() => import("./pages/academy/AcademyHome"));
+const BrowseCourses = lazy(() => import("./pages/academy/BrowseCourses"));
+const CourseDetail = lazy(() => import("./pages/academy/CourseDetail"));
+const TalentMarketplace = lazy(() => import("./pages/academy/TalentMarketplace"));
+const ApplyForm = lazy(() => import("./pages/academy/ApplyForm"));
+const StudentDashboard = lazy(() => import("./pages/academy/StudentDashboard"));
+const CourseHub = lazy(() => import("./pages/academy/CourseHub"));
+const Checkout = lazy(() => import("./pages/academy/Checkout"));
+
 // Auth
 const Login = lazy(() => import("./pages/auth/Login"));
 const SignupHub = lazy(() => import("./pages/auth/SignupHub"));
@@ -272,6 +283,26 @@ const App = () => {
                   <Route path="/jobs" element={<PublicJobs />} />
                   <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<NotFound />} />
+                </Route>
+              )}
+
+              {/* Academy Zone (academy.opslyhr.com) */}
+              {zone === Zone.ACADEMY && (
+                <Route element={<AcademyLayout />}>
+                  {/* Public Routes */}
+                  <Route path="/" element={<AcademyHome />} />
+                  <Route path="/courses" element={<BrowseCourses />} />
+                  <Route path="/courses/:slug" element={<CourseDetail />} />
+                  <Route path="/marketplace" element={<TalentMarketplace />} />
+                  <Route path="/404" element={<NotFound />} />
+                  
+                  {/* Protected Student Routes */}
+                  <Route path="/apply" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><ApplyForm /></ZoneGuard>} />
+                  <Route path="/checkout/:slug" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><Checkout /></ZoneGuard>} />
+                  <Route path="/dashboard" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><StudentDashboard /></ZoneGuard>} />
+                  <Route path="/courses/:slug/learn" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><CourseHub /></ZoneGuard>} />
+                  
+                  <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
               )}
 
