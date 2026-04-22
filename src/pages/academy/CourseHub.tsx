@@ -104,14 +104,16 @@ const CourseHub = () => {
                 return;
             }
 
+            console.log("Fetching Hub data for user:", user.id, "and slug:", slug);
+
             // 1. Fetch Enrollment & Cohort - ENFORCE active status and cohort linkage
             const { data: enrollData, error: enrollError } = await (supabase
                 .from("academy_enrollments")
-                .select("*, cohorts(*)") // Standard left join is safer
+                .select("*, cohorts(*)") 
                 .eq("user_id", user.id)
-                .eq("course_id", slug) // course_id already contains the slug
+                .eq("course_id", slug) 
                 .eq("enrollment_status", "active")
-                .single() as Promise<{ data: Enrollment & { cohorts: Cohort | null } | null; error: any }>);
+                .maybeSingle() as Promise<{ data: Enrollment & { cohorts: Cohort | null } | null; error: any }>);
 
             if (enrollError || !enrollData) {
                 console.error("CourseHub enrollment fetch error:", enrollError || "No enrollment data found");
