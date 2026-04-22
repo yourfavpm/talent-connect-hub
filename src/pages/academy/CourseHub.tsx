@@ -107,16 +107,17 @@ const CourseHub = () => {
             // 1. Fetch Enrollment & Cohort - ENFORCE active status and cohort linkage
             const { data: enrollData, error: enrollError } = await (supabase
                 .from("academy_enrollments")
-                .select("*, cohorts!inner(*)") // Inner join ensures they actually have a cohort
+                .select("*, cohorts(*)") // Standard left join is safer
                 .eq("user_id", user.id)
                 .eq("course_id", slug) // course_id already contains the slug
                 .eq("enrollment_status", "active")
-                .single() as Promise<{ data: Enrollment & { cohorts: Cohort } | null; error: any }>);
+                .single() as Promise<{ data: Enrollment & { cohorts: Cohort | null } | null; error: any }>);
 
             if (enrollError || !enrollData) {
+                console.error("CourseHub enrollment fetch error:", enrollError || "No enrollment data found");
                 toast({
                     title: "Access Denied",
-                    description: "You are not enrolled in this program.",
+                    description: "You are not enrolled in this program or your cohort could not be found.",
                     variant: "destructive"
                 });
                 navigate("/dashboard");
@@ -124,6 +125,18 @@ const CourseHub = () => {
             }
 
             const typedEnrollData = enrollData as (Enrollment & { cohorts: Cohort });
+            
+            if (!typedEnrollData.cohorts) {
+                console.error("Enrollment exists but has no linked cohort.");
+                toast({
+                    title: "Pending Cohort Assignment",
+                    description: "You are enrolled, but have not been assigned to a specific class cohort yet.",
+                    variant: "destructive"
+                });
+                navigate("/dashboard");
+                return;
+            }
+
             setEnrollment(typedEnrollData);
             const cohortId = typedEnrollData.cohort_id;
 
