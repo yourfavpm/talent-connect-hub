@@ -220,19 +220,59 @@ const Checkout = () => {
                     password: password
                 });
                 
-                // If the webhook already created the user, signUp might throw "User already registered"
-                if (signUpError && signUpError.message.includes('registered')) {
-                    const { error: signInError } = await supabase.auth.signInWithPassword({
+                if (!signUpError && authData.user) {
+                    isUserLoggedIn = true;
+                    // For simulated flow, manually create the enrollment record since webhook won't be called
+                    if (import.meta.env.VITE_PAYSTACK_PUBLIC_KEY === undefined || import.meta.env.VITE_PAYSTACK_PUBLIC_KEY === "") {
+                        await supabase.from("academy_enrollments").insert({
+                            user_id: authData.user.id,
+                            course_id: course.slug,
+                            cohort_id: selectedCohortId,
+                            course_name: course.title,
+                            enrollment_status: "active",
+                            price_naira: course.price_naira,
+                            price_usd: course.price_usd,
+                            enrollment_date: new Date().toISOString()
+                        });
+                    }
+                } else if (signUpError && signUpError.message.includes('registered')) {
+                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                         email: email.trim().toLowerCase(),
                         password: password
                     });
-                    if (!signInError) isUserLoggedIn = true;
-                } else if (!signUpError) {
-                    isUserLoggedIn = true;
+                    if (!signInError && signInData.user) {
+                        isUserLoggedIn = true;
+                        // For simulated flow, manually create the enrollment record
+                        if (import.meta.env.VITE_PAYSTACK_PUBLIC_KEY === undefined || import.meta.env.VITE_PAYSTACK_PUBLIC_KEY === "") {
+                             await supabase.from("academy_enrollments").insert({
+                                user_id: signInData.user.id,
+                                course_id: course.slug,
+                                cohort_id: selectedCohortId,
+                                course_name: course.title,
+                                enrollment_status: "active",
+                                price_naira: course.price_naira,
+                                price_usd: course.price_usd,
+                                enrollment_date: new Date().toISOString()
+                            });
+                        }
+                    }
                 }
             } else if (isExistingUser) {
                 const { data: { session } } = await supabase.auth.getSession();
                 isUserLoggedIn = !!session;
+                
+                if (isUserLoggedIn && session && (import.meta.env.VITE_PAYSTACK_PUBLIC_KEY === undefined || import.meta.env.VITE_PAYSTACK_PUBLIC_KEY === "")) {
+                     await supabase.from("academy_enrollments").insert({
+                        user_id: session.user.id,
+                        course_id: course.slug,
+                        cohort_id: selectedCohortId,
+                        course_name: course.title,
+                        enrollment_status: "active",
+                        price_naira: course.price_naira,
+                        price_usd: course.price_usd,
+                        enrollment_date: new Date().toISOString()
+                    });
+                }
             }
 
             setSuccess(true);
