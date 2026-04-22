@@ -212,42 +212,23 @@ const Checkout = () => {
     const processPostPaymentSuccess = async (reference: string, sessionId: string) => {
         try {
             // STEP 1: Attempt to log the user in or sign them up so they land in dashboard smoothly
+            console.log("Processing post-payment for session:", sessionId);
             let isUserLoggedIn = false;
             
-            if (!isExistingUser && password) {
-                const { data: authData, error: signUpError } = await supabase.auth.signUp({
-                    email: email.trim().toLowerCase(),
-                    password: password
-                });
-                
-                if (!signUpError && authData.user) {
-                    isUserLoggedIn = true;
-                    // For simulated flow, manually create the enrollment record since webhook won't be called
-                    if (!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
-                        const { error: enrollErr } = await supabase.from("academy_enrollments").insert({
-                            user_id: authData.user.id,
-                            course_id: course.slug, // Legacy field expects slug
-                            course_uuid: course.id,  // New field expects UUID
-                            cohort_id: selectedCohortId,
-                            course_name: course.title,
-                            enrollment_status: "active",
-                            price_naira: course.price_naira,
-                            price_usd: course.price_usd,
-                            enrollment_date: new Date().toISOString()
-                        });
-                        if (enrollErr) console.error("Simulated enrollment error:", enrollErr);
-                    }
-                } else if (signUpError && signUpError.message.includes('registered')) {
-                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            try {
+                if (!isExistingUser && password) {
+                    const { data: authData, error: signUpError } = await supabase.auth.signUp({
                         email: email.trim().toLowerCase(),
                         password: password
                     });
-                    if (!signInError && signInData.user) {
+                    
+                    if (!signUpError && authData.user) {
                         isUserLoggedIn = true;
-                        // For simulated flow, manually create the enrollment record
+                        console.log("New user signed up successfully");
+                        // Simulated flow manual insert
                         if (!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
-                             await supabase.from("academy_enrollments").insert({
-                                user_id: signInData.user.id,
+                            await supabase.from("academy_enrollments").insert({
+                                user_id: authData.user.id,
                                 course_id: course.slug,
                                 course_uuid: course.id,
                                 cohort_id: selectedCohortId,
@@ -258,39 +239,56 @@ const Checkout = () => {
                                 enrollment_date: new Date().toISOString()
                             });
                         }
+                    } else if (signUpError) {
+                        console.log("Signup error (might be expected if webhook was faster):", signUpError.message);
+                        // Try logging in instead
+                        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                            email: email.trim().toLowerCase(),
+                            password: password
+                        });
+                        if (!signInError && signInData.user) {
+                            isUserLoggedIn = true;
+                            console.log("User signed in successfully after signup error");
+                        }
+                    }
+                } else if (isExistingUser) {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    isUserLoggedIn = !!session;
+                    console.log("Existing user login state:", isUserLoggedIn);
+                    
+                    // Simulated flow manual insert for existing user
+                    if (isUserLoggedIn && session && !import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
+                         await supabase.from("academy_enrollments").insert({
+                            user_id: session.user.id,
+                            course_id: course.slug,
+                            course_uuid: course.id,
+                            cohort_id: selectedCohortId,
+                            course_name: course.title,
+                            enrollment_status: "active",
+                            price_naira: course.price_naira,
+                            price_usd: course.price_usd,
+                            enrollment_date: new Date().toISOString()
+                        });
                     }
                 }
-            } else if (isExistingUser) {
-                const { data: { session } } = await supabase.auth.getSession();
-                isUserLoggedIn = !!session;
-                
-                if (isUserLoggedIn && session && !import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
-                     await supabase.from("academy_enrollments").insert({
-                        user_id: session.user.id,
-                        course_id: course.slug,
-                        course_uuid: course.id,
-                        cohort_id: selectedCohortId,
-                        course_name: course.title,
-                        enrollment_status: "active",
-                        price_naira: course.price_naira,
-                        price_usd: course.price_usd,
-                        enrollment_date: new Date().toISOString()
-                    });
-                }
+            } catch (authErr) {
+                console.error("Auth processing error:", authErr);
             }
 
             setSuccess(true);
+            setProcessing(false); // Clear loading state before showing success
+            
             toast({
                 title: "Enrollment Successful! 🎉",
                 description: `Welcome to ${course?.title}. We're preparing your hub.`,
             });
 
-            // Redirect dynamically based on login state
+            // Delay redirect to show success state
             setTimeout(() => {
                 if (isUserLoggedIn) {
                     navigate("/dashboard");
                 } else {
-                    navigate("/login?redirect=/dashboard");
+                    navigate("/auth/login?portal=student&redirect=/dashboard");
                 }
             }, 3000);
 
