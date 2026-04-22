@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown, ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zone, getZoneUrl } from "@/utils/subdomain";
+import { Zone, getZoneUrl, getInternalPath } from "@/utils/subdomain";
 import Logo from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
 

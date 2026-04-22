@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Linkedin, Instagram, Mail, MapPin } from "lucide-react";
-import { Zone, getZoneUrl } from "@/utils/subdomain";
+import { Zone, getZoneUrl, getInternalPath } from "@/utils/subdomain";
 
 const AcademyFooter = () => {
     return (

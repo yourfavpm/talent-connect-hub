@@ -6,6 +6,7 @@ import { ArrowRight, CheckCircle, Globe, Users, Zap, TrendingUp, Brain, FolderOp
 import CourseCard from "@/components/academy/CourseCard";
 import TestimonialCard from "@/components/academy/TestimonialCard";
 import type { CourseTestimonial } from "@/components/academy/TestimonialCard";
+import { getInternalPath, getZoneUrl, Zone } from "@/utils/subdomain";
 
 interface DynamicCourse {
     id: string;
