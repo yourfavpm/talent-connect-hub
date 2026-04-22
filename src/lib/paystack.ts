@@ -59,7 +59,7 @@ export class PaystackService {
               if (params.onClose) params.onClose();
               reject(new Error("Payment cancelled"));
             },
-            onSuccess: (response: PaystackResponse) => {
+            callback: (response: PaystackResponse) => {
               console.log("Payment successful:", response);
               if (params.onSuccess) params.onSuccess(response);
               resolve(response);

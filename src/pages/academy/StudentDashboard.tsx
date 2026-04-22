@@ -89,13 +89,12 @@ const StudentDashboard = () => {
         setShowOnboarding(true);
       }
 
-      const enrollRequest = supabase
+      // Fetch enrollments (without FK joins that may not exist)
+      const { data: enrollmentsData, error: enrollError } = await supabase
         .from("academy_enrollments")
-        .select("*, cohorts!cohort_id(*), academy_courses!course_id(slug, title, image_url)")
+        .select("*")
         .eq("user_id", user.id)
         .eq("enrollment_status", "active");
-        
-      const { data: enrollmentsData, error: enrollError } = await enrollRequest;
 
       if (enrollError) {
         console.error("Error fetching enrollments:", enrollError);
@@ -106,16 +105,27 @@ const StudentDashboard = () => {
         if (typedEnrollments.length > 0) {
           const metaMap: Record<string, CourseMetadata> = {};
           
-          typedEnrollments.forEach(enroll => {
-            if (enroll.academy_courses) {
-              metaMap[enroll.course_id] = enroll.academy_courses;
+          // Fetch course metadata separately by slug
+          const courseSlugs = typedEnrollments.map(e => e.course_id).filter(Boolean);
+          if (courseSlugs.length > 0) {
+            const { data: coursesData } = await supabase
+              .from("academy_courses")
+              .select("id, slug, title, image_url")
+              .in("slug", courseSlugs);
+            
+            if (coursesData) {
+              coursesData.forEach((c: any) => {
+                metaMap[c.slug] = c;
+              });
             }
-          });
+          }
           
           setCoursesMetadata(metaMap);
 
-          // 3. Fetch the next upcoming live session (Only works for DB cohorts)
+          // Fetch cohort info for enrolled cohorts
           const cohortIds = typedEnrollments.map(e => e.cohort_id).filter(Boolean);
+          
+          // Fetch the next upcoming live session
           if (cohortIds.length > 0) {
             const now = new Date().toISOString();
             const sessionRequest = supabase
