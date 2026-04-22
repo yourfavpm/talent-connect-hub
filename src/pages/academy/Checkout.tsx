@@ -170,8 +170,8 @@ const Checkout = () => {
             
             const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
             
-            if (!paystackPublicKey) {
-                console.warn("Paystack key missing, using simulated flow");
+            if (!paystackPublicKey || paystackPublicKey === "") {
+                console.warn("Paystack key missing or empty, using simulated flow. Key found:", paystackPublicKey);
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 return processPostPaymentSuccess("simulated_ref_" + Date.now(), sessionId);
             }
@@ -223,10 +223,10 @@ const Checkout = () => {
                 if (!signUpError && authData.user) {
                     isUserLoggedIn = true;
                     // For simulated flow, manually create the enrollment record since webhook won't be called
-                    if (import.meta.env.VITE_PAYSTACK_PUBLIC_KEY === undefined || import.meta.env.VITE_PAYSTACK_PUBLIC_KEY === "") {
-                        await supabase.from("academy_enrollments").insert({
+                    if (!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
+                        const { error: enrollErr } = await supabase.from("academy_enrollments").insert({
                             user_id: authData.user.id,
-                            course_id: course.slug,
+                            course_id: course.id, // Use UUID if the table expects it
                             cohort_id: selectedCohortId,
                             course_name: course.title,
                             enrollment_status: "active",
@@ -234,6 +234,7 @@ const Checkout = () => {
                             price_usd: course.price_usd,
                             enrollment_date: new Date().toISOString()
                         });
+                        if (enrollErr) console.error("Simulated enrollment error:", enrollErr);
                     }
                 } else if (signUpError && signUpError.message.includes('registered')) {
                     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -243,10 +244,10 @@ const Checkout = () => {
                     if (!signInError && signInData.user) {
                         isUserLoggedIn = true;
                         // For simulated flow, manually create the enrollment record
-                        if (import.meta.env.VITE_PAYSTACK_PUBLIC_KEY === undefined || import.meta.env.VITE_PAYSTACK_PUBLIC_KEY === "") {
+                        if (!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
                              await supabase.from("academy_enrollments").insert({
                                 user_id: signInData.user.id,
-                                course_id: course.slug,
+                                course_id: course.id,
                                 cohort_id: selectedCohortId,
                                 course_name: course.title,
                                 enrollment_status: "active",
@@ -261,10 +262,10 @@ const Checkout = () => {
                 const { data: { session } } = await supabase.auth.getSession();
                 isUserLoggedIn = !!session;
                 
-                if (isUserLoggedIn && session && (import.meta.env.VITE_PAYSTACK_PUBLIC_KEY === undefined || import.meta.env.VITE_PAYSTACK_PUBLIC_KEY === "")) {
+                if (isUserLoggedIn && session && !import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
                      await supabase.from("academy_enrollments").insert({
                         user_id: session.user.id,
-                        course_id: course.slug,
+                        course_id: course.id,
                         cohort_id: selectedCohortId,
                         course_name: course.title,
                         enrollment_status: "active",
