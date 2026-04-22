@@ -179,9 +179,6 @@ const CreateCohort = () => {
                                 </div>
                             </div>
 
-                                </div>
-                            </div>
-
                             {/* Mentors Section */}
                             <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
                                 <div className="flex items-center justify-between mb-2">
