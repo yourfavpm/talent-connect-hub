@@ -28,7 +28,7 @@ const CreateCohort = () => {
     // Form State
     const [formData, setFormData] = useState({
         name: "",
-        enrollment_start_date: "",
+        enrollment_start_date: new Date().toISOString().slice(0, 16),
         enrollment_end_date: "",
         start_date: "",
         end_date: "",
@@ -73,7 +73,7 @@ const CreateCohort = () => {
             const { error } = await supabase
                 .from("cohorts")
                 .insert({
-                    course_id: slug,
+                    course_id: course.id,
                     name: formData.name,
                     start_date: new Date(formData.start_date).toISOString(),
                     end_date: new Date(formData.end_date).toISOString(),

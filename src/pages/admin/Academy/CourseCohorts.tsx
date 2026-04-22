@@ -42,7 +42,7 @@ const CourseCohorts = () => {
             // 1. Fetch Course Info
             const { data: courseData, error: courseError } = await supabase
                 .from("academy_courses")
-                .select("title")
+                .select("id, title")
                 .eq("slug", slug)
                 .single();
             
@@ -53,7 +53,7 @@ const CourseCohorts = () => {
             const { data: cohortsData, error: cohortsError } = await supabase
                 .from("cohorts")
                 .select("*")
-                .eq("course_id", slug)
+                .eq("course_id", courseData.id)
                 .order("start_date", { ascending: false });
 
             if (cohortsError) throw cohortsError;

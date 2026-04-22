@@ -13,22 +13,34 @@ ADD COLUMN IF NOT EXISTS current_slots INT DEFAULT 0,
 ADD COLUMN IF NOT EXISTS duration_weeks INT DEFAULT 4;
 
 -- ── 2. Standardize sessions table ──────────────────────────────
--- Rename join_link to meeting_url if it exists as join_link
+-- Rename join_link to meeting_url if it exists as join_link AND meeting_url does not exist
 DO $$ 
 BEGIN
-    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sessions' AND column_name = 'join_link') THEN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sessions' AND column_name = 'join_link') 
+       AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sessions' AND column_name = 'meeting_url') THEN
         ALTER TABLE public.sessions RENAME COLUMN join_link TO meeting_url;
     END IF;
 END $$;
 
--- Ensure meeting_url exists (in case neither did)
-ALTER TABLE public.sessions ADD COLUMN IF NOT EXISTS meeting_url TEXT;
-
--- ── 3. Standardize assignments table ───────────────────────────
--- Rename due_date to deadline_at if it exists as due_date
+-- Rename date to session_date if it exists as date AND session_date does not exist
 DO $$ 
 BEGIN
-    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'assignments' AND column_name = 'due_date') THEN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sessions' AND column_name = 'date') 
+       AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sessions' AND column_name = 'session_date') THEN
+        ALTER TABLE public.sessions RENAME COLUMN date TO session_date;
+    END IF;
+END $$;
+
+-- Ensure meeting_url and session_date exist
+ALTER TABLE public.sessions ADD COLUMN IF NOT EXISTS meeting_url TEXT;
+ALTER TABLE public.sessions ADD COLUMN IF NOT EXISTS session_date TIMESTAMPTZ;
+
+-- ── 3. Standardize assignments table ───────────────────────────
+-- Rename due_date to deadline_at if it exists as due_date AND deadline_at does not exist
+DO $$ 
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'assignments' AND column_name = 'due_date') 
+       AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'assignments' AND column_name = 'deadline_at') THEN
         ALTER TABLE public.assignments RENAME COLUMN due_date TO deadline_at;
     END IF;
 END $$;
