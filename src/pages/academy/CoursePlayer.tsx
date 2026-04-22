@@ -36,10 +36,11 @@ const CoursePlayer = () => {
 
       const { data, error } = await supabase
         .from("academy_enrollments")
-        .select("id, academy_courses!inner(slug)")
+        .select("id, cohort_id, academy_courses!inner(slug)")
         .eq("user_id", user.id)
         .eq("academy_courses.slug", slug)
         .eq("enrollment_status", "active")
+        .not("cohort_id", "is", null)
         .maybeSingle();
 
       if (error || !data) {

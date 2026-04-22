@@ -28,7 +28,7 @@ interface AcademyCourse {
     image_url?: string;
 }
 
-type CheckoutStep = 'email' | 'auth' | 'payment';
+type CheckoutStep = 'cohort-selection' | 'email' | 'auth' | 'payment';
 
 const Checkout = () => {
     const { slug } = useParams();
@@ -45,7 +45,7 @@ const Checkout = () => {
     const [success, setSuccess] = useState(false);
 
     // Frictionless Flow State
-    const [step, setStep] = useState<CheckoutStep>('email');
+    const [step, setStep] = useState<CheckoutStep>('cohort-selection');
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -76,16 +76,20 @@ const Checkout = () => {
                     
                     if (cohortsData && cohortsData.length > 0) {
                         setAvailableCohorts(cohortsData);
-                        setSelectedCohortId(cohortsData[0].id); // Auto-select the clearest one
+                        // START WITH COHORT SELECTION - DON'T AUTO-SELECT
+                        setStep('cohort-selection');
+                    } else {
+                        // No cohorts available - show enrollment closed
+                        setStep('cohort-selection');
                     }
                 }
 
-                // If user is already authenticated, skip to payment step automatically
+                // If user is already authenticated, still require cohort selection
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session && session.user) {
                     setEmail(session.user.email || "");
                     setIsExistingUser(true);
-                    setStep('payment');
+                    // Don't skip - still need to select cohort
                 }
 
             } catch (err) {
@@ -127,6 +131,15 @@ const Checkout = () => {
         }
     };
 
+    const handleCohortSelection = (cohortId: string) => {
+        if (!cohortId) {
+            toast({ title: "Select a Cohort", description: "Please select a cohort to proceed.", variant: "destructive" });
+            return;
+        }
+        setSelectedCohortId(cohortId);
+        setStep('email');
+    };
+
     const handleAuthSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (password.length < 8) {
@@ -148,6 +161,12 @@ const Checkout = () => {
             return;
         }
 
+        // ENFORCE: cohort_id is REQUIRED - cannot be null
+        if (!selectedCohortId) {
+            toast({ title: "Cohort Required", description: "Please select a cohort before proceeding to payment.", variant: "destructive" });
+            return;
+        }
+
         setProcessing(true);
         
         try {
@@ -157,7 +176,7 @@ const Checkout = () => {
                 .insert({
                     email: email.trim().toLowerCase(),
                     course_id: course.slug,
-                    cohort_id: selectedCohortId || null,
+                    cohort_id: selectedCohortId, // NEVER null
                     user_exists: isExistingUser,
                     status: 'pending'
                 })
@@ -190,7 +209,7 @@ const Checkout = () => {
                     checkout_session_id: sessionId,
                     email: email.trim().toLowerCase(),
                     course_id: course.slug,
-                    cohort_id: selectedCohortId || null,
+                    cohort_id: selectedCohortId, // NEVER null
                     type: 'academy_enrollment_frictionless'
                 },
                 onSuccess: (response) => {
@@ -254,19 +273,19 @@ const Checkout = () => {
 
             // STEP 2: Always create enrollment client-side (webhook is backup)
             if (activeUserId && course) {
-                // Check if enrollment already exists (webhook may have been faster)
+                // Check if enrollment already exists for THIS SPECIFIC COHORT (not just course)
                 const { data: existingEnrollment } = await supabase
                     .from("academy_enrollments")
                     .select("id")
                     .eq("user_id", activeUserId)
-                    .eq("course_id", course.slug)
+                    .eq("cohort_id", selectedCohortId)
                     .maybeSingle();
 
                 if (!existingEnrollment) {
                     const { error: enrollErr } = await supabase.from("academy_enrollments").insert({
                         user_id: activeUserId,
                         course_id: course.slug,
-                        cohort_id: selectedCohortId || null,
+                        cohort_id: selectedCohortId, // ENFORCED: Never null
                         course_name: course.title,
                         student_email: email.trim().toLowerCase(),
                         student_name: email.split('@')[0],
@@ -387,6 +406,76 @@ const Checkout = () => {
                                 </div>
 
                                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 md:p-10">
+                                    {step === 'cohort-selection' && (
+                                        <div className="space-y-6">
+                                            <div>
+                                                <h1 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">Choose Your Cohort</h1>
+                                                <p className="text-slate-500 font-medium">Select the batch you want to join. Each cohort has its own schedule and community.</p>
+                                            </div>
+                                            
+                                            <div className="space-y-3 max-h-96 overflow-y-auto">
+                                                {availableCohorts.length > 0 ? (
+                                                    availableCohorts.map((cohort) => {
+                                                        const isSelected = selectedCohortId === cohort.id;
+                                                        const enrollmentDeadline = new Date(cohort.enrollment_end_date);
+                                                        const daysLeft = Math.ceil((enrollmentDeadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                                                        const slotsAvailable = (cohort.max_slots || 25) - (cohort.current_slots || 0);
+                                                        
+                                                        return (
+                                                            <button
+                                                                key={cohort.id}
+                                                                onClick={() => handleCohortSelection(cohort.id)}
+                                                                className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                                                                    isSelected 
+                                                                        ? 'border-blue-600 bg-blue-50' 
+                                                                        : 'border-slate-200 bg-white hover:border-slate-300'
+                                                                }`}
+                                                            >
+                                                                <div className="flex items-start justify-between gap-3">
+                                                                    <div className="flex-1">
+                                                                        <h3 className="font-bold text-slate-900 mb-1">{cohort.name}</h3>
+                                                                        <div className="grid grid-cols-2 gap-2 text-xs font-medium text-slate-600 mb-2">
+                                                                            <div>📅 Starts: {new Date(cohort.start_date).toLocaleDateString()}</div>
+                                                                            <div>⏳ Ends: {new Date(cohort.end_date).toLocaleDateString()}</div>
+                                                                            <div>🎯 {slotsAvailable} slots available</div>
+                                                                            <div>⏰ {daysLeft} days to enroll</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                                                                        isSelected 
+                                                                            ? 'border-blue-600 bg-blue-600' 
+                                                                            : 'border-slate-300'
+                                                                    }`}>
+                                                                        {isSelected && <CheckCircle2 className="w-4 h-4 text-white" />}
+                                                                    </div>
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <div className="text-center py-8">
+                                                        <Lock className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                                                        <p className="text-slate-500 font-medium">No active cohorts available</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <Button 
+                                                onClick={() => {
+                                                    if (!selectedCohortId) {
+                                                        toast({ title: "Select a Cohort", description: "Please select a cohort to proceed.", variant: "destructive" });
+                                                        return;
+                                                    }
+                                                    setStep('email');
+                                                }}
+                                                disabled={!selectedCohortId || availableCohorts.length === 0}
+                                                className="w-full h-14 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-xl font-bold text-lg shadow-sm"
+                                            >
+                                                Continue to Enrollment
+                                            </Button>
+                                        </div>
+                                    )}
+
                                     {step === 'email' && (
                                         <div className="space-y-6">
                                             <div>
@@ -408,13 +497,22 @@ const Checkout = () => {
                                                         />
                                                     </div>
                                                 </div>
-                                                <Button 
-                                                    type="submit" 
-                                                    disabled={processing}
-                                                    className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg shadow-sm"
-                                                >
-                                                    {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue"}
-                                                </Button>
+                                                <div className="flex gap-3">
+                                                    <Button 
+                                                        type="button"
+                                                        onClick={() => setStep('cohort-selection')}
+                                                        className="flex-1 h-14 bg-slate-200 hover:bg-slate-300 text-slate-900 rounded-xl font-bold text-lg"
+                                                    >
+                                                        Back
+                                                    </Button>
+                                                    <Button 
+                                                        type="submit" 
+                                                        disabled={processing}
+                                                        className="flex-1 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg shadow-sm"
+                                                    >
+                                                        {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue"}
+                                                    </Button>
+                                                </div>
                                             </form>
                                         </div>
                                     )}
@@ -462,15 +560,24 @@ const Checkout = () => {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <Button 
-                                                    type="submit" 
-                                                    className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg shadow-sm"
-                                                >
-                                                    Continue to Payment
-                                                </Button>
+                                                <div className="flex gap-3">
+                                                    <Button 
+                                                        type="button"
+                                                        onClick={() => setStep('email')}
+                                                        className="flex-1 h-14 bg-slate-200 hover:bg-slate-300 text-slate-900 rounded-xl font-bold text-lg"
+                                                    >
+                                                        Back
+                                                    </Button>
+                                                    <Button 
+                                                        type="submit" 
+                                                        className="flex-1 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg shadow-sm"
+                                                    >
+                                                        Continue to Payment
+                                                    </Button>
+                                                </div>
                                             </form>
-                                            <button onClick={() => setStep('email')} className="text-sm font-bold text-slate-500 hover:text-slate-900">
-                                                Use a different email
+                                            <button onClick={() => setStep('cohort-selection')} className="text-sm font-bold text-slate-500 hover:text-slate-900">
+                                                Change cohort
                                             </button>
                                         </div>
                                     )}

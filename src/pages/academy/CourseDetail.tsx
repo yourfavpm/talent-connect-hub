@@ -95,7 +95,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                         setOpenCohorts(availableCohorts);
                     }
 
-                    // Check if user is already enrolled
+                    // Check if user is already enrolled (cohort-based)
                     const { data: { user } } = await supabase.auth.getUser();
                     if (user) {
                         const { data: enrollData } = await supabase
@@ -104,6 +104,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                             .eq("user_id", user.id)
                             .eq("course_id", data.slug)
                             .eq("enrollment_status", "active")
+                            .not("cohort_id", "is", null)
                             .maybeSingle();
                         
                         if (enrollData) setUserEnrollment(enrollData);

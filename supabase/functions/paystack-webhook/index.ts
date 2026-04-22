@@ -45,7 +45,13 @@ serve(async (req: Request) => {
       // 1. Check if this is a new frictionless checkout using metadata
       const checkoutSessionId = metadata?.checkout_session_id;
       const courseSlug = metadata?.course_id || metadata?.course_slug;
-      const cohortId = metadata?.cohort_id || null;
+      const cohortId = metadata?.cohort_id;
+      
+      // ENFORCE: cohort_id is REQUIRED for all academy enrollments
+      if (!cohortId) {
+        console.error("Payment received but cohort_id is missing in metadata");
+        return new Response(JSON.stringify({ error: "cohort_id required" }), { status: 400 });
+      }
       
       let finalUserId = metadata?.user_id;
 
@@ -84,23 +90,56 @@ serve(async (req: Request) => {
           }]);
         }
 
-        // We have the finalUserId. Let's create the enrollment if it doesn't exist
+        // We have the finalUserId and cohortId. Let's create the COHORT-BASED enrollment
         const enrolledAt = new Date().toISOString();
         let enrollmentId = null;
 
-        const { data: existingEnrollment } = await supabase
+        // ENFORCE: Check if user is already enrolled in THIS SPECIFIC COHORT
+        const { data: existingEnrollment, error: checkError } = await supabase
           .from("academy_enrollments")
           .select("id")
           .eq("user_id", finalUserId)
-          .eq("course_id", courseSlug)
-          .single();
+          .eq("cohort_id", cohortId)
+          .maybeSingle();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+          console.error("Error checking existing enrollment:", checkError);
+          throw checkError;
+        }
 
         if (existingEnrollment) {
+           // Already enrolled in this cohort - likely a duplicate payment
+           console.log("User already enrolled in this cohort:", existingEnrollment.id);
            enrollmentId = existingEnrollment.id;
         } else {
+           // First check cohort exists and isn't full
+           const { data: cohortData, error: cohortError } = await supabase
+             .from("cohorts")
+             .select("id, current_slots, max_slots, name, status")
+             .eq("id", cohortId)
+             .single();
+           
+           if (cohortError || !cohortData) {
+             console.error("Cohort not found:", cohortId, cohortError);
+             return new Response(JSON.stringify({ error: "cohort not found" }), { status: 404 });
+           }
+           
+           if (cohortData.status === 'closed') {
+             console.error("Cohort is closed:", cohortId);
+             return new Response(JSON.stringify({ error: "cohort closed" }), { status: 400 });
+           }
+           
+           if ((cohortData.current_slots || 0) >= (cohortData.max_slots || 25)) {
+             console.error("Cohort is full:", cohortId);
+             return new Response(JSON.stringify({ error: "cohort full" }), { status: 400 });
+           }
+           
+           // Get course data for metadata
            const { data: courseData } = await supabase.from("academy_courses").select("*").eq("slug", courseSlug).single();
+           
            if (courseData) {
-             const { data: newEnroll } = await supabase.from("academy_enrollments").insert({
+             // Create enrollment for this COHORT
+             const { data: newEnroll, error: enrollError } = await supabase.from("academy_enrollments").insert({
                  user_id: finalUserId,
                  course_id: courseSlug,
                  cohort_id: cohortId,
@@ -113,12 +152,18 @@ serve(async (req: Request) => {
                  enrollment_date: enrolledAt,
                  access_granted_at: enrolledAt
              }).select("id").single();
+             
+             if (enrollError) {
+               console.error("Enrollment insert error:", enrollError);
+               throw enrollError;
+             }
+             
              if (newEnroll) enrollmentId = newEnroll.id;
              
-             // Increment slots filled
-             await supabase.from("academy_courses").update({
-                 slots_filled: (courseData.slots_filled || 0) + 1
-             }).eq("slug", courseSlug);
+             // Increment slots filled in cohort
+             await supabase.from("cohorts").update({
+                 current_slots: (cohortData.current_slots || 0) + 1
+             }).eq("id", cohortId);
            }
         }
 

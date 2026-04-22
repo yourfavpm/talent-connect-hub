@@ -104,12 +104,13 @@ const CourseHub = () => {
                 return;
             }
 
-            // 1. Fetch Enrollment & Cohort
+            // 1. Fetch Enrollment & Cohort - ENFORCE active status and cohort linkage
             const { data: enrollData, error: enrollError } = await (supabase
                 .from("academy_enrollments")
                 .select("*, cohorts!cohort_id(*), academy_courses!course_id!inner(slug)")
                 .eq("user_id", user.id)
                 .eq("academy_courses.slug", slug)
+                .eq("enrollment_status", "active")
                 .single() as Promise<{ data: Enrollment & { cohorts: Cohort } | null; error: any }>);
 
             if (enrollError || !enrollData) {
