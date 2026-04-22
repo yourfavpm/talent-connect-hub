@@ -47,9 +47,15 @@ const AcademyFooter = () => {
                                     { label: "Apply Now", to: "/apply" },
                                 ].map((link, i) => (
                                     <li key={i}>
-                                        <Link to={link.to} className="text-xs text-slate-400 hover:text-blue-400 font-medium transition-colors">
-                                            {link.label}
-                                        </Link>
+                                        {link.to.startsWith("http") ? (
+                                            <a href={link.to} className="text-xs text-slate-400 hover:text-blue-400 font-medium transition-colors">
+                                                {link.label}
+                                            </a>
+                                        ) : (
+                                            <Link to={link.to} className="text-xs text-slate-400 hover:text-blue-400 font-medium transition-colors">
+                                                {link.label}
+                                            </Link>
+                                        )}
                                     </li>
                                 ))}
                             </ul>
@@ -79,15 +85,21 @@ const AcademyFooter = () => {
                             <h4 className="text-[10px] font-bold text-white uppercase tracking-widest">Support</h4>
                             <ul className="space-y-2">
                                 {[
-                                    { label: "FAQs", to: "/courses" },
-                                    { label: "Contact Us", to: "/apply" },
-                                    { label: "Privacy Policy", to: "/privacy" },
-                                    { label: "Terms of Service", to: "/terms" }
+                                    { label: "FAQs", to: getInternalPath("/courses") },
+                                    { label: "Contact Us", to: getInternalPath("/apply") },
+                                    { label: "Privacy Policy", to: getZoneUrl(Zone.MARKETING, "/privacy") },
+                                    { label: "Terms of Service", to: getZoneUrl(Zone.MARKETING, "/terms") }
                                 ].map((link, i) => (
                                     <li key={i}>
-                                        <Link to={link.to} className="text-xs text-slate-400 hover:text-blue-400 font-medium transition-colors">
-                                            {link.label}
-                                        </Link>
+                                        {link.to.startsWith("http") ? (
+                                            <a href={link.to} className="text-xs text-slate-400 hover:text-blue-400 font-medium transition-colors">
+                                                {link.label}
+                                            </a>
+                                        ) : (
+                                            <Link to={link.to} className="text-xs text-slate-400 hover:text-blue-400 font-medium transition-colors">
+                                                {link.label}
+                                            </Link>
+                                        )}
                                     </li>
                                 ))}
                             </ul>

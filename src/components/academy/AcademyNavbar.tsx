@@ -22,7 +22,7 @@ const AcademyNavbar = () => {
 
     const NavLinks = [
         { name: "Home", path: "/" },
-        { name: "Courses", path: "/browse" },
+        { name: "Courses", path: "/courses" },
     ];
 
     const handleSignOut = async () => {
@@ -77,12 +77,12 @@ const AcademyNavbar = () => {
                             </button>
                         </>
                     ) : (
-                        <Link
-                            to="/signup"
+                        <a
+                            href={getZoneUrl(Zone.AUTH, "/auth/signup")}
                             className="px-8 py-3 bg-slate-900 text-white text-[15px] font-bold rounded-xl hover:bg-blue-700 transition-all shadow-sm font-inter"
                         >
                             Get Started
-                        </Link>
+                        </a>
                     )}
                 </div>
 
@@ -168,13 +168,13 @@ const AcademyNavbar = () => {
                                         </button>
                                     </div>
                                 ) : (
-                                    <Link 
-                                        to="/signup"
+                                    <a 
+                                        href={getZoneUrl(Zone.AUTH, "/auth/signup")}
                                         className="flex items-center justify-between w-full py-4 px-6 bg-slate-900 text-white font-bold text-base rounded-2xl group transition-all"
                                     >
                                         <span>Start Learning</span>
                                         <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                    </Link>
+                                    </a>
                                 )}
                             </div>
                         </motion.div>

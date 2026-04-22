@@ -95,12 +95,12 @@ const AcademyHome = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-10 md:mb-12">
-                <Link to="/browse" className="w-full sm:w-auto">
+                <Link to={getInternalPath("/courses")} className="w-full sm:w-auto">
                   <Button size="lg" className="h-12 md:h-14 px-6 md:px-10 text-sm md:text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all font-semibold w-full">
                     Browse Courses
                   </Button>
                 </Link>
-                <Link to="/browse" className="w-full sm:w-auto">
+                <Link to={getInternalPath("/courses")} className="w-full sm:w-auto">
                   <Button variant="outline" size="lg" className="h-12 md:h-14 px-6 md:px-8 text-sm md:text-base border-white/20 text-white hover:bg-white/5 rounded-full font-semibold flex items-center justify-center gap-2 w-full">
                     Join Talent Marketplace <ArrowRight className="w-3 md:w-4 h-3 md:h-4" />
                   </Button>
@@ -290,7 +290,7 @@ const AcademyHome = () => {
                     <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">Our Learning Paths</h2>
                     <p className="text-base md:text-lg text-slate-500 leading-relaxed font-medium">Practical, outcome-driven programs designed to get you hired globally.</p>
                 </div>
-                <Link to="/browse">
+                <Link to={getInternalPath("/courses")}>
                     <Button variant="ghost" className="group text-blue-600 hover:text-blue-700 font-bold flex items-center gap-2">
                         View All Courses <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
@@ -355,7 +355,7 @@ const AcademyHome = () => {
                         </div>
                     ))}
                 </div>
-                <Link to="/browse">
+                <Link to={getInternalPath("/courses")}>
                     <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all font-semibold w-full sm:w-auto shadow-xl shadow-blue-900/40">
                         Join Talent Marketplace
                     </Button>
@@ -410,14 +410,14 @@ const AcademyHome = () => {
                 Choose your learning path and start your journey towards high-income, global work opportunities today.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-               <Link to="/browse">
+               <Link to={getInternalPath("/courses")}>
                    <Button size="lg" className="h-16 px-12 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all font-semibold shadow-xl shadow-blue-200/50">
                        Browse Course Catalog
                    </Button>
                </Link>
-               <Link to="/signup" className="h-16 px-10 flex items-center justify-center text-slate-900 border border-slate-200 hover:border-slate-900 rounded-full font-semibold transition-all">
+               <a href={getZoneUrl(Zone.AUTH, "/auth/signup")} className="h-16 px-10 flex items-center justify-center text-slate-900 border border-slate-200 hover:border-slate-900 rounded-full font-semibold transition-all">
                    Become Targeted Talent
-               </Link>
+               </a>
             </div>
             <p className="mt-8 text-sm font-semibold text-slate-400">Applications open for May 2026 Cohorts</p>
         </div>
