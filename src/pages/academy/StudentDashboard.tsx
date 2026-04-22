@@ -294,7 +294,7 @@ const StudentDashboard = () => {
                             <Play className="w-4 h-4 fill-current" /> Join Session
                           </Button>
                           <Link 
-                            to={`/courses/${enrollments.find(e => e.cohort_id === nextSession.cohort_id)?.academy_courses?.slug}/learn`}
+                            to={`/courses/${enrollments.find(e => e.cohort_id === nextSession.cohort_id)?.course_id}/learn`}
                             className="h-14 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all"
                           >
                             Program Hub

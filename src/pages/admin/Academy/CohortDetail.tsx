@@ -110,7 +110,8 @@ const CohortDetail = () => {
         end_date: "",
         max_slots: 25,
         duration_weeks: 4,
-        zoom_link: ""
+        zoom_link: "",
+        mentors: [] as { name: string; title: string; link: string }[]
     });
 
     const [isSaving, setIsSaving] = useState(false);
@@ -136,7 +137,8 @@ const CohortDetail = () => {
                 end_date: cohortData.end_date?.split('.')[0] || "",
                 max_slots: cohortData.max_slots || 25,
                 duration_weeks: cohortData.duration_weeks || 4,
-                zoom_link: cohortData.zoom_link || ""
+                zoom_link: cohortData.zoom_link || "",
+                mentors: cohortData.mentors || []
             });
 
             // 2. Fetch All Data in Parallel
@@ -211,6 +213,49 @@ const CohortDetail = () => {
             setAnnouncements(prev => [data as Announcement, ...prev]);
             setNewAnnouncement({ title: '', content: '' });
             toast({ title: "Posted", description: "Announcement sent to students." });
+
+            // Trigger Email Broadcast to all students in the cohort
+            if (students.length > 0) {
+                const studentEmails = students.filter(s => s.enrollment_status === 'active').map(s => s.student_email);
+                if (studentEmails.length > 0) {
+                    try {
+                        // Send emails in batches or one by one (for now one by one for simplicity, or handle in edge function)
+                        // Actually, let's call a specialized edge function if we had one, but we can use send-email in a loop
+                        // or better: a single call to a function that handles the loop.
+                        // For now, I'll loop through and call send-email for each.
+                        for (const email of studentEmails) {
+                            await supabase.functions.invoke('send-email', {
+                                body: {
+                                    to: email,
+                                    subject: `New Announcement: ${newAnnouncement.title}`,
+                                    htmlTemplate: `
+                                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
+                                            <div style="background: #0f2147; padding: 40px; text-align: center;">
+                                                <img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="width: 140px;" />
+                                            </div>
+                                            <div style="padding: 40px; background: #fff;">
+                                                <h1 style="color: #0f2147; font-size: 24px; margin-bottom: 20px;">New Announcement</h1>
+                                                <h2 style="color: #333; font-size: 18px; margin-bottom: 20px;">${newAnnouncement.title}</h2>
+                                                <div style="color: #444; font-size: 16px; line-height: 1.6; background: #f9fafb; padding: 20px; border-radius: 8px;">
+                                                    ${newAnnouncement.content}
+                                                </div>
+                                                <div style="margin: 40px 0; text-align: center;">
+                                                    <a href="https://academy.opslyhr.com/dashboard" style="background: #0f2147; color: #fff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">View in Dashboard</a>
+                                                </div>
+                                            </div>
+                                            <div style="background: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #eee;">
+                                                <p style="color: #999; font-size: 12px;">&copy; 2026 OPSlyHR Academy. All rights reserved.</p>
+                                            </div>
+                                        </div>
+                                    `
+                                }
+                            });
+                        }
+                    } catch (emailErr) {
+                        console.error("Failed to broadcast announcement emails:", emailErr);
+                    }
+                }
+            }
         } catch (err) {
             toast({ title: "Error", description: "Failed to post update.", variant: "destructive" });
         } finally {
@@ -254,7 +299,8 @@ const CohortDetail = () => {
                     end_date: new Date(settings.end_date).toISOString(),
                     max_slots: Number(settings.max_slots),
                     duration_weeks: Number(settings.duration_weeks),
-                    zoom_link: settings.zoom_link
+                    zoom_link: settings.zoom_link,
+                    mentors: settings.mentors
                 })
                 .eq("id", id);
 
@@ -277,6 +323,58 @@ const CohortDetail = () => {
             toast({ title: "Graded", description: "Submission marked as reviewed." });
         } catch (err) {
             toast({ title: "Error", description: "Failed to update status." });
+        }
+    };
+
+    const handleSendSessionReminder = async (session: Session) => {
+        if (students.length === 0) {
+            toast({ title: "No Students", description: "There are no active students to notify." });
+            return;
+        }
+
+        const studentEmails = students.filter(s => s.enrollment_status === 'active').map(s => s.student_email);
+        if (studentEmails.length === 0) return;
+
+        toast({ title: "Sending...", description: "Broadcasting class reminder." });
+        
+        try {
+            for (const email of studentEmails) {
+                await supabase.functions.invoke('send-email', {
+                    body: {
+                        to: email,
+                        subject: `Class Reminder: ${session.title}`,
+                        htmlTemplate: `
+                            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
+                                <div style="background: #0f2147; padding: 40px; text-align: center;">
+                                    <img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="width: 140px;" />
+                                </div>
+                                <div style="padding: 40px; background: #fff;">
+                                    <h1 style="color: #0f2147; font-size: 24px; margin-bottom: 20px;">Class Reminder</h1>
+                                    <p style="color: #444; font-size: 16px; line-height: 1.6;">Hello Student,</p>
+                                    <p style="color: #444; font-size: 16px; line-height: 1.6;">Your class <strong>${session.title}</strong> is starting soon!</p>
+                                    <div style="background: #f9fafb; padding: 24px; border-radius: 12px; margin: 32px 0;">
+                                        <p style="margin: 0; font-size: 14px; color: #666; font-weight: bold; text-transform: uppercase;">Time</p>
+                                        <p style="margin: 4px 0 16px 0; font-size: 18px; color: #333; font-weight: bold;">${new Date(session.session_date).toLocaleDateString()} at ${session.start_time}</p>
+                                        
+                                        <p style="margin: 0; font-size: 14px; color: #666; font-weight: bold; text-transform: uppercase;">Meeting Link</p>
+                                        <a href="${session.meeting_url}" style="color: #2563eb; text-decoration: none; word-break: break-all; font-weight: bold;">${session.meeting_url}</a>
+                                    </div>
+                                    <div style="margin: 40px 0; text-align: center;">
+                                        <a href="${session.meeting_url}" style="background: #0f2147; color: #fff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">Join Live Session</a>
+                                    </div>
+                                </div>
+                                <div style="background: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #eee;">
+                                    <p style="color: #999; font-size: 12px;">&copy; 2026 OPSlyHR Academy. All rights reserved.</p>
+                                </div>
+                            </div>
+                        `
+                    }
+                });
+            }
+            toast({ title: "Sent", description: "Class reminder broadcasted successfully." });
+        } catch (err) {
+            console.error("Reminder failed:", err);
+            toast({ title: "Error", description: "Failed to send reminders.", variant: "destructive" });
         }
     };
 
@@ -472,9 +570,18 @@ const CohortDetail = () => {
                                             }`}>
                                                 {session.status}
                                             </span>
-                                            <div className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:underline cursor-pointer">
+                                            <div onClick={() => window.open(session.meeting_url, '_blank')} className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:underline cursor-pointer">
                                                 Virtual Link <ChevronRight className="w-3 h-3" />
                                             </div>
+                                        </div>
+                                        <div className="mt-6 pt-6 border-t border-slate-50">
+                                            <Button 
+                                                onClick={() => handleSendSessionReminder(session)}
+                                                variant="outline" 
+                                                className="w-full h-10 rounded-xl border-slate-200 text-xs font-bold gap-2 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-100 transition-all"
+                                            >
+                                                <Bell className="w-3.5 h-3.5" /> Broadcast Reminder
+                                            </Button>
                                         </div>
                                     </div>
                                 ))}

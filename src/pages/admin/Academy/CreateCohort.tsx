@@ -34,7 +34,8 @@ const CreateCohort = () => {
         end_date: "",
         max_slots: 25,
         duration_weeks: 4,
-        zoom_link: ""
+        zoom_link: "",
+        mentors: [] as { name: string; title: string; link: string }[]
     });
 
     useEffect(() => {
@@ -84,6 +85,7 @@ const CreateCohort = () => {
                     price_usd: course.price_usd,
                     price_naira: course.price_naira,
                     zoom_link: formData.zoom_link,
+                    mentors: formData.mentors,
                     status: 'open'
                 });
 
@@ -174,6 +176,97 @@ const CreateCohort = () => {
                                             required
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                                </div>
+                            </div>
+
+                            {/* Mentors Section */}
+                            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-3">
+                                        <Users className="w-5 h-5 text-blue-600" />
+                                        <h3 className="text-lg font-bold text-slate-900">Program Mentors</h3>
+                                    </div>
+                                    <Button 
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setFormData({
+                                            ...formData, 
+                                            mentors: [...formData.mentors, { name: "", title: "", link: "" }]
+                                        })}
+                                        className="h-9 rounded-xl font-bold text-[10px] uppercase tracking-wider gap-2"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> Add Mentor
+                                    </Button>
+                                </div>
+
+                                <div className="space-y-6">
+                                    {formData.mentors.map((mentor, index) => (
+                                        <div key={index} className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-4 relative">
+                                            <Button 
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                    const newMentors = [...formData.mentors];
+                                                    newMentors.splice(index, 1);
+                                                    setFormData({ ...formData, mentors: newMentors });
+                                                }}
+                                                className="absolute top-4 right-4 text-slate-400 hover:text-red-500 h-8 w-8 p-0"
+                                            >
+                                                ×
+                                            </Button>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mentor Name</Label>
+                                                    <Input 
+                                                        value={mentor.name}
+                                                        onChange={(e) => {
+                                                            const newMentors = [...formData.mentors];
+                                                            newMentors[index].name = e.target.value;
+                                                            setFormData({ ...formData, mentors: newMentors });
+                                                        }}
+                                                        className="h-11 rounded-xl border-slate-200 focus:ring-blue-600 font-medium"
+                                                        placeholder="e.g. Benedicta Amaral"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mentor Title</Label>
+                                                    <Input 
+                                                        value={mentor.title}
+                                                        onChange={(e) => {
+                                                            const newMentors = [...formData.mentors];
+                                                            newMentors[index].title = e.target.value;
+                                                            setFormData({ ...formData, mentors: newMentors });
+                                                        }}
+                                                        className="h-11 rounded-xl border-slate-200 focus:ring-blue-600 font-medium"
+                                                        placeholder="e.g. Sr. Operations Architect"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Message Mentor Link (LinkedIn/WhatsApp)</Label>
+                                                <Input 
+                                                    value={mentor.link}
+                                                    onChange={(e) => {
+                                                        const newMentors = [...formData.mentors];
+                                                        newMentors[index].link = e.target.value;
+                                                        setFormData({ ...formData, mentors: newMentors });
+                                                    }}
+                                                    className="h-11 rounded-xl border-slate-200 focus:ring-blue-600 font-medium"
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {formData.mentors.length === 0 && (
+                                        <div className="text-center py-8 border-2 border-dashed border-slate-100 rounded-2xl">
+                                            <p className="text-xs font-medium text-slate-400">No mentors added yet. Click "Add Mentor" to get started.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

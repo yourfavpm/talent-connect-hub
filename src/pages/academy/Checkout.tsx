@@ -305,7 +305,41 @@ const Checkout = () => {
                         setProcessing(false);
                         return; // Stop the flow
                     } else {
-                        console.log("Enrollment created successfully for user:", activeUserId);
+                        console.log("Enrollment record created successfully");
+
+                        // Trigger Branded Enrollment Email
+                        try {
+                            await supabase.functions.invoke('send-email', {
+                                body: {
+                                    to: userEmail,
+                                    subject: `Welcome to ${course.title}!`,
+                                    htmlTemplate: `
+                                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
+                                            <div style="background: #0f2147; padding: 40px; text-align: center;">
+                                                <img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="width: 140px;" />
+                                            </div>
+                                            <div style="padding: 40px; background: #fff;">
+                                                <h1 style="color: #0f2147; font-size: 24px; margin-bottom: 20px;">Enrollment Successful!</h1>
+                                                <p style="color: #444; font-size: 16px; line-height: 1.6;">Hello,</p>
+                                                <p style="color: #444; font-size: 16px; line-height: 1.6;">Congratulations! You have successfully enrolled in <strong>${course.title}</strong>.</p>
+                                                <p style="color: #444; font-size: 16px; line-height: 1.6;">You can now access your learning materials, schedule, and mentors directly from your student dashboard.</p>
+                                                <div style="margin: 40px 0; text-align: center;">
+                                                    <a href="https://academy.opslyhr.com/dashboard" style="background: #0f2147; color: #fff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">Go to My Dashboard</a>
+                                                </div>
+                                                <p style="color: #888; font-size: 14px; margin-top: 40px;">If you have any questions, reply to this email or reach out to your program mentor.</p>
+                                            </div>
+                                            <div style="background: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #eee;">
+                                                <p style="color: #999; font-size: 12px;">&copy; 2026 OPSlyHR Academy. All rights reserved.</p>
+                                            </div>
+                                        </div>
+                                    `
+                                }
+                            });
+                            console.log("Enrollment email sent successfully");
+                        } catch (emailErr) {
+                            console.error("Failed to send enrollment email:", emailErr);
+                            // Don't block the UI if email fails
+                        }
                     }
                 } else {
                     console.log("Enrollment already exists:", existingEnrollment.id);

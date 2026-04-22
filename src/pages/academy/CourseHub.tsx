@@ -93,6 +93,7 @@ const CourseHub = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submissionContent, setSubmissionContent] = useState("");
     const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+    const [hasUnreadAnnouncements, setHasUnreadAnnouncements] = useState(false);
 
     const [courseInfo, setCourseInfo] = useState<{ title: string; slug: string } | null>(null);
 
@@ -151,18 +152,33 @@ const CourseHub = () => {
             if (courseData) setCourseInfo(courseData as { title: string; slug: string });
 
             // 2. Fetch Sessions, Announcements, Assignments & Submissions in Parallel
-            const [sessionsRes, announcementsRes, assignmentsRes, submissionsRes] = await Promise.all([
-                (supabase.from("sessions").select("*").eq("cohort_id", cohortId).order("session_date", { ascending: true }) as Promise<{ data: Session[] | null }>),
-                (supabase.from("announcements").select("*").eq("cohort_id", cohortId).order("created_at", { ascending: false }) as Promise<{ data: Announcement[] | null }>),
-                (supabase.from("assignments").select("*").eq("cohort_id", cohortId).order("deadline_at", { ascending: true }) as Promise<{ data: Assignment[] | null }>),
-                (supabase.from("submissions").select("*").eq("user_id", user.id) as Promise<{ data: Submission[] | null }>)
-            ]);
+            try {
+                const [sessionsRes, announcementsRes, assignmentsRes, submissionsRes] = await Promise.all([
+                    (supabase.from("sessions").select("*").eq("cohort_id", cohortId).order("session_date", { ascending: true }) as Promise<{ data: Session[] | null }>),
+                    (supabase.from("announcements").select("*").eq("cohort_id", cohortId).order("created_at", { ascending: false }) as Promise<{ data: Announcement[] | null }>),
+                    (supabase.from("assignments").select("*").eq("cohort_id", cohortId).order("deadline_at", { ascending: true }) as Promise<{ data: Assignment[] | null }>),
+                    (supabase.from("submissions").select("*").eq("student_id", user.id) as Promise<{ data: Submission[] | null }>)
+                ]);
 
-            setSessions(sessionsRes.data || []);
-            setAnnouncements(announcementsRes.data || []);
-            setAssignments(assignmentsRes.data || []);
-            setSubmissions(submissionsRes.data || []);
-            setLoading(false);
+                setSessions(sessionsRes.data || []);
+                setAnnouncements(announcementsRes.data || []);
+                setAssignments(assignmentsRes.data || []);
+                setSubmissions(submissionsRes.data || []);
+
+                // Check for unread announcements
+                if (announcementsRes.data && announcementsRes.data.length > 0) {
+                    const latestAnnouncement = new Date(announcementsRes.data[0].created_at).getTime();
+                    const lastCheck = typedEnrollData.last_announcement_check ? new Date(typedEnrollData.last_announcement_check).getTime() : 0;
+                    if (latestAnnouncement > lastCheck) {
+                        setHasUnreadAnnouncements(true);
+                    }
+                }
+            } catch (err) {
+                console.error("Secondary hub data fetch error:", err);
+                // We don't block the UI if these fails, just log it
+            } finally {
+                setLoading(false);
+            }
         };
 
         if (slug) fetchHubData();
@@ -175,8 +191,8 @@ const CourseHub = () => {
             const { data: { user } } = await supabase.auth.getUser();
             const { error } = await (supabase.from("submissions").insert({
                 assignment_id: selectedAssignment.id,
-                user_id: user?.id,
-                submission_content: submissionContent,
+                student_id: user?.id,
+                link: submissionContent,
                 status: 'submitted'
             }) as any);
 
@@ -232,7 +248,7 @@ const CourseHub = () => {
                                 <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-bold rounded uppercase tracking-wider border border-blue-100">
                                     {enrollment?.cohorts?.name}
                                 </span>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cohort 2024.1</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mentors: {enrollment?.cohorts?.mentors?.map(m => m.name).join(", ") || "N/A"}</span>
                             </div>
                         </div>
                     </div>
@@ -256,13 +272,31 @@ const CourseHub = () => {
                     
                     {/* Main Content Area */}
                     <div className="lg:col-span-8">
-                        <Tabs defaultValue="schedule" value={activeTab} onValueChange={setActiveTab} className="w-full">
+                        <Tabs 
+                            defaultValue="schedule" 
+                            value={activeTab} 
+                            onValueChange={async (value) => {
+                                setActiveTab(value);
+                                if (value === "announcements" && hasUnreadAnnouncements) {
+                                    setHasUnreadAnnouncements(false);
+                                    // Update last check in DB
+                                    await supabase
+                                        .from("academy_enrollments")
+                                        .update({ last_announcement_check: new Date().toISOString() })
+                                        .eq("id", enrollment?.id);
+                                }
+                            }}
+                            className="w-full"
+                        >
                             <TabsList className="bg-white p-1 rounded-2xl border border-slate-200 h-14 mb-10 w-full lg:w-auto shadow-sm">
                                 <TabsTrigger value="schedule" className="px-6 rounded-xl font-bold text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
                                     Live Classes
                                 </TabsTrigger>
-                                <TabsTrigger value="announcements" className="px-6 rounded-xl font-bold text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
+                                <TabsTrigger value="announcements" className="px-6 rounded-xl font-bold text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full relative">
                                     Announcements
+                                    {hasUnreadAnnouncements && (
+                                        <span className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full" />
+                                    )}
                                 </TabsTrigger>
                                 <TabsTrigger value="assignments" className="px-6 rounded-xl font-bold text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
                                     Assignments
@@ -473,21 +507,37 @@ const CourseHub = () => {
 
                     {/* Sidebar Area */}
                     <div className="lg:col-span-4 space-y-8">
-                        {/* Instructor Card */}
-                        <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
-                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-6">Program Mentor</h4>
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-200">
-                                    BA
+                        {/* Instructor Cards */}
+                        <div className="space-y-6">
+                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-2 px-2">Program Mentors</h4>
+                            {(enrollment?.cohorts?.mentors as any[])?.length > 0 ? (
+                                (enrollment?.cohorts?.mentors as any[]).map((mentor, idx) => (
+                                    <div key={idx} className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
+                                        <div className="flex items-center gap-4 mb-6">
+                                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-200">
+                                                {mentor.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'}
+                                            </div>
+                                            <div>
+                                                <h5 className="font-bold text-slate-900 leading-none mb-1">{mentor.name}</h5>
+                                                <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">{mentor.title}</p>
+                                            </div>
+                                        </div>
+                                        {mentor.link && (
+                                            <Button 
+                                                onClick={() => window.open(mentor.link, '_blank')}
+                                                variant="outline" 
+                                                className="w-full h-12 rounded-xl border-slate-200 font-bold text-xs gap-2"
+                                            >
+                                                <ExternalLink className="w-4 h-4" /> Message Mentor
+                                            </Button>
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm text-center">
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Mentor info coming soon</p>
                                 </div>
-                                <div>
-                                    <h5 className="font-bold text-slate-900 leading-none mb-1">Benedicta Amaral</h5>
-                                    <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">Sr. Operations Architect</p>
-                                </div>
-                            </div>
-                            <Button variant="outline" className="w-full h-12 rounded-xl border-slate-200 font-bold text-xs gap-2">
-                                <ExternalLink className="w-4 h-4" /> Message Mentor
-                            </Button>
+                            )}
                         </div>
 
                         {/* Graduation Progress */}
