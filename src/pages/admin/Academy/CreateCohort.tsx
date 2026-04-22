@@ -139,7 +139,7 @@ const CreateCohort = () => {
                                 </div>
                                 
                                 <div className="space-y-2">
-                                    <Label htmlFor="name" className="text-xs font-bold text-slate-400 uppercase tracking-widest">Cohort Name</dt>
+                                    <Label htmlFor="name" className="text-xs font-bold text-slate-400 uppercase tracking-widest">Cohort Name</Label>
                                     <Input 
                                         id="name"
                                         value={formData.name}
