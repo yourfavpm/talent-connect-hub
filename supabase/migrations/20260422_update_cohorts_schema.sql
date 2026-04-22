@@ -80,7 +80,37 @@ END $$;
 -- Ensure deadline_at exists
 ALTER TABLE public.assignments ADD COLUMN IF NOT EXISTS deadline_at TIMESTAMPTZ;
 
--- ── 4. Seed/Update existing cohorts for testing ────────────────
+-- ── 4. Fix Enrollment Relationships (Fixes Dashboard Crash) ──
+-- Ensure cohort_id in academy_enrollments is a UUID and has a foreign key
+DO $$ 
+BEGIN
+    -- Add cohort_id column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'academy_enrollments' AND column_name = 'cohort_id') THEN
+        ALTER TABLE public.academy_enrollments ADD COLUMN cohort_id UUID;
+    ELSE
+        -- If it exists, ensure it is UUID type
+        ALTER TABLE public.academy_enrollments ALTER COLUMN cohort_id TYPE UUID USING cohort_id::uuid;
+    END IF;
+
+    -- Add foreign key constraint if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'fk_enrollment_cohort') THEN
+        ALTER TABLE public.academy_enrollments 
+        ADD CONSTRAINT fk_enrollment_cohort 
+        FOREIGN KEY (cohort_id) REFERENCES public.cohorts(id);
+    END IF;
+
+    -- Add course_uuid if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'academy_enrollments' AND column_name = 'course_uuid') THEN
+        ALTER TABLE public.academy_enrollments ADD COLUMN course_uuid UUID REFERENCES public.academy_courses(id);
+    END IF;
+END $$;
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_enrollments_course_id ON public.academy_enrollments(course_id);
+CREATE INDEX IF NOT EXISTS idx_enrollments_cohort_id ON public.academy_enrollments(cohort_id);
+CREATE INDEX IF NOT EXISTS idx_enrollments_course_uuid ON public.academy_enrollments(course_uuid);
+
+-- ── 5. Seed/Update existing cohorts for testing ────────────────
 UPDATE public.cohorts 
 SET 
     enrollment_start_date = now() - interval '1 week',

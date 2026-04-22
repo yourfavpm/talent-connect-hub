@@ -226,7 +226,8 @@ const Checkout = () => {
                     if (!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
                         const { error: enrollErr } = await supabase.from("academy_enrollments").insert({
                             user_id: authData.user.id,
-                            course_id: course.id, // Use UUID if the table expects it
+                            course_id: course.slug, // Legacy field expects slug
+                            course_uuid: course.id,  // New field expects UUID
                             cohort_id: selectedCohortId,
                             course_name: course.title,
                             enrollment_status: "active",
@@ -247,7 +248,8 @@ const Checkout = () => {
                         if (!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
                              await supabase.from("academy_enrollments").insert({
                                 user_id: signInData.user.id,
-                                course_id: course.id,
+                                course_id: course.slug,
+                                course_uuid: course.id,
                                 cohort_id: selectedCohortId,
                                 course_name: course.title,
                                 enrollment_status: "active",
@@ -265,7 +267,8 @@ const Checkout = () => {
                 if (isUserLoggedIn && session && !import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
                      await supabase.from("academy_enrollments").insert({
                         user_id: session.user.id,
-                        course_id: course.id,
+                        course_id: course.slug,
+                        course_uuid: course.id,
                         cohort_id: selectedCohortId,
                         course_name: course.title,
                         enrollment_status: "active",
