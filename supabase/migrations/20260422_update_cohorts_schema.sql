@@ -5,12 +5,44 @@
 -- ============================================================
 
 -- ── 1. Update cohorts table ──────────────────────────────────
-ALTER TABLE public.cohorts 
-ADD COLUMN IF NOT EXISTS enrollment_start_date TIMESTAMPTZ,
-ADD COLUMN IF NOT EXISTS enrollment_end_date TIMESTAMPTZ,
-ADD COLUMN IF NOT EXISTS max_slots INT DEFAULT 25,
-ADD COLUMN IF NOT EXISTS current_slots INT DEFAULT 0,
-ADD COLUMN IF NOT EXISTS duration_weeks INT DEFAULT 4;
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cohorts' AND column_name = 'enrollment_start_date') THEN
+        ALTER TABLE public.cohorts ADD COLUMN enrollment_start_date TIMESTAMPTZ;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cohorts' AND column_name = 'enrollment_end_date') THEN
+        ALTER TABLE public.cohorts ADD COLUMN enrollment_end_date TIMESTAMPTZ;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cohorts' AND column_name = 'end_date') THEN
+        ALTER TABLE public.cohorts ADD COLUMN end_date TIMESTAMPTZ;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cohorts' AND column_name = 'price_usd') THEN
+        ALTER TABLE public.cohorts ADD COLUMN price_usd DECIMAL(10, 2);
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cohorts' AND column_name = 'price_naira') THEN
+        ALTER TABLE public.cohorts ADD COLUMN price_naira DECIMAL(15, 2);
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cohorts' AND column_name = 'zoom_link') THEN
+        ALTER TABLE public.cohorts ADD COLUMN zoom_link TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cohorts' AND column_name = 'max_slots') THEN
+        ALTER TABLE public.cohorts ADD COLUMN max_slots INT DEFAULT 25;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cohorts' AND column_name = 'current_slots') THEN
+        ALTER TABLE public.cohorts ADD COLUMN current_slots INT DEFAULT 0;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'cohorts' AND column_name = 'duration_weeks') THEN
+        ALTER TABLE public.cohorts ADD COLUMN duration_weeks INT DEFAULT 4;
+    END IF;
+END $$;
 
 -- ── 2. Standardize sessions table ──────────────────────────────
 -- Rename join_link to meeting_url if it exists as join_link AND meeting_url does not exist

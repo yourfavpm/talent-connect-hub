@@ -84,7 +84,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                     const { data: cohortsData } = await supabase
                          .from("cohorts")
                          .select("*")
-                         .eq("course_id", slug)
+                         .eq("course_id", data.id)
                          .eq("status", "open")
                          .lte("enrollment_start_date", now)
                          .gte("enrollment_end_date", now);
