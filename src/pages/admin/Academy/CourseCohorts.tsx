@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { getInternalPath } from "@/utils/subdomain";
 
 interface Cohort {
     id: string;
@@ -84,7 +85,7 @@ const CourseCohorts = () => {
     return (
         <div className="p-6 lg:p-10 bg-white min-h-screen font-inter">
             <div className="w-full max-w-none">
-                <Link to="/admin/academy/courses" className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10 hover:text-blue-600 transition-colors">
+                <Link to={getInternalPath("/admin/academy/courses")} className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10 hover:text-blue-600 transition-colors">
                     <ArrowLeft className="w-3.5 h-3.5" /> Back to Catalog
                 </Link>
 
@@ -97,7 +98,7 @@ const CourseCohorts = () => {
                         <p className="text-slate-500 font-medium mt-2">Manage all active and past learning sessions for this program.</p>
                     </div>
                     <Button 
-                        onClick={() => navigate(`/admin/academy/courses/${slug}/cohorts/new`)}
+                        onClick={() => navigate(getInternalPath(`/admin/academy/courses/${slug}/cohorts/new`))}
                         className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold gap-2 shadow-sm"
                     >
                         <Plus className="w-4 h-4" /> Create New Cohort
@@ -140,7 +141,7 @@ const CourseCohorts = () => {
                                         </div>
                                     </div>
                                     <Button 
-                                        onClick={() => navigate(`/admin/academy/cohorts/${cohort.id}`)}
+                                        onClick={() => navigate(getInternalPath(`/admin/academy/cohorts/${cohort.id}`))}
                                         variant="ghost" 
                                         className="h-12 px-6 rounded-xl font-bold text-blue-600 hover:bg-blue-50 gap-2 ml-auto"
                                     >
@@ -157,7 +158,7 @@ const CourseCohorts = () => {
                             <h3 className="text-slate-900 font-bold mb-1">No cohorts created yet</h3>
                             <p className="text-slate-400 text-sm">Start by creating the first session for this course.</p>
                             <Button 
-                                onClick={() => navigate(`/admin/academy/courses/${slug}/cohorts/new`)}
+                                onClick={() => navigate(getInternalPath(`/admin/academy/courses/${slug}/cohorts/new`))}
                                 variant="outline" 
                                 className="mt-8 h-12 px-8 rounded-xl font-bold border-slate-200"
                             >

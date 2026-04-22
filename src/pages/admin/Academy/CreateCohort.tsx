@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getInternalPath } from "@/utils/subdomain";
 
 const CreateCohort = () => {
     const { slug } = useParams();
@@ -92,7 +93,7 @@ const CreateCohort = () => {
                 title: "Success",
                 description: "New cohort created successfully.",
             });
-            navigate(`/admin/academy/courses/${slug}/cohorts`);
+            navigate(getInternalPath(`/admin/academy/courses/${slug}/cohorts`));
         } catch (err: any) {
             console.error("Error creating cohort:", err);
             toast({
@@ -116,7 +117,7 @@ const CreateCohort = () => {
     return (
         <div className="p-6 lg:p-10 bg-white min-h-screen font-inter">
             <div className="max-w-4xl mx-auto">
-                <Link to={`/admin/academy/courses/${slug}/cohorts`} className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10 hover:text-blue-600 transition-colors">
+                <Link to={getInternalPath(`/admin/academy/courses/${slug}/cohorts`)} className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10 hover:text-blue-600 transition-colors">
                     <ArrowLeft className="w-3.5 h-3.5" /> Back to Cohorts
                 </Link>
 

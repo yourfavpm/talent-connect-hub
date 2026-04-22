@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { getInternalPath } from "@/utils/subdomain";
 
 interface Cohort {
     id: string;
@@ -160,7 +161,7 @@ const CohortDetail = () => {
                 description: "Failed to load cohort details.",
                 variant: "destructive"
             });
-            navigate("/admin/academy");
+            navigate(getInternalPath("/admin/academy"));
         } finally {
             setLoading(false);
         }
@@ -292,7 +293,7 @@ const CohortDetail = () => {
     return (
         <div className="p-8 lg:p-12 bg-slate-50/50 min-h-screen font-inter">
             <div className="max-w-7xl mx-auto">
-                <Link to="/admin/academy" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-xs uppercase tracking-widest mb-8 transition-colors">
+                <Link to={getInternalPath("/admin/academy")} className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-xs uppercase tracking-widest mb-8 transition-colors">
                     <ArrowLeft className="w-4 h-4" /> Back to Academy
                 </Link>
 

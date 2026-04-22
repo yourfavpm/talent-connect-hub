@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { getInternalPath } from "@/utils/subdomain";
 import CreateCourseModal from "@/components/admin/Academy/CreateCourseModal";
 import { getZoneUrl, Zone } from "@/utils/subdomain";
 
@@ -203,7 +204,7 @@ const CourseManagement = () => {
                                         <a href={getZoneUrl(Zone.ACADEMY, `/courses/${course.slug}`)} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-600 font-bold text-xs flex items-center gap-1 transition-colors">
                                             <ExternalLink className="w-3.5 h-3.5" /> Preview
                                         </a>
-                                        <Link to={`/admin/academy/courses/${course.slug}/cohorts`} className="text-blue-600 hover:text-blue-700 font-bold text-xs flex items-center gap-1">
+                                        <Link to={getInternalPath(`/admin/academy/courses/${course.slug}/cohorts`)} className="text-blue-600 hover:text-blue-700 font-bold text-xs flex items-center gap-1">
                                             Manage Cohorts <ArrowRight className="w-3.5 h-3.5" />
                                         </Link>
                                     </div>
