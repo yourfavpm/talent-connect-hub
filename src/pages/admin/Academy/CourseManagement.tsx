@@ -12,7 +12,8 @@ import {
     MoreVertical,
     Loader2,
     CheckCircle2,
-    AlertCircle
+    AlertCircle,
+    ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -199,9 +200,12 @@ const CourseManagement = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        <a href={getZoneUrl(Zone.ACADEMY, `/courses/${course.slug}`)} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-bold text-xs flex items-center gap-1">
-                                            View in Academy <ExternalLink className="w-3.5 h-3.5" />
+                                        <a href={getZoneUrl(Zone.ACADEMY, `/courses/${course.slug}`)} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-600 font-bold text-xs flex items-center gap-1 transition-colors">
+                                            <ExternalLink className="w-3.5 h-3.5" /> Preview
                                         </a>
+                                        <Link to={`/admin/academy/courses/${course.slug}/cohorts`} className="text-blue-600 hover:text-blue-700 font-bold text-xs flex items-center gap-1">
+                                            Manage Cohorts <ArrowRight className="w-3.5 h-3.5" />
+                                        </Link>
                                     </div>
                                 </div>
                             </div>

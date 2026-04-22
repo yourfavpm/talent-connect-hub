@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { 
@@ -8,12 +8,15 @@ import {
     ShieldCheck, 
     ArrowLeft, 
     Loader2,
-    Lock
+    Lock,
+    Mail,
+    EyeOff,
+    Eye
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { PaystackService } from "@/lib/paystack";
+import { redirectToZone, Zone } from "@/utils/subdomain";
 
 interface AcademyCourse {
     id?: string;
@@ -25,40 +28,122 @@ interface AcademyCourse {
     image_url?: string;
 }
 
+type CheckoutStep = 'email' | 'auth' | 'payment';
+
 const Checkout = () => {
     const { slug } = useParams();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
     const { toast } = useToast();
+    
+    // Core State
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
     const [course, setCourse] = useState<AcademyCourse | null>(null);
+    const [availableCohorts, setAvailableCohorts] = useState<any[]>([]);
+    const [selectedCohortId, setSelectedCohortId] = useState<string>("");
     const [success, setSuccess] = useState(false);
 
+    // Frictionless Flow State
+    const [step, setStep] = useState<CheckoutStep>('email');
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [isExistingUser, setIsExistingUser] = useState(false);
+    
     useEffect(() => {
-        const fetchCourse = async () => {
+        const fetchCourseAndSession = async () => {
             if (!slug) return;
             try {
-                const { data, error } = await (supabase
+                // Fetch course details
+                const { data, error } = await supabase
                     .from("academy_courses")
                     .select("*")
                     .eq("slug", slug)
-                    .single() as any);
+                    .single();
 
                 if (!error && data) {
-                    setCourse(data);
+                    setCourse(data as any);
+                    
+                    // Fetch open cohorts for this course
+                    const { data: cohortsData } = await supabase
+                         .from("cohorts")
+                         .select("*")
+                         .eq("course_id", slug)
+                         .eq("status", "enrolling")
+                         .order("created_at", { ascending: false });
+                    
+                    if (cohortsData && cohortsData.length > 0) {
+                        setAvailableCohorts(cohortsData);
+                        setSelectedCohortId(cohortsData[0].id); // Auto-select the clearest one
+                    }
                 }
+
+                // If user is already authenticated, skip to payment step automatically
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session && session.user) {
+                    setEmail(session.user.email || "");
+                    setIsExistingUser(true);
+                    setStep('payment');
+                }
+
             } catch (err) {
-                console.error("Failed to fetch course:", err);
+                console.error("Failed to format course:", err);
             }
             setLoading(false);
         };
-        fetchCourse();
+        fetchCourseAndSession();
     }, [slug]);
 
+    const handleEmailSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email || !email.includes('@')) {
+            toast({ title: "Invalid Email", description: "Please enter a valid email address.", variant: "destructive" });
+            return;
+        }
+
+        setProcessing(true);
+        try {
+            // Check if user exists using the secure RPC
+            const { data: exists, error } = await supabase.rpc('check_user_exists', { p_email: email.trim().toLowerCase() });
+            
+            if (error) throw error;
+
+            setIsExistingUser(Boolean(exists));
+            
+            if (exists) {
+                // Existing users skip password creation and go to payment immediately
+                setStep('payment');
+            } else {
+                // New users must create a password to secure their account
+                setStep('auth');
+            }
+        } catch (err: any) {
+            console.error("Failed to check user:", err);
+            toast({ title: "Error", description: "Could not verify email. Please try again.", variant: "destructive" });
+        } finally {
+            setProcessing(false);
+        }
+    };
+
+    const handleAuthSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (password.length < 8) {
+            toast({ title: "Weak Password", description: "Password must be at least 8 characters long.", variant: "destructive" });
+            return;
+        }
+        if (password !== confirmPassword) {
+            toast({ title: "Mismatch", description: "Passwords do not match.", variant: "destructive" });
+            return;
+        }
+
+        // Proceed to payment. We hold the password securely in state
+        setStep('payment');
+    };
+
     const handlePayment = async () => {
-        if (!user || !user.email || !course) {
+        if (!email || !course) {
             toast({ title: "Error", description: "Missing course or user data.", variant: "destructive" });
             return;
         }
@@ -66,30 +151,50 @@ const Checkout = () => {
         setProcessing(true);
         
         try {
+            // Create Checkout Session reference
+            const { data: sessionData, error: sessionError } = await supabase
+                .from("checkout_sessions")
+                .insert({
+                    email: email.trim().toLowerCase(),
+                    course_id: course.slug,
+                    cohort_id: selectedCohortId || null,
+                    user_exists: isExistingUser,
+                    status: 'pending'
+                })
+                .select("id")
+                .single();
+
+            if (sessionError) throw sessionError;
+
+            const sessionId = sessionData.id;
+            
             const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
             
             if (!paystackPublicKey) {
-                // Simulated fallback if no key is configured
-                console.warn("Paystack key missing, using simulated payment");
+                console.warn("Paystack key missing, using simulated flow");
                 await new Promise(resolve => setTimeout(resolve, 2000));
-                return processEnrollment("simulated_ref_" + Date.now());
+                return processPostPaymentSuccess("simulated_ref_" + Date.now(), sessionId);
             }
 
             const paystack = new PaystackService({ publicKey: paystackPublicKey });
             const amountKobo = Math.round((course.price_naira || 0) * 100);
-            const reference = `ENR_${user.id.substring(0, 8)}_${Date.now()}`;
+            
+            // Unique reference format
+            const reference = `ENR_FRIC_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
             await paystack.initializePayment({
                 amount: amountKobo,
-                email: user.email,
+                email: email.trim().toLowerCase(),
                 reference: reference,
                 metadata: {
+                    checkout_session_id: sessionId,
+                    email: email.trim().toLowerCase(),
                     course_id: course.slug,
-                    user_id: user.id,
-                    type: 'academy_enrollment'
+                    cohort_id: selectedCohortId || null,
+                    type: 'academy_enrollment_frictionless'
                 },
                 onSuccess: async (response) => {
-                    await processEnrollment(response.reference);
+                    await processPostPaymentSuccess(response.reference, sessionId);
                 },
                 onClose: () => {
                     toast({ title: "Cancelled", description: "Payment was cancelled." });
@@ -97,78 +202,63 @@ const Checkout = () => {
                 }
             });
         } catch (err: unknown) {
-            console.error("Payment error:", err);
+            console.error("Payment initialization error:", err);
             const errorMessage = err instanceof Error ? err.message : "Failed to initialize payment";
             toast({ title: "Error", description: errorMessage, variant: "destructive" });
             setProcessing(false);
         }
     };
 
-    const processEnrollment = async (reference: string) => {
+    const processPostPaymentSuccess = async (reference: string, sessionId: string) => {
         try {
-            if (!user || !course) throw new Error("Missing user or course data");
-
-            const enrolledAt = new Date().toISOString();
-            const { data: enrollmentData, error: enrollError } = await (supabase
-                .from("academy_enrollments")
-                .insert({
-                    user_id: user.id,
-                    course_id: course.slug,
-                    course_name: course.title,
-                    student_email: user.email,
-                    student_name: user.user_metadata?.full_name || user.email?.split('@')[0] || "Student",
-                    enrollment_status: "active",
-                    price_naira: Number(course.price_naira) || 0,
-                    price_usd: Number(course.price_usd) || 0,
-                    enrollment_date: enrolledAt
-                })
-                .select("id")
-                .single() as any);
-
-            if (enrollError) {
-                console.error("Supabase enrollment error detail:", enrollError);
-                throw new Error(enrollError.message);
-            }
-
-            // Record the successful transaction
-            if (enrollmentData?.id) {
-                const { error: txError } = await (supabase
-                    .from("course_transactions")
-                    .insert({
-                        enrollment_id: enrollmentData.id,
-                        user_id: user.id,
-                        paystack_reference: reference,
-                        amount_naira: Number(course.price_naira) || 0,
-                        amount_usd: Number(course.price_usd) || 0,
-                        currency: "NGN",
-                        status: "success",
-                        payment_method: "paystack",
-                        paid_at: enrolledAt
-                    }) as any);
+            // STEP 1: Attempt to log the user in or sign them up so they land in dashboard smoothly
+            let isUserLoggedIn = false;
+            
+            if (!isExistingUser && password) {
+                const { data: authData, error: signUpError } = await supabase.auth.signUp({
+                    email: email.trim().toLowerCase(),
+                    password: password
+                });
                 
-                if (txError) {
-                    console.error("Failed to record transaction locally:", txError);
+                // If the webhook already created the user, signUp might throw "User already registered"
+                if (signUpError && signUpError.message.includes('registered')) {
+                    const { error: signInError } = await supabase.auth.signInWithPassword({
+                        email: email.trim().toLowerCase(),
+                        password: password
+                    });
+                    if (!signInError) isUserLoggedIn = true;
+                } else if (!signUpError) {
+                    isUserLoggedIn = true;
                 }
+            } else if (isExistingUser) {
+                const { data: { session } } = await supabase.auth.getSession();
+                isUserLoggedIn = !!session;
             }
 
             setSuccess(true);
             toast({
-                title: "Enrollment Successful!",
-                description: `Welcome to ${course.title}. Let's get started.`,
+                title: "Enrollment Successful! 🎉",
+                description: `Welcome to ${course?.title}. We're preparing your hub.`,
             });
 
+            // Redirect dynamically based on login state
             setTimeout(() => {
-                navigate("/dashboard");
+                if (isUserLoggedIn) {
+                    navigate("/dashboard");
+                } else {
+                    navigate("/login?redirect=/dashboard");
+                }
             }, 3000);
 
         } catch (err: any) {
-            console.error("Full enrollment error context:", err);
-            const errorMessage = err.message || "Something went wrong during enrollment. Please contact support.";
+            console.error("Post-payment sync error:", err);
             toast({
-                title: "Error",
-                description: errorMessage,
-                variant: "destructive"
+                title: "Warning",
+                description: "Payment successful, but we had trouble logging you in automatically. Please log in manually.",
             });
+            setTimeout(() => {
+                navigate("/login?redirect=/dashboard");
+            }, 3000);
         } finally {
             setProcessing(false);
         }
@@ -187,7 +277,7 @@ const Checkout = () => {
             <div className="min-h-screen flex items-center justify-center bg-slate-50/50">
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-slate-900 mb-2">Program not found</h2>
-                    <Button onClick={() => navigate("/courses")}>Return to Catalog</Button>
+                    <Button onClick={() => navigate("/browse")}>Return to Catalog</Button>
                 </div>
             </div>
         );
@@ -197,7 +287,23 @@ const Checkout = () => {
         <div className="min-h-screen bg-white pt-32 pb-24 px-6 lg:px-12 font-inter">
             <div className="w-full max-w-none">
                 <AnimatePresence mode="wait">
-                    {!success ? (
+                    {availableCohorts.length === 0 ? (
+                        <motion.div 
+                            key="nocohorts"
+                            className="bg-white rounded-3xl p-10 shadow border border-slate-100 flex flex-col items-center justify-center text-center mx-4 max-w-2xl mt-12 mb-12 lg:col-span-4"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                        >
+                            <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-6">
+                                <Lock className="w-8 h-8 text-slate-300" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-900 mb-3">Enrolment Closed</h2>
+                            <p className="text-slate-500 mb-8 max-w-md">There are currently no active cohorts enrolling for this course. Please join the waitlist or check back soon.</p>
+                            <Button className="h-12 px-6 rounded-xl font-bold bg-slate-900 text-white" onClick={() => searchParams.get("from") === "dashboard" ? navigate("/dashboard") : navigate(-1)}>
+                                Go Back
+                            </Button>
+                        </motion.div>
+                    ) : !success ? (
                         <motion.div 
                             key="checkout"
                             initial={{ opacity: 0, y: 20 }}
@@ -205,7 +311,7 @@ const Checkout = () => {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="grid grid-cols-1 lg:grid-cols-4 gap-10 w-full"
                         >
-                            <div className="lg:col-span-3 space-y-8">
+                            <div className="lg:col-span-2 space-y-8 lg:col-start-2">
                                 <button 
                                     onClick={() => searchParams.get("from") === "dashboard" ? navigate("/dashboard") : navigate(-1)}
                                     className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-sm transition-colors mb-4"
@@ -213,92 +319,152 @@ const Checkout = () => {
                                     <ArrowLeft className="w-4 h-4" /> {searchParams.get("from") === "dashboard" ? "Back to Dashboard" : "Back to Program"}
                                 </button>
                                 
-                                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 md:p-10">
-                                    <h1 className="text-3xl font-extrabold text-slate-900 mb-8 tracking-tight">Enrollment Summary</h1>
-                                    
-                                    <div className="flex flex-col md:flex-row gap-10 items-center p-8 bg-slate-50/50 rounded-xl border border-slate-100 mb-12">
-                                        <div className="w-full md:w-64 aspect-video rounded-lg overflow-hidden bg-slate-200 shrink-0 shadow-sm">
-                                            <img 
-                                                src={course.image_url || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"} 
-                                                alt={course.title}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <div className="text-[11px] font-bold text-blue-600 uppercase tracking-widest mb-2 px-2 py-0.5 bg-blue-50 w-fit rounded">{course.level} Program</div>
-                                            <h2 className="text-2xl font-bold text-slate-900 mb-3">{course.title}</h2>
-                                            <p className="text-base text-slate-500 font-medium">Standard License • Lifetime Access to Content</p>
-                                        </div>
+                                <div className="bg-slate-50 rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-center">
+                                    <div className="w-full md:w-40 aspect-video rounded-lg overflow-hidden shrink-0 shadow-sm">
+                                        <img 
+                                            src={course.image_url || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"} 
+                                            alt={course.title}
+                                            className="w-full h-full object-cover"
+                                        />
                                     </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-slate-900 mb-2">{course.title}</h2>
+                                        <p className="text-sm font-bold text-blue-600 mb-1">Total: ₦{course.price_naira.toLocaleString()}</p>
+                                    </div>
+                                </div>
 
-                                    <div className="space-y-6">
-                                        <h3 className="text-lg font-bold text-slate-900">Payment Method</h3>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div className="border-2 border-blue-600 bg-blue-50/50 p-6 rounded-xl relative">
-                                                <CreditCard className="w-6 h-6 text-blue-600 mb-3" />
-                                                <div className="font-bold text-slate-900">Card Payment</div>
-                                                <div className="text-xs text-slate-500 font-medium">Visa, Mastercard, Verve</div>
-                                                <div className="absolute top-4 right-4 text-blue-600">
-                                                    <CheckCircle2 className="w-5 h-5" />
+                                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 md:p-10">
+                                    {step === 'email' && (
+                                        <div className="space-y-6">
+                                            <div>
+                                                <h1 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">Let's get started</h1>
+                                                <p className="text-slate-500 font-medium">Enter your email to verify your identity.</p>
+                                            </div>
+                                            <form onSubmit={handleEmailSubmit} className="space-y-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Email Address</label>
+                                                    <div className="relative">
+                                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                                        <input 
+                                                            type="email" 
+                                                            required
+                                                            placeholder="name@example.com"
+                                                            className="w-full h-14 pl-12 pr-6 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                                            value={email}
+                                                            onChange={(e) => setEmail(e.target.value)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <Button 
+                                                    type="submit" 
+                                                    disabled={processing}
+                                                    className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg shadow-sm"
+                                                >
+                                                    {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue"}
+                                                </Button>
+                                            </form>
+                                        </div>
+                                    )}
+
+                                    {step === 'auth' && (
+                                        <div className="space-y-6">
+                                            <div>
+                                                <h1 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">Create your account</h1>
+                                                <p className="text-slate-500 font-medium">Set a password to access your student dashboard after payment.</p>
+                                            </div>
+                                            <div className="px-4 py-3 bg-blue-50 text-blue-800 rounded-lg text-sm font-medium border border-blue-100 flex items-center gap-3">
+                                                 <Mail className="w-4 h-4 text-blue-500" /> {email}
+                                            </div>
+                                            <form onSubmit={handleAuthSubmit} className="space-y-6">
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Password</label>
+                                                        <div className="relative">
+                                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                                            <input 
+                                                                type={showPassword ? "text" : "password"} 
+                                                                required
+                                                                placeholder="Min. 8 characters"
+                                                                className="w-full h-14 pl-12 pr-14 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                                                value={password}
+                                                                onChange={(e) => setPassword(e.target.value)}
+                                                            />
+                                                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2">
+                                                                {showPassword ? <EyeOff className="w-5 h-5 text-slate-400" /> : <Eye className="w-5 h-5 text-slate-400" />}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Confirm Password</label>
+                                                        <div className="relative">
+                                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                                            <input 
+                                                                type={showPassword ? "text" : "password"} 
+                                                                required
+                                                                placeholder="Confirm password"
+                                                                className="w-full h-14 pl-12 pr-14 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                                                value={confirmPassword}
+                                                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <Button 
+                                                    type="submit" 
+                                                    className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg shadow-sm"
+                                                >
+                                                    Continue to Payment
+                                                </Button>
+                                            </form>
+                                            <button onClick={() => setStep('email')} className="text-sm font-bold text-slate-500 hover:text-slate-900">
+                                                Use a different email
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {step === 'payment' && (
+                                        <div className="space-y-8">
+                                            <div>
+                                                <h1 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">Complete Enrollment</h1>
+                                                {isExistingUser ? (
+                                                     <p className="text-slate-500 font-medium">Welcome back, <span className="font-bold text-slate-900">{email}</span>. Please complete your payment.</p>
+                                                ) : (
+                                                     <p className="text-slate-500 font-medium">Your account is ready. Complete your payment to get instant access.</p>
+                                                )}
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Payment Method</h3>
+                                                <div className="border-2 border-blue-600 bg-blue-50/50 p-6 rounded-xl relative flex items-center justify-between">
+                                                    <div className="flex items-center gap-4">
+                                                        <CreditCard className="w-6 h-6 text-blue-600" />
+                                                        <div>
+                                                            <div className="font-bold text-slate-900">Card Payment (Paystack)</div>
+                                                            <div className="text-xs text-slate-500 font-medium">Visa, Mastercard, Verve</div>
+                                                        </div>
+                                                    </div>
+                                                    <CheckCircle2 className="w-5 h-5 text-blue-600" />
                                                 </div>
                                             </div>
-                                            <div className="border border-slate-100 p-6 rounded-xl opacity-50 cursor-not-allowed">
-                                                <div className="w-6 h-6 border border-slate-200 rounded-lg mb-3" />
-                                                <div className="font-bold text-slate-900">Bank Transfer</div>
-                                                <div className="text-xs text-slate-500 font-medium">Coming Soon</div>
+
+                                            <Button 
+                                                onClick={handlePayment}
+                                                disabled={processing}
+                                                className="w-full h-14 bg-slate-900 hover:bg-blue-600 text-white rounded-xl font-bold text-lg shadow-sm gap-3 transition-colors"
+                                            >
+                                                {processing ? (
+                                                    <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
+                                                ) : (
+                                                    <><Lock className="w-5 h-5" /> Pay ₦{course.price_naira.toLocaleString()} Securely</>
+                                                )}
+                                            </Button>
+                                            
+                                            <div className="flex items-center gap-3 justify-center pt-4 opacity-60">
+                                                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                                                <span className="text-xs font-bold text-slate-500">Encrypted and Secure Transaction</span>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-4 px-8 py-6 bg-emerald-50 rounded-xl border border-emerald-100">
-                                    <ShieldCheck className="w-6 h-6 text-emerald-600" />
-                                    <p className="text-sm font-bold text-emerald-700">
-                                        Secure Enrollment Guarantee. Your data is encrypted and protected.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-6">
-                                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 sticky top-32">
-                                    <h3 className="text-xl font-bold text-slate-900 mb-8">Order Total</h3>
-                                    
-                                    <div className="space-y-4 mb-8">
-                                        <div className="flex justify-between text-sm font-medium text-slate-500">
-                                            <span>Subtotal</span>
-                                            <span>₦{course.price_naira.toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm font-medium text-slate-500">
-                                            <span>Processing Fee</span>
-                                            <span>₦0.00</span>
-                                        </div>
-                                        <div className="pt-4 border-t border-slate-100 flex justify-between items-end">
-                                            <span className="text-sm font-bold text-slate-900 uppercase tracking-widest leading-none">Total</span>
-                                            <span className="text-3xl font-black text-slate-900 leading-none">₦{course.price_naira.toLocaleString()}</span>
-                                        </div>
-                                    </div>
-
-                                    <Button 
-                                        onClick={handlePayment}
-                                        disabled={processing}
-                                        className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg shadow-sm gap-3"
-                                    >
-                                        {processing ? (
-                                            <>
-                                                <Loader2 className="w-5 h-5 animate-spin" /> Processing...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Lock className="w-5 h-5" /> Complete Enrollment
-                                            </>
-                                        )}
-                                    </Button>
-
-                                    <div className="mt-8 flex items-center justify-center gap-4 opacity-10 grayscale pointer-events-none">
-                                        <div className="h-6 w-10 bg-slate-900 rounded" />
-                                        <div className="h-6 w-10 bg-slate-900 rounded" />
-                                        <div className="h-6 w-10 bg-slate-900 rounded" />
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         </motion.div>
@@ -312,9 +478,9 @@ const Checkout = () => {
                             <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-8">
                                 <CheckCircle2 className="w-12 h-12 text-emerald-500" />
                             </div>
-                            <h2 className="text-4xl font-bold text-slate-900 mb-4 tracking-tight">You're Enrolled!</h2>
+                            <h2 className="text-4xl font-bold text-slate-900 mb-4 tracking-tight">You're Enrolled! 🎉</h2>
                             <p className="text-lg text-slate-500 font-medium mb-12">
-                                We've successfully processed your enrollment for <span className="text-blue-600 font-bold">{course.title}</span>. 
+                                We've successfully processed your enrollment for <span className="text-blue-600 font-bold">{course?.title}</span>. 
                                 Redirecting you to your learning hub in a moment...
                             </p>
                             <div className="flex items-center justify-center gap-3">

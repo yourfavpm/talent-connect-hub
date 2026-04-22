@@ -290,7 +290,7 @@ const AcademyHome = () => {
                     <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">Our Learning Paths</h2>
                     <p className="text-base md:text-lg text-slate-500 leading-relaxed font-medium">Practical, outcome-driven programs designed to get you hired globally.</p>
                 </div>
-                <Link to="/courses">
+                <Link to="/browse">
                     <Button variant="ghost" className="group text-blue-600 hover:text-blue-700 font-bold flex items-center gap-2">
                         View All Courses <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </Button>

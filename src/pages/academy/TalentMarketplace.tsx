@@ -178,7 +178,7 @@ const TalentMarketplace = () => {
                                 Sign Up to OPSlyHR
                             </Button>
                         </a>
-                        <Link to="/courses">
+                        <Link to="/browse">
                             <Button variant="outline" size="lg" className="h-16 px-10 text-lg border-white/20 text-white hover:bg-white/5 rounded-full font-bold">
                                 View Academy Courses
                             </Button>

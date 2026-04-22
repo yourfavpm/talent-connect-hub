@@ -54,14 +54,14 @@ export class PaystackService {
             amount, // amount in kobo (NGN)
             ref: reference,
             metadata,
-            onClose() {
+            onClose: () => {
               console.log("Payment window closed");
-              onClose?.();
+              if (params.onClose) params.onClose();
               reject(new Error("Payment cancelled"));
             },
-            onSuccess(response: PaystackResponse) {
+            onSuccess: (response: PaystackResponse) => {
               console.log("Payment successful:", response);
-              if (onSuccess) onSuccess(response);
+              if (params.onSuccess) params.onSuccess(response);
               resolve(response);
             },
           });

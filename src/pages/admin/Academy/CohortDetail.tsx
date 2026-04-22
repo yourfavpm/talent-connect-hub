@@ -98,6 +98,20 @@ const CohortDetail = () => {
     const [newSession, setNewSession] = useState({ title: '', date: '', start_time: '', url: '' });
     const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '' });
     const [newAssignment, setNewAssignment] = useState({ title: '', description: '', deadline: '' });
+    
+    // Settings Form State
+    const [settings, setSettings] = useState({
+        name: "",
+        status: "",
+        enrollment_start_date: "",
+        enrollment_end_date: "",
+        start_date: "",
+        end_date: "",
+        max_slots: 25,
+        duration_weeks: 4,
+        zoom_link: ""
+    });
+
     const [isSaving, setIsSaving] = useState(false);
 
     const fetchCohortData = useCallback(async () => {
@@ -112,6 +126,17 @@ const CohortDetail = () => {
 
             if (cohortError) throw cohortError;
             setCohort(cohortData as Cohort);
+            setSettings({
+                name: cohortData.name,
+                status: cohortData.status,
+                enrollment_start_date: cohortData.enrollment_start_date?.split('.')[0] || "",
+                enrollment_end_date: cohortData.enrollment_end_date?.split('.')[0] || "",
+                start_date: cohortData.start_date?.split('.')[0] || "",
+                end_date: cohortData.end_date?.split('.')[0] || "",
+                max_slots: cohortData.max_slots || 25,
+                duration_weeks: cohortData.duration_weeks || 4,
+                zoom_link: cohortData.zoom_link || ""
+            });
 
             // 2. Fetch All Data in Parallel
             const [studentsRes, sessionsRes, announcementsRes, assignmentsRes, submissionsRes] = await Promise.all([
@@ -196,12 +221,11 @@ const CohortDetail = () => {
         if (!newAssignment.title || !newAssignment.deadline) return;
         setIsSaving(true);
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { data, error } = await (supabase.from("assignments") as any).insert([{
+            const { data, error } = await supabase.from("assignments").insert([{
                 cohort_id: id,
                 title: newAssignment.title,
                 description: newAssignment.description,
-                deadline_at: newAssignment.deadline
+                deadline_at: new Date(newAssignment.deadline).toISOString()
             }]).select().single();
 
             if (error) throw error;
@@ -210,6 +234,34 @@ const CohortDetail = () => {
             toast({ title: "Assignment Created", description: "Students have been notified." });
         } catch (err) {
             toast({ title: "Error", description: "Failed to create task.", variant: "destructive" });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleUpdateSettings = async () => {
+        setIsSaving(true);
+        try {
+            const { error } = await supabase
+                .from("cohorts")
+                .update({
+                    name: settings.name,
+                    status: settings.status,
+                    enrollment_start_date: new Date(settings.enrollment_start_date).toISOString(),
+                    enrollment_end_date: new Date(settings.enrollment_end_date).toISOString(),
+                    start_date: new Date(settings.start_date).toISOString(),
+                    end_date: new Date(settings.end_date).toISOString(),
+                    max_slots: Number(settings.max_slots),
+                    duration_weeks: Number(settings.duration_weeks),
+                    zoom_link: settings.zoom_link
+                })
+                .eq("id", id);
+
+            if (error) throw error;
+            toast({ title: "Settings Updated", description: "Cohort details have been saved." });
+            fetchCohortData();
+        } catch (err) {
+            toast({ title: "Error", description: "Failed to update settings.", variant: "destructive" });
         } finally {
             setIsSaving(false);
         }
@@ -274,7 +326,11 @@ const CohortDetail = () => {
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
-                            <Button variant="outline" className="h-12 px-6 rounded-xl font-bold gap-2">
+                            <Button 
+                                variant="outline" 
+                                className="h-12 px-6 rounded-xl font-bold gap-2"
+                                onClick={() => setActiveTab("settings")}
+                            >
                                 <Settings className="w-4 h-4" /> Cohort Settings
                             </Button>
                             <Button className="h-12 px-8 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold gap-2">
@@ -301,6 +357,9 @@ const CohortDetail = () => {
                         </TabsTrigger>
                         <TabsTrigger value="grading" className="px-8 rounded-xl font-bold text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
                             Submissions ({submissions.filter(s => s.status === 'submitted').length})
+                        </TabsTrigger>
+                        <TabsTrigger value="settings" className="px-8 rounded-xl font-bold text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
+                            Settings
                         </TabsTrigger>
                     </TabsList>
 
@@ -535,6 +594,110 @@ const CohortDetail = () => {
                         </div>
                     </TabsContent>
 
+                    <TabsContent value="settings" className="outline-none pb-20">
+                        <div className="max-w-4xl bg-white p-10 rounded-[40px] border border-slate-100 shadow-sm space-y-10">
+                            <div>
+                                <h3 className="text-2xl font-bold text-slate-900 mb-2">Cohort Configuration</h3>
+                                <p className="text-slate-500 text-sm">Update core settings, scheduling, and enrollment windows.</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Cohort Name</label>
+                                    <input 
+                                        value={settings.name}
+                                        onChange={e => setSettings({...settings, name: e.target.value})}
+                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Status</label>
+                                    <select 
+                                        value={settings.status}
+                                        onChange={e => setSettings({...settings, status: e.target.value})}
+                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm outline-none"
+                                    >
+                                        <option value="open">Open (Enrolling)</option>
+                                        <option value="ongoing">Ongoing</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Max Capacity</label>
+                                    <input 
+                                        type="number"
+                                        value={settings.max_slots}
+                                        onChange={e => setSettings({...settings, max_slots: Number(e.target.value)})}
+                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Duration (Weeks)</label>
+                                    <input 
+                                        type="number"
+                                        value={settings.duration_weeks}
+                                        onChange={e => setSettings({...settings, duration_weeks: Number(e.target.value)})}
+                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Enrollment Start</label>
+                                    <input 
+                                        type="datetime-local"
+                                        value={settings.enrollment_start_date}
+                                        onChange={e => setSettings({...settings, enrollment_start_date: e.target.value})}
+                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Enrollment End</label>
+                                    <input 
+                                        type="datetime-local"
+                                        value={settings.enrollment_end_date}
+                                        onChange={e => setSettings({...settings, enrollment_end_date: e.target.value})}
+                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Program Start</label>
+                                    <input 
+                                        type="datetime-local"
+                                        value={settings.start_date}
+                                        onChange={e => setSettings({...settings, start_date: e.target.value})}
+                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Program End</label>
+                                    <input 
+                                        type="datetime-local"
+                                        value={settings.end_date}
+                                        onChange={e => setSettings({...settings, end_date: e.target.value})}
+                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Default Meeting Link</label>
+                                <input 
+                                    value={settings.zoom_link}
+                                    onChange={e => setSettings({...settings, zoom_link: e.target.value})}
+                                    placeholder="Zoom / Meet Link"
+                                    className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                />
+                            </div>
+
+                            <Button 
+                                onClick={handleUpdateSettings} 
+                                disabled={isSaving}
+                                className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-xl transition-all"
+                            >
+                                {isSaving ? "Saving..." : "Update Cohort Settings"}
+                            </Button>
+                        </div>
+                    </TabsContent>
                     <TabsContent value="grading" className="outline-none pb-20">
                         <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
                             <table className="w-full text-left">

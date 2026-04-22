@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Mail, Lock, User, Loader2, Award, Zap, Shield, Eye, EyeOff } from "lucide-react";
@@ -7,16 +7,18 @@ import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 
 const AcademySignup = () => {
-    const { toast } = useToast();
+    const [searchParams] = useSearchParams();
+    const redirect = searchParams.get("redirect");
     const navigate = useNavigate();
+    const { toast } = useToast();
 
+    const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         fullName: "",
         email: "",
         password: ""
     });
-    const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -54,13 +56,15 @@ const AcademySignup = () => {
                 description: "Check your email for a verification link.",
             });
 
-            // Redirect to check-email (we'll assume the /auth/check-email path exists or just go to success)
             // Redirect to login with zone preservation for localhost
+            const loginPath = redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login";
+            
             const isLocal = window.location.hostname === "localhost" || window.location.hostname.endsWith(".localhost");
             if (isLocal) {
-                navigate("/login?zone=ACADEMY");
+                const connector = loginPath.includes("?") ? "&" : "?";
+                navigate(`${loginPath}${connector}zone=ACADEMY`);
             } else {
-                navigate("/login");
+                navigate(loginPath);
             }
         } catch (err) {
             const error = err as Error;

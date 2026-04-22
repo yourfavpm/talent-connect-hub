@@ -20,6 +20,7 @@ import ClientLayout from "./components/client/ClientLayout";
 import TalentLayout from "./components/talent/TalentLayout";
 import AdminLayout from "./components/admin/AdminLayout";
 import SettingsLayout from "@/pages/admin/Settings/SettingsLayout";
+import AcademyLayout from "./components/academy/AcademyLayout";
 
 // --- Lazy Loading Pages ---
 
@@ -135,9 +136,16 @@ const BrowseCourses = lazy(() => import("./pages/academy/BrowseCourses"));
 const CourseDetail = lazy(() => import("./pages/academy/CourseDetail"));
 const CoursePlayer = lazy(() => import("./pages/academy/CoursePlayer"));
 const CourseHub = lazy(() => import("./pages/academy/CourseHub"));
+const StudentDashboard = lazy(() => import("./pages/academy/StudentDashboard"));
+const Checkout = lazy(() => import("./pages/academy/Checkout"));
+const ApplyForm = lazy(() => import("./pages/academy/ApplyForm"));
+const AcademyLogin = lazy(() => import("./pages/academy/AcademyLogin"));
+const AcademySignup = lazy(() => import("./pages/academy/AcademySignup"));
 const AcademyManagement = lazy(() => import("./pages/admin/Academy/AcademyManagement"));
 const CourseManagement = lazy(() => import("./pages/admin/Academy/CourseManagement"));
 const CohortDetail = lazy(() => import("./pages/admin/Academy/CohortDetail"));
+const CourseCohorts = lazy(() => import("./pages/admin/Academy/CourseCohorts"));
+const CreateCohort = lazy(() => import("./pages/admin/Academy/CreateCohort"));
 
 // Admin Settings Sections
 const OrganizationSettings = lazy(() => import("@/pages/admin/Settings/sections/Organization"));
@@ -305,12 +313,19 @@ const App = () => {
               {/* Academy Zone (academy.opslyhr.com) */}
               {zone === Zone.ACADEMY && (
                 <>
-                  <Route index element={<AcademyHome />} />
-                  <Route path="browse" element={<BrowseCourses />} />
-                  <Route path="courses" element={<Navigate to="/browse" replace />} />
-                  <Route path="courses/:slug" element={<CourseDetail />} />
+                  <Route element={<AcademyLayout />}>
+                    <Route index element={<AcademyHome />} />
+                    <Route path="browse" element={<BrowseCourses />} />
+                    <Route path="courses" element={<Navigate to="/browse" replace />} />
+                    <Route path="courses/:slug" element={<CourseDetail />} />
+                    <Route path="dashboard" element={<StudentDashboard />} />
+                    <Route path="hub/:slug" element={<CourseHub />} />
+                    <Route path="checkout/:slug" element={<Checkout />} />
+                    <Route path="apply/:slug" element={<ApplyForm />} />
+                  </Route>
                   <Route path="courses/:slug/learn" element={<CoursePlayer />} />
-                  <Route path="hub" element={<CourseHub />} />
+                  <Route path="login" element={<AcademyLogin />} />
+                  <Route path="signup" element={<AcademySignup />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>
               )}
@@ -423,6 +438,8 @@ const App = () => {
                           <Route path="academy">
                             <Route index element={<AcademyManagement />} />
                             <Route path="courses" element={<CourseManagement />} />
+                            <Route path="courses/:slug/cohorts" element={<CourseCohorts />} />
+                            <Route path="courses/:slug/cohorts/new" element={<CreateCohort />} />
                             <Route path="cohorts/:id" element={<CohortDetail />} />
                           </Route>
                           <Route path="team">

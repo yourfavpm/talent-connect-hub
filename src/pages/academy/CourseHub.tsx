@@ -60,7 +60,7 @@ interface Assignment {
     id: string;
     title: string;
     description: string;
-    due_date: string;
+    deadline_at: string;
     status: string;
 }
 
@@ -138,7 +138,7 @@ const CourseHub = () => {
             const [sessionsRes, announcementsRes, assignmentsRes, submissionsRes] = await Promise.all([
                 (supabase.from("sessions").select("*").eq("cohort_id", cohortId).order("session_date", { ascending: true }) as Promise<{ data: Session[] | null }>),
                 (supabase.from("announcements").select("*").eq("cohort_id", cohortId).order("created_at", { ascending: false }) as Promise<{ data: Announcement[] | null }>),
-                (supabase.from("assignments").select("*").eq("cohort_id", cohortId).order("due_date", { ascending: true }) as Promise<{ data: Assignment[] | null }>),
+                (supabase.from("assignments").select("*").eq("cohort_id", cohortId).order("deadline_at", { ascending: true }) as Promise<{ data: Assignment[] | null }>),
                 (supabase.from("submissions").select("*").eq("user_id", user.id) as Promise<{ data: Submission[] | null }>)
             ]);
 
@@ -395,7 +395,7 @@ const CourseHub = () => {
                                                         <p className="text-slate-500 text-sm line-clamp-2 mb-6">{assignment.description}</p>
                                                         
                                                         <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
-                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Due {new Date(assignment.due_date).toLocaleDateString()}</div>
+                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Due {new Date(assignment.deadline_at).toLocaleDateString()}</div>
                                                             {!isSubmitted && (
                                                                 <Button 
                                                                     onClick={() => setSelectedAssignment(assignment)}

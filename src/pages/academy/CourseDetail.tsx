@@ -59,6 +59,8 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
     const slug = inlineSlug || params.slug;
     
     const [course, setCourse] = useState<Course | null>(null);
+    const [openCohorts, setOpenCohorts] = useState<any[]>([]);
+    const [userEnrollment, setUserEnrollment] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [isStickyVisible, setIsStickyVisible] = useState(false);
 
@@ -75,6 +77,37 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                 
                 if (!error && data) {
                     setCourse(data as any);
+                    
+                    const now = new Date().toISOString();
+                    
+                    // Check for open cohorts based on dates and capacity
+                    const { data: cohortsData } = await supabase
+                         .from("cohorts")
+                         .select("*")
+                         .eq("course_id", slug)
+                         .eq("status", "open")
+                         .lte("enrollment_start_date", now)
+                         .gte("enrollment_end_date", now);
+                         
+                    if (cohortsData) {
+                        // Filter by capacity manually if needed, or assume DB is updated
+                        const availableCohorts = cohortsData.filter(c => (c.current_slots || 0) < (c.max_slots || 25));
+                        setOpenCohorts(availableCohorts);
+                    }
+
+                    // Check if user is already enrolled
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        const { data: enrollData } = await supabase
+                            .from("academy_enrollments")
+                            .select("*")
+                            .eq("user_id", user.id)
+                            .eq("course_id", data.slug)
+                            .eq("enrollment_status", "active")
+                            .maybeSingle();
+                        
+                        if (enrollData) setUserEnrollment(enrollData);
+                    }
                 }
             } catch (err) {
                 console.error("Failed to fetch course:", err);
@@ -85,18 +118,26 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
         fetchCourse();
     }, [slug]);
 
+    const isEnrolling = openCohorts.length > 0;
+    const isEnrolled = !!userEnrollment;
+    const buttonText = isEnrolled ? "Go to Program Hub" : isEnrolling ? "Enroll Now" : "Enrollment Closed";
+
     const handleEnroll = (e: React.MouseEvent) => {
         e.preventDefault();
+        
+        if (isEnrolled) {
+            navigate(`/courses/${course?.slug}/learn`);
+            return;
+        }
+
+        if (!isEnrolling) return;
         
         if (onEnroll && slug) {
             onEnroll(slug);
             return;
         }
 
-        if (!user) {
-            navigate(`/signup?redirect=/checkout/${course?.slug}`);
-            return;
-        }
+        // Direct to checkout. 
         navigate(`/checkout/${course?.slug}`);
     };
 
@@ -125,10 +166,14 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
         return <Navigate to="/browse" replace />;
     }
 
-    const spotsTotal = course.slots_total || 25;
-    const spotsFilled = course.slots_filled || 0;
+    const nextCohortData = openCohorts[0];
+    const spotsTotal = nextCohortData?.max_slots || course.slots_total || 25;
+    const spotsFilled = nextCohortData?.current_slots || course.slots_filled || 0;
     const spotsLeft = spotsTotal - spotsFilled;
-    const nextCohort = course.next_cohort_date || "TBD";
+    const nextCohort = nextCohortData 
+        ? new Date(nextCohortData.start_date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
+        : "TBD";
+    const durationWeeks = nextCohortData?.duration_weeks || course.duration || "4 Weeks";
 
     return (
         <div className="bg-white min-h-screen font-inter">
@@ -154,8 +199,12 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                             </div>
                             <div className="flex items-center gap-6">
                                 <span className="text-xs font-bold text-slate-500">{spotsLeft} slots left</span>
-                                <Button onClick={handleEnroll} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold px-6 h-11 shadow-sm">
-                                    Apply Now
+                                <Button 
+                                    onClick={handleEnroll} 
+                                    disabled={!isEnrolling}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold px-6 h-11 shadow-sm disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500"
+                                >
+                                    {buttonText}
                                 </Button>
                             </div>
                         </div>
@@ -181,7 +230,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                             <div className="flex flex-wrap gap-3 mb-6">
                                 <Badge variant="outline" className="bg-white border-slate-100 text-slate-500 font-bold px-3 py-1 rounded-lg text-[10px]">
                                     <Clock className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
-                                    {course.duration}
+                                    {durationWeeks} {typeof durationWeeks === 'number' ? 'Weeks' : ''}
                                 </Badge>
                                 <Badge variant="outline" className="bg-white border-slate-100 text-slate-500 font-bold px-3 py-1 rounded-lg text-[10px]">
                                     <Signal className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
@@ -199,10 +248,11 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                             <div className="flex flex-col sm:flex-row gap-4 mb-12">
                                 <Button 
                                     size="lg" 
-                                    className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all font-bold w-full sm:w-auto shadow-lg shadow-blue-500/10"
+                                    disabled={!isEnrolling}
+                                    className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all font-bold w-full sm:w-auto shadow-lg shadow-blue-500/10 disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500"
                                     onClick={handleEnroll}
                                 >
-                                    Apply Now
+                                    {buttonText}
                                 </Button>
                                 <div className="flex items-center gap-3 px-6 h-14 rounded-xl border border-slate-200 text-slate-700 font-bold text-sm bg-white shadow-sm">
                                     <Calendar className="w-4 h-4 text-blue-500" />
@@ -253,10 +303,11 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                                     </div>
 
                                     <Button 
-                                        className="w-full h-14 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-md"
+                                        disabled={!isEnrolling}
+                                        className="w-full h-14 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-md disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500"
                                         onClick={handleEnroll}
                                     >
-                                        Apply Now
+                                        {buttonText}
                                     </Button>
                                     
                                     <div className="mt-8 pt-8 border-t border-slate-50 grid grid-cols-1 gap-4">
@@ -283,7 +334,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                     <div className="text-center mb-16">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-bold tracking-widest uppercase mb-6">Program Content</div>
                         <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">Structured <span className="text-blue-600">Learning Path.</span></h2>
-                        <p className="text-base md:text-lg text-slate-500 font-normal max-w-2xl mx-auto">An intensive {course.duration} curriculum focused on high-demand operational skills.</p>
+                        <p className="text-base md:text-lg text-slate-500 font-normal max-w-2xl mx-auto">An intensive {durationWeeks} {typeof durationWeeks === 'number' ? 'weeks' : ''} curriculum focused on high-demand operational skills.</p>
                     </div>
                     <CurriculumAccordion weeks={course.curriculum || []} />
                 </div>
@@ -345,10 +396,11 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                     <div className="flex flex-col items-center gap-6">
                         <Button 
                             size="lg" 
-                            className="h-16 px-12 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all font-bold shadow-xl shadow-blue-500/20"
+                            disabled={!isEnrolling}
+                            className="h-16 px-12 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all font-bold shadow-xl shadow-blue-500/20 disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500"
                             onClick={handleEnroll}
                         >
-                            Apply Now <ArrowRight className="w-5 h-5 ml-2" />
+                            {buttonText} {isEnrolling && <ArrowRight className="w-5 h-5 ml-2" />}
                         </Button>
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">ONLY {spotsLeft} SEATS REMAINING</p>
                     </div>

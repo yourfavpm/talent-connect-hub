@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zone, getZoneUrl } from "@/utils/subdomain";
 import Logo from "@/components/Logo";
+import { supabase } from "@/integrations/supabase/client";
 
 const AcademyNavbar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -22,12 +23,12 @@ const AcademyNavbar = () => {
     const NavLinks = [
         { name: "Home", path: "/" },
         { name: "Courses", path: "/browse" },
-        { name: "Talent Marketplace", path: "/browse" },
     ];
 
-    if (user) {
-        NavLinks.push({ name: "My Dashboard", path: "/dashboard" });
-    }
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        window.location.href = "/";
+    };
 
     // Close mobile menu on route change
     useEffect(() => {
@@ -59,14 +60,22 @@ const AcademyNavbar = () => {
                 </div>
 
                 {/* Right: CTAs */}
-                <div className="hidden lg:flex items-center gap-6">
+                <div className="hidden lg:flex items-center gap-4">
                     {user ? (
-                        <Link
-                            to="/dashboard"
-                            className="px-8 py-3 bg-slate-100 text-slate-900 border border-slate-200 text-[15px] font-bold rounded-xl hover:bg-slate-200 transition-all font-inter"
-                        >
-                            Academy Dashboard
-                        </Link>
+                        <>
+                            <Link
+                                to="/dashboard"
+                                className="px-6 py-2.5 bg-slate-100 text-slate-900 border border-slate-200 text-sm font-bold rounded-xl hover:bg-slate-200 transition-all font-inter"
+                            >
+                                Student Dashboard
+                            </Link>
+                            <button
+                                onClick={handleSignOut}
+                                className="px-5 py-2.5 border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:text-red-600 transition-all font-inter"
+                            >
+                                Sign Out
+                            </button>
+                        </>
                     ) : (
                         <Link
                             to="/signup"
@@ -143,13 +152,21 @@ const AcademyNavbar = () => {
 
                             <div className="mt-auto px-6 py-10 border-t border-slate-100 bg-white">
                                 {user ? (
-                                    <Link 
-                                        to="/dashboard"
-                                        className="flex items-center justify-between w-full py-4 px-6 bg-slate-900 text-white font-bold text-base rounded-2xl group transition-all"
-                                    >
-                                        <span>Student Dashboard</span>
-                                        <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                    </Link>
+                                    <div className="space-y-3">
+                                        <Link 
+                                            to="/dashboard"
+                                            className="flex items-center justify-between w-full py-4 px-6 bg-slate-900 text-white font-bold text-base rounded-2xl group transition-all"
+                                        >
+                                            <span>Student Dashboard</span>
+                                            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                        </Link>
+                                        <button 
+                                            onClick={handleSignOut}
+                                            className="flex items-center justify-between w-full py-4 px-6 bg-slate-50 text-slate-600 font-bold text-base rounded-2xl group transition-all border border-slate-200"
+                                        >
+                                            <span>Sign Out</span>
+                                        </button>
+                                    </div>
                                 ) : (
                                     <Link 
                                         to="/signup"

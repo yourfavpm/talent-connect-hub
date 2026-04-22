@@ -128,7 +128,7 @@ const AcademyManagement = () => {
                         </Button>
                         <Button 
                             className="h-12 px-6 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200"
-                            onClick={() => navigate("/admin/academy/cohorts/new")}
+                            onClick={() => navigate("/admin/academy/courses")}
                         >
                             <Plus className="mr-2 w-4 h-4" />
                             Create Cohort
