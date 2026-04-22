@@ -214,10 +214,11 @@ const Checkout = () => {
 
     const processPostPaymentSuccess = async (reference: string, sessionId: string) => {
         try {
-            // STEP 1: Attempt to log the user in or sign them up so they land in dashboard smoothly
             console.log("Processing post-payment for session:", sessionId);
             let isUserLoggedIn = false;
+            let activeUserId: string | null = null;
             
+            // STEP 1: Authenticate the user
             try {
                 if (!isExistingUser && password) {
                     const { data: authData, error: signUpError } = await supabase.auth.signUp({
@@ -227,59 +228,66 @@ const Checkout = () => {
                     
                     if (!signUpError && authData.user) {
                         isUserLoggedIn = true;
-                        console.log("New user signed up successfully");
-                        // Simulated flow manual insert
-                        if (!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
-                            await supabase.from("academy_enrollments").insert({
-                                user_id: authData.user.id,
-                                course_id: course.slug,
-                                course_uuid: course.id,
-                                cohort_id: selectedCohortId,
-                                course_name: course.title,
-                                enrollment_status: "active",
-                                price_naira: course.price_naira,
-                                price_usd: course.price_usd,
-                                enrollment_date: new Date().toISOString()
-                            });
-                        }
+                        activeUserId = authData.user.id;
+                        console.log("New user signed up successfully:", activeUserId);
                     } else if (signUpError) {
-                        console.log("Signup error (might be expected if webhook was faster):", signUpError.message);
-                        // Try logging in instead
+                        console.log("Signup error, trying sign-in:", signUpError.message);
                         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                             email: email.trim().toLowerCase(),
                             password: password
                         });
                         if (!signInError && signInData.user) {
                             isUserLoggedIn = true;
-                            console.log("User signed in successfully after signup error");
+                            activeUserId = signInData.user.id;
+                            console.log("Signed in successfully:", activeUserId);
                         }
                     }
                 } else if (isExistingUser) {
                     const { data: { session } } = await supabase.auth.getSession();
                     isUserLoggedIn = !!session;
-                    console.log("Existing user login state:", isUserLoggedIn);
-                    
-                    // Simulated flow manual insert for existing user
-                    if (isUserLoggedIn && session && !import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
-                         await supabase.from("academy_enrollments").insert({
-                            user_id: session.user.id,
-                            course_id: course.slug,
-                            course_uuid: course.id,
-                            cohort_id: selectedCohortId,
-                            course_name: course.title,
-                            enrollment_status: "active",
-                            price_naira: course.price_naira,
-                            price_usd: course.price_usd,
-                            enrollment_date: new Date().toISOString()
-                        });
-                    }
+                    activeUserId = session?.user?.id || null;
+                    console.log("Existing user login state:", isUserLoggedIn, activeUserId);
                 }
             } catch (authErr) {
                 console.error("Auth processing error:", authErr);
             }
 
+            // STEP 2: Always create enrollment client-side (webhook is backup)
+            if (activeUserId && course) {
+                // Check if enrollment already exists (webhook may have been faster)
+                const { data: existingEnrollment } = await supabase
+                    .from("academy_enrollments")
+                    .select("id")
+                    .eq("user_id", activeUserId)
+                    .eq("course_id", course.slug)
+                    .maybeSingle();
+
+                if (!existingEnrollment) {
+                    const { error: enrollErr } = await supabase.from("academy_enrollments").insert({
+                        user_id: activeUserId,
+                        course_id: course.slug,
+                        cohort_id: selectedCohortId || null,
+                        course_name: course.title,
+                        student_email: email.trim().toLowerCase(),
+                        student_name: email.split('@')[0],
+                        enrollment_status: "active",
+                        price_naira: course.price_naira,
+                        price_usd: course.price_usd,
+                        enrollment_date: new Date().toISOString(),
+                        access_granted_at: new Date().toISOString()
+                    });
+                    if (enrollErr) {
+                        console.error("Enrollment insert error:", enrollErr);
+                    } else {
+                        console.log("Enrollment created successfully for user:", activeUserId);
+                    }
+                } else {
+                    console.log("Enrollment already exists:", existingEnrollment.id);
+                }
+            }
+
             setSuccess(true);
-            setProcessing(false); // Clear loading state before showing success
+            setProcessing(false);
             
             toast({
                 title: "Enrollment Successful! 🎉",
