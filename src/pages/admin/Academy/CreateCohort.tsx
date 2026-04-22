@@ -57,7 +57,7 @@ const CreateCohort = () => {
             } catch (err) {
                 console.error("Error fetching course:", err);
                 toast({ title: "Error", description: "Failed to load course details.", variant: "destructive" });
-                navigate("/admin/academy/courses");
+                navigate(getInternalPath("/admin/academy"));
             } finally {
                 setLoading(false);
             }

@@ -128,7 +128,7 @@ const AcademyManagement = () => {
                         </Button>
                         <Button 
                             className="h-12 px-6 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200"
-                            onClick={() => navigate("/admin/academy/courses")}
+                            onClick={() => navigate(getInternalPath("/admin/academy/courses"))}
                         >
                             <Plus className="mr-2 w-4 h-4" />
                             Create Cohort
@@ -222,7 +222,7 @@ const AcademyManagement = () => {
                                             </div>
                                         </td>
                                         <td className="px-8 py-6 text-right">
-                                            <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => navigate(`/admin/academy/cohorts/${cohort.id}`)}>
+                                            <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => navigate(getInternalPath(`/admin/academy/cohorts/${cohort.id}`))}>
                                                 Manage <ArrowUpRight className="ml-2 w-3.5 h-3.5" />
                                             </Button>
                                         </td>

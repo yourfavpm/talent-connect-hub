@@ -85,8 +85,8 @@ const CourseCohorts = () => {
     return (
         <div className="p-6 lg:p-10 bg-white min-h-screen font-inter">
             <div className="w-full max-w-none">
-                <Link to={getInternalPath("/admin/academy/courses")} className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10 hover:text-blue-600 transition-colors">
-                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Catalog
+                <Link to={getInternalPath("/admin/academy")} className="inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-10 hover:text-blue-600 transition-colors">
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Academy
                 </Link>
 
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">

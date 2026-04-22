@@ -142,6 +142,7 @@ const AdminHireRequestDetail = lazy(() => import("./pages/admin/HireRequests/Adm
 
 // Admin Academy
 const AcademyManagement = lazy(() => import("@/pages/admin/Academy/AcademyManagement"));
+const CourseManagement = lazy(() => import("@/pages/admin/Academy/CourseManagement"));
 const CourseCohorts = lazy(() => import("@/pages/admin/Academy/CourseCohorts"));
 const CreateCohort = lazy(() => import("@/pages/admin/Academy/CreateCohort"));
 const CohortDetail = lazy(() => import("@/pages/admin/Academy/CohortDetail"));
@@ -436,6 +437,7 @@ const App = () => {
                           <Route path="support/:id" element={<AdminSupportDetail />} />
                           <Route path="academy">
                             <Route index element={<AcademyManagement />} />
+                            <Route path="courses" element={<CourseManagement />} />
                             <Route path="courses/:slug/cohorts" element={<CourseCohorts />} />
                             <Route path="courses/:slug/cohorts/new" element={<CreateCohort />} />
                             <Route path="cohorts/:id" element={<CohortDetail />} />
