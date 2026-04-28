@@ -416,9 +416,9 @@ const AcademyHome = () => {
                        Browse Course Catalog
                    </Button>
                </Link>
-               <a href={getZoneUrl(Zone.AUTH, "/auth/signup")} className="h-16 px-10 flex items-center justify-center text-slate-900 border border-slate-200 hover:border-slate-900 rounded-full font-semibold transition-all">
+               <Link to={getInternalPath("/signup")} className="h-16 px-10 flex items-center justify-center text-slate-900 border border-slate-200 hover:border-slate-900 rounded-full font-semibold transition-all">
                    Become Targeted Talent
-               </a>
+               </Link>
             </div>
             <p className="mt-8 text-sm font-semibold text-slate-400">Applications open for May 2026 Cohorts</p>
         </div>

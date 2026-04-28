@@ -77,12 +77,12 @@ const AcademyNavbar = () => {
                             </button>
                         </>
                     ) : (
-                        <a
-                            href={getZoneUrl(Zone.AUTH, "/auth/signup")}
+                        <Link
+                            to="/signup"
                             className="px-8 py-3 bg-slate-900 text-white text-[15px] font-bold rounded-xl hover:bg-blue-700 transition-all shadow-sm font-inter"
                         >
                             Get Started
-                        </a>
+                        </Link>
                     )}
                 </div>
 
@@ -168,13 +168,13 @@ const AcademyNavbar = () => {
                                         </button>
                                     </div>
                                 ) : (
-                                    <a 
-                                        href={getZoneUrl(Zone.AUTH, "/auth/signup")}
+                                    <Link 
+                                        to="/signup"
                                         className="flex items-center justify-between w-full py-4 px-6 bg-slate-900 text-white font-bold text-base rounded-2xl group transition-all"
                                     >
                                         <span>Start Learning</span>
                                         <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                    </a>
+                                    </Link>
                                 )}
                             </div>
                         </motion.div>

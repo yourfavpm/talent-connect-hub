@@ -51,6 +51,8 @@ const ApplyForm = lazy(() => import("./pages/academy/ApplyForm"));
 const StudentDashboard = lazy(() => import("./pages/academy/StudentDashboard"));
 const CourseHub = lazy(() => import("./pages/academy/CourseHub"));
 const Checkout = lazy(() => import("./pages/academy/Checkout"));
+const AcademyLogin = lazy(() => import("./pages/academy/AcademyLogin"));
+const AcademySignup = lazy(() => import("./pages/academy/AcademySignup"));
 
 // Auth
 const Login = lazy(() => import("./pages/auth/Login"));
@@ -225,6 +227,10 @@ const ZoneGuard = ({
 
   // 2. If it's a protected portal zone and user is NOT logged in, redirect to Auth Hub
   if (isProtected && !user) {
+    if (currentZone === Zone.ACADEMY) {
+        // Academy has its own local login
+        return <Navigate to="/login" replace />;
+    }
     const loginUrl = getZoneUrl(Zone.AUTH, "/auth/login");
     window.location.href = loginUrl;
     return null;
@@ -298,6 +304,8 @@ const App = () => {
                 <Route element={<AcademyLayout />}>
                   {/* Public Routes */}
                   <Route path="/" element={<AcademyHome />} />
+                  <Route path="/login" element={<AcademyLogin />} />
+                  <Route path="/signup" element={<AcademySignup />} />
                   <Route path="/courses" element={<BrowseCourses />} />
                   <Route path="/courses/:slug" element={<CourseDetail />} />
                   <Route path="/marketplace" element={<TalentMarketplace />} />

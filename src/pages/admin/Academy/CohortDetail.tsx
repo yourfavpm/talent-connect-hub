@@ -100,6 +100,9 @@ const CohortDetail = () => {
     const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '' });
     const [newAssignment, setNewAssignment] = useState({ title: '', description: '', deadline: '' });
     
+    // Grading Form State
+    const [gradingSub, setGradingSub] = useState<{ id: string; grade: string; feedback: string } | null>(null);
+    
     // Settings Form State
     const [settings, setSettings] = useState({
         name: "",
@@ -314,13 +317,19 @@ const CohortDetail = () => {
         }
     };
 
-    const handleReviewSubmission = async (subId: string) => {
+    const handleReviewSubmission = async (subId: string, grade: string = '', feedback: string = '') => {
         try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { error } = await (supabase.from("submissions") as any).update({ status: 'reviewed' }).eq("id", subId);
+            const { error } = await (supabase.from("submissions") as any).update({ 
+                status: 'reviewed',
+                grade,
+                feedback
+            }).eq("id", subId);
+            
             if (error) throw error;
-            setSubmissions(prev => prev.map(s => s.id === subId ? { ...s, status: 'reviewed' } : s));
-            toast({ title: "Graded", description: "Submission marked as reviewed." });
+            setSubmissions(prev => prev.map(s => s.id === subId ? { ...s, status: 'reviewed', grade, feedback } : s));
+            setGradingSub(null);
+            toast({ title: "Graded", description: "Submission has been reviewed and graded." });
         } catch (err) {
             toast({ title: "Error", description: "Failed to update status." });
         }
@@ -834,11 +843,21 @@ const CohortDetail = () => {
                                                     <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full uppercase tracking-wider">Reviewed</span>
                                                 ) : (
                                                     <span className="px-2.5 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full uppercase tracking-wider">Pending</span>
-                                                )}
-                                            </td>
+                                                                                           </td>
                                             <td className="px-10 py-8 text-right">
-                                                {sub.status !== 'reviewed' && (
-                                                    <Button onClick={() => handleReviewSubmission(sub.id)} variant="outline" className="h-10 px-4 rounded-xl font-bold text-xs border-slate-200">Approve</Button>
+                                                {sub.status !== 'reviewed' ? (
+                                                    <Button 
+                                                        onClick={() => setGradingSub({ id: sub.id, grade: sub.grade || '', feedback: sub.feedback || '' })} 
+                                                        variant="outline" 
+                                                        className="h-10 px-4 rounded-xl font-bold text-xs border-slate-200"
+                                                    >
+                                                        Review Work
+                                                    </Button>
+                                                ) : (
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Grade</span>
+                                                        <span className="text-sm font-bold text-slate-900">{sub.grade || 'N/A'}</span>
+                                                    </div>
                                                 )}
                                             </td>
                                         </tr>
@@ -854,7 +873,59 @@ const CohortDetail = () => {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Grading & Feedback Modal */}
+                        {gradingSub && (
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
+                                <motion.div 
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-white w-full max-w-lg rounded-[32px] p-10 shadow-2xl"
+                                >
+                                    <h3 className="text-2xl font-bold text-slate-900 mb-2">Grade Submission</h3>
+                                    <p className="text-slate-500 text-sm mb-8">Provide a grade and constructive feedback for the student.</p>
+                                    
+                                    <div className="space-y-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Grade (e.g., A, B, 90%)</label>
+                                            <input 
+                                                value={gradingSub.grade}
+                                                onChange={e => setGradingSub({...gradingSub, grade: e.target.value})}
+                                                placeholder="Enter grade..."
+                                                className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-blue-600 transition-all text-sm font-bold"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Feedback</label>
+                                            <textarea 
+                                                value={gradingSub.feedback}
+                                                onChange={e => setGradingSub({...gradingSub, feedback: e.target.value})}
+                                                placeholder="Excellent work on the system architecture..."
+                                                className="w-full min-h-[140px] p-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-blue-600 transition-all text-sm font-medium"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-4 mt-10">
+                                        <Button 
+                                            variant="outline" 
+                                            className="flex-grow h-14 rounded-2xl font-bold border-slate-200"
+                                            onClick={() => setGradingSub(null)}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button 
+                                            className="flex-grow-[2] h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold"
+                                            onClick={() => handleReviewSubmission(gradingSub.id, gradingSub.grade, gradingSub.feedback)}
+                                        >
+                                            Complete Review
+                                        </Button>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
                     </TabsContent>
+nt>
                 </Tabs>
             </div>
         </div>

@@ -67,6 +67,8 @@ interface Assignment {
 interface Submission {
     assignment_id: string;
     status: string;
+    grade?: string;
+    feedback?: string;
 }
 
 interface Enrollment {
@@ -446,17 +448,36 @@ const CourseHub = () => {
                                                         
                                                         <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
                                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Due {new Date(assignment.deadline_at).toLocaleDateString()}</div>
-                                                            {!isSubmitted && (
-                                                                <Button 
-                                                                    onClick={() => setSelectedAssignment(assignment)}
-                                                                    variant="ghost" 
-                                                                    className="text-blue-600 font-bold text-xs p-0 hover:bg-transparent hover:text-blue-700 h-auto gap-1"
-                                                                >
-                                                                    Submit Work <ArrowRight size={14} />
-                                                                </Button>
-                                                            )}
-                                                        </div>
-                                                    </div>
+                                                            {!isSubmitted ? (
+                                                                 <Button 
+                                                                     onClick={() => setSelectedAssignment(assignment)}
+                                                                     variant="ghost" 
+                                                                     className="text-blue-600 font-bold text-xs p-0 hover:bg-transparent hover:text-blue-700 h-auto gap-1"
+                                                                 >
+                                                                     Submit Work <ArrowRight size={14} />
+                                                                 </Button>
+                                                             ) : (
+                                                                 <div className="flex items-center gap-2">
+                                                                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                                                     <span className="text-xs font-bold text-emerald-600">Work Logged</span>
+                                                                 </div>
+                                                             )}
+                                                         </div>
+
+                                                         {isSubmitted && submission?.status === 'reviewed' && (
+                                                             <div className="mt-6 p-5 bg-blue-50/50 rounded-2xl border border-blue-100/50">
+                                                                 <div className="flex items-center justify-between mb-3">
+                                                                     <span className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.1em]">Mentor Feedback</span>
+                                                                     <div className="px-2 py-1 bg-white text-blue-600 text-[10px] font-bold rounded-lg border border-blue-100 shadow-sm">
+                                                                         Grade: {submission.grade || 'N/A'}
+                                                                     </div>
+                                                                 </div>
+                                                                 <p className="text-xs text-slate-600 leading-relaxed font-medium italic">
+                                                                     "{submission.feedback || 'No feedback provided yet.'}"
+                                                                 </p>
+                                                             </div>
+                                                         )}
+                                                     </div>
                                                 );
                                             })}
                                         </div>
