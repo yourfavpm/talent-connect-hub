@@ -388,6 +388,29 @@ const CohortDetail = () => {
         }
     };
 
+    const handleDeleteCohort = async () => {
+        if (!cohort) return;
+        
+        if (!window.confirm(`Are you sure you want to delete "${cohort.name}"? This will permanently remove all student enrollments, assignments, sessions, and data associated with this cohort. This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from("cohorts")
+                .delete()
+                .eq("id", cohort.id);
+            
+            if (error) throw error;
+            
+            toast({ title: "Deleted", description: "Cohort has been permanently removed." });
+            navigate(getInternalPath("/admin/academy"));
+        } catch (err) {
+            console.error("Delete failed:", err);
+            toast({ title: "Error", description: "Failed to delete cohort.", variant: "destructive" });
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-slate-50/50 flex items-center justify-center">
@@ -444,6 +467,13 @@ const CohortDetail = () => {
                             </Button>
                             <Button className="h-12 px-8 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold gap-2">
                                 Export List
+                            </Button>
+                            <Button 
+                                onClick={handleDeleteCohort}
+                                variant="outline" 
+                                className="h-12 px-6 rounded-xl font-bold text-red-600 border-red-100 hover:bg-red-50 hover:border-red-200 transition-all gap-2"
+                            >
+                                <Trash2 className="w-4 h-4" /> Delete
                             </Button>
                         </div>
                     </div>
