@@ -199,33 +199,24 @@ const AcademyHome = () => {
             {/* Connecting Line (Desktop) */}
             <div className="hidden md:block absolute top-[60px] left-0 right-0 h-0.5 bg-slate-200 border-t border-dashed border-slate-300" />
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-8 relative z-10">
-              {[
-                { step: "01", icon: Brain, title: "Learn AI Ops", desc: "Master high-income operational automation skills in intensive programs.", color: "from-purple-100 to-purple-50" },
-                { step: "02", icon: FolderOpen, title: "Build Portfolio", desc: "Build real-world systems for simulated and real client scenarios.", color: "from-blue-100 to-blue-50" },
-                { step: "03", icon: Award, title: "Get Vetted", desc: "Pass the gold-standard OPSly vetting process to verify your skills.", color: "from-emerald-100 to-emerald-50" },
-                { step: "04", icon: Rocket, title: "Get Placed", desc: "Access global companies and earn in multiple currencies remotely.", color: "from-orange-100 to-orange-50" }
-              ].map((item, i) => (
-                <div key={i} className="flex flex-col items-center text-center">
-                  <div className={`w-16 md:w-24 h-16 md:h-24 rounded-full bg-gradient-to-br ${item.color} border-2 border-white shadow-lg flex items-center justify-center mb-3 md:mb-6 relative group hover:shadow-2xl transition-all duration-300`}>
-                    {(() => {
-                      switch(i) {
-                        case 0: return <item.icon className="w-6 md:w-10 h-6 md:h-10 text-purple-600" />;
-                        case 1: return <item.icon className="w-6 md:w-10 h-6 md:h-10 text-blue-600" />;
-                        case 2: return <item.icon className="w-6 md:w-10 h-6 md:h-10 text-emerald-600" />;
-                        case 3: return <item.icon className="w-6 md:w-10 h-6 md:h-10 text-orange-600" />;
-                        default: return <item.icon className="w-6 md:w-10 h-6 md:h-10 text-blue-600" />;
-                      }
-                    })()}
-                    <span className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center shadow-lg border-2 border-white">
-                        {item.step}
-                    </span>
-                  </div>
-                  <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2 md:mb-3">{item.title}</h3>
-                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed">{item.desc}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-12 relative z-10">
+            {[
+              { icon: Brain, title: "Skill Competency", desc: "Master high-income operational automation and management skills.", color: "from-purple-100 to-purple-50", iconColor: "text-purple-600" },
+              { icon: FolderOpen, title: "Portfolio Project", desc: "Build real-world systems that demonstrate your technical ability.", color: "from-blue-100 to-blue-50", iconColor: "text-blue-600" },
+              { icon: Award, title: "Case Study", desc: "Document your projects into professional results-driven case studies.", color: "from-emerald-100 to-emerald-50", iconColor: "text-emerald-600" },
+              { icon: TrendingUp, title: "Acquisition System", desc: "Get the exact outreach and closing systems to win your own clients.", color: "from-orange-100 to-orange-50", iconColor: "text-orange-600" },
+              { icon: Globe, title: "Marketplace Access", desc: "Get prioritized placement in the vetted OPSly talent marketplace.", color: "from-blue-100 to-blue-50", iconColor: "text-blue-600" },
+              { icon: Rocket, title: "Interview Readiness", desc: "Master the communication and technical questions for global roles.", color: "from-emerald-100 to-emerald-50", iconColor: "text-emerald-600" }
+            ].map((item, i) => (
+              <div key={i} className="flex flex-col items-center text-center p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 group">
+                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                  <item.icon className={`w-8 h-8 ${item.iconColor}`} />
                 </div>
-              ))}
-            </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">{item.title}</h3>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
           </div>
         </div>
       </section>

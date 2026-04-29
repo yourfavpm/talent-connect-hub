@@ -14,11 +14,16 @@ import {
     Globe,
     TrendingUp,
     ArrowLeft,
-    Loader2
+    Loader2,
+    CheckCircle2,
+    Monitor,
+    Smile,
+    Quote as QuoteIcon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import CurriculumAccordion from "@/components/academy/CurriculumAccordion";
 import type { CurriculumWeek } from "@/components/academy/CurriculumAccordion";
+import TestimonialCard from "@/components/academy/TestimonialCard";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -49,6 +54,12 @@ interface Course {
     slots_total: number;
     slots_filled: number;
     next_cohort_date: string;
+    marketplace_readiness?: string[];
+    final_project?: {
+        title: string;
+        requirements: string[];
+    };
+    testimonials?: any[];
 }
 
 const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
@@ -341,16 +352,65 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                 </div>
             </section>
 
+            {/* TOOLS MASTERED */}
+            {course.tools && course.tools.length > 0 && (
+                <section className="py-20 px-4 bg-white border-b border-slate-100">
+                    <div className="container max-w-[1200px] mx-auto">
+                        <div className="text-center mb-16">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold tracking-widest uppercase mb-6">The Stack</div>
+                            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">Tools You'll <span className="text-emerald-500">Master.</span></h2>
+                        </div>
+                        <div className="flex flex-wrap justify-center gap-4">
+                            {course.tools.map((tool, i) => (
+                                <div key={i} className="px-8 py-5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3 group hover:border-emerald-200 transition-all shadow-sm">
+                                    <Monitor className="w-5 h-5 text-emerald-500" />
+                                    <span className="font-bold text-slate-700">{tool}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* WHO IS THIS FOR */}
+            {course.who_is_it_for && course.who_is_it_for.length > 0 && (
+                <section className="py-20 px-4 bg-slate-50/30 border-b border-slate-100">
+                    <div className="container max-w-[1200px] mx-auto">
+                        <div className="flex flex-col lg:flex-row items-center gap-16">
+                            <div className="lg:w-1/2">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold tracking-widest uppercase mb-6">Ideal Candidates</div>
+                                <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-8 tracking-tight">Who Is This <span className="text-blue-600">For?</span></h2>
+                                <div className="space-y-4">
+                                    {course.who_is_it_for.map((item, i) => (
+                                        <div key={i} className="flex items-start gap-4 p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-1">
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                                            </div>
+                                            <p className="text-slate-600 font-semibold leading-relaxed">{item}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="lg:w-1/2 bg-blue-600 rounded-[3rem] p-12 text-white relative overflow-hidden hidden lg:block">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[100px] rounded-full" />
+                                <div className="relative z-10">
+                                    <Smile className="w-16 h-16 mb-8 text-blue-200" />
+                                    <h3 className="text-4xl font-bold mb-6 tracking-tight">Built for Africa's Next-Gen Talent.</h3>
+                                    <p className="text-blue-100 text-lg leading-relaxed">We design our programs specifically for ambitious professionals ready to compete in the global remote work economy.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            )}
+
             {/* WHAT YOU WILL LEARN */}
             <section className="py-20 px-4 bg-slate-50/50 border-b border-slate-100">
                 <div className="container max-w-[1600px] mx-auto">
-                    <div className="grid lg:grid-cols-12 gap-16 items-center">
-                        <div className="lg:col-span-12 text-center mb-12">
-                            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight">Practical <span className="text-blue-600">Outcomes.</span></h2>
-                        </div>
-                        
-                        <div className="lg:col-span-12">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid lg:grid-cols-12 gap-16 items-start">
+                        <div className="lg:col-span-8">
+                            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight mb-12">Practical <span className="text-blue-600">Outcomes.</span></h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {(course.what_youll_learn || []).map((item, i) => (
                                     <div key={i} className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start gap-4">
                                         <div className="shrink-0 w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
@@ -361,9 +421,65 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                                 ))}
                             </div>
                         </div>
+
+                        {course.final_project && (
+                            <div className="lg:col-span-4">
+                                <div className="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl h-full">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 blur-[60px]" />
+                                    <div className="relative z-10">
+                                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Capstone Project</div>
+                                        <h3 className="text-2xl font-bold mb-4">{course.final_project.title}</h3>
+                                        <p className="text-slate-400 text-sm mb-8">To graduate and access the marketplace, you must complete and present this system.</p>
+                                        
+                                        <div className="space-y-4">
+                                            {course.final_project.requirements.map((req, i) => (
+                                                <div key={i} className="flex items-start gap-3">
+                                                    <div className="mt-1 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                                    <span className="text-sm text-slate-300 font-medium">{req}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>
+
+            {/* MARKETPLACE READINESS */}
+            {course.marketplace_readiness && (
+                <section className="py-20 px-4 bg-white border-b border-slate-100">
+                    <div className="container max-w-[1600px] mx-auto">
+                        <div className="bg-blue-600 rounded-[2rem] p-8 md:p-16 text-white relative overflow-hidden shadow-xl">
+                            <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-white/10 to-transparent" />
+                            <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12">
+                                <div className="flex-1">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Marketplace Ready</div>
+                                    <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">Your bridge to <span className="text-blue-100">global work.</span></h2>
+                                    <p className="text-lg text-blue-50 mb-10 max-w-xl">Every student exits with more than just skills. We prepare you to be an elite professional in the OPSly marketplace.</p>
+                                    
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {course.marketplace_readiness.map((item, i) => (
+                                            <div key={i} className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                                                <CheckCircle className="w-5 h-5 text-blue-200" />
+                                                <span className="text-sm font-bold">{item}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="w-full lg:w-80 h-80 bg-white/10 rounded-2xl border border-white/20 flex items-center justify-center backdrop-blur-md">
+                                    <div className="text-center p-8">
+                                        <Globe className="w-16 h-16 text-white/50 mx-auto mb-4" />
+                                        <div className="text-sm font-bold opacity-80 uppercase tracking-widest">Global Placement</div>
+                                        <div className="mt-4 text-xs font-medium opacity-60">Prioritized matching for program graduates</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {/* TRANSFORMATION */}
             <section className="py-24 px-4 bg-white border-b border-slate-100">
@@ -386,6 +502,24 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                     </div>
                 </div>
             </section>
+
+            {/* TESTIMONIALS */}
+            {course.testimonials && course.testimonials.length > 0 && (
+                <section className="py-24 px-4 bg-slate-50/50">
+                    <div className="container max-w-[1600px] mx-auto">
+                        <div className="text-center mb-20">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white text-blue-600 rounded-lg text-[10px] font-bold tracking-widest uppercase mb-6 shadow-sm">Success Stories</div>
+                            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">From Learning to <span className="text-blue-600">Earning.</span></h2>
+                            <p className="text-base md:text-lg text-slate-500 font-normal max-w-2xl mx-auto">Hear from graduates who transformed their careers through this program.</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {course.testimonials.map((t, i) => (
+                                <TestimonialCard key={i} testimonial={t} />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {/* FINAL CTA - START TRANSFORMATION */}
             <section className="py-24 md:py-32 px-4 bg-slate-900 text-white text-center relative overflow-hidden">
