@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { getInternalPath } from "@/utils/subdomain";
+import { motion } from "framer-motion";
 
 interface Cohort {
     id: string;
@@ -843,7 +844,8 @@ const CohortDetail = () => {
                                                     <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full uppercase tracking-wider">Reviewed</span>
                                                 ) : (
                                                     <span className="px-2.5 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full uppercase tracking-wider">Pending</span>
-                                                                                           </td>
+                                                )}
+                                            </td>
                                             <td className="px-10 py-8 text-right">
                                                 {sub.status !== 'reviewed' ? (
                                                     <Button 
@@ -925,7 +927,6 @@ const CohortDetail = () => {
                             </div>
                         )}
                     </TabsContent>
-nt>
                 </Tabs>
             </div>
         </div>
