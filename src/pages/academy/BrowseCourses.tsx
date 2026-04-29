@@ -38,13 +38,35 @@ const BrowseCourses = () => {
                 const { data, error } = await supabase
                     .from("academy_courses")
                     .select("*")
-                    .eq("is_live", true)
-                    .order("created_at", { ascending: false });
+                    .eq("is_live", true);
                 
                 if (error) {
                     console.error("Failed to fetch courses:", error);
                 }
-                setCourses((data as AcademyCourse[]) || []);
+                
+                let fetchedCourses = (data as AcademyCourse[]) || [];
+                
+                // Prioritize the 4 flagship courses
+                const flagshipSlugs = [
+                    'ai-automation-for-operations',
+                    'virtual-assistant-operations',
+                    'social-media-management',
+                    'client-acquisition-for-operators'
+                ];
+                
+                fetchedCourses.sort((a, b) => {
+                    const aIndex = flagshipSlugs.indexOf(a.slug);
+                    const bIndex = flagshipSlugs.indexOf(b.slug);
+                    
+                    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+                    if (aIndex !== -1) return -1;
+                    if (bIndex !== -1) return 1;
+                    
+                    // Fallback to created_at descending
+                    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                });
+
+                setCourses(fetchedCourses);
             } catch (err) {
                 console.error("Failed to fetch courses from DB:", err);
             } finally {
@@ -75,48 +97,30 @@ const BrowseCourses = () => {
         <div className="bg-white min-h-screen font-inter">
             {/* Header */}
             <section className="pt-24 md:pt-32 pb-16 md:pb-24 bg-slate-50 border-b border-slate-100 px-3 md:px-6 overflow-hidden">
-                <div className="container max-w-[1600px] mx-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
-                        <div className="max-w-3xl">
-                            <motion.div 
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6"
-                            >
-                                Course Catalog
-                            </motion.div>
-                            <motion.h1 
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 }}
-                                className="text-4xl md:text-5xl lg:text-7xl font-bold text-slate-900 mb-6 tracking-tight leading-tight"
-                            >
-                                The Modern Operations <span className="text-blue-600">Curriculum</span>
-                            </motion.h1>
-                            <motion.p 
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 }}
-                                className="text-base md:text-xl text-slate-500 font-normal leading-relaxed max-w-2xl"
-                            >
-                                Practical, tool-driven programs designed to turn you into a world-class remote operations professional. Master the systems that power global growth.
-                            </motion.p>
-                        </div>
-                        
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
-                            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                            className="hidden lg:block relative"
-                        >
-                            <div className="absolute inset-0 bg-blue-400 blur-[120px] opacity-10 rounded-full animate-pulse" />
-                            <img 
-                                src="/images/academy/hero-illustration.png" 
-                                alt="Operations Analytics" 
-                                className="relative z-10 w-full h-auto drop-shadow-2xl hover:scale-105 transition-transform duration-700"
-                            />
-                        </motion.div>
-                    </div>
+                <div className="container max-w-[1200px] mx-auto text-center">
+                    <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6"
+                    >
+                        Course Catalog
+                    </motion.div>
+                    <motion.h1 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="text-4xl md:text-5xl lg:text-7xl font-bold text-slate-900 mb-6 tracking-tight leading-tight"
+                    >
+                        The Modern Operations <span className="text-blue-600">Curriculum</span>
+                    </motion.h1>
+                    <motion.p 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-base md:text-xl text-slate-500 font-normal leading-relaxed max-w-2xl mx-auto"
+                    >
+                        Practical, tool-driven programs designed to turn you into a world-class remote operations professional. Master the systems that power global growth.
+                    </motion.p>
                 </div>
             </section>
 
