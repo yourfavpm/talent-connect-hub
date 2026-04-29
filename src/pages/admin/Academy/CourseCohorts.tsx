@@ -10,7 +10,8 @@ import {
     Loader2,
     BookOpen,
     Clock,
-    AlertCircle
+    AlertCircle,
+    Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -69,6 +70,34 @@ const CourseCohorts = () => {
             setLoading(false);
         }
     }, [slug, toast]);
+
+    const handleDeleteCohort = async (id: string, name: string) => {
+        if (!window.confirm(`Are you sure you want to delete "${name}"? This will remove all students, sessions, and data associated with this cohort. This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from("cohorts")
+                .delete()
+                .eq("id", id);
+            
+            if (error) throw error;
+            
+            setCohorts(prev => prev.filter(c => c.id !== id));
+            toast({
+                title: "Cohort Deleted",
+                description: `Successfully removed ${name}.`
+            });
+        } catch (err) {
+            console.error("Error deleting cohort:", err);
+            toast({
+                title: "Error",
+                description: "Failed to delete cohort. It might have active enrollments that prevent deletion if not cascaded.",
+                variant: "destructive"
+            });
+        }
+    };
 
     useEffect(() => {
         fetchData();
@@ -143,9 +172,20 @@ const CourseCohorts = () => {
                                     <Button 
                                         onClick={() => navigate(getInternalPath(`/admin/academy/cohorts/${cohort.id}`))}
                                         variant="ghost" 
-                                        className="h-12 px-6 rounded-xl font-bold text-blue-600 hover:bg-blue-50 gap-2 ml-auto"
+                                        className="h-12 px-6 rounded-xl font-bold text-blue-600 hover:bg-blue-50 gap-2"
                                     >
                                         Manage Cohort <ChevronRight className="w-4 h-4" />
+                                    </Button>
+
+                                    <Button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteCohort(cohort.id, cohort.name);
+                                        }}
+                                        variant="ghost" 
+                                        className="h-12 w-12 p-0 rounded-xl font-bold text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
                                     </Button>
                                 </div>
                             </div>
