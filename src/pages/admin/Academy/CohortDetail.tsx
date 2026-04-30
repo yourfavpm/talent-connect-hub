@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -20,14 +20,19 @@ import {
     Star,
     Award,
     Lock,
-    AlertTriangle
+    AlertTriangle,
+    Mail,
+    X,
+    Search
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { getInternalPath } from "@/utils/subdomain";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Checkbox } from "@/components/ui/checkbox";
+import BatchEmailModal from "@/pages/admin/TalentDirectory/components/BatchEmailModal";
 
 interface Cohort {
     id: string;
@@ -132,6 +137,8 @@ const CohortDetail = () => {
     const [showCertModal, setShowCertModal] = useState(false);
     const [certStudents, setCertStudents] = useState<{id: string; name: string; email: string; submissionRate: number; avgGrade: number; eligible: string; selected: boolean}[]>([]);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const [certSuccess, setCertSuccess] = useState<number | null>(null);
 
     const fetchCohortData = useCallback(async () => {
@@ -159,28 +166,58 @@ const CohortDetail = () => {
                 mentors: cohortData.mentors || []
             });
 
-            // 2. Fetch All Data in Parallel
-            const [studentsRes, sessionsRes, announcementsRes, assignmentsRes, submissionsRes] = await Promise.all([
-                supabase.from("academy_enrollments").select("*, profiles:user_id(streak_count, total_study_hours)").eq("cohort_id", id),
+            // 2. Fetch All Data
+            const [enrollmentsRes, sessionsRes, announcementsRes, assignmentsRes, submissionsRes] = await Promise.all([
+                supabase.from("academy_enrollments").select("*").eq("cohort_id", id),
                 supabase.from("sessions").select("*").eq("cohort_id", id).order("session_date", { ascending: true }),
                 supabase.from("announcements").select("*").eq("cohort_id", id).order("created_at", { ascending: false }),
                 supabase.from("assignments").select("*").eq("cohort_id", id).order("created_at", { ascending: false }),
-                supabase.from("submissions").select("*, assignments!inner(title, cohort_id), profiles:student_id(full_name, email)").eq("assignments.cohort_id", id).order("created_at", { ascending: false })
+                supabase.from("submissions").select("*, assignments!inner(title, cohort_id)").eq("assignments.cohort_id", id).order("created_at", { ascending: false })
             ]);
 
-            const transformedStudents = (studentsRes.data || []).map((s: any) => ({
-                ...s,
-                student_name: s.student_name || s.profiles?.full_name,
-                student_email: s.student_email || s.profiles?.email,
-                streak_count: s.profiles?.streak_count,
-                total_study_hours: s.profiles?.total_study_hours
-            }));
+            // 3. Process Students & Profiles
+            const enrollments = enrollmentsRes.data || [];
+            let transformedStudents = [];
+            let profileMap = {};
+
+            if (enrollments.length > 0) {
+                const userIds = enrollments.map(e => e.user_id).filter(Boolean);
+                const { data: profilesData } = await supabase
+                    .from("profiles")
+                    .select("user_id, first_name, last_name, email, streak_count, total_study_hours")
+                    .in("user_id", userIds);
+
+                profileMap = Object.fromEntries((profilesData || []).map(p => [p.user_id, p]));
+
+                transformedStudents = enrollments.map((s: any) => {
+                    const profile = (profileMap as any)[s.user_id];
+                    return {
+                        ...s,
+                        student_name: s.student_name || (profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : null) || s.student_email?.split('@')[0] || "Student",
+                        student_email: s.student_email || profile?.email,
+                        profiles: profile
+                    };
+                });
+            }
+
+            // 4. Process Submissions & Profiles
+            const rawSubmissions = submissionsRes.data || [];
+            const transformedSubmissions = rawSubmissions.map((s: any) => {
+                const profile = (profileMap as any)[s.student_id];
+                return {
+                    ...s,
+                    profiles: profile ? {
+                        full_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+                        email: profile.email
+                    } : null
+                };
+            });
 
             setStudents(transformedStudents as Student[]);
             setSessions((sessionsRes.data as Session[]) || []);
             setAnnouncements((announcementsRes.data as Announcement[]) || []);
             setAssignments((assignmentsRes.data as Assignment[]) || []);
-            setSubmissions((submissionsRes.data as unknown as Submission[]) || []);
+            setSubmissions(transformedSubmissions as unknown as Submission[]);
 
         } catch (err) {
             console.error("Error fetching cohort detail:", err);
@@ -189,7 +226,7 @@ const CohortDetail = () => {
                 description: "Failed to load cohort details.",
                 variant: "destructive"
             });
-            navigate(getInternalPath("/admin/academy"));
+            navigate(-1);
         } finally {
             setLoading(false);
         }
@@ -198,6 +235,29 @@ const CohortDetail = () => {
     useEffect(() => {
         fetchCohortData();
     }, [fetchCohortData]);
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === students.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(students.map(t => t.id));
+        }
+    };
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const selectedStudentsData = useMemo(() => {
+        return students.filter(t => selectedIds.includes(t.id)).map(t => ({
+            id: t.id,
+            email: t.student_email,
+            first_name: t.student_name.split(' ')[0],
+            last_name: t.student_name.split(' ').slice(1).join(' ')
+        }));
+    }, [students, selectedIds]);
 
     const handleCreateSession = async () => {
         if (!newSession.title || !newSession.date) return;
@@ -601,9 +661,9 @@ const CohortDetail = () => {
     return (
         <div className="p-8 lg:p-12 bg-slate-50/50 min-h-screen font-inter">
             <div className="w-full max-w-none">
-                <Link to={getInternalPath("/admin/academy")} className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-xs uppercase tracking-widest mb-8 transition-colors">
-                    <ArrowLeft className="w-4 h-4" /> Back to Academy
-                </Link>
+                <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-xs uppercase tracking-widest mb-8 transition-colors">
+                    <ArrowLeft className="w-4 h-4" /> Back to Previous
+                </button>
 
                 {/* Header Card */}
                 <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-sm mb-12">
@@ -690,6 +750,12 @@ const CohortDetail = () => {
                             <table className="w-full text-left">
                                 <thead className="bg-slate-50/50">
                                     <tr>
+                                        <th className="px-8 py-5 w-[40px]">
+                                            <Checkbox 
+                                                checked={students.length > 0 && selectedIds.length === students.length}
+                                                onCheckedChange={toggleSelectAll}
+                                            />
+                                        </th>
                                         <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Student Name</th>
                                         <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Progress</th>
                                         <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Streak/Hours</th>
@@ -700,7 +766,13 @@ const CohortDetail = () => {
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
                                     {students.map((student) => (
-                                        <tr key={student.id} className="hover:bg-slate-50 transition-colors">
+                                        <tr key={student.id} className={`hover:bg-slate-50 transition-colors ${selectedIds.includes(student.id) ? 'bg-blue-50/30' : ''}`}>
+                                            <td className="px-8 py-6">
+                                                <Checkbox 
+                                                    checked={selectedIds.includes(student.id)}
+                                                    onCheckedChange={() => toggleSelect(student.id)}
+                                                />
+                                            </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex flex-col gap-1">
                                                     <span className="font-bold text-slate-900">{student.student_name}</span>
@@ -1325,7 +1397,53 @@ const CohortDetail = () => {
                         </div>
                     </motion.div>
                 </div>
-            )}
+            {/* === FLOATING SELECTION BAR === */}
+            <AnimatePresence>
+                {selectedIds.length > 0 && (
+                    <motion.div 
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[110] w-full max-w-xl px-4"
+                    >
+                        <div className="bg-slate-900 text-white rounded-2xl p-4 shadow-2xl border border-white/10 flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-blue-500 text-white h-8 w-8 rounded-lg flex items-center justify-center font-bold text-sm">
+                                    {selectedIds.length}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold">Students Selected</p>
+                                    <p className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">Multi-select action active</p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                                <Button 
+                                    size="sm" 
+                                    onClick={() => setIsEmailModalOpen(true)}
+                                    className="bg-white text-slate-900 hover:bg-slate-100 font-bold h-9 gap-2"
+                                >
+                                    <Mail className="h-3.5 w-3.5" /> Broadcast Email
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => setSelectedIds([])}
+                                    className="text-slate-400 hover:text-white hover:bg-white/10 h-9 w-9"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <BatchEmailModal 
+                isOpen={isEmailModalOpen}
+                onClose={() => setIsEmailModalOpen(false)}
+                selectedTalents={selectedStudentsData}
+            />
         </div>
     );
 };

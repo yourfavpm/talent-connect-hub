@@ -117,8 +117,15 @@ const Checkout = () => {
             setIsExistingUser(Boolean(exists));
             
             if (exists) {
-                // Existing users skip password creation and go to payment immediately
-                setStep('payment');
+                // Check if already logged in as this user
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session && session.user.email?.toLowerCase() === email.trim().toLowerCase()) {
+                    setStep('payment');
+                } else {
+                    // User exists but not logged in (or logged in as someone else)
+                    // We need them to authenticate to link the enrollment
+                    setStep('auth');
+                }
             } else {
                 // New users must create a password to secure their account
                 setStep('auth');
@@ -146,7 +153,7 @@ const Checkout = () => {
             toast({ title: "Weak Password", description: "Password must be at least 8 characters long.", variant: "destructive" });
             return;
         }
-        if (password !== confirmPassword) {
+        if (!isExistingUser && password !== confirmPassword) {
             toast({ title: "Mismatch", description: "Passwords do not match.", variant: "destructive" });
             return;
         }
@@ -310,11 +317,26 @@ const Checkout = () => {
                         console.log("Enrollment record created successfully");
                         
                         // Increment cohort slots in real-time for immediate admin visibility
-                        const { data: cohortData } = await supabase.from("cohorts").select("current_slots").eq("id", selectedCohortId).single();
-                        if (cohortData) {
-                            await supabase.from("cohorts").update({ 
-                                current_slots: (cohortData.current_slots || 0) + 1 
-                            }).eq("id", selectedCohortId);
+                        // Use a more robust increment logic
+                        try {
+                            const { data: cohortData, error: cohortFetchErr } = await supabase
+                                .from("cohorts")
+                                .select("current_slots")
+                                .eq("id", selectedCohortId)
+                                .single();
+                                
+                            if (!cohortFetchErr && cohortData) {
+                                const newCount = (cohortData.current_slots || 0) + 1;
+                                const { error: countErr } = await supabase
+                                    .from("cohorts")
+                                    .update({ current_slots: newCount })
+                                    .eq("id", selectedCohortId);
+                                
+                                if (countErr) console.error("Failed to update cohort slots:", countErr);
+                                else console.log("Cohort slots updated to:", newCount);
+                            }
+                        } catch (countErr) {
+                            console.error("Critical error updating slots:", countErr);
                         }
 
                         // Trigger Branded Enrollment Email via specialized function
@@ -566,8 +588,14 @@ const Checkout = () => {
                                     {step === 'auth' && (
                                         <div className="space-y-6">
                                             <div>
-                                                <h1 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">Create your account</h1>
-                                                <p className="text-slate-500 font-medium">Set a password to access your student dashboard after payment.</p>
+                                                <h1 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">
+                                                    {isExistingUser ? "Welcome back!" : "Create your account"}
+                                                </h1>
+                                                <p className="text-slate-500 font-medium">
+                                                    {isExistingUser 
+                                                        ? "Sign in to your account to continue with the enrollment."
+                                                        : "Set a password to access your student dashboard after payment."}
+                                                </p>
                                             </div>
                                             <div className="px-4 py-3 bg-blue-50 text-blue-800 rounded-lg text-sm font-medium border border-blue-100 flex items-center gap-3">
                                                  <Mail className="w-4 h-4 text-blue-500" /> {email}
@@ -575,13 +603,15 @@ const Checkout = () => {
                                             <form onSubmit={handleAuthSubmit} className="space-y-6">
                                                 <div className="space-y-4">
                                                     <div className="space-y-2">
-                                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Password</label>
+                                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">
+                                                            {isExistingUser ? "Your Password" : "Create Password"}
+                                                        </label>
                                                         <div className="relative">
                                                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                                             <input 
                                                                 type={showPassword ? "text" : "password"} 
                                                                 required
-                                                                placeholder="Min. 8 characters"
+                                                                placeholder={isExistingUser ? "Enter your password" : "Min. 8 characters"}
                                                                 className="w-full h-14 pl-12 pr-14 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
                                                                 value={password}
                                                                 onChange={(e) => setPassword(e.target.value)}
@@ -591,20 +621,22 @@ const Checkout = () => {
                                                             </button>
                                                         </div>
                                                     </div>
-                                                    <div className="space-y-2">
-                                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Confirm Password</label>
-                                                        <div className="relative">
-                                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                                            <input 
-                                                                type={showPassword ? "text" : "password"} 
-                                                                required
-                                                                placeholder="Confirm password"
-                                                                className="w-full h-14 pl-12 pr-14 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
-                                                                value={confirmPassword}
-                                                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                                            />
+                                                    {!isExistingUser && (
+                                                        <div className="space-y-2">
+                                                            <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Confirm Password</label>
+                                                            <div className="relative">
+                                                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                                                <input 
+                                                                    type={showPassword ? "text" : "password"} 
+                                                                    required
+                                                                    placeholder="Confirm password"
+                                                                    className="w-full h-14 pl-12 pr-14 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                                                    value={confirmPassword}
+                                                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                                                />
+                                                            </div>
                                                         </div>
-                                                    </div>
+                                                    )}
                                                 </div>
                                                 <div className="flex gap-3">
                                                     <Button 
