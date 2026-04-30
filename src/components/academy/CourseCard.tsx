@@ -84,7 +84,7 @@ const CourseCard = ({ course, onViewDetails }: CourseCardProps) => {
                             <span>View Program Details</span>
                             <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
                         </Link>
-                    )}}
+                    )}
                 </div>
             </div>
             {course.is_live && (
