@@ -245,24 +245,24 @@ const CourseHub = () => {
                         </Link>
                         <div className="h-10 w-px bg-slate-100 hidden md:block" />
                         <div>
-                            <h1 className="text-base md:text-lg font-bold text-slate-800 tracking-tight leading-tight mb-1">{courseInfo?.title}</h1>
+                            <h1 className="text-base md:text-lg font-semibold text-slate-800 tracking-tight leading-tight mb-1">{courseInfo?.title}</h1>
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[8px] md:text-[9px] font-bold rounded uppercase tracking-wider border border-blue-100">
+                                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[8px] md:text-[9px] font-semibold rounded uppercase tracking-wider border border-blue-100">
                                     {enrollment?.cohorts?.name}
                                 </span>
-                                <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mentors: {enrollment?.cohorts?.mentors?.map(m => m.name).join(", ") || "N/A"}</span>
+                                <span className="text-[9px] md:text-[10px] font-normal text-slate-500 uppercase tracking-wider">Mentors: {enrollment?.cohorts?.mentors?.map(m => m.name).join(", ") || "N/A"}</span>
                             </div>
                         </div>
                     </div>
                     
                     <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
                         <div className="flex flex-col items-start md:items-end mr-4">
-                            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Progress</div>
+                            <div className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mb-1">Progress</div>
                             <div className="w-32 md:w-48 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                 <div className="h-full bg-blue-600 rounded-full w-[35%]" />
                             </div>
                         </div>
-                        <Button variant="outline" className="h-9 md:h-11 px-3 md:px-5 rounded-xl font-bold text-[10px] md:text-xs gap-2 border-slate-200">
+                        <Button variant="outline" className="h-9 md:h-11 px-3 md:px-5 rounded-xl font-semibold text-[10px] md:text-xs gap-2 border-slate-200">
                             <FileText className="w-3.5 h-3.5" /> Syllabus
                         </Button>
                     </div>
@@ -290,30 +290,30 @@ const CourseHub = () => {
                             }}
                             className="w-full"
                         >
-                            <TabsList className="bg-white p-1 rounded-2xl border border-slate-200 h-12 md:h-14 mb-8 md:mb-10 w-full lg:w-auto shadow-sm overflow-x-auto no-scrollbar justify-start">
-                                <TabsTrigger value="schedule" className="px-4 md:px-6 rounded-xl font-bold text-xs md:text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full whitespace-nowrap">
-                                    Live Classes
-                                </TabsTrigger>
-                                <TabsTrigger value="announcements" className="px-4 md:px-6 rounded-xl font-bold text-xs md:text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full relative whitespace-nowrap">
-                                    Announcements
-                                    {hasUnreadAnnouncements && (
-                                        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
-                                    )}
-                                </TabsTrigger>
-                                <TabsTrigger value="assignments" className="px-4 md:px-6 rounded-xl font-bold text-xs md:text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full whitespace-nowrap">
-                                    Assignments
-                                </TabsTrigger>
-                                <TabsTrigger value="recordings" className="px-4 md:px-6 rounded-xl font-bold text-xs md:text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full whitespace-nowrap">
-                                    Library
-                                </TabsTrigger>
+                            <TabsList className="bg-transparent border-b border-slate-200 h-auto p-0 mb-8 w-full justify-start rounded-none gap-0 flex-nowrap">
+                                <TabsTrigger value="schedule" className="px-6 py-4 pb-3 rounded-none font-semibold text-sm data-[state=active]:bg-transparent data-[state=active]:text-slate-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent data-[state=inactive]:text-slate-500 data-[state=inactive]:hover:text-slate-700 transition-colors h-full bg-transparent shadow-none border-none">
+                                     Live Classes
+                                 </TabsTrigger>
+                                 <TabsTrigger value="announcements" className="px-6 py-4 pb-3 rounded-none font-semibold text-sm data-[state=active]:bg-transparent data-[state=active]:text-slate-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent data-[state=inactive]:text-slate-500 data-[state=inactive]:hover:text-slate-700 transition-colors h-full bg-transparent shadow-none border-none relative">
+                                     Announcements
+                                     {hasUnreadAnnouncements && (
+                                         <span className="absolute top-0 -right-2 w-1.5 h-1.5 bg-red-500 rounded-full" />
+                                     )}
+                                 </TabsTrigger>
+                                 <TabsTrigger value="assignments" className="px-6 py-4 pb-3 rounded-none font-semibold text-sm data-[state=active]:bg-transparent data-[state=active]:text-slate-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent data-[state=inactive]:text-slate-500 data-[state=inactive]:hover:text-slate-700 transition-colors h-full bg-transparent shadow-none border-none">
+                                     Assignments
+                                 </TabsTrigger>
+                                 <TabsTrigger value="recordings" className="px-6 py-4 pb-3 rounded-none font-semibold text-sm data-[state=active]:bg-transparent data-[state=active]:text-slate-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=inactive]:border-b-2 data-[state=inactive]:border-transparent data-[state=inactive]:text-slate-500 data-[state=inactive]:hover:text-slate-700 transition-colors h-full bg-transparent shadow-none border-none">
+                                     Library
+                                 </TabsTrigger>
                             </TabsList>
 
                             <AnimatePresence mode="wait">
                                 <TabsContent value="schedule" className="outline-none">
                                     <div className="space-y-6">
                                         <div className="flex items-center justify-between mb-8 px-2">
-                                            <h2 className="text-2xl font-bold text-slate-800">Program Timeline</h2>
-                                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{sessions.length} Total Sessions</span>
+                                            <h2 className="text-2xl font-semibold text-slate-800">Program Timeline</h2>
+                                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{sessions.length} Total Sessions</span>
                                         </div>
                                         
                                         {sessions.map((session, idx) => {
@@ -341,15 +341,15 @@ const CourseHub = () => {
                                                             </div>
                                                             <div>
                                                                 <div className="flex items-center gap-3 mb-1">
-                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em]">
+                                                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.1em]">
                                                                         Session {idx + 1}
                                                                     </span>
                                                                     {isNext && (
-                                                                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[8px] font-bold rounded-full uppercase tracking-wider">Next Up</span>
+                                                                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[8px] font-semibold rounded-full uppercase tracking-wider">Next Up</span>
                                                                     )}
                                                                 </div>
-                                                                <h3 className="text-lg font-bold text-slate-800 tracking-tight">{session.title}</h3>
-                                                                <div className="flex items-center gap-4 mt-1.5 font-medium text-slate-500 text-xs">
+                                                                <h3 className="text-lg font-semibold text-slate-800 tracking-tight">{session.title}</h3>
+                                                                <div className="flex items-center gap-4 mt-1.5 font-normal text-slate-500 text-xs">
                                                                     <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-slate-400" /> {new Date(session.session_date).toLocaleDateString()}</span>
                                                                     <span className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-slate-400" /> {session.start_time}</span>
                                                                 </div>
@@ -357,18 +357,18 @@ const CourseHub = () => {
                                                         </div>
                                                         <div className="flex items-center gap-3 w-full md:w-auto">
                                                             {isPast ? (
-                                                                <Button variant="outline" className="rounded-xl border-slate-200 group h-11 px-5 text-slate-600 font-bold text-xs gap-2">
+                                                                <Button variant="outline" className="rounded-xl border-slate-200 group h-11 px-5 text-slate-600 font-semibold text-xs gap-2">
                                                                     <Play className="w-3.5 h-3.5 fill-slate-400" /> Watch Recording
                                                                 </Button>
                                                             ) : isNext ? (
                                                                 <Button 
                                                                     onClick={() => window.open(session.meeting_url, '_blank')}
-                                                                    className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-11 px-6 font-bold text-xs gap-2 shadow-lg shadow-blue-200"
+                                                                    className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-11 px-6 font-semibold text-xs gap-2 shadow-lg shadow-blue-200"
                                                                 >
                                                                     <Play className="w-3.5 h-3.5 fill-white" /> Join Live Room
                                                                 </Button>
                                                             ) : (
-                                                                <Button disabled className="rounded-xl bg-slate-100 text-slate-400 h-11 px-6 font-bold text-xs gap-2">
+                                                                <Button disabled className="rounded-xl bg-slate-100 text-slate-400 h-11 px-6 font-semibold text-xs gap-2">
                                                                     <Lock className="w-3.5 h-3.5" /> Room Locked
                                                                 </Button>
                                                             )}
@@ -406,8 +406,8 @@ const CourseHub = () => {
                                                     </div>
                                                     <div className="flex-grow">
                                                         <div className="flex items-center justify-between mb-2">
-                                                            <h3 className="text-lg font-bold text-slate-800">{ann.title}</h3>
-                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{new Date(ann.created_at).toLocaleDateString()}</span>
+                                                            <h3 className="text-lg font-semibold text-slate-800">{ann.title}</h3>
+                                                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{new Date(ann.created_at).toLocaleDateString()}</span>
                                                         </div>
                                                         <p className="text-slate-500 text-sm leading-relaxed whitespace-pre-wrap">{ann.content}</p>
                                                     </div>
@@ -418,7 +418,7 @@ const CourseHub = () => {
                                         {announcements.length === 0 && (
                                             <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
                                                 <Bell className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                                <p className="text-slate-500 font-bold">No announcements yet.</p>
+                                                <p className="text-slate-500 font-normal">No announcements yet.</p>
                                             </div>
                                         )}
                                     </div>
@@ -438,28 +438,28 @@ const CourseHub = () => {
                                                                 <FileText className="w-6 h-6 text-slate-400 group-hover:text-blue-600 transition-colors" />
                                                             </div>
                                                             {isSubmitted ? (
-                                                                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full uppercase tracking-wider">Submitted</span>
+                                                                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-semibold rounded-full uppercase tracking-wider">Submitted</span>
                                                             ) : (
-                                                                <span className="px-2.5 py-1 bg-amber-50 text-amber-600 text-[10px] font-bold rounded-full uppercase tracking-wider">Pending Submission</span>
+                                                                <span className="px-2.5 py-1 bg-amber-50 text-amber-600 text-[10px] font-semibold rounded-full uppercase tracking-wider">Pending Submission</span>
                                                             )}
                                                         </div>
-                                                        <h3 className="text-xl font-bold text-slate-800 mb-2">{assignment.title}</h3>
-                                                        <p className="text-slate-500 text-sm line-clamp-2 mb-6">{assignment.description}</p>
+<h3 className="text-xl font-semibold text-slate-800 mb-2">{assignment.title}</h3>
+                                        <p className="text-slate-500 text-sm font-normal line-clamp-2 mb-6">{assignment.description}</p>
                                                         
                                                         <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
-                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Due {new Date(assignment.deadline_at).toLocaleDateString()}</div>
+                                                            <div className="text-[10px] font-normal text-slate-500 uppercase tracking-widest">Due {new Date(assignment.deadline_at).toLocaleDateString()}</div>
                                                             {!isSubmitted ? (
                                                                  <Button 
                                                                      onClick={() => setSelectedAssignment(assignment)}
                                                                      variant="ghost" 
-                                                                     className="text-blue-600 font-bold text-xs p-0 hover:bg-transparent hover:text-blue-700 h-auto gap-1"
+                                                                     className="text-blue-600 font-semibold text-xs p-0 hover:bg-transparent hover:text-blue-700 h-auto gap-1"
                                                                  >
                                                                      Submit Work <ArrowRight size={14} />
                                                                  </Button>
                                                              ) : (
                                                                  <div className="flex items-center gap-2">
                                                                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                                                     <span className="text-xs font-bold text-emerald-600">Work Logged</span>
+                                                                     <span className="text-xs font-semibold text-emerald-600">Work Logged</span>
                                                                  </div>
                                                              )}
                                                          </div>
@@ -467,12 +467,12 @@ const CourseHub = () => {
                                                          {isSubmitted && submission?.status === 'reviewed' && (
                                                              <div className="mt-6 p-5 bg-blue-50/50 rounded-2xl border border-blue-100/50">
                                                                  <div className="flex items-center justify-between mb-3">
-                                                                     <span className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.1em]">Mentor Feedback</span>
-                                                                     <div className="px-2 py-1 bg-white text-blue-600 text-[10px] font-bold rounded-lg border border-blue-100 shadow-sm">
+                                                                     <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-[0.1em]">Mentor Feedback</span>
+                                                                     <div className="px-2 py-1 bg-white text-blue-600 text-[10px] font-semibold rounded-lg border border-blue-100 shadow-sm">
                                                                          Grade: {submission.grade || 'N/A'}
                                                                      </div>
                                                                  </div>
-                                                                 <p className="text-xs text-slate-600 leading-relaxed font-medium italic">
+                                                                 <p className="text-xs text-slate-700 leading-relaxed font-normal">
                                                                      "{submission.feedback || 'No feedback provided yet.'}"
                                                                  </p>
                                                              </div>
@@ -490,27 +490,27 @@ const CourseHub = () => {
                                                     animate={{ opacity: 1, scale: 1 }}
                                                     className="bg-white w-full max-w-xl rounded-[32px] p-10 shadow-2xl"
                                                 >
-                                                    <h3 className="text-2xl font-bold text-slate-800 mb-2">Submit: {selectedAssignment.title}</h3>
-                                                    <p className="text-slate-500 text-sm mb-8">Paste your work link or provide a summary of your task below.</p>
+                                                    <h3 className="text-2xl font-semibold text-slate-800 mb-2">Submit: {selectedAssignment.title}</h3>
+                                                    <p className="text-slate-500 text-sm font-normal mb-8">Paste your work link or provide a summary of your task below.</p>
                                                     
                                                     <textarea 
                                                         value={submissionContent}
                                                         onChange={(e) => setSubmissionContent(e.target.value)}
                                                         placeholder="Provide your solution link or explanation here..."
-                                                        className="w-full min-h-[160px] p-6 bg-slate-50 rounded-2xl border-transparent focus:bg-white focus:ring-blue-600 transition-all font-medium text-sm mb-8"
+                                                        className="w-full min-h-[160px] p-6 bg-slate-50 rounded-2xl border-transparent focus:bg-white focus:ring-blue-600 transition-all font-normal text-sm mb-8"
                                                     />
 
                                                     <div className="flex gap-4">
                                                         <Button 
                                                             variant="outline" 
-                                                            className="flex-grow h-14 rounded-2xl font-bold border-slate-200"
+                                                            className="flex-grow h-14 rounded-2xl font-semibold border-slate-200"
                                                             onClick={() => setSelectedAssignment(null)}
                                                             disabled={isSubmitting}
                                                         >
                                                             Cancel
                                                         </Button>
                                                         <Button 
-                                                            className="flex-grow-[2] h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold gap-2"
+                                                            className="flex-grow-[2] h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold gap-2"
                                                             onClick={handleSubmitAssignment}
                                                             disabled={isSubmitting || !submissionContent}
                                                         >
@@ -530,24 +530,24 @@ const CourseHub = () => {
                     <div className="lg:col-span-4 space-y-8">
                         {/* Instructor Cards */}
                         <div className="space-y-6">
-                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-2 px-2">Program Mentors</h4>
+                            <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-[0.15em] mb-2 px-2">Program Mentors</h4>
                             {(enrollment?.cohorts?.mentors as any[])?.length > 0 ? (
                                 (enrollment?.cohorts?.mentors as any[]).map((mentor, idx) => (
                                     <div key={idx} className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
                                         <div className="flex items-center gap-4 mb-6">
-                                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-200">
+                                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white font-semibold text-xl shadow-lg shadow-blue-200">
                                                 {mentor.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'}
                                             </div>
                                             <div>
-                                                <h5 className="font-bold text-slate-800 leading-none mb-1">{mentor.name}</h5>
-                                                <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">{mentor.title}</p>
+                                                <h5 className="font-semibold text-slate-800 leading-none mb-1">{mentor.name}</h5>
+                                                <p className="text-[11px] font-normal text-blue-600 uppercase tracking-wider">{mentor.title}</p>
                                             </div>
                                         </div>
                                         {mentor.link && (
                                             <Button 
                                                 onClick={() => window.open(mentor.link, '_blank')}
                                                 variant="outline" 
-                                                className="w-full h-12 rounded-xl border-slate-200 font-bold text-xs gap-2"
+                                                className="w-full h-12 rounded-xl border-slate-200 font-semibold text-xs gap-2"
                                             >
                                                 <ExternalLink className="w-4 h-4" /> Message Mentor
                                             </Button>
@@ -556,7 +556,7 @@ const CourseHub = () => {
                                 ))
                             ) : (
                                 <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm text-center">
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Mentor info coming soon</p>
+                                    <p className="text-xs font-normal text-slate-500 uppercase tracking-widest">Mentor info coming soon</p>
                                 </div>
                             )}
                         </div>
@@ -567,11 +567,11 @@ const CourseHub = () => {
                                 <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6">
                                     <Award className="w-6 h-6 text-blue-400" />
                                 </div>
-                                <h4 className="text-lg font-bold mb-2">Graduation Status</h4>
-                                <p className="text-white/50 text-xs font-medium leading-relaxed mb-6">Complete all assignments and attend 80% of live classes to earn your certificate.</p>
+                                <h4 className="text-lg font-semibold mb-2">Graduation Status</h4>
+                                <p className="text-white/70 text-xs font-normal leading-relaxed mb-6">Complete all assignments and attend 80% of live classes to earn your certificate.</p>
                                 
                                 <div className="space-y-4">
-                                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
+                                    <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest">
                                         <span className="text-white/60">Sessions Attended</span>
                                         <span>0/12</span>
                                     </div>
@@ -580,7 +580,7 @@ const CourseHub = () => {
                                     </div>
                                 </div>
 
-                                <Button disabled className="w-full h-12 mt-8 rounded-xl bg-white/10 text-white/40 font-bold text-xs gap-2 border-transparent">
+                                <Button disabled className="w-full h-12 mt-8 rounded-xl bg-white/10 text-white/40 font-semibold text-xs gap-2 border-transparent">
                                     <Lock className="w-4 h-4" /> Claim Certificate
                                 </Button>
                             </div>
@@ -588,14 +588,14 @@ const CourseHub = () => {
 
                         {/* Quick Links */}
                         <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
-                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-6">Program Links</h4>
+                            <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-[0.15em] mb-6">Program Links</h4>
                             <div className="space-y-4">
                                 <a href="#" className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group">
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
                                             <Download className="w-4 h-4 text-emerald-600" />
                                         </div>
-                                        <span className="text-xs font-bold text-slate-700">Course Materials</span>
+                                        <span className="text-xs font-semibold text-slate-700">Course Materials</span>
                                     </div>
                                     <ArrowRight className="w-4 h-4 text-slate-300" />
                                 </a>
@@ -604,7 +604,7 @@ const CourseHub = () => {
                                         <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
                                             <Globe className="w-4 h-4 text-blue-600" />
                                         </div>
-                                        <span className="text-xs font-bold text-slate-700">Community Hub</span>
+                                        <span className="text-xs font-semibold text-slate-700">Community Hub</span>
                                     </div>
                                     <ArrowRight className="w-4 h-4 text-slate-300" />
                                 </a>
