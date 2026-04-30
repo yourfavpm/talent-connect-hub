@@ -165,7 +165,7 @@ const CohortDetail = () => {
                 supabase.from("sessions").select("*").eq("cohort_id", id).order("session_date", { ascending: true }),
                 supabase.from("announcements").select("*").eq("cohort_id", id).order("created_at", { ascending: false }),
                 supabase.from("assignments").select("*").eq("cohort_id", id).order("created_at", { ascending: false }),
-                supabase.from("submissions").select("*, assignments(title), profiles:student_id(full_name, email)").order("created_at", { ascending: false })
+                supabase.from("submissions").select("*, assignments!inner(title, cohort_id), profiles:student_id(full_name, email)").eq("assignments.cohort_id", id).order("created_at", { ascending: false })
             ]);
 
             const transformedStudents = (studentsRes.data || []).map((s: any) => ({

@@ -180,7 +180,21 @@ serve(async (req: Request) => {
                throw enrollError;
              }
              
-             if (newEnroll) enrollmentId = newEnroll.id;
+             if (newEnroll) {
+               enrollmentId = newEnroll.id;
+               
+               // Trigger Branded Enrollment Email
+               await triggerEnrollmentEmail(
+                 newEnroll.id,
+                 email,
+                 email.split('@')[0],
+                 courseData.title,
+                 courseData.duration || "4 Weeks",
+                 courseData.level || "Beginner",
+                 (courseData.price_naira || 0),
+                 reference
+               );
+             }
              
              // Increment slots filled in cohort
              await supabase.from("cohorts").update({

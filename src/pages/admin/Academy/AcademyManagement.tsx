@@ -33,6 +33,8 @@ interface Cohort {
     course_id: string;
     start_date: string;
     status: string;
+    current_slots: number;
+    max_slots: number;
 }
 
 const AcademyManagement = () => {
@@ -214,7 +216,7 @@ const AcademyManagement = () => {
                                             {new Date(cohort.start_date).toLocaleDateString()}
                                         </td>
                                         <td className="px-8 py-6 font-bold text-slate-600 text-sm">
-                                            0 / 50
+                                            {cohort.current_slots || 0} / {cohort.max_slots || 25}
                                         </td>
                                         <td className="px-8 py-6">
                                             <div className="w-32 h-1.5 bg-slate-100 rounded-full overflow-hidden">
