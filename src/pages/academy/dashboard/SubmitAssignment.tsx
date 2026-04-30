@@ -280,6 +280,28 @@ const SubmitAssignment = () => {
              </div>
            )}
 
+           {/* Rubric Section */}
+           {assignment.rubrics && assignment.rubrics.length > 0 && (
+             <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+                <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Grading Rubric</h4>
+                <div className="space-y-4">
+                   {assignment.rubrics.map((rubric: any, idx: number) => (
+                     <div key={idx} className="space-y-1">
+                        <div className="flex justify-between items-center">
+                           <span className="text-[10px] font-bold text-slate-700 uppercase tracking-tight">{rubric.title}</span>
+                           <span className="text-[10px] font-bold text-blue-600">{rubric.max_points} Pts</span>
+                        </div>
+                        {rubric.description && (
+                          <p className="text-[11px] text-slate-500 leading-relaxed">
+                             {rubric.description}
+                          </p>
+                        )}
+                     </div>
+                   ))}
+                </div>
+             </div>
+           )}
+
            {/* AI Feedback Card */}
            <div className="bg-blue-600 rounded-3xl p-6 text-white relative overflow-hidden group">
               <div className="absolute -top-4 -right-4 w-20 h-20 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />

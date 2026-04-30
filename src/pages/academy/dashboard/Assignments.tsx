@@ -111,9 +111,11 @@ const Assignments = () => {
                     </td>
                     <td className="px-8 py-6 text-right">
                        {submission ? (
-                         <Button variant="ghost" className="text-blue-600 font-semibold text-xs hover:bg-blue-50 rounded-lg h-9 px-4">
-                           Review
-                         </Button>
+                         <Link to="/dashboard/grades">
+                           <Button variant="ghost" className="text-blue-600 font-semibold text-xs hover:bg-blue-50 rounded-lg h-9 px-4">
+                             Review
+                           </Button>
+                         </Link>
                        ) : (
                          <Link to={`/dashboard/assignments/${assignment.id}`}>
                            <Button variant="ghost" className="text-blue-600 font-semibold text-xs hover:bg-blue-50 rounded-lg h-9 px-4">

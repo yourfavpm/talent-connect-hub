@@ -90,8 +90,9 @@ interface Submission {
     status: string;
     feedback: string;
     grade: string;
+    rubric_grades?: any[];
     created_at: string;
-    assignments: { title: string };
+    assignments: { title: string; rubrics?: any[] };
     profiles: { full_name: string; email: string };
 }
 
@@ -112,10 +113,21 @@ const CohortDetail = () => {
     // Form States
     const [newSession, setNewSession] = useState({ title: '', date: '', start_time: '', url: '' });
     const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', image_url: '' });
-    const [newAssignment, setNewAssignment] = useState({ title: '', description: '', deadline: '' });
+    const [newAssignment, setNewAssignment] = useState({ 
+        title: '', 
+        description: '', 
+        deadline: '',
+        rubrics: [] as { id: string; title: string; description: string; max_points: number }[]
+    });
     
     // Grading Form State
-    const [gradingSub, setGradingSub] = useState<{ id: string; grade: string; feedback: string } | null>(null);
+    const [gradingSub, setGradingSub] = useState<{ 
+        id: string; 
+        grade: string; 
+        feedback: string;
+        rubric_grades: { rubric_id: string; score: number; comment: string }[];
+        assignment_rubrics: any[];
+    } | null>(null);
     
     // Settings Form State
     const [settings, setSettings] = useState({
@@ -333,16 +345,20 @@ const CohortDetail = () => {
         if (!newAssignment.title || !newAssignment.deadline) return;
         setIsSaving(true);
         try {
+            const maxPoints = newAssignment.rubrics.reduce((sum, r) => sum + r.max_points, 0) || 100;
+
             const { data, error } = await supabase.from("assignments").insert([{
                 cohort_id: id,
                 title: newAssignment.title,
                 description: newAssignment.description,
-                deadline_at: new Date(newAssignment.deadline).toISOString()
+                deadline_at: new Date(newAssignment.deadline).toISOString(),
+                rubrics: newAssignment.rubrics,
+                max_points: maxPoints
             }]).select().single();
 
             if (error) throw error;
             setAssignments(prev => [data as Assignment, ...prev]);
-            setNewAssignment({ title: '', description: '', deadline: '' });
+            setNewAssignment({ title: '', description: '', deadline: '', rubrics: [] });
             toast({ title: "Assignment Created", description: "Students have been notified." });
         } catch (err) {
             toast({ title: "Error", description: "Failed to create task.", variant: "destructive" });
@@ -380,17 +396,17 @@ const CohortDetail = () => {
         }
     };
 
-    const handleReviewSubmission = async (subId: string, grade: string = '', feedback: string = '') => {
+    const handleReviewSubmission = async (subId: string, grade: string = '', feedback: string = '', rubricGrades: any[] = []) => {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { error } = await (supabase.from("submissions") as any).update({ 
+            const { error } = await supabase.from("submissions").update({ 
                 status: 'reviewed',
                 grade,
-                feedback
+                feedback,
+                rubric_grades: rubricGrades
             }).eq("id", subId);
             
             if (error) throw error;
-            setSubmissions(prev => prev.map(s => s.id === subId ? { ...s, status: 'reviewed', grade, feedback } : s));
+            setSubmissions(prev => prev.map(s => s.id === subId ? { ...s, status: 'reviewed', grade, feedback, rubric_grades: rubricGrades } : s));
             setGradingSub(null);
             toast({ title: "Graded", description: "Submission has been reviewed and graded." });
         } catch (err) {
@@ -993,9 +1009,82 @@ const CohortDetail = () => {
                                             <textarea 
                                                 value={newAssignment.description}
                                                 onChange={e => setNewAssignment({...newAssignment, description: e.target.value})}
-                                                className="w-full min-h-[120px] p-5 bg-slate-50 rounded-xl border-transparent text-sm font-medium"
+                                                className="w-full min-h-[100px] p-5 bg-slate-50 rounded-xl border-transparent text-sm font-medium"
                                             />
                                         </div>
+
+                                        <div className="space-y-4 pt-4 border-t border-slate-50">
+                                            <div className="flex items-center justify-between px-1">
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase">Grading Rubric</label>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        const id = Math.random().toString(36).substr(2, 9);
+                                                        setNewAssignment({
+                                                            ...newAssignment,
+                                                            rubrics: [...newAssignment.rubrics, { id, title: '', description: '', max_points: 0 }]
+                                                        });
+                                                    }}
+                                                    className="h-7 px-2 text-blue-600 font-bold text-[10px] gap-1"
+                                                >
+                                                    <Plus className="w-3 h-3" /> Add Criterion
+                                                </Button>
+                                            </div>
+                                            
+                                            <div className="space-y-3">
+                                                {newAssignment.rubrics.map((rubric, idx) => (
+                                                    <div key={rubric.id} className="bg-slate-50 p-4 rounded-xl space-y-3 relative group">
+                                                        <button 
+                                                            onClick={() => {
+                                                                const filtered = newAssignment.rubrics.filter((_, i) => i !== idx);
+                                                                setNewAssignment({ ...newAssignment, rubrics: filtered });
+                                                            }}
+                                                            className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                        </button>
+                                                        <input 
+                                                            value={rubric.title}
+                                                            onChange={e => {
+                                                                const updated = [...newAssignment.rubrics];
+                                                                updated[idx].title = e.target.value;
+                                                                setNewAssignment({ ...newAssignment, rubrics: updated });
+                                                            }}
+                                                            placeholder="Criterion Title (e.g. Code Quality)"
+                                                            className="w-full h-8 bg-white px-3 rounded-lg border-transparent text-xs font-bold"
+                                                        />
+                                                        <div className="flex gap-2">
+                                                            <input 
+                                                                type="number"
+                                                                value={rubric.max_points || ''}
+                                                                onChange={e => {
+                                                                    const updated = [...newAssignment.rubrics];
+                                                                    updated[idx].max_points = Number(e.target.value);
+                                                                    setNewAssignment({ ...newAssignment, rubrics: updated });
+                                                                }}
+                                                                placeholder="Max Points"
+                                                                className="w-24 h-8 bg-white px-3 rounded-lg border-transparent text-xs font-medium"
+                                                            />
+                                                            <input 
+                                                                value={rubric.description}
+                                                                onChange={e => {
+                                                                    const updated = [...newAssignment.rubrics];
+                                                                    updated[idx].description = e.target.value;
+                                                                    setNewAssignment({ ...newAssignment, rubrics: updated });
+                                                                }}
+                                                                placeholder="Optional description..."
+                                                                className="flex-grow h-8 bg-white px-3 rounded-lg border-transparent text-xs font-medium"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {newAssignment.rubrics.length === 0 && (
+                                                    <p className="text-[10px] text-slate-400 italic px-1">No rubrics defined yet. Total score will default to 100.</p>
+                                                )}
+                                            </div>
+                                        </div>
+
                                         <Button onClick={handleCreateAssignment} disabled={isSaving} className="w-full h-14 bg-slate-900 text-white rounded-2xl font-bold shadow-xl shadow-slate-200">{isSaving ? 'Creating...' : 'Create Task'}</Button>
                                     </div>
                                 </div>
@@ -1161,7 +1250,13 @@ const CohortDetail = () => {
                                             <td className="px-10 py-8 text-right">
                                                 {sub.status !== 'reviewed' ? (
                                                     <Button 
-                                                        onClick={() => setGradingSub({ id: sub.id, grade: sub.grade || '', feedback: sub.feedback || '' })} 
+                                                        onClick={() => setGradingSub({ 
+                                                            id: sub.id, 
+                                                            grade: sub.grade || '', 
+                                                            feedback: sub.feedback || '',
+                                                            rubric_grades: sub.rubric_grades || [],
+                                                            assignment_rubrics: sub.assignments?.rubrics || []
+                                                        })} 
                                                         variant="outline" 
                                                         className="h-10 px-4 rounded-xl font-bold text-xs border-slate-200"
                                                     >
@@ -1190,32 +1285,106 @@ const CohortDetail = () => {
 
                         {/* Grading & Feedback Modal */}
                         {gradingSub && (
-                            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6">
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6 overflow-y-auto">
                                 <motion.div 
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
-                                    className="bg-white w-full max-w-lg rounded-[32px] p-10 shadow-2xl"
+                                    className="bg-white w-full max-w-2xl rounded-[32px] p-10 shadow-2xl my-auto"
                                 >
-                                    <h3 className="text-2xl font-bold text-slate-900 mb-2">Grade Submission</h3>
-                                    <p className="text-slate-500 text-sm mb-8">Provide a grade and constructive feedback for the student.</p>
-                                    
-                                    <div className="space-y-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Grade (e.g., A, B, 90%)</label>
-                                            <input 
-                                                value={gradingSub.grade}
-                                                onChange={e => setGradingSub({...gradingSub, grade: e.target.value})}
-                                                placeholder="Enter grade..."
-                                                className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-blue-600 transition-all text-sm font-bold"
-                                            />
+                                    <div className="flex justify-between items-start mb-8">
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-slate-900 mb-2">Review Submission</h3>
+                                            <p className="text-slate-500 text-sm">Assign scores and provide feedback based on the rubric.</p>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Feedback</label>
+                                        <div className="text-right">
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Current Grade</div>
+                                            <div className="text-3xl font-bold text-blue-600">{gradingSub.grade || '0'}%</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-8 max-h-[50vh] overflow-y-auto pr-4 custom-scrollbar">
+                                        {gradingSub.assignment_rubrics && gradingSub.assignment_rubrics.length > 0 ? (
+                                            gradingSub.assignment_rubrics.map((rubric) => {
+                                                const currentGrade = gradingSub.rubric_grades?.find(rg => rg.rubric_id === rubric.id);
+                                                return (
+                                                    <div key={rubric.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex-grow">
+                                                                <h4 className="font-bold text-slate-800 text-sm">{rubric.title}</h4>
+                                                                <p className="text-xs text-slate-500">{rubric.description}</p>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <input 
+                                                                    type="number"
+                                                                    max={rubric.max_points}
+                                                                    min={0}
+                                                                    value={currentGrade?.score || ''}
+                                                                    onChange={e => {
+                                                                        const score = Number(e.target.value);
+                                                                        const updatedRubricGrades = [...(gradingSub.rubric_grades || [])];
+                                                                        const existingIdx = updatedRubricGrades.findIndex(rg => rg.rubric_id === rubric.id);
+                                                                        
+                                                                        if (existingIdx >= 0) {
+                                                                            updatedRubricGrades[existingIdx].score = score;
+                                                                        } else {
+                                                                            updatedRubricGrades.push({ rubric_id: rubric.id, score, comment: '' });
+                                                                        }
+
+                                                                        // Auto-calculate total grade
+                                                                        const totalEarned = updatedRubricGrades.reduce((sum, rg) => sum + (rg.score || 0), 0);
+                                                                        const totalPossible = gradingSub.assignment_rubrics.reduce((sum, r) => sum + (r.max_points || 0), 0);
+                                                                        const finalGrade = totalPossible > 0 ? Math.round((totalEarned / totalPossible) * 100) : totalEarned;
+
+                                                                        setGradingSub({
+                                                                            ...gradingSub,
+                                                                            rubric_grades: updatedRubricGrades,
+                                                                            grade: finalGrade.toString()
+                                                                        });
+                                                                    }}
+                                                                    className="w-20 h-10 px-3 bg-white rounded-lg border-transparent text-sm font-bold text-center"
+                                                                />
+                                                                <span className="text-xs font-bold text-slate-400">/ {rubric.max_points}</span>
+                                                            </div>
+                                                        </div>
+                                                        <textarea 
+                                                            placeholder="Criterion specific feedback..."
+                                                            value={currentGrade?.comment || ''}
+                                                            onChange={e => {
+                                                                const updatedRubricGrades = [...(gradingSub.rubric_grades || [])];
+                                                                const existingIdx = updatedRubricGrades.findIndex(rg => rg.rubric_id === rubric.id);
+                                                                if (existingIdx >= 0) {
+                                                                    updatedRubricGrades[existingIdx].comment = e.target.value;
+                                                                } else {
+                                                                    updatedRubricGrades.push({ rubric_id: rubric.id, score: 0, comment: e.target.value });
+                                                                }
+                                                                setGradingSub({ ...gradingSub, rubric_grades: updatedRubricGrades });
+                                                            }}
+                                                            className="w-full h-20 p-4 bg-white rounded-xl border-transparent text-xs font-medium resize-none"
+                                                        />
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="space-y-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Final Grade (0-100)</label>
+                                                    <input 
+                                                        value={gradingSub.grade}
+                                                        onChange={e => setGradingSub({...gradingSub, grade: e.target.value})}
+                                                        placeholder="Enter grade..."
+                                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-blue-600 transition-all text-sm font-bold"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="space-y-2 pt-4 border-t border-slate-50">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Overall Feedback</label>
                                             <textarea 
                                                 value={gradingSub.feedback}
                                                 onChange={e => setGradingSub({...gradingSub, feedback: e.target.value})}
-                                                placeholder="Excellent work on the system architecture..."
-                                                className="w-full min-h-[140px] p-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-blue-600 transition-all text-sm font-medium"
+                                                placeholder="Provide summary feedback..."
+                                                className="w-full min-h-[100px] p-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-blue-600 transition-all text-sm font-medium"
                                             />
                                         </div>
                                     </div>
@@ -1230,7 +1399,7 @@ const CohortDetail = () => {
                                         </Button>
                                         <Button 
                                             className="flex-grow-[2] h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold"
-                                            onClick={() => handleReviewSubmission(gradingSub.id, gradingSub.grade, gradingSub.feedback)}
+                                            onClick={() => handleReviewSubmission(gradingSub.id, gradingSub.grade, gradingSub.feedback, gradingSub.rubric_grades)}
                                         >
                                             Complete Review
                                         </Button>
