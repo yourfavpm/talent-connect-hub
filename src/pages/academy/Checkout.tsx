@@ -316,24 +316,29 @@ const Checkout = () => {
                     } else {
                         console.log("Enrollment record created successfully");
                         
-                        // Increment cohort slots in real-time for immediate admin visibility
-                        // Use a more robust increment logic
+                        // Increment cohort slots atomically to prevent race conditions
                         try {
-                            const { data: cohortData, error: cohortFetchErr } = await supabase
-                                .from("cohorts")
-                                .select("current_slots")
-                                .eq("id", selectedCohortId)
-                                .single();
-                                
-                            if (!cohortFetchErr && cohortData) {
-                                const newCount = (cohortData.current_slots || 0) + 1;
-                                const { error: countErr } = await supabase
+                            const { error: countErr } = await supabase.rpc('increment_cohort_slots', { 
+                                p_cohort_id: selectedCohortId 
+                            });
+                            
+                            if (countErr) {
+                                console.error("Failed to update cohort slots via RPC:", countErr);
+                                // Fallback to manual update only if RPC fails (though RPC is preferred)
+                                const { data: cohortData } = await supabase
                                     .from("cohorts")
-                                    .update({ current_slots: newCount })
-                                    .eq("id", selectedCohortId);
-                                
-                                if (countErr) console.error("Failed to update cohort slots:", countErr);
-                                else console.log("Cohort slots updated to:", newCount);
+                                    .select("current_slots")
+                                    .eq("id", selectedCohortId)
+                                    .single();
+                                    
+                                if (cohortData) {
+                                    await supabase
+                                        .from("cohorts")
+                                        .update({ current_slots: (cohortData.current_slots || 0) + 1 })
+                                        .eq("id", selectedCohortId);
+                                }
+                            } else {
+                                console.log("Cohort slots incremented atomically");
                             }
                         } catch (countErr) {
                             console.error("Critical error updating slots:", countErr);
@@ -410,9 +415,9 @@ const Checkout = () => {
             // Delay redirect to show success state
             setTimeout(() => {
                 if (isUserLoggedIn) {
-                    navigate("/dashboard");
+                    redirectToZone(Zone.ACADEMY, "/dashboard");
                 } else {
-                    navigate("/login?redirect=/dashboard");
+                    redirectToZone(Zone.ACADEMY, "/login?redirect=/dashboard");
                 }
             }, 3000);
 

@@ -35,79 +35,22 @@ const Overview = () => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Fetch Profile Stats
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("full_name, streak_count, global_rank, total_study_hours, certificates_count, courses_completed")
-          .eq("id", user.id)
-          .single();
+        const { data, error } = await supabase.rpc('get_student_dashboard_data', { p_user_id: user.id });
         
-        if (profileData) {
-          setUserName(profileData.full_name?.split(' ')[0] || "Student");
-          setStats(profileData);
-        }
-        
-        // Fetch Enrollments
-        const { data: enrollData } = await supabase
-          .from("academy_enrollments")
-          .select("*, cohorts(*)")
-          .eq("user_id", user.id)
-          .eq("enrollment_status", "active");
-        
-        setEnrollments(enrollData || []);
-
-        const cohortIds = enrollData?.map(e => e.cohort_id) || [];
-        if (cohortIds.length > 0) {
-          // Fetch Next Sessions (multiple)
-          const { data: sessionsData } = await supabase
-            .from("sessions")
-            .select("*, cohorts(name)")
-            .in("cohort_id", cohortIds)
-            .gte("session_date", new Date().toISOString().split('T')[0])
-            .order("session_date", { ascending: true })
-            .limit(3);
-          
-          setNextSessions(sessionsData || []);
-
-          // Fetch Announcements
-          const { data: annData } = await supabase
-            .from("announcements")
-            .select("*")
-            .in("cohort_id", cohortIds)
-            .order("created_at", { ascending: false })
-            .limit(2);
-          
-          setAnnouncements(annData || []);
-
-          // Fetch Pending Assignments
-          const { data: subData } = await supabase
-            .from("submissions")
-            .select("assignment_id, grade")
-            .eq("student_id", user.id);
-          
-          if (subData && subData.length > 0) {
-            const gradedSubmissions = subData.filter(s => s.grade !== null);
-            if (gradedSubmissions.length > 0) {
-              // Extract numeric value from grade (assuming it's a string like "A", "B", or a number)
-              const sum = gradedSubmissions.reduce((acc, curr) => {
-                const g = parseFloat(curr.grade);
-                return acc + (isNaN(g) ? 0 : g);
-              }, 0);
-              setAvgGrade(Math.round(sum / gradedSubmissions.length));
-            }
-          }
-          
-          const submittedIds = subData?.map(s => s.assignment_id) || [];
-          
-          const { data: asgnData } = await supabase
-            .from("assignments")
-            .select("*, cohorts(name)")
-            .in("cohort_id", cohortIds)
-            .order("deadline_at", { ascending: true })
-            .limit(3);
-          
-          const pending = asgnData?.filter(a => !submittedIds.includes(a.id)) || [];
-          setPendingAssignments(pending);
+        if (!error && data) {
+          setUserName(data.profile.full_name?.split(' ')[0] || "Student");
+          setStats({
+            ...data.profile,
+            certificates_count: 0, // Fallback as RPC doesn't count certs yet
+            courses_completed: 0,
+            total_study_hours: 0,
+            global_rank: null
+          });
+          setEnrollments(data.enrollments || []);
+          setNextSessions(data.sessions || []);
+          setAnnouncements(data.announcements || []);
+          setPendingAssignments(data.assignments || []);
+          setAvgGrade(data.avg_grade);
         }
       }
       setLoading(false);

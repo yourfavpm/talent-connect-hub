@@ -307,46 +307,19 @@ const CohortDetail = () => {
             setNewAnnouncement({ title: '', content: '', image_url: '' });
             toast({ title: "Posted", description: "Announcement sent to students." });
 
-            // Trigger Email Broadcast to all students in the cohort
+            // Trigger Server-Side Broadcast to all students in the cohort
             if (students.length > 0) {
-                const studentEmails = students.filter(s => s.enrollment_status === 'active').map(s => s.student_email);
-                if (studentEmails.length > 0) {
-                    try {
-                        // Send emails in batches or one by one (for now one by one for simplicity, or handle in edge function)
-                        // Actually, let's call a specialized edge function if we had one, but we can use send-email in a loop
-                        // or better: a single call to a function that handles the loop.
-                        // For now, I'll loop through and call send-email for each.
-                        for (const email of studentEmails) {
-                            await supabase.functions.invoke('send-email', {
-                                body: {
-                                    to: email,
-                                    subject: `New Announcement: ${newAnnouncement.title}`,
-                                    htmlTemplate: `
-                                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
-                                            <div style="background: #0f2147; padding: 40px; text-align: center;">
-                                                <img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="width: 140px;" />
-                                            </div>
-                                            <div style="padding: 40px; background: #fff;">
-                                                <h1 style="color: #0f2147; font-size: 24px; margin-bottom: 20px;">New Announcement</h1>
-                                                <h2 style="color: #333; font-size: 18px; margin-bottom: 20px;">${newAnnouncement.title}</h2>
-                                                <div style="color: #444; font-size: 16px; line-height: 1.6; background: #f9fafb; padding: 20px; border-radius: 8px;">
-                                                    ${newAnnouncement.content}
-                                                </div>
-                                                <div style="margin: 40px 0; text-align: center;">
-                                                    <a href="https://academy.opslyhr.com/dashboard" style="background: #0f2147; color: #fff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">View in Dashboard</a>
-                                                </div>
-                                            </div>
-                                            <div style="background: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                                                <p style="color: #999; font-size: 12px;">&copy; 2026 OPSlyHR Academy. All rights reserved.</p>
-                                            </div>
-                                        </div>
-                                    `
-                                }
-                            });
+                try {
+                    await supabase.functions.invoke('broadcast-announcement', {
+                        body: {
+                            cohortId: id,
+                            title: newAnnouncement.title,
+                            content: newAnnouncement.content,
+                            imageUrl: newAnnouncement.image_url
                         }
-                    } catch (emailErr) {
-                        console.error("Failed to broadcast announcement emails:", emailErr);
-                    }
+                    });
+                } catch (emailErr) {
+                    console.error("Failed to broadcast announcement emails:", emailErr);
                 }
             }
         } catch (err) {
@@ -571,9 +544,9 @@ const CohortDetail = () => {
             let successCount = 0;
 
             for (const student of selectedStudents) {
-                // Generate unique certificate ID
-                const hex1 = Math.random().toString(16).substring(2, 6).toUpperCase();
-                const hex2 = Math.random().toString(16).substring(2, 6).toUpperCase();
+                // Generate unique certificate ID (higher entropy)
+                const hex1 = Math.random().toString(16).substring(2, 8).toUpperCase();
+                const hex2 = Math.random().toString(16).substring(2, 8).toUpperCase();
                 const certId = `OPSLY-${hex1}-${hex2}`;
                 const verificationUrl = `https://academy.opslyhr.com/verify/${certId}`;
 

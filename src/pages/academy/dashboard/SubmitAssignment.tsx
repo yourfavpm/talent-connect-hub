@@ -48,6 +48,17 @@ const SubmitAssignment = () => {
   }, [id]);
 
   const handleSubmit = async (isDraft = false) => {
+    // Deadline Enforcement
+    const isLate = assignment.deadline_at && new Date(assignment.deadline_at) < new Date();
+    if (isLate && !assignment.allow_late_submissions && !isDraft) {
+      toast({
+        title: "Deadline Passed",
+        description: "This assignment is no longer accepting submissions.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
