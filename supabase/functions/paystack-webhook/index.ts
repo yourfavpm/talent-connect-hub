@@ -20,6 +20,28 @@ async function verifyPaystackSignature(body: string, signature: string): Promise
   return hashHex === signature;
 }
 
+// Trigger Enrollment Email
+async function triggerEnrollmentEmail(enrollmentId: string, email: string, name: string, courseName: string, duration: string, level: string, amount: number, reference: string) {
+  try {
+    const { data: funcData, error: funcError } = await supabase.functions.invoke("send-enrollment-email", {
+      body: {
+        enrollmentId,
+        studentEmail: email,
+        studentName: name,
+        courseName,
+        duration,
+        level,
+        amountNaira: amount,
+        reference
+      }
+    });
+    if (funcError) console.error("Email function error:", funcError);
+    return funcData;
+  } catch (err) {
+    console.error("Failed to trigger email:", err);
+  }
+}
+
 serve(async (req: Request) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
@@ -242,7 +264,26 @@ serve(async (req: Request) => {
 
       console.log("✓ Legacy Payment successful for enrollment:", transaction.enrollment_id);
       
-      // Trigger email notification (could call another function here)
+      // Fetch data for email
+      const { data: enrollData } = await supabase
+        .from("academy_enrollments")
+        .select("*, cohorts(name)")
+        .eq("id", transaction.enrollment_id)
+        .single();
+        
+      if (enrollData) {
+        await triggerEnrollmentEmail(
+          enrollData.id,
+          enrollData.student_email,
+          enrollData.student_name,
+          enrollData.course_name,
+          "4 Weeks", // Fallback
+          "Beginner", // Fallback
+          amount / 100,
+          reference
+        );
+      }
+      
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { "Content-Type": "application/json" },

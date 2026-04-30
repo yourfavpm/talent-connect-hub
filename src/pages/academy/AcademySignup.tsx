@@ -121,20 +121,20 @@ const AcademySignup = () => {
                         <Link to="/" className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-widest mb-4">
                             Academy Hub
                         </Link>
-                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Join the Academy</h1>
+                        <h1 className="text-3xl font-bold text-slate-800 tracking-tight mb-2">Join the Academy</h1>
                         <p className="text-slate-500 font-medium">Create your professional profile to start learning.</p>
                     </div>
 
                     <form onSubmit={handleSignup} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Full Name</label>
+                            <label className="text-xs font-bold text-slate-800 uppercase tracking-widest">Full Name</label>
                             <div className="relative">
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <input 
                                     type="text" 
                                     required
                                     placeholder="John Doe"
-                                    className="w-full h-14 pl-12 pr-6 bg-slate-50 rounded-2xl border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                    className="w-full h-14 pl-12 pr-6 bg-slate-50 rounded-2xl border border-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium text-base"
                                     value={formData.fullName}
                                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                                 />
@@ -142,14 +142,14 @@ const AcademySignup = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Email Address</label>
+                            <label className="text-xs font-bold text-slate-800 uppercase tracking-widest">Email Address</label>
                             <div className="relative">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <input 
                                     type="email" 
                                     required
                                     placeholder="name@example.com"
-                                    className="w-full h-14 pl-12 pr-6 bg-slate-50 rounded-2xl border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                    className="w-full h-14 pl-12 pr-6 bg-slate-50 rounded-2xl border border-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium text-base"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 />
@@ -157,14 +157,14 @@ const AcademySignup = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Create Password</label>
+                            <label className="text-xs font-bold text-slate-800 uppercase tracking-widest">Create Password</label>
                             <div className="relative">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <input 
                                     type={showPassword ? "text" : "password"} 
                                     required
                                     placeholder="Min. 8 characters"
-                                    className="w-full h-14 pl-12 pr-14 bg-slate-50 rounded-2xl border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                    className="w-full h-14 pl-12 pr-14 bg-slate-50 rounded-2xl border border-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium text-base"
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 />
@@ -181,7 +181,7 @@ const AcademySignup = () => {
                         <Button 
                             type="submit" 
                             disabled={loading}
-                            className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-base transition-all shadow-xl shadow-blue-200"
+                            className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-base transition-all shadow-sm"
                         >
                             {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Verify Identity & Join"}
                         </Button>

@@ -80,20 +80,20 @@ const AcademyLogin = () => {
                     </div>
 
                     <div className="mb-12">
-                        <h2 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Student Access</h2>
+                        <h2 className="text-3xl font-bold text-slate-800 tracking-tight mb-2">Student Access</h2>
                         <p className="text-slate-500 font-medium">Please enter your credentials to continue your journey.</p>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Email Address</label>
+                            <label className="text-xs font-bold text-slate-800 uppercase tracking-widest">Email Address</label>
                             <div className="relative">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <input 
                                     type="email" 
                                     required
                                     placeholder="name@example.com"
-                                    className="w-full h-14 pl-12 pr-6 bg-slate-50 rounded-2xl border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                    className="w-full h-14 pl-12 pr-6 bg-slate-50 rounded-2xl border border-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium text-base"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
@@ -102,7 +102,7 @@ const AcademyLogin = () => {
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Password</label>
+                                <label className="text-xs font-bold text-slate-800 uppercase tracking-widest">Password</label>
                                 <Link to="/auth/reset-password" title="Standard Auth Subdomain Reset" className="text-xs font-bold text-blue-600 hover:text-blue-700">Forgot?</Link>
                             </div>
                             <div className="relative">
@@ -111,7 +111,7 @@ const AcademyLogin = () => {
                                     type={showPassword ? "text" : "password"} 
                                     required
                                     placeholder="••••••••"
-                                    className="w-full h-14 pl-12 pr-14 bg-slate-50 rounded-2xl border-transparent focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                    className="w-full h-14 pl-12 pr-14 bg-slate-50 rounded-2xl border border-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium text-base"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
@@ -128,7 +128,7 @@ const AcademyLogin = () => {
                         <Button 
                             type="submit" 
                             disabled={loading}
-                            className="w-full h-14 bg-slate-900 hover:bg-blue-600 text-white rounded-2xl font-bold text-base transition-all shadow-xl shadow-slate-200"
+                            className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-base transition-all shadow-sm"
                         >
                             {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Sign In to Academy"}
                         </Button>

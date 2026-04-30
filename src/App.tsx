@@ -313,7 +313,7 @@ const App = () => {
                   
                   {/* Protected Student Routes */}
                   <Route path="/apply" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><ApplyForm /></ZoneGuard>} />
-                  <Route path="/checkout/:slug" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><Checkout /></ZoneGuard>} />
+                  <Route path="/checkout/:slug" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={false}><Checkout /></ZoneGuard>} />
                   <Route path="/dashboard" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><StudentDashboard /></ZoneGuard>} />
                   <Route path="/courses/:slug/learn" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><CourseHub /></ZoneGuard>} />
                   

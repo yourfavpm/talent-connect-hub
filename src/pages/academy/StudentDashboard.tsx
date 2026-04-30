@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import CourseCard from "@/components/academy/CourseCard";
-import StudentOnboardingModal from "@/components/academy/StudentOnboardingModal";
 import CourseDetail from "./CourseDetail";
 
 interface Enrollment {
@@ -71,7 +70,6 @@ const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState("learning");
   const [searchQuery, setSearchQuery] = useState("");
   const [courseFilter, setCourseFilter] = useState("All");
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedCourseSlug, setSelectedCourseSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -84,10 +82,7 @@ const StudentDashboard = () => {
 
       setUserName(user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || "Student");
 
-      // Check for onboarding completion
-      if (!user.user_metadata?.onboarding_completed) {
-        setShowOnboarding(true);
-      }
+      setUserName(user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || "Student");
 
       // Fetch enrollments (without FK joins that may not exist)
       const { data: enrollmentsData, error: enrollError } = await supabase
@@ -223,7 +218,7 @@ const StudentDashboard = () => {
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-[10px] font-bold tracking-widest uppercase mb-4">
               Student Hub
             </div>
-            <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">
               {activeTab === 'learning' ? `Welcome, ${userName}` : 
                activeTab === 'catalog' ? 'Academy Catalog' :
                activeTab === 'profile' ? 'Your Profile' : 'Notifications'}
@@ -264,9 +259,9 @@ const StudentDashboard = () => {
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="p-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 rounded-[32px] shadow-xl shadow-blue-500/20"
+                      className="p-1 bg-slate-100 rounded-[32px]"
                     >
-                      <div className="bg-white rounded-[31px] p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                      <div className="bg-white rounded-[31px] p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 border border-slate-100">
                         <div className="flex items-center gap-6">
                           <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center shrink-0">
                             <Calendar className="w-8 h-8 text-blue-600" />
@@ -541,10 +536,7 @@ const StudentDashboard = () => {
 
       </div>
 
-      <StudentOnboardingModal 
-        isOpen={showOnboarding} 
-        onComplete={() => setShowOnboarding(false)} 
-      />
+      {/* No onboarding modal */}
     </div>
   );
 };

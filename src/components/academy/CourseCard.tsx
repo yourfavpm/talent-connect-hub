@@ -26,7 +26,7 @@ const CourseCard = ({ course, onViewDetails }: CourseCardProps) => {
     return (
         <motion.div 
             whileHover={{ y: -4 }}
-            className="group flex flex-col bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 overflow-hidden h-full w-full"
+            className="group flex flex-col bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition-all duration-300 overflow-hidden h-full w-full"
         >
             {/* Image Section */}
             <div className="aspect-[16/9] bg-slate-50 relative overflow-hidden shrink-0 border-b border-slate-50">
@@ -49,7 +49,7 @@ const CourseCard = ({ course, onViewDetails }: CourseCardProps) => {
                 </div>
 
                 <div className="mb-6 flex-grow">
-                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors tracking-tight leading-snug">
+                    <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors tracking-tight leading-snug">
                         {course.title}
                     </h3>
                     <p className="text-sm text-slate-500 leading-relaxed line-clamp-2 font-normal">
@@ -71,7 +71,7 @@ const CourseCard = ({ course, onViewDetails }: CourseCardProps) => {
                     {onViewDetails ? (
                         <button 
                             onClick={() => onViewDetails(course.slug)}
-                            className="flex items-center justify-between w-full h-11 px-4 rounded-xl bg-slate-50 text-slate-900 text-xs font-bold group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm"
+                            className="flex items-center justify-between w-full h-11 px-4 rounded-xl bg-slate-50 text-slate-800 text-xs font-bold group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm"
                         >
                             <span>View Program Details</span>
                             <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
@@ -79,7 +79,7 @@ const CourseCard = ({ course, onViewDetails }: CourseCardProps) => {
                     ) : (
                         <Link 
                             to={`/courses/${course.slug}`}
-                            className="flex items-center justify-between w-full h-11 px-4 rounded-xl bg-slate-50 text-slate-900 text-xs font-bold group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm"
+                            className="flex items-center justify-between w-full h-11 px-4 rounded-xl bg-slate-50 text-slate-800 text-xs font-bold group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm"
                         >
                             <span>View Program Details</span>
                             <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
