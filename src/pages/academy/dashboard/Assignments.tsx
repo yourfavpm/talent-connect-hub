@@ -19,7 +19,7 @@ const Assignments = () => {
         .from("academy_enrollments")
         .select("cohort_id")
         .eq("user_id", user.id)
-        .eq("enrollment_status", "active");
+        .in("enrollment_status", ["enrolled", "active", "completed"]);
       
       const cohortIds = enrollData?.map(e => e.cohort_id) || [];
       
@@ -119,7 +119,7 @@ const Assignments = () => {
                        ) : (
                          <Link to={`/dashboard/assignments/${assignment.id}`}>
                            <Button variant="ghost" className="text-blue-600 font-semibold text-xs hover:bg-blue-50 rounded-lg h-9 px-4">
-                             Submit
+                             Open Task
                            </Button>
                          </Link>
                        )}

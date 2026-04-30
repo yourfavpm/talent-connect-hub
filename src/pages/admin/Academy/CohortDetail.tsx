@@ -121,13 +121,40 @@ const CohortDetail = () => {
     });
     
     // Grading Form State
-    const [gradingSub, setGradingSub] = useState<{ 
-        id: string; 
-        grade: string; 
-        feedback: string;
-        rubric_grades: { rubric_id: string; score: number; comment: string }[];
-        assignment_rubrics: any[];
     } | null>(null);
+    const [editingAssignment, setEditingAssignment] = useState<any | null>(null);
+    
+    const handleUpdateAssignment = async () => {
+        if (!editingAssignment) return;
+        setIsSaving(true);
+        try {
+            const maxPoints = editingAssignment.rubrics?.reduce((sum: number, r: any) => sum + (r.max_points || 0), 0) || 100;
+            const { error } = await supabase.from("assignments").update({
+                title: editingAssignment.title,
+                description: editingAssignment.description,
+                deadline_at: editingAssignment.deadline_at,
+                rubrics: editingAssignment.rubrics,
+                max_points: maxPoints
+            }).eq("id", editingAssignment.id);
+
+            if (error) throw error;
+            
+            setAssignments(prev => prev.map(a => a.id === editingAssignment.id ? { 
+                ...a, 
+                title: editingAssignment.title, 
+                description: editingAssignment.description, 
+                deadline_at: editingAssignment.deadline_at,
+                rubrics: editingAssignment.rubrics
+            } : a));
+            
+            setEditingAssignment(null);
+            toast({ title: "Updated", description: "Assignment has been successfully updated." });
+        } catch (err) {
+            toast({ title: "Error", description: "Failed to update assignment." });
+        } finally {
+            setIsSaving(false);
+        }
+    };
     
     // Settings Form State
     const [settings, setSettings] = useState({
@@ -1105,7 +1132,13 @@ const CohortDetail = () => {
                                             <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                                 <Plus className="w-4 h-4" /> 0 Submissions
                                             </div>
-                                            <Button variant="ghost" className="font-bold text-blue-600 text-xs">Edit Details</Button>
+                                            <Button 
+                                                onClick={() => setEditingAssignment(asgn)}
+                                                variant="ghost" 
+                                                className="font-bold text-blue-600 text-xs"
+                                            >
+                                                Edit Details
+                                            </Button>
                                         </div>
                                     </div>
                                 ))}
@@ -1407,6 +1440,137 @@ const CohortDetail = () => {
                                 </motion.div>
                             </div>
                         )}
+
+                        {/* Edit Assignment Modal */}
+                        {editingAssignment && (
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6 overflow-y-auto">
+                                <motion.div 
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-white w-full max-w-2xl rounded-[32px] p-10 shadow-2xl my-auto"
+                                >
+                                    <div className="flex justify-between items-start mb-8">
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-slate-900 mb-2">Edit Assignment</h3>
+                                            <p className="text-slate-500 text-sm">Update task details and grading rubrics.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-4 custom-scrollbar">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase px-1">Title</label>
+                                            <input 
+                                                value={editingAssignment.title}
+                                                onChange={e => setEditingAssignment({...editingAssignment, title: e.target.value})}
+                                                className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent text-sm font-bold"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase px-1">Deadline</label>
+                                            <input 
+                                                type="datetime-local"
+                                                value={editingAssignment.deadline_at ? new Date(editingAssignment.deadline_at).toISOString().slice(0, 16) : ''}
+                                                onChange={e => setEditingAssignment({...editingAssignment, deadline_at: e.target.value})}
+                                                className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent text-sm font-bold"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase px-1">Description</label>
+                                            <textarea 
+                                                value={editingAssignment.description}
+                                                onChange={e => setEditingAssignment({...editingAssignment, description: e.target.value})}
+                                                className="w-full min-h-[100px] p-5 bg-slate-50 rounded-xl border-transparent text-sm font-medium"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-4 pt-4 border-t border-slate-50">
+                                            <div className="flex items-center justify-between px-1">
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase">Grading Rubric</label>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        const id = Math.random().toString(36).substr(2, 9);
+                                                        setEditingAssignment({
+                                                            ...editingAssignment,
+                                                            rubrics: [...(editingAssignment.rubrics || []), { id, title: '', description: '', max_points: 0 }]
+                                                        });
+                                                    }}
+                                                    className="h-7 px-2 text-blue-600 font-bold text-[10px] gap-1"
+                                                >
+                                                    <Plus className="w-3 h-3" /> Add Criterion
+                                                </Button>
+                                            </div>
+                                            
+                                            <div className="space-y-3">
+                                                {(editingAssignment.rubrics || []).map((rubric: any, idx: number) => (
+                                                    <div key={rubric.id} className="bg-slate-50 p-4 rounded-xl space-y-3 relative group">
+                                                        <button 
+                                                            onClick={() => {
+                                                                const filtered = editingAssignment.rubrics.filter((_: any, i: number) => i !== idx);
+                                                                setEditingAssignment({ ...editingAssignment, rubrics: filtered });
+                                                            }}
+                                                            className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                        </button>
+                                                        <input 
+                                                            value={rubric.title}
+                                                            onChange={e => {
+                                                                const updated = [...editingAssignment.rubrics];
+                                                                updated[idx].title = e.target.value;
+                                                                setEditingAssignment({ ...editingAssignment, rubrics: updated });
+                                                            }}
+                                                            placeholder="Criterion Title"
+                                                            className="w-full h-8 bg-white px-3 rounded-lg border-transparent text-xs font-bold"
+                                                        />
+                                                        <div className="flex gap-2">
+                                                            <input 
+                                                                type="number"
+                                                                value={rubric.max_points || ''}
+                                                                onChange={e => {
+                                                                    const updated = [...editingAssignment.rubrics];
+                                                                    updated[idx].max_points = Number(e.target.value);
+                                                                    setEditingAssignment({ ...editingAssignment, rubrics: updated });
+                                                                }}
+                                                                placeholder="Max Pts"
+                                                                className="w-24 h-8 bg-white px-3 rounded-lg border-transparent text-xs font-medium"
+                                                            />
+                                                            <input 
+                                                                value={rubric.description}
+                                                                onChange={e => {
+                                                                    const updated = [...editingAssignment.rubrics];
+                                                                    updated[idx].description = e.target.value;
+                                                                    setEditingAssignment({ ...editingAssignment, rubrics: updated });
+                                                                }}
+                                                                placeholder="Description"
+                                                                className="flex-grow h-8 bg-white px-3 rounded-lg border-transparent text-xs font-medium"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-4 mt-10">
+                                        <Button 
+                                            variant="outline" 
+                                            className="flex-grow h-14 rounded-2xl font-bold border-slate-200"
+                                            onClick={() => setEditingAssignment(null)}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button 
+                                            className="flex-grow-[2] h-14 bg-slate-900 text-white rounded-2xl font-bold"
+                                            onClick={handleUpdateAssignment}
+                                            disabled={isSaving}
+                                        >
+                                            {isSaving ? "Saving..." : "Save Changes"}
+                                        </Button>
+                                    </div>
+                                </motion.div>
+                            </div>
                     </TabsContent>
                 </Tabs>
             </div>

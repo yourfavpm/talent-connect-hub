@@ -44,12 +44,12 @@ const MyCohorts = () => {
           .from("academy_enrollments")
           .select("*, cohorts(*)")
           .eq("user_id", user.id)
-          .in("enrollment_status", ["active", "completed"]);
+          .in("enrollment_status", ["enrolled", "active", "completed"]);
         
         setEnrollments(enrollData || []);
 
         // Fetch Pending Tasks
-        const activeCohortIds = enrollData?.filter(e => e.enrollment_status === 'active').map(e => e.cohort_id) || [];
+        const activeCohortIds = enrollData?.filter(e => ["enrolled", "active"].includes(e.enrollment_status)).map(e => e.cohort_id) || [];
         if (activeCohortIds.length > 0) {
            const { count: pendingCount } = await supabase
              .from("assignments")
