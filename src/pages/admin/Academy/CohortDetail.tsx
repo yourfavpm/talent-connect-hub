@@ -1397,6 +1397,8 @@ const CohortDetail = () => {
                         </div>
                     </motion.div>
                 </div>
+            )}
+
             {/* === FLOATING SELECTION BAR === */}
             <AnimatePresence>
                 {selectedIds.length > 0 && (

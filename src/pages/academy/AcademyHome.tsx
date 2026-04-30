@@ -100,12 +100,21 @@ const AcademyHome = () => {
     <div className="bg-white min-h-screen text-slate-900 font-inter">
       
       {/* 1. HERO SECTION */}
-      <section className="relative pt-24 pb-20 lg:pt-40 lg:pb-32 px-6 overflow-hidden bg-white">
+      <section className="relative pt-24 pb-20 lg:pt-40 lg:pb-32 px-6 overflow-hidden min-h-[80vh] flex items-center">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/images/academy-hero.jpg" 
+            alt="Graduation" 
+            className="w-full h-full object-cover grayscale"
+          />
+          <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px]" />
+        </div>
+
         {/* Subtle Background Glows */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-50/40 blur-[120px] rounded-full pointer-events-none -z-10" />
-        <div className="absolute top-40 left-0 w-64 h-64 bg-indigo-50/30 blur-[100px] rounded-full pointer-events-none -z-10" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none z-10" />
         
-        <div className="container max-w-[1000px] mx-auto relative z-10 text-center">
+        <div className="container max-w-[1000px] mx-auto relative z-20 text-center">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -113,12 +122,12 @@ const AcademyHome = () => {
             className="flex flex-col items-center"
           >
             {/* Headline */}
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-slate-900 tracking-tight mb-8 leading-[1.05] max-w-4xl">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight mb-8 leading-[1.05] max-w-4xl">
               Advance Your Career with Industry-Relevant Programs
             </h1>
 
             {/* Subheadline */}
-            <p className="text-base md:text-lg text-slate-500 mb-12 max-w-2xl leading-relaxed font-medium">
+            <p className="text-base md:text-lg text-slate-300 mb-12 max-w-2xl leading-relaxed font-medium">
               Master the operational frameworks used by high-growth organizations. <br className="hidden md:block" />
               Taught by industry leaders from global tech hubs.
             </p>
@@ -150,7 +159,7 @@ const AcademyHome = () => {
                   <Button 
                     onClick={() => navigate("/courses")}
                     variant="outline"
-                    className="px-8 py-6 rounded-full text-blue-600 border-blue-200 hover:bg-blue-50 font-bold transition-all shadow-sm"
+                    className="px-8 py-6 rounded-full text-white border-white/20 hover:bg-white/10 font-bold transition-all shadow-sm"
                   >
                     Or Explore All Courses <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -200,12 +209,12 @@ const AcademyHome = () => {
 
             {/* Popular Tags */}
             <div className="mt-12 flex flex-wrap justify-center items-center gap-3 md:gap-4">
-               <span className="text-sm font-semibold text-slate-400 mr-2">Popular:</span>
+               <span className="text-sm font-semibold text-white/40 mr-2">Popular:</span>
                {["Operations", "HR Strategy", "Data Science", "Tech Ops"].map((tag) => (
                  <button 
                    key={tag}
                    onClick={() => setSearchQuery(tag)}
-                   className="px-5 py-2 bg-slate-50 text-slate-600 rounded-full text-xs font-bold hover:bg-blue-50 hover:text-blue-600 border border-slate-100/50 transition-all active:scale-95"
+                   className="px-5 py-2 bg-white/5 text-white/70 rounded-full text-xs font-bold hover:bg-white/10 hover:text-white border border-white/10 transition-all active:scale-95"
                  >
                    {tag}
                  </button>
