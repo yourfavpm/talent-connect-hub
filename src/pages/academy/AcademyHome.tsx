@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle, Globe, Users, Zap, TrendingUp, Brain, FolderOpen, Award, Rocket, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle, Globe, Users, Zap, TrendingUp, Brain, FolderOpen, Award, Rocket, Loader2, Search, X, ChevronRight } from "lucide-react";
 import CourseCard from "@/components/academy/CourseCard";
 import TestimonialCard from "@/components/academy/TestimonialCard";
 import type { CourseTestimonial } from "@/components/academy/TestimonialCard";
 import { getInternalPath, getZoneUrl, Zone } from "@/utils/subdomain";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 interface DynamicCourse {
     id: string;
@@ -29,6 +31,24 @@ const AcademyHome = () => {
     const [courses, setCourses] = useState<DynamicCourse[]>([]);
     const [testimonials, setTestimonials] = useState<CourseTestimonial[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState<DynamicCourse[]>([]);
+    const [showResults, setShowResults] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (searchQuery.trim().length > 1) {
+            const filtered = courses.filter(c => 
+                c.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                c.description.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setSearchResults(filtered);
+            setShowResults(true);
+        } else {
+            setSearchResults([]);
+            setShowResults(false);
+        }
+    }, [searchQuery, courses]);
 
     useEffect(() => {
         const fetchCourses = async () => {
@@ -80,94 +100,118 @@ const AcademyHome = () => {
     <div className="bg-white min-h-screen text-slate-900 font-inter">
       
       {/* 1. HERO SECTION */}
-      <section className="relative pt-20 pb-16 md:pt-24 md:pb-20 lg:pt-32 lg:pb-32 px-3 md:px-6 overflow-hidden bg-slate-900 text-white">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-blue-600/10 to-transparent pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <section className="relative pt-24 pb-20 lg:pt-40 lg:pb-32 px-6 overflow-hidden bg-white">
+        {/* Subtle Background Glows */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-50/40 blur-[120px] rounded-full pointer-events-none -z-10" />
+        <div className="absolute top-40 left-0 w-64 h-64 bg-indigo-50/30 blur-[100px] rounded-full pointer-events-none -z-10" />
         
-        <div className="container max-w-[1200px] mx-auto relative z-10 text-center md:text-left">
-          <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
-            <div className="flex-1 animate-slide-up">
-              <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight mb-4 md:mb-6 lg:mb-8 leading-[1.1]">
-                Build AI-Powered Operational Skills. <br />
-                <span className="text-blue-400">Access Global Work.</span>
-              </h1>
-              <p className="text-xs sm:text-sm md:text-base lg:text-lg text-slate-300 mb-6 md:mb-8 lg:mb-12 max-w-2xl leading-relaxed font-medium">
-                OPSly Academy transforms African professionals into world-class operations experts. Master the tools of the future and get placed in the global OPSly talent marketplace.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-10 md:mb-12">
-                <Link to={getInternalPath("/courses")} className="w-full sm:w-auto">
-                  <Button size="lg" className="h-12 md:h-14 px-6 md:px-10 text-sm md:text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all font-semibold w-full">
-                    Browse Courses
-                  </Button>
-                </Link>
-                <Link to={getInternalPath("/courses")} className="w-full sm:w-auto">
-                  <Button variant="outline" size="lg" className="h-12 md:h-14 px-6 md:px-8 text-sm md:text-base border-white/20 text-white hover:bg-white/5 rounded-full font-semibold flex items-center justify-center gap-2 w-full">
-                    Join Talent Marketplace <ArrowRight className="w-3 md:w-4 h-3 md:h-4" />
-                  </Button>
-                </Link>
+        <div className="container max-w-[1000px] mx-auto relative z-10 text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col items-center"
+          >
+            {/* Headline */}
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-slate-900 tracking-tight mb-8 leading-[1.05] max-w-4xl">
+              Advance Your Career with Industry-Relevant Programs
+            </h1>
+
+            {/* Subheadline */}
+            <p className="text-base md:text-lg text-slate-500 mb-12 max-w-2xl leading-relaxed font-medium">
+              Master the operational frameworks used by high-growth organizations. <br className="hidden md:block" />
+              Taught by industry leaders from global tech hubs.
+            </p>
+            
+            {/* Search Bar */}
+            <div className="w-full max-w-2xl relative">
+              <div className="relative group">
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors">
+                  <Search size={20} />
+                </div>
+                <input 
+                  type="text" 
+                  placeholder="What do you want to learn today?" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => searchQuery.length > 1 && setShowResults(true)}
+                  className="w-full h-16 md:h-20 pl-16 pr-32 bg-white border border-slate-100 rounded-[24px] md:rounded-[32px] text-base md:text-lg shadow-xl shadow-slate-200/50 focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all outline-none text-slate-800 placeholder:text-slate-400"
+                />
+                <Button 
+                  onClick={() => navigate("/courses")}
+                  className="absolute right-3 top-3 bottom-3 px-8 bg-blue-600 hover:bg-blue-700 text-white rounded-[18px] md:rounded-[24px] font-bold text-sm md:text-base shadow-lg shadow-blue-200 transition-all active:scale-95"
+                >
+                  Search
+                </Button>
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-6 md:gap-x-8 gap-y-3 md:gap-y-4 pt-6 md:pt-8 border-t border-white/5">
-                {[
-                  { label: "Placement Rate", val: "98%" },
-                  { label: "Avg. Income Increase", val: "3.5x" },
-                  { label: "Vetted Network", val: "500+" }
-                ].map((stat, i) => (
-                  <div key={i} className="flex flex-col">
-                    <span className="text-lg md:text-xl font-bold text-white">{stat.val}</span>
-                    <span className="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest">{stat.label}</span>
-                  </div>
-                ))}
+              {/* Added Explore Courses Button per request */}
+              <div className="mt-8">
+                  <Button 
+                    onClick={() => navigate("/courses")}
+                    variant="outline"
+                    className="px-8 py-6 rounded-full text-blue-600 border-blue-200 hover:bg-blue-50 font-bold transition-all shadow-sm"
+                  >
+                    Or Explore All Courses <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
               </div>
+
+              {/* Search Results Dropdown */}
+              <AnimatePresence>
+                {showResults && searchResults.length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full left-0 right-0 mt-4 bg-white border border-slate-100 rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden z-50 p-2"
+                  >
+                    <div className="max-h-[320px] overflow-y-auto custom-scrollbar">
+                       {searchResults.map((course) => (
+                         <Link 
+                           key={course.id} 
+                           to={`/courses/${course.slug}`}
+                           className="flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors rounded-2xl group"
+                         >
+                            <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden shrink-0">
+                               <img src={course.image_url} alt="" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="text-left">
+                               <h4 className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{course.title}</h4>
+                               <p className="text-[10px] text-slate-400 font-medium line-clamp-1">{course.description}</p>
+                            </div>
+                            <ChevronRight size={14} className="ml-auto text-slate-300 group-hover:text-blue-600" />
+                         </Link>
+                       ))}
+                    </div>
+                  </motion.div>
+                )}
+                {showResults && searchQuery.length > 1 && searchResults.length === 0 && (
+                   <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full left-0 right-0 mt-4 bg-white border border-slate-100 rounded-[24px] md:rounded-[32px] shadow-2xl z-50 p-10 text-center"
+                   >
+                     <p className="text-slate-400 text-sm font-medium">No programs found matching "{searchQuery}"</p>
+                   </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            <div className="flex-1 hidden md:block">
-              <div className="relative">
-                <div className="absolute inset-0 bg-blue-600/5 blur-[100px] rounded-full" />
-                <div className="relative bg-slate-800 rounded-3xl border border-white/10 p-4 shadow-2xl">
-                  {/* Visual mockup of learning experience */}
-                  <div className="bg-slate-900 rounded-2xl overflow-hidden aspect-video border border-white/5 flex items-center justify-center">
-                    <div className="text-center p-8">
-                        <div className="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                            <Zap className="w-8 h-8 text-blue-500" />
-                        </div>
-                        <h4 className="text-white font-bold mb-2">Weekly Live Workshop</h4>
-                        <p className="text-slate-500 text-sm">Building AI Automation Systems for SaaS Teams</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-3">
-                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
-                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                            <CheckCircle className="w-4 h-4 text-emerald-500" />
-                        </div>
-                        <div className="flex-grow">
-                            <div className="h-2 w-24 bg-white/20 rounded-full mb-1.5" />
-                            <div className="h-1.5 w-16 bg-white/10 rounded-full" />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5 opacity-60">
-                         <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                            <TrendingUp className="w-4 h-4 text-blue-500" />
-                        </div>
-                        <div className="flex-grow">
-                            <div className="h-2 w-32 bg-white/20 rounded-full mb-1.5" />
-                            <div className="h-1.5 w-20 bg-white/10 rounded-full" />
-                        </div>
-                    </div>
-                  </div>
-                </div>
-                {/* Floating Elements */}
-                <div className="absolute -top-6 -right-6 bg-white rounded-2xl p-4 shadow-xl text-slate-900 animate-bounce cursor-default">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">New Opportunity</div>
-                    <div className="text-sm font-bold flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        Operations Manager, Remote
-                    </div>
-                </div>
-              </div>
+            {/* Popular Tags */}
+            <div className="mt-12 flex flex-wrap justify-center items-center gap-3 md:gap-4">
+               <span className="text-sm font-semibold text-slate-400 mr-2">Popular:</span>
+               {["Operations", "HR Strategy", "Data Science", "Tech Ops"].map((tag) => (
+                 <button 
+                   key={tag}
+                   onClick={() => setSearchQuery(tag)}
+                   className="px-5 py-2 bg-slate-50 text-slate-600 rounded-full text-xs font-bold hover:bg-blue-50 hover:text-blue-600 border border-slate-100/50 transition-all active:scale-95"
+                 >
+                   {tag}
+                 </button>
+               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 

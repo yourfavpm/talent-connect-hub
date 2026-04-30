@@ -54,6 +54,22 @@ const Checkout = lazy(() => import("./pages/academy/Checkout"));
 const AcademyLogin = lazy(() => import("./pages/academy/AcademyLogin"));
 const AcademySignup = lazy(() => import("./pages/academy/AcademySignup"));
 
+// Academy Dashboard
+const StudentDashboardLayout = lazy(() => import("./components/academy/StudentDashboardLayout"));
+const DashboardOverview = lazy(() => import("./pages/academy/dashboard/Overview"));
+const MyCohorts = lazy(() => import("./pages/academy/dashboard/MyCohorts"));
+const BrowsePrograms = lazy(() => import("./pages/academy/dashboard/BrowsePrograms"));
+const CohortWorkspace = lazy(() => import("./pages/academy/dashboard/CohortWorkspace"));
+const Assignments = lazy(() => import("./pages/academy/dashboard/Assignments"));
+const Grades = lazy(() => import("./pages/academy/dashboard/Grades"));
+const Mentors = lazy(() => import("./pages/academy/dashboard/Mentors"));
+const Messages = lazy(() => import("./pages/academy/dashboard/Messages"));
+const Profile = lazy(() => import("./pages/academy/dashboard/Profile"));
+const SubmitAssignment = lazy(() => import("./pages/academy/dashboard/SubmitAssignment"));
+const Certificates = lazy(() => import("./pages/academy/dashboard/Certificates"));
+const CertificateView = lazy(() => import("./pages/academy/CertificateView"));
+const VerifyCertificate = lazy(() => import("./pages/academy/VerifyCertificate"));
+
 // Auth
 const Login = lazy(() => import("./pages/auth/Login"));
 const SignupHub = lazy(() => import("./pages/auth/SignupHub"));
@@ -301,24 +317,45 @@ const App = () => {
 
               {/* Academy Zone (academy.opslyhr.com) */}
               {zone === Zone.ACADEMY && (
-                <Route element={<AcademyLayout />}>
-                  {/* Public Routes */}
-                  <Route path="/" element={<AcademyHome />} />
-                  <Route path="/login" element={<AcademyLogin />} />
-                  <Route path="/signup" element={<AcademySignup />} />
-                  <Route path="/courses" element={<BrowseCourses />} />
-                  <Route path="/courses/:slug" element={<CourseDetail />} />
-                  <Route path="/marketplace" element={<TalentMarketplace />} />
-                  <Route path="/404" element={<NotFound />} />
-                  
-                  {/* Protected Student Routes */}
-                  <Route path="/apply" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><ApplyForm /></ZoneGuard>} />
-                  <Route path="/checkout/:slug" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={false}><Checkout /></ZoneGuard>} />
-                  <Route path="/dashboard" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><StudentDashboard /></ZoneGuard>} />
-                  <Route path="/courses/:slug/learn" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><CourseHub /></ZoneGuard>} />
-                  
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Route>
+                <>
+                  <Route element={<AcademyLayout />}>
+                    {/* Public Routes */}
+                    <Route path="/" element={<AcademyHome />} />
+                    <Route path="/login" element={<AcademyLogin />} />
+                    <Route path="/signup" element={<AcademySignup />} />
+                    <Route path="/courses" element={<BrowseCourses />} />
+                    <Route path="/courses/:slug" element={<CourseDetail />} />
+                    <Route path="/marketplace" element={<TalentMarketplace />} />
+                    <Route path="/404" element={<NotFound />} />
+                    
+                    {/* Public Protected Routes */}
+                    <Route path="/apply" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><ApplyForm /></ZoneGuard>} />
+                    <Route path="/checkout/:slug" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={false}><Checkout /></ZoneGuard>} />
+                    
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Route>
+
+                  {/* Protected Academy Dashboard */}
+                  <Route path="/dashboard" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><StudentDashboardLayout /></ZoneGuard>}>
+                    <Route index element={<DashboardOverview />} />
+                    <Route path="courses" element={<BrowsePrograms />} />
+                    <Route path="cohorts" element={<MyCohorts />} />
+                    <Route path="cohorts/:enrollmentId" element={<CohortWorkspace />} />
+                    <Route path="assignments" element={<Assignments />} />
+                    <Route path="assignments/:id" element={<SubmitAssignment />} />
+                    <Route path="grades" element={<Grades />} />
+                    <Route path="mentors" element={<Mentors />} />
+                    <Route path="messages" element={<Messages />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="certificates" element={<Certificates />} />
+                  </Route>
+
+                  {/* Certificate View (Protected) */}
+                  <Route path="/certificate/:certificateId" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><CertificateView /></ZoneGuard>} />
+
+                  {/* Public Verification (No auth required) */}
+                  <Route path="/verify/:certificateId" element={<VerifyCertificate />} />
+                </>
               )}
 
               {/* Auth Hub Zone (app.opslyhr.com) */}

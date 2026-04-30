@@ -29,11 +29,14 @@ export const getCurrentZone = (): Zone => {
   if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost")) {
     const params = new URLSearchParams(window.location.search);
     const zoneParam = params.get("zone")?.toUpperCase();
+    
+    // 1. Check URL parameter first
     if (zoneParam && Object.values(Zone).includes(zoneParam as Zone)) {
+      localStorage.setItem("dev_zone", zoneParam);
       return zoneParam as Zone;
     }
     
-    // Support local subdomains if configured (e.g., admin.localhost)
+    // 2. Support local subdomains (e.g., academy.localhost)
     if (hostname.includes(".")) {
       const sub = hostname.split(".")[0];
       if (sub === "admin") return Zone.ADMIN;
@@ -41,6 +44,12 @@ export const getCurrentZone = (): Zone => {
       if (sub === "client") return Zone.CLIENT;
       if (sub === "app") return Zone.AUTH;
       if (sub === "academy") return Zone.ACADEMY;
+    }
+
+    // 3. Check localStorage fallback
+    const savedZone = localStorage.getItem("dev_zone");
+    if (savedZone && Object.values(Zone).includes(savedZone as Zone)) {
+      return savedZone as Zone;
     }
     
     return Zone.AUTH; 
@@ -104,14 +113,17 @@ export const getZoneUrl = (zone: Zone, path: string = "/"): string => {
 
   if (isDev) {
     // For local dev, we use the current host (port included) to maintain context
-    // This handles both 5173 and 8080 automatically.
     const baseUrl = `${window.location.protocol}//${window.location.host}`;
     
-    // Add zone parameter if not already present in the source URLs
+    // Use current zone from storage if none provided or different
+    const currentDevZone = localStorage.getItem("dev_zone") || Zone.AUTH;
+    const targetZone = zone || currentDevZone;
+
+    // Add zone parameter if not already present
     if (path.includes("zone=")) return `${baseUrl}${cleanPath}`;
     
     const connector = cleanPath.includes("?") ? "&" : "?";
-    return `${baseUrl}${cleanPath}${connector}zone=${zone}`;
+    return `${baseUrl}${cleanPath}${connector}zone=${targetZone}`;
   }
 
   const protocol = "https://";

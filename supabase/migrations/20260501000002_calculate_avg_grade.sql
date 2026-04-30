@@ -1,0 +1,2 @@
+-- No schema changes needed, just a reminder that avg_grade can be calculated via SQL or client-side.
+-- We'll do it client-side in the dashboard.
