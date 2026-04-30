@@ -41,10 +41,10 @@ const Overview = () => {
           setUserName(data.profile.full_name?.split(' ')[0] || "Student");
           setStats({
             ...data.profile,
-            certificates_count: 0, // Fallback as RPC doesn't count certs yet
-            courses_completed: 0,
-            total_study_hours: 0,
-            global_rank: null
+            certificates_count: data.profile.certificates_count || 0,
+            courses_completed: data.profile.courses_completed || 0,
+            total_study_hours: data.profile.total_study_hours || 0,
+            global_rank: data.profile.global_rank || null
           });
           setEnrollments(data.enrollments || []);
           setNextSessions(data.sessions || []);
@@ -109,21 +109,23 @@ const Overview = () => {
               </div>
               <div className="space-y-3">
                 {enrollments.map((enroll) => (
-                  <div key={enroll.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 group hover:border-blue-100 transition-all">
-                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 shrink-0">
-                      <Layout size={20} />
-                    </div>
-                    <div className="flex-grow min-w-0">
-                      <h4 className="text-sm font-semibold text-slate-800 truncate mb-1">{enroll.course_name}</h4>
-                      <div className="flex items-center gap-3">
-                         <div className="flex-grow h-1 bg-slate-50 rounded-full overflow-hidden">
-                           <div className="h-full bg-blue-600" style={{ width: `${enroll.progress_percent || 0}%` }} />
-                         </div>
-                         <span className="text-[9px] font-bold text-slate-400">{enroll.progress_percent || 0}%</span>
+                  <Link key={enroll.id} to={`/dashboard/cohorts/${enroll.id}`} className="block">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 group hover:border-blue-100 transition-all">
+                      <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 shrink-0">
+                        <Layout size={20} />
                       </div>
+                      <div className="flex-grow min-w-0">
+                        <h4 className="text-sm font-semibold text-slate-800 truncate mb-1">{enroll.course_name}</h4>
+                        <div className="flex items-center gap-3">
+                           <div className="flex-grow h-1 bg-slate-50 rounded-full overflow-hidden">
+                             <div className="h-full bg-blue-600" style={{ width: `${enroll.progress_percent || 0}%` }} />
+                           </div>
+                           <span className="text-[9px] font-bold text-slate-400">{enroll.progress_percent || 0}%</span>
+                        </div>
+                      </div>
+                      <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-600 transition-colors" />
                     </div>
-                    <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-600 transition-colors" />
-                  </div>
+                  </Link>
                 ))}
                 {enrollments.length === 0 && (
                   <div className="h-40 flex items-center justify-center border-2 border-dashed border-slate-100 rounded-[28px] text-slate-400 text-sm italic">

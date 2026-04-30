@@ -47,15 +47,21 @@ const SubmitAssignment = () => {
     fetchAssignment();
   }, [id]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 50 * 1024 * 1024) {
+        toast({ title: "File too large", description: "Maximum size is 50MB", variant: "destructive" });
+        return;
+      }
+      setFormData({ ...formData, file });
+    }
+  };
+
   const handleSubmit = async (isDraft = false) => {
-    // Deadline Enforcement
     const isLate = assignment.deadline_at && new Date(assignment.deadline_at) < new Date();
     if (isLate && !assignment.allow_late_submissions && !isDraft) {
-      toast({
-        title: "Deadline Passed",
-        description: "This assignment is no longer accepting submissions.",
-        variant: "destructive"
-      });
+      toast({ title: "Deadline Passed", description: "This assignment is no longer accepting submissions.", variant: "destructive" });
       return;
     }
 
@@ -64,16 +70,30 @@ const SubmitAssignment = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      let file_url = null;
+      if (formData.file) {
+        const fileExt = formData.file.name.split('.').pop();
+        const filePath = `${user.id}/${assignment.id}-${Math.random()}.${fileExt}`;
+        
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('academy-submissions')
+          .upload(filePath, formData.file);
+
+        if (uploadError) throw uploadError;
+        file_url = uploadData.path;
+      }
+
       const { error } = await supabase
         .from("submissions")
         .insert({
           assignment_id: id,
           student_id: user.id,
-          link: formData.repo_link, // Keep for legacy
-          repo_link: formData.repo_link, // Standardized
-          student_comments: formData.comments, // Standardized
+          link: formData.repo_link,
+          repo_link: formData.repo_link,
+          student_comments: formData.comments,
           is_draft: isDraft,
-          status: isDraft ? 'draft' : 'submitted'
+          status: isDraft ? 'draft' : 'submitted',
+          file_url: file_url
         });
 
       if (error) throw error;
@@ -84,19 +104,20 @@ const SubmitAssignment = () => {
       });
 
       if (!isDraft) navigate("/dashboard/assignments");
-    } catch (err) {
-      toast({
-        title: "Submission Error",
-        description: "Failed to submit assignment. Please try again.",
-        variant: "destructive"
-      });
+    } catch (err: any) {
+      toast({ title: "Submission Error", description: err.message || "Failed to submit assignment.", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
   };
 
   if (loading) return <div className="h-96 flex items-center justify-center"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
-  if (!assignment) return <div>Assignment not found.</div>;
+  if (!assignment) return (
+    <div className="h-[60vh] flex flex-col items-center justify-center space-y-4">
+      <p className="text-slate-500 font-medium text-lg">Assignment not found or access denied.</p>
+      <Link to="/dashboard/assignments"><Button variant="outline">Back to Assignments</Button></Link>
+    </div>
+  );
 
   return (
     <div className="max-w-[1200px] mx-auto space-y-8 animate-fade-in pb-20">
@@ -137,18 +158,33 @@ const SubmitAssignment = () => {
             {/* File Upload */}
             <div className="space-y-4">
                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Supporting Documents (Optional)</label>
-               <div className="border-2 border-dashed border-slate-100 rounded-3xl p-10 flex flex-col items-center justify-center text-center group hover:border-blue-200 transition-all cursor-pointer bg-slate-50/50">
-                  <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
-                    <Upload size={24} />
+               <input 
+                 type="file" 
+                 id="file-upload" 
+                 className="hidden" 
+                 onChange={handleFileChange}
+                 accept=".pdf,.zip,.png,.jpg,.jpeg"
+               />
+               <label 
+                 htmlFor="file-upload"
+                 className={cn(
+                   "border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center group transition-all cursor-pointer",
+                   formData.file ? "border-blue-600 bg-blue-50/30" : "border-slate-100 bg-slate-50/50 hover:border-blue-200"
+                 )}
+               >
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl shadow-sm flex items-center justify-center mb-4 transition-transform group-hover:scale-110",
+                    formData.file ? "bg-blue-600 text-white" : "bg-white text-blue-600"
+                  )}>
+                    {formData.file ? <CheckCircle2 size={24} /> : <Upload size={24} />}
                   </div>
-                  <h4 className="text-sm font-semibold text-slate-800 mb-1">Drag and drop files here</h4>
-                  <p className="text-[10px] text-slate-400 font-medium">Or click to browse from your computer. Max size: 50MB.</p>
-                  <div className="mt-6 flex gap-2">
-                     <Badge variant="outline" className="bg-white text-slate-400 border-slate-100 font-bold text-[8px] uppercase">PDF</Badge>
-                     <Badge variant="outline" className="bg-white text-slate-400 border-slate-100 font-bold text-[8px] uppercase">ZIP</Badge>
-                     <Badge variant="outline" className="bg-white text-slate-400 border-slate-100 font-bold text-[8px] uppercase">PNG/JPG</Badge>
-                  </div>
-               </div>
+                  <h4 className="text-sm font-semibold text-slate-800 mb-1">
+                    {formData.file ? formData.file.name : "Drag and drop files here"}
+                  </h4>
+                  <p className="text-[10px] text-slate-400 font-medium">
+                    {formData.file ? `${(formData.file.size / 1024 / 1024).toFixed(2)} MB` : "Or click to browse from your computer. Max size: 50MB."}
+                  </p>
+               </label>
             </div>
 
             {/* Comments */}

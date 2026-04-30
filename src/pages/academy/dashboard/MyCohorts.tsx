@@ -39,28 +39,28 @@ const MyCohorts = () => {
           setStats(prev => ({ ...prev, total_study_hours: profileData.total_study_hours }));
         }
 
-        // Fetch Enrollments
+        // Fetch Enrollments (All)
         const { data: enrollData } = await supabase
           .from("academy_enrollments")
           .select("*, cohorts(*)")
           .eq("user_id", user.id)
-          .eq("enrollment_status", "active");
+          .in("enrollment_status", ["active", "completed"]);
         
         setEnrollments(enrollData || []);
 
-        // Fetch Pending Tasks (Assignments not submitted)
-        const cohortIds = enrollData?.map(e => e.cohort_id) || [];
-        if (cohortIds.length > 0) {
+        // Fetch Pending Tasks
+        const activeCohortIds = enrollData?.filter(e => e.enrollment_status === 'active').map(e => e.cohort_id) || [];
+        if (activeCohortIds.length > 0) {
            const { count: pendingCount } = await supabase
              .from("assignments")
              .select("*", { count: 'exact', head: true })
-             .in("cohort_id", cohortIds);
+             .in("cohort_id", activeCohortIds);
            
-           // Subtract submitted ones
            const { count: submittedCount } = await supabase
              .from("submissions")
              .select("*", { count: 'exact', head: true })
-             .eq("student_id", user.id);
+             .eq("student_id", user.id)
+             .in("status", ["submitted", "graded"]);
            
            setStats(prev => ({ ...prev, pending_tasks: Math.max(0, (pendingCount || 0) - (submittedCount || 0)) }));
         }
@@ -71,6 +71,9 @@ const MyCohorts = () => {
   }, []);
 
   if (loading) return <div className="h-96 flex items-center justify-center"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
+
+  const activeEnrollments = enrollments.filter(e => e.enrollment_status === 'active');
+  const completedEnrollments = enrollments.filter(e => e.enrollment_status === 'completed');
 
   return (
     <div className="space-y-12 animate-fade-in max-w-[1400px]">
@@ -120,7 +123,7 @@ const MyCohorts = () => {
           </div>
           <div>
             <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Score</p>
-            <p className="text-lg font-bold text-slate-800 tracking-tight">94%</p>
+            <p className="text-lg font-bold text-slate-800 tracking-tight">{stats.avg_performance}%</p>
           </div>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
@@ -134,103 +137,111 @@ const MyCohorts = () => {
         </div>
       </div>
 
-      {/* Cohort Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
-        {enrollments.map((enroll) => (
-          <div key={enroll.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-500">
-            <div className="h-44 md:h-56 bg-slate-100 relative overflow-hidden shrink-0">
-               <img 
-                 src={enroll.course_slug === 'product-ops' 
-                   ? "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop" 
-                   : "https://images.unsplash.com/photo-1551288049-bbdac8a28a80?q=80&w=800&auto=format&fit=crop"} 
-                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                 alt="Program" 
-               />
-               <div className="absolute top-4 right-4">
-                  <span className="px-2 py-0.5 bg-blue-600 text-white text-[8px] font-bold rounded uppercase tracking-wider shadow-lg">Active</span>
-               </div>
-            </div>
-            
-            <div className="p-6 md:p-10 flex flex-col flex-grow">
-              <div className="flex justify-between items-start mb-1">
-                 <p className="text-[8px] font-bold text-blue-600 uppercase tracking-widest mb-2">
-                   {enroll.course_name.toLowerCase().includes('data') ? 'Data Science Professional' : 'Cloud Architecture Elite'}
-                 </p>
-                 <button className="text-slate-300 hover:text-slate-600 transition-colors">...</button>
-              </div>
-              <h3 className="text-xl md:text-2xl font-semibold text-slate-800 mb-4 md:mb-6 leading-tight group-hover:text-blue-600 transition-colors">
-                {enroll.course_name} {enroll.cohorts?.name}
-              </h3>
-              
-              <div className="space-y-3 md:space-y-4 mb-8 md:mb-10">
-                <div className="flex items-center justify-between text-[10px] font-semibold">
-                   <span className="text-slate-400 uppercase tracking-widest text-[8px]">Overall Progress</span>
-                   <span className="text-slate-800">{enroll.progress_percent || 0}%</span>
-                </div>
-                <div className="h-1 w-full bg-slate-50 rounded-full overflow-hidden">
-                   <div className="h-full bg-blue-600 rounded-full shadow-sm shadow-blue-500/20" style={{ width: `${enroll.progress_percent || 0}%` }} />
-                </div>
-              </div>
-
-              <div className="space-y-4 md:space-y-6">
-                 <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium">
-                    <Calendar size={12} className="text-slate-400" />
-                    <span>Next: <span className="text-slate-800 font-bold">Oct 24, 10:00 AM</span></span>
+      {/* Cohort Grid - Active */}
+      <div className="space-y-8">
+        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">In Progress</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+          {activeEnrollments.map((enroll) => (
+            <div key={enroll.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-500">
+              <div className="h-44 md:h-56 bg-slate-100 relative overflow-hidden shrink-0">
+                 <img 
+                   src={enroll.cohorts?.image_url || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop"} 
+                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                   alt="Program" 
+                 />
+                 <div className="absolute top-4 right-4">
+                    <span className="px-2 py-0.5 bg-blue-600 text-white text-[8px] font-bold rounded uppercase tracking-wider shadow-lg">Active</span>
                  </div>
-                 
-                 <Link to={`/dashboard/cohorts/${enroll.id}`}>
-                   <Button variant="ghost" className="w-full text-blue-600 font-bold text-[10px] uppercase tracking-widest hover:bg-blue-50 hover:text-blue-700 rounded-xl h-10 flex items-center justify-center gap-2 transition-all border border-blue-50">
-                      View Dashboard <ArrowRight size={12} />
-                   </Button>
-                 </Link>
+              </div>
+              
+              <div className="p-6 md:p-10 flex flex-col flex-grow">
+                <div className="flex justify-between items-start mb-1">
+                   <p className="text-[8px] font-bold text-blue-600 uppercase tracking-widest mb-2">
+                     {enroll.course_name}
+                   </p>
+                   <button className="text-slate-300 hover:text-slate-600 transition-colors">...</button>
+                </div>
+                <h3 className="text-xl md:text-2xl font-semibold text-slate-800 mb-4 md:mb-6 leading-tight group-hover:text-blue-600 transition-colors">
+                  {enroll.cohorts?.name || enroll.course_name}
+                </h3>
+                
+                <div className="space-y-3 md:space-y-4 mb-8 md:mb-10">
+                  <div className="flex items-center justify-between text-[10px] font-semibold">
+                     <span className="text-slate-400 uppercase tracking-widest text-[8px]">Overall Progress</span>
+                     <span className="text-slate-800">{enroll.progress_percent || 0}%</span>
+                  </div>
+                  <div className="h-1 w-full bg-slate-50 rounded-full overflow-hidden">
+                     <div className="h-full bg-blue-600 rounded-full shadow-sm shadow-blue-500/20" style={{ width: `${enroll.progress_percent || 0}%` }} />
+                  </div>
+                </div>
+
+                <div className="space-y-4 md:space-y-6">
+                   <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium">
+                      <Calendar size={12} className="text-slate-400" />
+                      <span>Next Session: <span className="text-slate-800 font-bold">TBA</span></span>
+                   </div>
+                   
+                   <Link to={`/dashboard/cohorts/${enroll.id}`}>
+                     <Button variant="ghost" className="w-full text-blue-600 font-bold text-[10px] uppercase tracking-widest hover:bg-blue-50 hover:text-blue-700 rounded-xl h-10 flex items-center justify-center gap-2 transition-all border border-blue-50">
+                        View Workspace <ArrowRight size(12) />
+                     </Button>
+                   </Link>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {/* Explore More Card */}
-        <div className="bg-slate-50 rounded-3xl border border-dashed border-slate-200 p-8 md:p-10 flex flex-col items-center justify-center text-center space-y-4 md:space-y-6">
-           <div className="w-14 h-14 bg-white rounded-full shadow-sm flex items-center justify-center text-blue-600">
-              <Plus size={24} strokeWidth={1.5} />
-           </div>
-           <div>
-              <h4 className="text-lg font-semibold text-slate-800 mb-1">Explore Courses</h4>
-              <p className="text-[10px] text-slate-500 font-normal max-w-[200px] leading-relaxed">
-                 Discover new cohort-based programs starting next month.
-              </p>
-           </div>
-           <Link to="/dashboard/courses">
-             <Button variant="outline" className="border-slate-200 bg-white rounded-xl font-bold text-[10px] px-6 h-9 hover:bg-white/80 shadow-sm">
-                Catalog
-             </Button>
-           </Link>
+          {activeEnrollments.length === 0 && (
+            <div className="bg-slate-50 rounded-3xl border border-dashed border-slate-200 p-8 md:p-10 flex flex-col items-center justify-center text-center space-y-4 md:space-y-6 min-h-[400px]">
+               <div className="w-14 h-14 bg-white rounded-full shadow-sm flex items-center justify-center text-blue-600">
+                  <Plus size={24} strokeWidth={1.5} />
+               </div>
+               <div>
+                  <h4 className="text-lg font-semibold text-slate-800 mb-1">No Active Cohorts</h4>
+                  <p className="text-[10px] text-slate-500 font-normal max-w-[200px] leading-relaxed">
+                     Discover new cohort-based programs starting next month.
+                  </p>
+               </div>
+               <Link to="/dashboard/courses">
+                 <Button variant="outline" className="border-slate-200 bg-white rounded-xl font-bold text-[10px] px-6 h-9 hover:bg-white/80 shadow-sm">
+                    Catalog
+                 </Button>
+               </Link>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Completed Cohorts Section */}
-      <div className="pt-12">
-        <h2 className="text-2xl font-semibold text-slate-800 mb-8">Completed Programs</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-           <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm p-10 flex flex-col group opacity-80">
-              <div className="h-56 bg-slate-50 rounded-[28px] overflow-hidden mb-8">
-                <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover grayscale opacity-50" alt="Completed" />
-              </div>
-              <div className="flex items-center justify-between mb-2">
-                 <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-lg uppercase tracking-wider">Completed</span>
-              </div>
-              <h3 className="text-xl font-semibold text-slate-800 mb-6">Agile Fundamentals C4</h3>
-              <div className="flex items-center justify-between mt-auto">
-                 <div className="flex items-center gap-2 text-emerald-600">
-                    <CheckCircle2 size={16} />
-                    <span className="text-xs font-semibold">Certificate Issued</span>
-                 </div>
-                 <Button variant="outline" className="border-slate-200 rounded-xl font-semibold text-xs h-10 gap-2">
-                    <BookOpen size={14} /> Download Certificate
-                 </Button>
-              </div>
-           </div>
+      {completedEnrollments.length > 0 && (
+        <div className="pt-12 space-y-8">
+          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Completed Programs</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+             {completedEnrollments.map((enroll) => (
+               <div key={enroll.id} className="bg-white rounded-[40px] border border-slate-100 shadow-sm p-10 flex flex-col group">
+                  <div className="h-56 bg-slate-50 rounded-[28px] overflow-hidden mb-8">
+                    <img src={enroll.cohorts?.image_url || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=800&auto=format&fit=crop"} className="w-full h-full object-cover grayscale opacity-50" alt="Completed" />
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                     <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-lg uppercase tracking-wider">Completed</span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-slate-800 mb-6">{enroll.course_name} {enroll.cohorts?.name}</h3>
+                  <div className="flex items-center justify-between mt-auto">
+                     <div className="flex items-center gap-2 text-emerald-600">
+                        <CheckCircle2 size(16) />
+                        <span className="text-xs font-semibold">Program Completed</span>
+                     </div>
+                     <Link to="/dashboard/certificates">
+                       <Button variant="outline" className="border-slate-200 rounded-xl font-semibold text-xs h-10 gap-2">
+                          <Award size(14) /> View Certificate
+                       </Button>
+                     </Link>
+                  </div>
+               </div>
+             ))}
+          </div>
         </div>
-      </div>
+      )}
 
     </div>
   );
