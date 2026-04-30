@@ -183,7 +183,7 @@ const MyCohorts = () => {
                    
                    <Link to={`/dashboard/cohorts/${enroll.id}`}>
                      <Button variant="ghost" className="w-full text-blue-600 font-bold text-[10px] uppercase tracking-widest hover:bg-blue-50 hover:text-blue-700 rounded-xl h-10 flex items-center justify-center gap-2 transition-all border border-blue-50">
-                        View Workspace <ArrowRight size(12) />
+                        View Workspace <ArrowRight size={12} />
                      </Button>
                    </Link>
                 </div>
@@ -228,12 +228,12 @@ const MyCohorts = () => {
                   <h3 className="text-xl font-semibold text-slate-800 mb-6">{enroll.course_name} {enroll.cohorts?.name}</h3>
                   <div className="flex items-center justify-between mt-auto">
                      <div className="flex items-center gap-2 text-emerald-600">
-                        <CheckCircle2 size(16) />
+                        <CheckCircle2 size={16} />
                         <span className="text-xs font-semibold">Program Completed</span>
                      </div>
                      <Link to="/dashboard/certificates">
                        <Button variant="outline" className="border-slate-200 rounded-xl font-semibold text-xs h-10 gap-2">
-                          <Award size(14) /> View Certificate
+                          <Award size={14} /> View Certificate
                        </Button>
                      </Link>
                   </div>
