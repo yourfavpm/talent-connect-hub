@@ -209,9 +209,9 @@ const CohortWorkspace = () => {
                                      </div>
                                  </div>
                                  <div className="flex items-center gap-3">
-                                    {session.meeting_link && (
+                                    {session.meeting_url && (
                                         <Button 
-                                            onClick={() => window.open(session.meeting_link, '_blank')}
+                                            onClick={() => window.open(session.meeting_url, '_blank')}
                                             className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs h-11 px-6 shadow-sm shadow-blue-500/10"
                                         >
                                             Join Class
@@ -244,9 +244,11 @@ const CohortWorkspace = () => {
                                         
                                         <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Due {new Date(assignment.deadline_at).toLocaleDateString()}</span>
-                                            <Button variant="ghost" className="text-blue-600 font-semibold text-sm hover:bg-transparent hover:text-blue-700 p-0 h-auto gap-2">
-                                                {submission ? 'View Submission' : 'Submit Work'} <ArrowRight size={14} />
-                                            </Button>
+                                            <Link to={`/dashboard/assignments/${assignment.id}`}>
+                                                <Button variant="ghost" className="text-blue-600 font-semibold text-sm hover:bg-transparent hover:text-blue-700 p-0 h-auto gap-2">
+                                                    {submission ? 'View Submission' : 'Submit Work'} <ArrowRight size={14} />
+                                                </Button>
+                                            </Link>
                                         </div>
                                     </div>
                                 );

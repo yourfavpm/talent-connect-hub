@@ -27,7 +27,7 @@ const Overview = () => {
   const [avgGrade, setAvgGrade] = useState<number | null>(null);
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [pendingAssignments, setPendingAssignments] = useState<any[]>([]);
-  const [nextSession, setNextSession] = useState<any | null>(null);
+  const [nextSessions, setNextSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -58,17 +58,16 @@ const Overview = () => {
 
         const cohortIds = enrollData?.map(e => e.cohort_id) || [];
         if (cohortIds.length > 0) {
-          // Fetch Next Session
-          const { data: sessionData } = await supabase
+          // Fetch Next Sessions (multiple)
+          const { data: sessionsData } = await supabase
             .from("sessions")
             .select("*, cohorts(name)")
             .in("cohort_id", cohortIds)
-            .gte("date", new Date().toISOString())
-            .order("date", { ascending: true })
-            .limit(1)
-            .single();
+            .gte("session_date", new Date().toISOString().split('T')[0])
+            .order("session_date", { ascending: true })
+            .limit(3);
           
-          setNextSession(sessionData);
+          setNextSessions(sessionsData || []);
 
           // Fetch Announcements
           const { data: annData } = await supabase
@@ -199,36 +198,45 @@ const Overview = () => {
               <button className="text-slate-400 hover:text-slate-600">...</button>
             </div>
             <div className="space-y-3">
-              {[
-                { date: "Oct 14", title: "Interaction Principles", time: "14:00 - 15:30", status: "join" },
-                { date: "Oct 16", title: "Live Q&A: AWS Config", time: "10:00 - 11:00", status: "locked" },
-                { date: "Oct 17", title: "Mentorship Circle", time: "16:30 - 17:30", status: "locked" },
-              ].map((session, idx) => (
-                <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-slate-50 rounded-xl flex flex-col items-center justify-center border border-slate-100 shrink-0">
-                       <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{session.date.split(' ')[0]}</span>
-                       <span className="text-base font-bold text-slate-800 leading-tight">{session.date.split(' ')[1]}</span>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-800 mb-0.5">{session.title}</h4>
-                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
-                        <Clock size={10} /> {session.time}
+              {nextSessions.map((session, idx) => {
+                const sessionDate = new Date(session.session_date);
+                const day = sessionDate.toLocaleDateString('default', { day: 'numeric' });
+                const month = sessionDate.toLocaleDateString('default', { month: 'short' });
+                const isJoinable = session.meeting_url && session.status !== 'locked';
+
+                return (
+                  <div key={session.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-slate-50 rounded-xl flex flex-col items-center justify-center border border-slate-100 shrink-0">
+                         <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{month}</span>
+                         <span className="text-base font-bold text-slate-800 leading-tight">{day}</span>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-800 mb-0.5">{session.title}</h4>
+                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
+                          <Clock size={10} /> {session.start_time || "TBA"} • {session.cohorts?.name}
+                        </div>
                       </div>
                     </div>
+                    <Button 
+                      variant={isJoinable ? 'outline' : 'ghost'} 
+                      disabled={!isJoinable}
+                      onClick={() => session.meeting_url && window.open(session.meeting_url, '_blank')}
+                      className={cn(
+                        "rounded-lg font-bold text-[8px] uppercase tracking-wider px-4 h-8",
+                        isJoinable ? "border-blue-600 text-blue-600" : "bg-slate-50 text-slate-300"
+                      )}
+                    >
+                      {isJoinable ? 'Join' : 'Locked'}
+                    </Button>
                   </div>
-                  <Button 
-                    variant={session.status === 'join' ? 'outline' : 'ghost'} 
-                    disabled={session.status === 'locked'}
-                    className={cn(
-                      "rounded-lg font-bold text-[8px] uppercase tracking-wider px-4 h-8",
-                      session.status === 'join' ? "border-blue-600 text-blue-600" : "bg-slate-50 text-slate-300"
-                    )}
-                  >
-                    {session.status === 'join' ? 'Join' : 'Locked'}
-                  </Button>
+                );
+              })}
+              {nextSessions.length === 0 && (
+                <div className="bg-slate-50/50 p-8 rounded-3xl border border-dashed border-slate-100 text-center">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">No upcoming classes</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -253,7 +261,7 @@ const Overview = () => {
                     <p className="text-[10px] text-slate-400 mb-4 font-medium">
                       {new Date(asgn.deadline_at).toLocaleDateString()} • {asgn.cohorts?.name}
                     </p>
-                    <Link to={`/dashboard/cohorts/assignments`}>
+                    <Link to={`/dashboard/assignments/${asgn.id}`}>
                       <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-[8px] uppercase tracking-widest h-8">
                         Submit
                       </Button>

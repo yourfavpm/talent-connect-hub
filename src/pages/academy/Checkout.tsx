@@ -356,7 +356,33 @@ const Checkout = () => {
                             console.log("Enrollment email sent successfully via edge function");
                         } catch (emailErr) {
                             console.error("Failed to send enrollment email:", emailErr);
-                            // Don't block the UI if email fails
+                            
+                            // Fallback to basic send-email if specialized one fails
+                            try {
+                                await supabase.functions.invoke('send-email', {
+                                    body: {
+                                        to: email.trim().toLowerCase(),
+                                        subject: `Welcome to ${course.title}!`,
+                                        htmlTemplate: `
+                                            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
+                                                <div style="background: #0f2147; padding: 40px; text-align: center;">
+                                                    <img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="width: 140px;" />
+                                                </div>
+                                                <div style="padding: 40px; background: #fff;">
+                                                    <h1 style="color: #0f2147; font-size: 24px; margin-bottom: 20px;">Enrollment Confirmed!</h1>
+                                                    <p style="color: #444; font-size: 16px; line-height: 1.6;">Hello,</p>
+                                                    <p style="color: #444; font-size: 16px; line-height: 1.6;">Your enrollment in <strong>${course.title}</strong> has been successful.</p>
+                                                    <div style="margin: 40px 0; text-align: center;">
+                                                        <a href="https://academy.opslyhr.com/dashboard" style="background: #0f2147; color: #fff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">Go to Student Dashboard</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `
+                                    }
+                                });
+                            } catch (fallbackErr) {
+                                console.error("Fallback email also failed:", fallbackErr);
+                            }
                         }
                     }
                 } else {

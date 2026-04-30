@@ -268,8 +268,10 @@ const CohortDetail = () => {
                 cohort_id: id,
                 title: newSession.title,
                 session_date: newSession.date,
+                date: new Date(newSession.date).toISOString(), // Legacy support
                 start_time: newSession.start_time,
                 meeting_url: newSession.url,
+                join_link: newSession.url, // Legacy support
                 status: 'scheduled'
             }]).select().single();
 
@@ -297,7 +299,10 @@ const CohortDetail = () => {
                 image_url: newAnnouncement.image_url
             }]).select().single();
 
-            if (error) throw error;
+            if (error) {
+                console.error("Announcement Error:", error);
+                throw error;
+            }
             setAnnouncements(prev => [data as Announcement, ...prev]);
             setNewAnnouncement({ title: '', content: '', image_url: '' });
             toast({ title: "Posted", description: "Announcement sent to students." });

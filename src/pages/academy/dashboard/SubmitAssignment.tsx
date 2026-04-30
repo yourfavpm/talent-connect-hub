@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -57,8 +58,9 @@ const SubmitAssignment = () => {
         .insert({
           assignment_id: id,
           student_id: user.id,
-          repo_link: formData.repo_link,
-          student_comments: formData.comments,
+          link: formData.repo_link, // Keep for legacy
+          repo_link: formData.repo_link, // Standardized
+          student_comments: formData.comments, // Standardized
           is_draft: isDraft,
           status: isDraft ? 'draft' : 'submitted'
         });
