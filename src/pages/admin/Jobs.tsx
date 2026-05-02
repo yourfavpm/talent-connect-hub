@@ -435,6 +435,7 @@ function PostInternalJobModal({ onJobPosted }: { onJobPosted: () => void }) {
     years_of_experience: "",
     industry: "",
     description: "",
+    role_needed: "virtual_assistant",
   });
 
   useEffect(() => {
@@ -462,6 +463,7 @@ function PostInternalJobModal({ onJobPosted }: { onJobPosted: () => void }) {
         years_of_experience: formData.years_of_experience,
         industry: formData.industry,
         description: formData.description,
+        role_needed: formData.role_needed,
         job_type: "internal",
         status: "published",
         visibility: "public",
@@ -481,6 +483,7 @@ function PostInternalJobModal({ onJobPosted }: { onJobPosted: () => void }) {
         years_of_experience: "",
         industry: "",
         description: "",
+        role_needed: "virtual_assistant",
       });
       onJobPosted();
     } catch (error: any) {
@@ -534,6 +537,25 @@ function PostInternalJobModal({ onJobPosted }: { onJobPosted: () => void }) {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="role_needed">Role Category</Label>
+              <Select value={formData.role_needed} onValueChange={v => setFormData({...formData, role_needed: v})}>
+                <SelectTrigger id="role_needed">
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="virtual_assistant">Virtual Assistant</SelectItem>
+                  <SelectItem value="customer_support">Customer Support</SelectItem>
+                  <SelectItem value="social_media_manager">Social Media Manager</SelectItem>
+                  <SelectItem value="product_manager">Product Manager</SelectItem>
+                  <SelectItem value="operations_manager">Operations Manager</SelectItem>
+                  <SelectItem value="project_manager">Project Manager</SelectItem>
+                  <SelectItem value="executive_assistant">Executive Assistant</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -630,6 +652,7 @@ function PostExternalJobModal({ onJobPosted }: { onJobPosted: () => void }) {
     salary_range: "",
     years_of_experience: "",
     industry: "",
+    role_needed: "virtual_assistant",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -645,6 +668,7 @@ function PostExternalJobModal({ onJobPosted }: { onJobPosted: () => void }) {
         salary_range: formData.salary_range || null,
         years_of_experience: formData.years_of_experience || null,
         industry: formData.industry || null,
+        role_needed: formData.role_needed,
         job_type: "external",
         status: "published",
         visibility: "public",
@@ -664,6 +688,7 @@ function PostExternalJobModal({ onJobPosted }: { onJobPosted: () => void }) {
         salary_range: "",
         years_of_experience: "",
         industry: "",
+        role_needed: "virtual_assistant",
       });
       onJobPosted();
     } catch (error: any) {
@@ -702,6 +727,24 @@ function PostExternalJobModal({ onJobPosted }: { onJobPosted: () => void }) {
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="role_needed">Role Category</Label>
+              <Select value={formData.role_needed} onValueChange={v => setFormData({...formData, role_needed: v})}>
+                <SelectTrigger id="role_needed">
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="virtual_assistant">Virtual Assistant</SelectItem>
+                  <SelectItem value="customer_support">Customer Support</SelectItem>
+                  <SelectItem value="social_media_manager">Social Media Manager</SelectItem>
+                  <SelectItem value="product_manager">Product Manager</SelectItem>
+                  <SelectItem value="operations_manager">Operations Manager</SelectItem>
+                  <SelectItem value="project_manager">Project Manager</SelectItem>
+                  <SelectItem value="executive_assistant">Executive Assistant</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
