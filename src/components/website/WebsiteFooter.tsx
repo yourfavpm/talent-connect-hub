@@ -13,7 +13,7 @@ const WebsiteFooter = () => {
             <Link to="/" className="inline-block">
               <img src="/images/logocolored.png" alt="OPSlyHR" className="h-16 w-auto" />
             </Link>
-            <p className="text-xs text-slate-400 leading-relaxed font-light max-w-sm">
+            <p className="text-sm text-slate-500 leading-relaxed font-medium max-w-sm">
               OPSlyHR connects vetted product and operations professionals across EMEA with growth-focused companies globally.
             </p>
             <div className="flex gap-3">
@@ -26,20 +26,20 @@ const WebsiteFooter = () => {
                 <a 
                   key={i} 
                   href={social.href} 
-                  className="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-200 hover:shadow-xs transition-all"
+                  className="h-10 w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-200 hover:shadow-xs transition-all"
                 >
-                  <social.icon className="h-3.5 w-3.5" />
+                  <social.icon className="h-4 w-4" />
                 </a>
               ))}
             </div>
           </div>
  
           {/* Navigation Links Grid */}
-          <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-12 gap-y-12">
             {/* For Companies */}
-            <div className="space-y-4">
-              <h4 className="text-[10px] font-bold text-slate-950 uppercase tracking-widest">For Companies</h4>
-              <ul className="space-y-2">
+            <div className="space-y-6">
+              <h4 className="text-xs font-bold text-slate-950 uppercase tracking-widest">For Companies</h4>
+              <ul className="space-y-3">
                 {[
                   { label: "Hire Talent", href: getZoneUrl(Zone.AUTH, "/auth/signup/client") },
                   { label: "Direct Hire", to: "/direct-hire" },
@@ -49,11 +49,11 @@ const WebsiteFooter = () => {
                 ].map((link, i) => (
                   <li key={i}>
                     {link.href ? (
-                      <a href={link.href} className="text-xs text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                      <a href={link.href} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
                         {link.label}
                       </a>
                     ) : (
-                      <Link to={link.to!} className="text-xs text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                      <Link to={link.to!} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
                         {link.label}
                       </Link>
                     )}
@@ -63,23 +63,67 @@ const WebsiteFooter = () => {
             </div>
  
             {/* For Professionals */}
-            <div className="space-y-4">
-              <h4 className="text-[10px] font-bold text-slate-950 uppercase tracking-widest">For Professionals</h4>
-              <ul className="space-y-2">
+            <div className="space-y-6">
+              <h4 className="text-xs font-bold text-slate-950 uppercase tracking-widest">For Professionals</h4>
+              <ul className="space-y-3">
                 {[
                   { label: "Apply as Talent", href: getZoneUrl(Zone.AUTH, "/auth/signup/talent") },
+                  { label: "Opsly Academy", href: getZoneUrl(Zone.ACADEMY, "/") },
                   { label: "Vetting Process", to: "/vetting-process" },
                   { label: "Talent Dashboard", href: getZoneUrl(Zone.AUTH, "/auth/login?portal=talent") },
-                  { label: "Opportunities", href: getZoneUrl(Zone.AUTH, "/auth/signup/talent") },
-                  { label: "Support", to: "/contact" }
+                  { label: "Opportunities", href: getZoneUrl(Zone.AUTH, "/auth/signup/talent") }
                 ].map((link, i) => (
                   <li key={i}>
                     {link.href ? (
-                      <a href={link.href} className="text-xs text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                      <a href={link.href} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
                         {link.label}
                       </a>
                     ) : (
-                      <Link to={link.to!} className="text-xs text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                      <Link to={link.to!} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                        {link.label}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Roles */}
+            <div className="space-y-6">
+              <h4 className="text-xs font-bold text-slate-950 uppercase tracking-widest">Roles</h4>
+              <ul className="space-y-3">
+                {[
+                  "Product Operations",
+                  "Revenue Operations",
+                  "Business Operations",
+                  "Sales Operations",
+                  "Marketing Operations",
+                  "Customer Success Ops"
+                ].map((role, i) => (
+                  <li key={i} className="text-sm text-slate-400 font-medium">
+                    {role}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Programs */}
+            <div className="space-y-6">
+              <h4 className="text-xs font-bold text-slate-950 uppercase tracking-widest">Programs</h4>
+              <ul className="space-y-3">
+                {[
+                  { label: "Operations Bootcamp", href: getZoneUrl(Zone.ACADEMY, "/browse") },
+                  { label: "Leadership Accelerator", href: getZoneUrl(Zone.ACADEMY, "/browse") },
+                  { label: "Vetted Talent Program", to: "/vetting-process" },
+                  { label: "Specialized Projects", to: "/project-engagement" }
+                ].map((link, i) => (
+                  <li key={i}>
+                    {link.href ? (
+                      <a href={link.href} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link to={link.to!} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
                         {link.label}
                       </Link>
                     )}
@@ -89,37 +133,16 @@ const WebsiteFooter = () => {
             </div>
  
             {/* Company */}
-            <div className="space-y-4">
-              <h4 className="text-[10px] font-bold text-slate-950 uppercase tracking-widest">Company</h4>
-              <ul className="space-y-2">
+            <div className="space-y-6">
+              <h4 className="text-xs font-bold text-slate-950 uppercase tracking-widest">Company</h4>
+              <ul className="space-y-3">
                 {[
                   { label: "About", to: "/about" },
                   { label: "Careers", to: "/careers" },
-                  { label: "Partners", to: "/partners" },
-                  { label: "Insights", to: "/insights" },
-                  { label: "Case Studies", to: "/case-studies" }
+                  { label: "Insights", to: "/insights" }
                 ].map((link, i) => (
                   <li key={i}>
-                    <Link to={link.to} className="text-xs text-slate-500 hover:text-blue-600 font-medium transition-colors">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
- 
-            {/* Legal */}
-            <div className="space-y-4">
-              <h4 className="text-[10px] font-bold text-slate-950 uppercase tracking-widest">Legal</h4>
-              <ul className="space-y-2">
-                {[
-                  { label: "Terms", to: "/terms" },
-                  { label: "Privacy", to: "/privacy" },
-                  { label: "Cookie Policy", to: "/cookies" },
-                  { label: "Compliance", to: "/compliance" }
-                ].map((link, i) => (
-                  <li key={i}>
-                    <Link to={link.to} className="text-xs text-slate-500 hover:text-blue-600 font-medium transition-colors">
+                    <Link to={link.to} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
                       {link.label}
                     </Link>
                   </li>

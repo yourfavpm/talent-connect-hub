@@ -10,8 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   Search, Briefcase, Users, Calendar, Clock,
-  CheckCircle, ArrowRight, XCircle, AlertCircle
+  CheckCircle, ArrowRight, XCircle, AlertCircle, Plus, Globe, MapPin, Building2, Link as LinkIcon
 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { sendJobPublishedEmail, sendClientJobLiveEmail } from "@/lib/email/triggers";
 
 export default function AdminJobs() {
@@ -137,9 +140,14 @@ export default function AdminJobs() {
   return (
     <div className="max-w-7xl mx-auto pb-12 animate-fade-in space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Jobs</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage all hiring requests across OPSlyHR.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Jobs</h1>
+          <p className="text-sm text-gray-500 mt-1">Manage all hiring requests across OPSlyHR.</p>
+        </div>
+        <div className="flex gap-3">
+          <PostExternalJobModal onJobPosted={fetchDashboardData} />
+        </div>
       </div>
 
       {loading ? (
@@ -373,8 +381,22 @@ export default function AdminJobs() {
                             onClick={() => navigate(`/admin/jobs/${job.id}`)}
                           >
                             <td className="px-5 py-4 font-medium text-gray-900 group-hover:text-brand-primary">{job.title}</td>
-                            <td className="px-5 py-4 text-gray-600">{job.clients?.company_name}</td>
-                            <td className="px-5 py-4 text-gray-500 capitalize">{job.service_model?.replace(/_/g, " ")}</td>
+                            <td className="px-5 py-4 text-gray-600">
+                              {job.job_type === 'external' ? (
+                                <span className="flex items-center gap-1.5 italic text-slate-500">
+                                  <Globe className="h-3 w-3" /> {job.external_company}
+                                </span>
+                              ) : (
+                                job.clients?.company_name
+                              )}
+                            </td>
+                            <td className="px-5 py-4 text-gray-500 capitalize">
+                              {job.job_type === 'external' ? (
+                                <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-100 text-[10px]">External</Badge>
+                              ) : (
+                                job.service_model?.replace(/_/g, " ")
+                              )}
+                            </td>
                             <td className="px-5 py-4">{getStatusBadge(job.status)}</td>
                             <td className="px-5 py-4 text-right font-mono text-gray-500">{metrics.total}</td>
                             <td className="px-5 py-4 text-right font-mono text-gray-500">{metrics.shortlisted}</td>
@@ -395,5 +417,188 @@ export default function AdminJobs() {
         </Tabs>
       )}
     </div>
+  );
+}
+
+function PostExternalJobModal({ onJobPosted }: { onJobPosted: () => void }) {
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    external_company: "",
+    location: "Remote",
+    external_url: "",
+    responsibilities: "",
+    salary_range: "",
+    years_of_experience: "",
+    industry: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("jobs").insert({
+        title: formData.title,
+        external_company: formData.external_company,
+        location: formData.location,
+        external_url: formData.external_url,
+        responsibilities: formData.responsibilities,
+        salary_range: formData.salary_range || null,
+        years_of_experience: formData.years_of_experience || null,
+        industry: formData.industry || null,
+        job_type: "external",
+        status: "published",
+        visibility: "public",
+        published_at: new Date().toISOString(),
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Job Posted", description: "The external job has been successfully posted." });
+      setOpen(false);
+      setFormData({ 
+        title: "", 
+        external_company: "", 
+        location: "Remote", 
+        external_url: "", 
+        responsibilities: "",
+        salary_range: "",
+        years_of_experience: "",
+        industry: "",
+      });
+      onJobPosted();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl gap-2 font-semibold">
+          <Plus className="h-4 w-4" />
+          Post External Job
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5 text-blue-600" />
+              Post External Job Opening
+            </DialogTitle>
+            <DialogDescription>
+              Add a job opening from an external site. Talent will be redirected to the URL to apply.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-6">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Job Title</Label>
+              <Input 
+                id="title" 
+                placeholder="e.g. Senior Operations Manager" 
+                required 
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="company">Company</Label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input 
+                    id="company" 
+                    placeholder="Company Name" 
+                    className="pl-9" 
+                    required 
+                    value={formData.external_company}
+                    onChange={(e) => setFormData({ ...formData, external_company: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="location">Location</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input 
+                    id="location" 
+                    placeholder="Remote / City" 
+                    className="pl-9" 
+                    required 
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="salary">Salary Range (Optional)</Label>
+                <Input 
+                  id="salary" 
+                  placeholder="e.g. $5k - $10k" 
+                  value={formData.salary_range}
+                  onChange={(e) => setFormData({ ...formData, salary_range: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="experience">Experience (Optional)</Label>
+                <Input 
+                  id="experience" 
+                  placeholder="e.g. 5+ years" 
+                  value={formData.years_of_experience}
+                  onChange={(e) => setFormData({ ...formData, years_of_experience: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="industry">Industry (Optional)</Label>
+              <Input 
+                id="industry" 
+                placeholder="e.g. Fintech, SaaS, Logistics" 
+                value={formData.industry}
+                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="url">External Application Link</Label>
+              <div className="relative">
+                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input 
+                  id="url" 
+                  type="url" 
+                  placeholder="https://company.com/careers/job" 
+                  className="pl-9" 
+                  required 
+                  value={formData.external_url}
+                  onChange={(e) => setFormData({ ...formData, external_url: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="desc">Brief Description (Optional)</Label>
+              <Textarea 
+                id="desc" 
+                placeholder="Briefly describe the role or key requirements..." 
+                className="resize-none h-24"
+                value={formData.responsibilities}
+                onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={submitting} className="bg-blue-600 hover:bg-blue-700 text-white min-w-[140px]">
+              {submitting ? "Publishing..." : "Post Job Opening"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

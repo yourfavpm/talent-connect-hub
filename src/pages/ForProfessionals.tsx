@@ -152,69 +152,67 @@ const ForProfessionals = () => {
                 </div>
             </section>
 
-            {/* RECENT OPERATOR DEPLOYMENTS: Board Layout */}
-            <section className="py-24 px-6 bg-slate-50 border-y border-slate-100 font-inter">
-                <div className="container max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-20 items-start">
-                    <div className="animate-slide-up">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">Recent Operator Deployments</div>
-                        <h2 className="text-4xl md:text-5xl font-bold mb-8 text-slate-900 leading-tight tracking-tight">Where Our Talent Is Making Impact</h2>
-                        <p className="text-lg text-slate-600 mb-10 font-medium leading-relaxed max-w-md">
-                            A snapshot of recent engagements across product and operations — from logistics unicorns to AI research labs.
-                        </p>
-                    </div>
-
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        {[
-                            { 
-                                role: "Fractional CPO", 
-                                industry: "Fintech Scaleup", 
-                                type: "Fractional Trial", 
-                                comp: "$3,500 / week", 
-                                status: "Active" 
-                            },
-                            { 
-                                role: "Chief of Staff", 
-                                industry: "AI Research Lab", 
-                                type: "Direct Hire", 
-                                comp: "$180k + Equity", 
-                                status: "Converted" 
-                            },
-                            { 
-                                role: "Head of Growth", 
-                                industry: "SaaS Platform", 
-                                type: "Direct Hire", 
-                                comp: "$220k Base", 
-                                status: "Ongoing" 
-                            },
-                            { 
-                                role: "Ops Architect", 
-                                industry: "Logistics Unicorn", 
-                                type: "Project", 
-                                comp: "$250 / hour", 
-                                status: "Active" 
-                            }
-                        ].map((item, i) => (
-                            <div key={i} className="px-8 py-6 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div className="space-y-1">
-                                    <div className="text-lg font-bold text-slate-900">{item.role}</div>
-                                    <div className="flex items-center gap-3 text-sm font-medium text-slate-500">
-                                        <span>{item.industry}</span>
-                                        <div className="w-1 h-1 rounded-full bg-slate-300" />
-                                        <span className="text-slate-400">Engagement: {item.type}</span>
+            {/* STRUCTURED TALENT PORTAL: Dashboard Preview */}
+            <section className="py-24 px-6 bg-slate-50 border-y border-slate-100 font-inter overflow-hidden">
+                <div className="container max-w-[1200px] mx-auto">
+                    <div className="flex flex-col lg:flex-row gap-16 lg:gap-24 items-center">
+                        <div className="flex-1 animate-slide-up">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">Centralized Operations</div>
+                            <h2 className="text-4xl md:text-5xl font-bold mb-8 text-slate-900 leading-tight tracking-tight">Your Career, <br />Managed Structurally.</h2>
+                            <p className="text-lg text-slate-600 mb-10 font-medium leading-relaxed max-w-md">
+                                A dedicated portal for the modern operator. Track your applications, manage client engagements, and access performance analytics in one place.
+                            </p>
+                            
+                            <div className="space-y-6">
+                                {[
+                                    { t: "Application Tracking", d: "Real-time visibility into your vetting status and interviews." },
+                                    { t: "Client Management", d: "Centralized contracts and communication for all active roles." },
+                                    { t: "Integrated Payments", d: "Seamless weekly payouts and automated invoicing." }
+                                ].map((item, i) => (
+                                    <div key={i} className="flex gap-4">
+                                        <div className="mt-1">
+                                            <div className="w-2 h-2 rounded-full bg-blue-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-900 text-sm">{item.t}</h4>
+                                            <p className="text-xs text-slate-500 font-medium">{item.d}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
-                                    <div className="text-sm font-bold text-slate-900">{item.comp}</div>
-                                    <div className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest border ${
-                                        item.status === 'Active' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
-                                        item.status === 'Converted' ? 'bg-green-50 text-green-600 border-green-100' :
-                                        'bg-slate-50 text-slate-600 border-slate-100'
-                                    }`}>
-                                        {item.status}
-                                    </div>
-                                </div>
+                                ))}
                             </div>
-                        ))}
+                        </div>
+
+                        <div className="flex-[1.5] w-full relative group">
+                            <motion.div 
+                                initial={{ opacity: 0, y: 100 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                                className="relative w-full overflow-visible"
+                                style={{ perspective: "2000px" }}
+                            >
+                                <motion.div
+                                    initial={{ rotateX: 10, scale: 0.95 }}
+                                    whileInView={{ rotateX: 0, scale: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 1.5, delay: 0.2 }}
+                                    className="relative z-10"
+                                >
+                                    <img 
+                                        src="/images/talent-portal.png" 
+                                        alt="Talent Portal Dashboard" 
+                                        className="w-full h-auto shadow-[0_50px_100px_-20px_rgba(0,0,0,0.1)] rounded-xl"
+                                        style={{ 
+                                            maskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 95%)',
+                                            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 95%)'
+                                        }}
+                                    />
+                                </motion.div>
+                                
+                                {/* Background Glow to further blend */}
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-blue-50 rounded-full blur-[120px] -z-10 opacity-60" />
+                            </motion.div>
+                        </div>
                     </div>
                 </div>
             </section>

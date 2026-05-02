@@ -91,17 +91,61 @@ const Pricing = () => {
                     </div>
                     <div className="flex-1 w-full flex justify-end">
                         {/* Visual placeholder or balanced whitespace */}
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8, delay: 0.2 }}
-                            className="w-full max-w-md aspect-square bg-slate-50/50 rounded-3xl border border-slate-100 hidden lg:flex items-center justify-center relative overflow-hidden"
+                            className="relative w-full max-w-md"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent"></div>
-                            <div className="relative z-10 p-12 text-center">
-                                <div className="text-4xl font-bold text-slate-200 mb-4 tracking-tighter uppercase">Transparent</div>
-                                <div className="text-2xl font-bold text-slate-300 tracking-tighter uppercase opacity-50">Operational Costs</div>
+                            <div className="bg-white border border-slate-200 rounded-[24px] p-10 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-blue-100/50 transition-colors duration-700"></div>
+                                
+                                <div className="relative space-y-0">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-10">Operational Cost Architecture</div>
+                                    
+                                    {[
+                                        { label: "Talent Matching", status: "vetted" },
+                                        { label: "Platform Compliance", status: "centralized" },
+                                        { label: "Managed Success", status: "active" },
+                                        { label: "Scalable Growth", status: "unlimited" }
+                                    ].map((step, idx) => (
+                                        <div key={idx} className="relative flex items-start gap-6 pb-12 last:pb-0">
+                                            {/* Vertical Line */}
+                                            {idx !== 3 && (
+                                                <div className="absolute left-[7px] top-[24px] w-[1px] h-[calc(100%-14px)] bg-slate-100">
+                                                    <motion.div 
+                                                        initial={{ height: 0 }}
+                                                        animate={{ height: "100%" }}
+                                                        transition={{ duration: 1, delay: 0.5 + idx * 0.2 }}
+                                                        className="w-full bg-blue-600/30"
+                                                    />
+                                                </div>
+                                            )}
+                                            
+                                            {/* Step Indicator */}
+                                            <motion.div 
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ duration: 0.4, delay: 0.4 + idx * 0.2 }}
+                                                className={`w-4 h-4 rounded-full border-2 bg-white shrink-0 mt-1.5 z-10 transition-colors duration-300 ${idx === 1 ? 'border-blue-600' : 'border-slate-200'}`}
+                                            />
+                                            
+                                            {/* Label and Status */}
+                                            <div className="flex flex-col">
+                                                <span className={`text-base font-bold tracking-tight transition-colors duration-300 ${idx === 1 ? 'text-slate-900' : 'text-slate-400'}`}>
+                                                    {step.label}
+                                                </span>
+                                                <span className={`text-[10px] font-bold uppercase tracking-widest mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 ${idx === 1 ? 'text-blue-600 opacity-100' : 'text-slate-400'}`}>
+                                                    {step.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
+
+                            {/* Decorative background element */}
+                            <div className="absolute -z-10 -bottom-6 -right-6 w-24 h-24 bg-slate-50 rounded-2xl rotate-12"></div>
                         </motion.div>
                     </div>
                 </div>

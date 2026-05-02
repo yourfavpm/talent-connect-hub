@@ -48,7 +48,7 @@ const Certificates = () => {
           supabase
             .from("academy_enrollments")
             .select("*, cohorts(name, status, is_closed)")
-            .eq("user_id", user.id)
+            .eq("student_id", user.id)
             .eq("enrollment_status", "active")
         ]);
 

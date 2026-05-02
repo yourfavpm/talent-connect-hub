@@ -34,22 +34,14 @@ const ProjectEngagement = () => {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row items-start justify-start gap-8">
-                    <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")} className="w-full sm:w-auto">
+                    <Link to="/book-consultation" className="w-full sm:w-auto">
                       <Button 
                           size="lg" 
-                          variant="outline"
-                          className="h-14 px-10 text-base rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none w-full" 
+                          className="h-16 px-12 text-lg rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-xl shadow-blue-100 w-full" 
                       >
-                        Request Project Scope <ArrowRight className="ml-2 h-4 w-4" />
+                        Request Project Scope <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>
-                    </a>
-                  
-                  <Link 
-                      to="/service-models"
-                      className="inline-flex items-center text-slate-900 font-bold hover:text-blue-600 transition-colors py-4 sm:py-0"
-                  >
-                      Compare Engagement Models <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
+                    </Link>
                 </div>
               </motion.div>
             </div>
@@ -291,15 +283,14 @@ const ProjectEngagement = () => {
               transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-6xl font-semibold text-slate-900 mb-12 tracking-tight">Execute High-Impact <br /> Initiatives with Precision.</h2>
-            <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}>
+            <Link to="/book-consultation">
               <Button 
                   size="lg" 
-                  variant="outline"
-                  className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none" 
+                  className="h-16 px-12 text-lg rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-xl shadow-blue-100" 
               >
-                Start a Project <ArrowRight className="ml-2 h-5 w-5" />
+                Request Project Scope <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </a>
+            </Link>
           </motion.div>
         </div>
       </section>

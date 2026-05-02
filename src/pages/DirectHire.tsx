@@ -27,23 +27,14 @@ const DirectHire = () => {
               <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-2xl">
                 OPSlyHR connects you with rigorously vetted product and operations leaders for permanent internal placement — backed by structured screening and replacement guarantees.
               </p>
-              
-              <div className="flex flex-col sm:flex-row items-start gap-8">
-                <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}>
+                           <div className="flex flex-col sm:flex-row items-start gap-8">
+                <Link to="/book-consultation" className="w-full sm:w-auto">
                   <Button 
                       size="lg" 
-                      variant="outline"
-                      className="h-14 px-10 text-base rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none" 
+                      className="h-16 px-12 text-lg rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-xl shadow-blue-100 w-full" 
                   >
-                    Discuss Direct Placement <ArrowRight className="ml-2 h-4 w-4" />
+                    Discuss Direct Placement <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
-                </a>
-                
-                <Link 
-                    to="/service-models"
-                    className="text-slate-900 font-bold hover:text-blue-600 transition-colors"
-                >
-                    Compare Engagement Models →
                 </Link>
               </div>
             </motion.div>
@@ -271,15 +262,14 @@ const DirectHire = () => {
               transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-6xl font-semibold text-slate-900 mb-12 tracking-tight">Build Your Core Team <br /> Structurally.</h2>
-            <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}>
+            <Link to="/book-consultation">
               <Button 
                   size="lg" 
-                  variant="outline"
-                  className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none" 
+                  className="h-16 px-12 text-lg rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-xl shadow-blue-100" 
               >
-                Request Direct Placement <ArrowRight className="ml-2 h-5 w-5" />
+                Discuss Direct Placement <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </a>
+            </Link>
           </motion.div>
         </div>
       </section>

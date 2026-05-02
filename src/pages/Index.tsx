@@ -1,15 +1,105 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle, Clock, Globe, Shield, Users, Zap, Briefcase, Layout, CreditCard, Search, UserCheck, ChevronRight, TrendingUp } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, Globe, Shield, Users, Zap, Briefcase, Layout, CreditCard, Search, UserCheck, ChevronRight, TrendingUp, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Zone, getZoneUrl } from "@/utils/subdomain";
 
+interface VettedTalent {
+  name: string;
+  role: string;
+  image: string;
+  tags: string[];
+  tz: string;
+  exp: string;
+  level: number;
+}
+
+const getInitials = (name: string) => {
+  if (!name) return "";
+  const parts = name.split(' ');
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return parts[0][0].toUpperCase();
+};
+
+const getAvatarColor = (name: string) => {
+  const colors = [
+    'bg-blue-600', 'bg-emerald-600', 'bg-violet-600', 'bg-amber-600', 'bg-rose-600', 'bg-indigo-600', 'bg-cyan-600'
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+};
+
 const Index = () => {
   const [activeStep, setActiveStep] = useState(1);
+  const [vettedTalent, setVettedTalent] = useState<VettedTalent[]>([
+    {
+      name: "Omo Izuafa",
+      role: "Operations Manager",
+      image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80",
+      tags: ["Strategy", "Process", "Scaling"],
+      tz: "GMT-4",
+      exp: "3 Yrs",
+      level: 5
+    },
+    {
+      name: "SYLVIA ENYONAM AGALA",
+      role: "Customer Support Specialist",
+      image: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80",
+      tags: ["Email Marketing", "Data Analysis", "Support"],
+      tz: "GMT",
+      exp: "3 Yrs",
+      level: 5
+    },
+    {
+      name: "Kate Ogbuka",
+      role: "HR Business Partner",
+      image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80",
+      tags: ["HR Strategy", "Culture", "Talent"],
+      tz: "GMT+1",
+      exp: "8 Yrs",
+      level: 5
+    },
+    {
+      name: "Oluwatosin Adelaja",
+      role: "Virtual Assistant",
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80",
+      tags: ["React", "Node.js", "JS"],
+      tz: "GMT+1",
+      exp: "5 Yrs",
+      level: 4
+    },
+    {
+      name: "Jane Ajao",
+      role: "Virtual Assistant",
+      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80",
+      tags: ["Problem Solving", "Organization", "Support"],
+      tz: "GMT",
+      exp: "7 Yrs",
+      level: 5
+    },
+    {
+      name: "Amen Adamu",
+      role: "Administrative Assistant",
+      image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80",
+      tags: ["Office Admin", "Communication", "MS Office"],
+      tz: "GMT+3",
+      exp: "1 Yr",
+      level: 4
+    }
+  ]);
+  const [loadingTalent, setLoadingTalent] = useState(false);
+
+  useEffect(() => {
+    // Keeping the effect hook empty for now as we are hardcoding
+    // but we can restore it later once RLS/data issues are resolved
+  }, []);
 
   const vettingSteps = [
     {
@@ -80,22 +170,33 @@ const Index = () => {
   ];
 
   return (
-    <div className="bg-background min-h-screen text-foreground overflow-x-hidden selection:bg-primary selection:text-white font-sans">
+    <div className="bg-white min-h-screen text-foreground overflow-x-hidden selection:bg-primary selection:text-white font-sans">
 
       {/* 2. ENTERPRISE HERO SECTION (REDESIGNED) */}
-      <section className="relative pt-44 pb-16 md:pt-52 md:pb-32 px-6 overflow-hidden bg-slate-50 font-inter">
-        {/* Subtle background decoration */}
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-white/50 to-transparent pointer-events-none"></div>
+      <section className="relative pt-44 pb-16 md:pt-52 md:pb-32 px-6 overflow-hidden bg-white font-inter">
+        {/* World Map Background (Subtle) */}
+        <div 
+          className="absolute right-[-5%] top-0 w-1/2 h-full opacity-[0.15] pointer-events-none mix-blend-multiply"
+          style={{
+            backgroundImage: 'url("https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center right',
+            backgroundRepeat: 'no-repeat',
+            filter: 'grayscale(100%) brightness(1.5) contrast(1.1)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black 40%)',
+            maskImage: 'linear-gradient(to right, transparent, black 40%)'
+          }}
+        />
         
         <div className="container max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-12 lg:gap-20 items-center relative z-10">
           {/* Left Side: Content & Trust Indicators */}
           <div className="animate-slide-up flex flex-col items-center text-center lg:items-start lg:text-left flex-1 min-w-0">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
-              Hire Vetted Remote Operations Experts — Built for Global Teams
+              The Global Infrastructure for Exceptional Operations Talent.
             </h1>
 
             <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium mx-auto lg:mx-0">
-              We match you with pre-screened professionals ready to handle operations, support, project work, and team management — no recruitment burden.
+              We connect global businesses with high-impact professionals through strategic placements, end-to-end workforce management, and professional education.
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-14 w-full">
@@ -119,15 +220,15 @@ const Index = () => {
               className="lg:hidden w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl shadow-slate-200/60 border border-slate-100 mb-12"
             >
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100">
-                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80" alt="Featured Talent" className="w-full h-full object-cover" />
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-sm font-bold border border-slate-100 shadow-sm ${getAvatarColor("Oluwatosin Adelaja")}`}>
+                  {getInitials("Oluwatosin Adelaja")}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 text-sm">Michael T.</span>
+                    <span className="font-bold text-slate-900 text-sm">Oluwatosin A.</span>
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   </div>
-                  <p className="text-xs text-slate-500 font-medium">Dir. of Operations</p>
+                  <p className="text-xs text-slate-500 font-medium">Virtual Assistant</p>
                 </div>
                 <div className="ml-auto flex flex-col items-end">
                   <span className="text-[9px] font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded tracking-tighter">VETTED L5</span>
@@ -164,33 +265,30 @@ const Index = () => {
           <div className="relative animate-fade-in hidden lg:flex h-[540px] flex-1 items-center justify-center min-w-0">
             {[
               {
-                name: "Sarah J.",
-                role: "Head of Product",
+                name: "Omo Izuafa",
+                role: "Operations Manager",
                 level: 5,
-                image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80",
-                tags: ["Growth", "Fintech", "B2B SaaS"],
-                tz: "GMT+1",
-                exp: "12 Yrs",
+                tags: ["Strategy", "Process", "Scaling"],
+                tz: "GMT-4",
+                exp: "3 Yrs",
                 offset: "rotate-[-4deg] translate-y-12 z-10"
               },
               {
-                name: "Michael T.",
-                role: "Dir. of Operations",
+                name: "Kate Ogbuka",
+                role: "HR Business Partner",
                 level: 5,
-                image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80",
-                tags: ["Logistics", "Scaleup", "EOR"],
-                tz: "GMT+2",
-                exp: "14 Yrs",
+                tags: ["HR Strategy", "Culture", "Talent"],
+                tz: "GMT+1",
+                exp: "8 Yrs",
                 offset: "rotate-[2deg] translate-x-12 -translate-y-2 z-20"
               },
               {
-                name: "David K.",
-                role: "Senior Engineering PM",
-                level: 4,
-                image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80",
-                tags: ["Python", "Infrastructure", "AI"],
-                tz: "GMT+1",
-                exp: "9 Yrs",
+                name: "SYLVIA AGALA",
+                role: "Customer Support Specialist",
+                level: 5,
+                tags: ["Email Marketing", "Data Analysis", "Support"],
+                tz: "GMT",
+                exp: "3 Yrs",
                 offset: "rotate-[-2deg] -translate-x-4 translate-y-32 z-30 shadow-xl"
               }
             ].map((talent, i) => (
@@ -200,8 +298,8 @@ const Index = () => {
                 className={`absolute top-0 right-0 w-[360px] bg-white rounded-[16px] p-6 shadow-2xl shadow-slate-950/5 border border-slate-100 transition-all duration-500 ${talent.offset}`}
               >
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 overflow-hidden border border-slate-50">
-                    <img src={talent.image} alt={talent.name} className="w-full h-full object-cover" />
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold border border-slate-50 shadow-sm ${getAvatarColor(talent.name)}`}>
+                    {getInitials(talent.name)}
                   </div>
                   <div className="flex-grow">
                     <div className="flex items-center gap-2 mb-0.5">
@@ -270,6 +368,83 @@ const Index = () => {
             {/* Gradient masks for smooth fade edges */}
             <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white to-transparent z-10"></div>
             <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white to-transparent z-10"></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── IMPACT STATISTICS SECTION (REDESIGNED: TYPOGRAPHIC FLOW) ────────────────────────────────── */}
+      <section className="py-24 px-6 bg-white overflow-hidden font-inter border-b border-slate-100 relative">
+        {/* Subtle Background Grid */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px]"></div>
+
+        <div className="container max-w-[1200px] mx-auto relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-16 lg:gap-24">
+            {[
+              {
+                value: "15+",
+                metric: "Countries",
+                color: "text-violet-600",
+                pulse: "bg-violet-600/5",
+                icon: Globe
+              },
+              {
+                value: "3,500+",
+                metric: "Vetted Talents",
+                color: "text-blue-600",
+                pulse: "bg-blue-600/5",
+                icon: Users
+              },
+              {
+                value: "180+",
+                metric: "Partner Companies",
+                color: "text-emerald-600",
+                pulse: "bg-emerald-600/5",
+                icon: Briefcase
+              },
+              {
+                value: "48h",
+                metric: "Avg Shortlist",
+                color: "text-amber-600",
+                pulse: "bg-amber-600/5",
+                icon: Clock
+              }
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: i * 0.15 }}
+                className="relative group flex-1"
+              >
+                {/* Large Background Pulse */}
+                <div className={`absolute -left-8 -top-8 w-32 h-32 rounded-full ${stat.pulse} blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000`} />
+                
+                <div className="relative space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-px ${stat.color.replace('text-', 'bg-')} opacity-40`} />
+                    <stat.icon className={`w-4 h-4 ${stat.color} opacity-40 group-hover:opacity-100 transition-opacity`} />
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <motion.span 
+                      className="text-5xl lg:text-7xl font-semibold text-slate-900 tracking-tighter block mb-2"
+                      initial={{ scale: 0.95 }}
+                      whileInView={{ scale: 1 }}
+                      transition={{ duration: 0.5, delay: i * 0.2 }}
+                    >
+                      {stat.value}
+                    </motion.span>
+                    <span className={`text-[11px] font-extrabold uppercase tracking-[0.25em] ${stat.color}`}>
+                      {stat.metric}
+                    </span>
+                  </div>
+
+                  {/* Dynamic Vertical Pulse Line (Desktop Only) */}
+                  <div className={`hidden md:block absolute -right-12 top-1/2 -translate-y-1/2 w-px h-12 bg-gradient-to-b from-transparent via-slate-200 to-transparent ${i === 3 ? 'hidden' : ''}`} />
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -374,6 +549,93 @@ const Index = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── OPSly Academy Section (NEW) ────────────────────────────────── */}
+      <section className="py-24 md:py-32 bg-slate-50 relative overflow-hidden font-inter border-t border-slate-200">
+        <div className="container max-w-[1200px] mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="space-y-8"
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-blue-600 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase shadow-sm">
+                Skill Validation & Training
+              </div>
+              <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 tracking-tight leading-[1.15]">
+                Opsly Academy: Bridging the <br />
+                <span className="text-slate-400">Operational Skill Gap.</span>
+              </h2>
+              <p className="text-lg text-slate-500 font-medium leading-relaxed max-w-xl">
+                We don't just place talent; we build them. Our academy provides structured training and certification to ensure our professionals stay at the forefront of global operational standards.
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                {[
+                  { title: "Functional Training", desc: "Scenario-based operational learning." },
+                  { title: "Tool Certification", desc: "Proficiency in global enterprise tools." },
+                  { title: "Performance Coaching", desc: "Ongoing development for placed talent." },
+                  { title: "Global Standards", desc: "Alignment with international best practices." }
+                ].map((feature, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                      {feature.title}
+                    </div>
+                    <p className="text-xs text-slate-500 font-medium">{feature.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-6">
+                <Button size="lg" className="h-14 px-10 text-sm bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold transition-all shadow-xl shadow-slate-900/10">
+                  Explore Academy Programs <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative"
+            >
+              <div className="relative rounded-[32px] overflow-hidden border border-slate-200 shadow-2xl bg-white aspect-[4/3] lg:aspect-auto">
+                {/* BLENDING EFFECT: Image fades into the background */}
+                <div 
+                  className="w-full h-full transition-transform duration-700 hover:scale-[1.02]"
+                  style={{
+                    backgroundImage: 'url("/images/academy-dashboard.png")',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'top left',
+                    WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%), linear-gradient(to right, black 95%, transparent 100%)',
+                    maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%), linear-gradient(to right, black 95%, transparent 100%)'
+                  }}
+                />
+                
+                {/* Subtle Overlay Decoration */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/20 to-transparent pointer-events-none" />
+              </div>
+              
+              {/* Floating Badge */}
+              <div className="absolute -bottom-6 -left-6 bg-white border border-slate-100 p-6 rounded-3xl shadow-xl animate-bounce-subtle z-20">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                    <TrendingUp className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Talent Growth</p>
+                    <p className="text-base font-bold text-slate-900">+45% Efficiency Increase</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -809,176 +1071,90 @@ const Index = () => {
               }}
               className="flex gap-6 whitespace-nowrap"
             >
-              {[
-                { 
-                  name: "Sarah Chen", 
-                  role: "Product Ops Lead", 
-                  image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80",
-                  tags: ["Product Strategy", "SaaS", "Scaling"],
-                  tz: "GMT+8",
-                  exp: "11 Yrs",
-                  level: 5
-                },
-                { 
-                  name: "Amara Okonkwo", 
-                  role: "Revenue Ops Manager", 
-                  image: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80",
-                  tags: ["Salesforce", "Lead Gen", "Strategy"],
-                  tz: "GMT+1",
-                  exp: "8 Yrs",
-                  level: 5
-                },
-                { 
-                  name: "Marcus Rodriguez", 
-                  role: "Business Ops Director", 
-                  image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80",
-                  tags: ["OPS Strategy", "M&A", "Global"],
-                  tz: "GMT-5",
-                  exp: "15 Yrs",
-                  level: 5
-                },
-                { 
-                  name: "Zara Patel", 
-                  role: "Finance Ops Specialist", 
-                  image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80",
-                  tags: ["Payments", "Compliance", "FP&A"],
-                  tz: "GMT+5:30",
-                  exp: "7 Yrs",
-                  level: 4
-                },
-                { 
-                  name: "James O'Brien", 
-                  role: "Data Ops Engineer", 
-                  image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80",
-                  tags: ["Analytics", "SQL", "Pipelines"],
-                  tz: "GMT",
-                  exp: "9 Yrs",
-                  level: 5
-                },
-                { 
-                  name: "Naomi Adeyemi", 
-                  role: "People Ops Manager", 
-                  image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80",
-                  tags: ["Talent", "HRIS", "Culture"],
-                  tz: "GMT+1",
-                  exp: "10 Yrs",
-                  level: 5
-                },
-                { 
-                  name: "David Kim", 
-                  role: "Infrastructure Ops", 
-                  image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80",
-                  tags: ["Reliability", "AWS", "Security"],
-                  tz: "GMT-8",
-                  exp: "12 Yrs",
-                  level: 5
-                },
-                { 
-                  name: "Elena Morales", 
-                  role: "Operations Manager", 
-                  image: "https://images.unsplash.com/photo-1567532939604-b6c5b0ad2ea6?auto=format&fit=crop&q=80",
-                  tags: ["Optimization", "PMO", "Agile"],
-                  tz: "GMT+1",
-                  exp: "9 Yrs",
-                  level: 4
-                },
-                // Duplicates for seamless loop
-                { 
-                  name: "Sarah Chen", 
-                  role: "Product Ops Lead", 
-                  image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80",
-                  tags: ["Product Strategy", "SaaS", "Scaling"],
-                  tz: "GMT+8",
-                  exp: "11 Yrs",
-                  level: 5
-                },
-                { 
-                  name: "Amara Okonkwo", 
-                  role: "Revenue Ops Manager", 
-                  image: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80",
-                  tags: ["Salesforce", "Lead Gen", "Strategy"],
-                  tz: "GMT+1",
-                  exp: "8 Yrs",
-                  level: 5
-                },
-                { 
-                  name: "Marcus Rodriguez", 
-                  role: "Business Ops Director", 
-                  image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80",
-                  tags: ["OPS Strategy", "M&A", "Global"],
-                  tz: "GMT-5",
-                  exp: "15 Yrs",
-                  level: 5
-                },
-                { 
-                  name: "Zara Patel", 
-                  role: "Finance Ops Specialist", 
-                  image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80",
-                  tags: ["Payments", "Compliance", "FP&A"],
-                  tz: "GMT+5:30",
-                  exp: "7 Yrs",
-                  level: 4
-                }
-              ].map((person, i) => (
-                <motion.div 
-                  key={i}
-                  whileHover={{ y: -8 }}
-                  className="flex-shrink-0 w-[320px] bg-white rounded-[24px] p-6 shadow-xl shadow-slate-200/50 border border-slate-100 transition-all duration-300"
-                >
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className="w-14 h-14 rounded-full overflow-hidden border border-slate-100">
-                      <img src={person.image} alt={person.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-grow">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="font-bold text-slate-900 text-base">{person.name}</span>
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              {loadingTalent ? (
+                <div className="flex items-center justify-center w-full py-20">
+                  <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+                </div>
+              ) : vettedTalent.length > 0 ? (
+                // Combine original and many duplicates for seamless loop
+                Array(20).fill(vettedTalent).flat().map((talent, i) => {
+                  const initials = talent.name
+                    .split(' ')
+                    .map(n => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2);
+                  
+                  const bgColors = [
+                    'bg-blue-100 text-blue-700',
+                    'bg-indigo-100 text-indigo-700',
+                    'bg-emerald-100 text-emerald-700',
+                    'bg-slate-100 text-slate-700',
+                    'bg-amber-100 text-amber-700'
+                  ];
+                  const bgColor = bgColors[i % bgColors.length];
+
+                  return (
+                    <div key={i} className="flex-shrink-0 w-[300px] bg-white rounded-2xl p-6 border border-slate-200 shadow-md">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm border border-white shadow-sm ${bgColor}`}>
+                          {initials}
+                        </div>
+                        <div>
+                          <div className="font-bold text-slate-900 text-sm truncate w-32">{talent.name}</div>
+                          <div className="text-[10px] text-slate-500 font-medium truncate w-32">{talent.role}</div>
+                        </div>
                       </div>
-                      <p className="text-xs text-slate-500 font-medium">{person.role}</p>
+                      <div className="flex gap-1 mb-4">
+                        {talent.tags.map(tag => (
+                          <span key={tag} className="bg-slate-50 text-slate-400 px-2 py-0.5 rounded text-[8px] font-bold border border-slate-100">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex justify-between items-center pt-4 border-t border-slate-50">
+                        <div className="flex flex-col">
+                          <span className="text-[8px] font-bold text-slate-300 uppercase tracking-wider">Timezone</span>
+                          <span className="text-[10px] font-bold text-slate-600">{talent.tz}</span>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className="text-[8px] font-bold text-slate-300 uppercase tracking-wider">Experience</span>
+                          <span className="text-[10px] font-bold text-slate-600">{talent.exp}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                // Fallback to placeholders if no data
+                [1,2,3,4,5,6].map((_, i) => (
+                  <div key={i} className="flex-shrink-0 w-[300px] bg-white rounded-2xl p-6 border border-slate-100 shadow-sm opacity-50">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-full bg-slate-100 animate-pulse" />
+                      <div className="space-y-2">
+                        <div className="h-3 w-20 bg-slate-100 rounded animate-pulse" />
+                        <div className="h-2 w-24 bg-slate-100 rounded animate-pulse" />
+                      </div>
                     </div>
                   </div>
-
-                  <div className="bg-emerald-50/50 border border-emerald-100 rounded-lg py-2 px-3 flex items-center justify-center gap-2 mb-5">
-                    <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
-                      <CheckCircle className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">100% Vetted Talent</span>
-                  </div>
-
-                  <div className="space-y-3 mb-5">
-                    <div className="flex justify-between items-center text-[9px] font-bold tracking-widest text-slate-400 uppercase">
-                      <span>Vetted skill level</span>
-                      <span className="text-blue-600">Level {person.level}/5</span>
-                    </div>
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map(star => (
-                        <div key={star} className={`h-1 flex-grow rounded-full ${star <= person.level ? 'bg-blue-600' : 'bg-slate-100'}`} />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {person.tags.map(tag => (
-                      <span key={tag} className="bg-slate-50 text-slate-600 px-2.5 py-1 rounded-md text-[10px] font-bold border border-slate-100">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-between items-center pt-4 border-t border-slate-50">
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Timezone</span>
-                      <span className="text-xs font-bold text-slate-700">{person.tz}</span>
-                    </div>
-                    <div className="flex flex-col items-end">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Experience</span>
-                      <span className="text-xs font-bold text-slate-700">{person.exp}</span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                ))
+              )}
             </motion.div>
           </div>
+
+          {/* Hire CTA Button */}
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="flex justify-center mt-16"
+          >
+            <Link to="/book-consultation">
+              <Button size="lg" className="h-14 px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg shadow-blue-200 transition-all font-bold text-base flex items-center gap-3">
+                Hire Vetted Talent <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+          </motion.div>
         </div>
       </section>
 

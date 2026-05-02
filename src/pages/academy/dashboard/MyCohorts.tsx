@@ -43,7 +43,7 @@ const MyCohorts = () => {
         const { data: enrollData } = await supabase
           .from("academy_enrollments")
           .select("*, cohorts(*)")
-          .eq("user_id", user.id)
+          .eq("student_id", user.id)
           .in("enrollment_status", ["enrolled", "active", "completed"]);
         
         setEnrollments(enrollData || []);

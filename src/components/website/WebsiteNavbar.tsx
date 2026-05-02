@@ -132,22 +132,22 @@ const WebsiteNavbar = () => {
                 {/* Right: CTAs */}
                 <div className="hidden lg:flex items-center gap-6">
                     <a 
-                        href={getZoneUrl(Zone.AUTH, "/auth/signup")}
+                        href="https://academy.opslyhr.com"
                         className="text-[13px] font-semibold text-slate-500 hover:text-slate-900 transition-colors"
                     >
-                        Sign Up
+                        Academy
                     </a>
                     <a 
                         href={getZoneUrl(Zone.AUTH, "/auth/login?portal=client#form")}
-                        className="px-5 py-2.5 border border-slate-200 text-slate-900 text-[13px] font-semibold rounded-lg hover:border-slate-900 transition-all font-inter"
+                        className="text-[13px] font-semibold text-slate-500 hover:text-slate-900 transition-colors"
                     >
                         Login
                     </a>
                     <a 
-                        href="https://academy.opslyhr.com"
-                        className="px-6 py-2.5 bg-slate-900 text-white text-[13px] font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-sm font-inter"
+                        href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}
+                        className="px-6 py-2.5 bg-blue-600 text-white text-[13px] font-bold rounded-full hover:bg-blue-700 transition-all shadow-md shadow-blue-100 font-inter flex items-center gap-2"
                     >
-                        Join Academy
+                        Hire Vetted Talent <ArrowRight className="w-3.5 h-3.5" />
                     </a>
                 </div>
 

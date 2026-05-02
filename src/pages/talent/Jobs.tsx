@@ -57,6 +57,12 @@ interface Job {
   updated_at?: string;
   work_mode?: string;
   responsibilities?: string[];
+  job_type?: 'public' | 'internal' | 'external';
+  external_url?: string;
+  external_company?: string;
+  salary_range?: string;
+  years_of_experience?: string;
+  industry?: string;
 }
 
 interface Talent {
@@ -183,7 +189,7 @@ const TalentJobs = () => {
       const { data: jobsData } = await supabase
         .from("jobs")
         .select("*, clients(company_name)")
-        .eq("status", "published")
+        .in("status", ["published", "active"])
         .order("created_at", { ascending: false });
 
       setJobs((jobsData as unknown as Job[]) || []);
@@ -502,6 +508,15 @@ const TalentJobs = () => {
                       clientName: 'OPSlyHR Partner',
                       date: (req as any).published_at || (req as any).created_at,
                       status: 'Open'
+                    })),
+                    ...jobs.filter(j => j.job_type === 'external').map(job => ({
+                      id: job.id,
+                      type: 'external_job',
+                      title: 'Partner Role:',
+                      jobTitle: job.title,
+                      clientName: job.external_company,
+                      date: job.published_at || job.created_at,
+                      status: 'External'
                     }))
                   ].sort((a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime()).slice(0, 5);
 
@@ -791,13 +806,90 @@ const TalentJobs = () => {
               <h2 className="text-[18px] font-bold text-slate-900 tracking-tight">External Roles</h2>
               <p className="text-[14px] text-slate-500">Opportunities aggregated from partner platforms.</p>
             </div>
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="relative flex-1 md:w-72">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Search external roles..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-11 bg-white border-slate-200 rounded-xl focus:ring-0 focus:border-slate-900 text-[13px] shadow-sm"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
-            <div className="divide-y divide-slate-100/50">
-              {MOCK_EXTERNAL_ROLES.map((ext) => (
-                <div key={ext.id} className="group px-8 py-7 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-all cursor-pointer">
-                   <div className="flex-1 min-w-0 space-y-3">
+            {jobs.filter(j => j.job_type === 'external' && j.title?.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+              <div className="py-32 text-center space-y-4">
+                <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300">
+                  <Globe className="h-8 w-8" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[15px] font-bold text-slate-900">No external roles available</p>
+                  <p className="text-[13px] text-slate-500 max-w-[280px] mx-auto italic">New external opportunities will appear here soon.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100/50">
+                {jobs.filter(j => j.job_type === 'external' && j.title?.toLowerCase().includes(searchQuery.toLowerCase())).map((ext) => (
+                  <div 
+                    key={ext.id} 
+                    className="group px-8 py-7 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-all"
+                  >
+                    <div className="flex-1 min-w-0 space-y-3">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">{ext.title}</h3>
+                          <Badge variant="secondary" className="text-[9px] font-bold uppercase tracking-widest bg-blue-50 text-blue-600 border-transparent px-2 py-0.5">
+                            External Role
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-y-2 gap-x-6">
+                          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <Building2 className="h-3.5 w-3.5" /> <span className="text-slate-900">{ext.external_company}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <MapPin className="h-3.5 w-3.5 text-slate-300" /> <span className="text-slate-900">{ext.location || "Remote"}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-y-2 gap-x-6 pt-1">
+                          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <Tag className="h-3.5 w-3.5" /> 
+                            <span className="text-slate-500">Industry:</span> 
+                            <span className="text-slate-900">{ext.industry || "Not specified"}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <Zap className="h-3.5 w-3.5 text-amber-500" /> 
+                            <span className="text-slate-500">Experience:</span> 
+                            <span className="text-slate-900">{ext.years_of_experience || "Not specified"}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <DollarSign className="h-3.5 w-3.5 text-emerald-500" /> 
+                            <span className="text-slate-500">Salary:</span> 
+                            <span className="text-slate-900">{ext.salary_range || "Not specified"}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-[13px] text-slate-500 line-clamp-2 italic">{ext.responsibilities || "Apply via the external platform to view full details and requirements for this role."}</p>
+                    </div>
+                    <div className="shrink-0">
+                      <Button 
+                        asChild
+                        className="h-11 px-6 bg-white border border-slate-200 text-slate-900 hover:bg-slate-900 hover:text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-sm group/btn"
+                      >
+                        <a href={ext.external_url} target="_blank" rel="noopener noreferrer">
+                          Apply on Company Site
+                          <ExternalLink className="h-3.5 w-3.5 ml-2 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </TabsContent>
                      <div className="flex items-center gap-3">
                        <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{ext.title}</h3>
                        <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest bg-slate-50 text-slate-500 border-slate-200/60 transition-colors group-hover:bg-white px-2 py-0.5">

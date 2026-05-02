@@ -17,7 +17,7 @@ const Mentors = () => {
       const { data: enrollData } = await supabase
         .from("academy_enrollments")
         .select("course_name, cohorts(mentors)")
-        .eq("user_id", user.id)
+        .eq("student_id", user.id)
         .eq("enrollment_status", "active");
       
       const allMentors: any[] = [];

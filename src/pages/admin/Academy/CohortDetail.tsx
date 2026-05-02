@@ -121,6 +121,12 @@ const CohortDetail = () => {
     });
     
     // Grading Form State
+    const [gradingSub, setGradingSub] = useState<{ 
+        id: string; 
+        grade: string; 
+        feedback: string; 
+        rubric_grades: any[]; 
+        assignment_rubrics: any[] 
     } | null>(null);
     const [editingAssignment, setEditingAssignment] = useState<any | null>(null);
     

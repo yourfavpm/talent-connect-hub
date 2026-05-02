@@ -73,18 +73,9 @@ const ServiceModels = () => {
                             </p>
                             
                             <div className="flex flex-col sm:flex-row items-start justify-start gap-8 mb-12 w-full sm:w-auto">
-                                <Button 
-                                    size="lg" 
-                                    variant="outline"
-                                    className="h-16 px-10 text-base rounded-xl border-[1.5px] border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold transition-all duration-300 shadow-none w-full sm:w-auto text-center" 
-                                    asChild
-                                >
-                                    <Link to="#engagement-models">Explore Engagement Models</Link>
-                                </Button>
-                                
                                 <Link 
                                     to="/book-consultation"
-                                    className="inline-flex items-center text-slate-900 font-semibold hover:text-blue-600 transition-colors py-4 sm:py-0"
+                                    className="inline-flex items-center text-slate-900 font-semibold hover:text-blue-600 transition-colors py-4 sm:py-0 border-b-2 border-blue-600 pb-1"
                                 >
                                     Book a Consultation <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
@@ -539,8 +530,6 @@ const ServiceModels = () => {
                     </div>
                 </div>
             </section>
-
-
 
         </div>
     );

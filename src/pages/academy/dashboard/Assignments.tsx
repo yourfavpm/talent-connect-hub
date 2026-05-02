@@ -18,7 +18,7 @@ const Assignments = () => {
       const { data: enrollData } = await supabase
         .from("academy_enrollments")
         .select("cohort_id")
-        .eq("user_id", user.id)
+        .eq("student_id", user.id)
         .in("enrollment_status", ["enrolled", "active", "completed"]);
       
       const cohortIds = enrollData?.map(e => e.cohort_id) || [];

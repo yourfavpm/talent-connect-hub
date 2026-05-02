@@ -52,7 +52,7 @@ const ForCompanies = () => {
                                 </p>
                                 <div className="flex flex-col sm:flex-row items-start justify-start gap-4 mb-12 w-full">
                                     <Button size="lg" className="h-14 px-8 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-none w-full sm:w-auto" asChild>
-                                        <Link to="/book-consultation">Book an Operations Consultation</Link>
+                                        <Link to="/book-consultation">Book Consultation</Link>
                                     </Button>
                                     <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-600 hover:text-slate-900 rounded-full font-bold flex items-center justify-start gap-2 w-full sm:w-auto" asChild>
                                         <Link to="/service-models">View Engagement Models <ArrowRight className="w-4 h-4" /></Link>
@@ -99,10 +99,10 @@ const ForCompanies = () => {
     
                                     <div className="space-y-4">
                                         {[
-                                            { name: "S. Bennett", role: "Product Operations Manager", focus: "SaaS & Enterprise" },
-                                            { name: "M. Chen", role: "Revenue Operations Lead", focus: "Fintech & Pay-ops" },
-                                            { name: "J. Walters", role: "Business Operations Manager", focus: "Growth & Marketplace" },
-                                            { name: "A. Ibrahim", role: "Program Operations Lead", focus: "Scalable Infrastructure" }
+                                            { name: "Omo Izuafa", role: "Product Operations Manager", focus: "SaaS & Enterprise" },
+                                            { name: "Kate Ogbuka", role: "Revenue Operations Lead", focus: "Fintech & Pay-ops" },
+                                            { name: "Sylvia Agala", role: "Business Operations Manager", focus: "Growth & Marketplace" },
+                                            { name: "Oluwatosin Adelaja", role: "Program Operations Lead", focus: "Scalable Infrastructure" }
                                         ].map((row, i) => (
                                             <motion.div 
                                                 key={i}

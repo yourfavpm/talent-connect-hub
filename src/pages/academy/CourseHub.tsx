@@ -113,7 +113,7 @@ const CourseHub = () => {
             const { data: enrollData, error: enrollError } = await (supabase
                 .from("academy_enrollments")
                 .select("*, cohorts(*)") 
-                .eq("user_id", user.id)
+                .eq("student_id", user.id)
                 .eq("course_id", slug) 
                 .eq("enrollment_status", "active")
                 .maybeSingle() as Promise<{ data: Enrollment & { cohorts: Cohort | null } | null; error: any }>);

@@ -35,7 +35,7 @@ const Grades = () => {
       const { data: enrollData } = await supabase
         .from("academy_enrollments")
         .select("*, cohorts(name)")
-        .eq("user_id", user.id);
+        .eq("student_id", user.id);
       
       setEnrollments(enrollData || []);
       setLoading(false);

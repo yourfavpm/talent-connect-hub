@@ -88,7 +88,7 @@ const StudentDashboard = () => {
       const { data: enrollmentsData, error: enrollError } = await supabase
         .from("academy_enrollments")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("student_id", user.id)
         .eq("enrollment_status", "active");
 
       if (enrollError) {
