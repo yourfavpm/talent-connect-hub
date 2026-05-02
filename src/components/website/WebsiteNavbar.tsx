@@ -237,26 +237,26 @@ const WebsiteNavbar = () => {
                             <div className="mt-auto px-6 py-8 border-t border-slate-100 bg-white">
                                 <div className="space-y-4">
                                     <a 
-                                        href="https://academy.opslyhr.com"
-                                        className="flex items-center justify-between w-full py-2 border-b border-slate-900 text-slate-900 font-bold text-[12px] group"
+                                        href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}
+                                        className="flex items-center justify-center w-full py-4 bg-blue-600 text-white font-bold text-[13px] rounded-full shadow-lg shadow-blue-100 group"
                                     >
-                                        <span>Join Academy</span>
-                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                        <span>Hire Vetted Talent</span>
+                                        <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                                     </a>
-                                    <a 
-                                        href={getZoneUrl(Zone.AUTH, "/auth/signup")}
-                                        className="flex items-center justify-between w-full py-2 border-b border-slate-100 text-slate-500 font-medium text-[12px] group"
-                                    >
-                                        <span>Sign Up</span>
-                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                    </a>
-                                    <a 
-                                        href={getZoneUrl(Zone.AUTH, "/auth/login?portal=client#form")}
-                                        className="flex items-center justify-between w-full py-2 border-b border-slate-50 text-slate-400 font-medium text-[12px] group"
-                                    >
-                                        <span>Login</span>
-                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                    </a>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <a 
+                                            href="https://academy.opslyhr.com"
+                                            className="flex items-center justify-center py-3 border border-slate-200 text-slate-900 font-semibold text-[12px] rounded-xl hover:bg-slate-50 transition-colors"
+                                        >
+                                            Academy
+                                        </a>
+                                        <a 
+                                            href={getZoneUrl(Zone.AUTH, "/auth/login?portal=client#form")}
+                                            className="flex items-center justify-center py-3 border border-slate-200 text-slate-900 font-semibold text-[12px] rounded-xl hover:bg-slate-50 transition-colors"
+                                        >
+                                            Login
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
