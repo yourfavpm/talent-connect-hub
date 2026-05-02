@@ -140,12 +140,13 @@ export default function AdminJobs() {
   return (
     <div className="max-w-7xl mx-auto pb-12 animate-fade-in space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Jobs</h1>
           <p className="text-sm text-gray-500 mt-1">Manage all hiring requests across OPSlyHR.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
+          <PostInternalJobModal onJobPosted={fetchDashboardData} />
           <PostExternalJobModal onJobPosted={fetchDashboardData} />
         </div>
       </div>
@@ -417,6 +418,202 @@ export default function AdminJobs() {
         </Tabs>
       )}
     </div>
+  );
+}
+
+function PostInternalJobModal({ onJobPosted }: { onJobPosted: () => void }) {
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [clients, setClients] = useState<any[]>([]);
+  const [formData, setFormData] = useState({
+    title: "",
+    client_id: "",
+    service_model: "direct_hire",
+    location: "Remote",
+    salary_range: "",
+    years_of_experience: "",
+    industry: "",
+    description: "",
+  });
+
+  useEffect(() => {
+    if (open) {
+      supabase.from("clients").select("id, company_name").then(({ data }) => {
+        setClients(data || []);
+      });
+    }
+  }, [open]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.client_id) {
+      toast({ title: "Error", description: "Please select a client.", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("jobs").insert({
+        title: formData.title,
+        client_id: formData.client_id,
+        service_model: formData.service_model,
+        location: formData.location,
+        salary_range: formData.salary_range,
+        years_of_experience: formData.years_of_experience,
+        industry: formData.industry,
+        description: formData.description,
+        job_type: "internal",
+        status: "published",
+        visibility: "public",
+        published_at: new Date().toISOString(),
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Job Posted", description: "The internal job has been successfully posted." });
+      setOpen(false);
+      setFormData({
+        title: "",
+        client_id: "",
+        service_model: "direct_hire",
+        location: "Remote",
+        salary_range: "",
+        years_of_experience: "",
+        industry: "",
+        description: "",
+      });
+      onJobPosted();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl gap-2 font-semibold shadow-sm">
+          <Plus className="h-4 w-4" />
+          Post Internal Job
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Briefcase className="h-5 w-5 text-slate-900" />
+              Post Internal Job Opening
+            </DialogTitle>
+            <DialogDescription>
+              Create a new job opening for an existing client on the platform.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="title">Job Title</Label>
+                <Input 
+                  id="title" 
+                  placeholder="e.g. Senior Operations Manager" 
+                  value={formData.title}
+                  onChange={e => setFormData({...formData, title: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="client">Client Company</Label>
+                <Select value={formData.client_id} onValueChange={v => setFormData({...formData, client_id: v})}>
+                  <SelectTrigger id="client">
+                    <SelectValue placeholder="Select Client" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="service_model">Service Model</Label>
+                <Select value={formData.service_model} onValueChange={v => setFormData({...formData, service_model: v})}>
+                  <SelectTrigger id="service_model">
+                    <SelectValue placeholder="Service Model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="direct_hire">Direct Hire</SelectItem>
+                    <SelectItem value="trial_to_hire">Trial to Hire</SelectItem>
+                    <SelectItem value="project_engagement">Project Engagement</SelectItem>
+                    <SelectItem value="offshore_hiring">Offshore Hiring</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="location">Location</Label>
+                <Input 
+                  id="location" 
+                  placeholder="e.g. Remote, Lagos, London" 
+                  value={formData.location}
+                  onChange={e => setFormData({...formData, location: e.target.value})}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="salary">Salary Range</Label>
+                <Input 
+                  id="salary" 
+                  placeholder="$50k - $80k" 
+                  value={formData.salary_range}
+                  onChange={e => setFormData({...formData, salary_range: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="exp">Experience</Label>
+                <Input 
+                  id="exp" 
+                  placeholder="3-5 Years" 
+                  value={formData.years_of_experience}
+                  onChange={e => setFormData({...formData, years_of_experience: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="industry">Industry</Label>
+                <Input 
+                  id="industry" 
+                  placeholder="Fintech, SaaS..." 
+                  value={formData.industry}
+                  onChange={e => setFormData({...formData, industry: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="description">Job Description (Brief)</Label>
+              <Textarea 
+                id="description" 
+                placeholder="Key responsibilities and requirements..." 
+                className="min-h-[100px]"
+                value={formData.description}
+                onChange={e => setFormData({...formData, description: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="submit" className="bg-slate-900 text-white" disabled={submitting}>
+              {submitting ? "Posting..." : "Post Internal Job"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

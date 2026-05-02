@@ -890,32 +890,7 @@ const TalentJobs = () => {
             )}
           </div>
         </TabsContent>
-                     <div className="flex items-center gap-3">
-                       <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{ext.title}</h3>
-                       <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest bg-slate-50 text-slate-500 border-slate-200/60 transition-colors group-hover:bg-white px-2 py-0.5">
-                         Aggregated
-                       </Badge>
-                     </div>
-                     <div className="flex items-center gap-1.5 text-[12px] font-medium text-slate-400">
-                       <span className="text-indigo-600 font-bold">{ext.site}</span>
-                       <span className="h-1 w-1 rounded-full bg-slate-200" />
-                       <p className="line-clamp-1 italic">{ext.description}</p>
-                     </div>
-                   </div>
-                   <a 
-                    href={ext.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-center gap-2 group/btn px-5 py-2.5 bg-slate-50 hover:bg-slate-900 text-slate-600 hover:text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all border border-slate-100 hover:border-slate-900 shadow-sm active:scale-[0.98]"
-                   >
-                      Apply External
-                      <ExternalLink className="h-3.5 w-3.5" />
-                   </a>
-                </div>
-              ))}
-            </div>
-          </div>
-        </TabsContent>
+
 
       </Tabs>
 
