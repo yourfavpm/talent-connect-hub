@@ -120,7 +120,7 @@ const CohortDetail = () => {
         rubrics: [] as { id: string; title: string; description: string; max_points: number }[]
     });
     
-    // Grading Form State
+    // Grading Form State (Build Fix: 2026-05-02)
     const [gradingSub, setGradingSub] = useState<{ 
         id: string; 
         grade: string; 
