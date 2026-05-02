@@ -35,7 +35,7 @@ const ForCompanies = () => {
                 keywords="Hire African Operations, Vetted African Talent, Operational Leadership, Scale Operations, Remote Operations Professionals Africa"
             />
             {/* 1. PAGE HERO (REDESIGNED FOR OPERATIONS) */}
-            <section className="relative pt-40 pb-16 md:pt-40 md:pb-16 px-4 md:px-6 bg-[#F8F9FA] font-inter overflow-hidden">
+            <section className="relative pt-40 pb-16 md:pt-40 md:pb-16 px-2 sm:px-6 bg-[#F8F9FA] font-inter overflow-hidden">
                 <div className="container max-w-[1200px] mx-auto relative z-10 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
                     <div className="flex-1">
                         <motion.div 
@@ -81,7 +81,7 @@ const ForCompanies = () => {
                                 transition={{ duration: 0.8, delay: 0.2 }}
                                 className="relative hidden lg:block"
                             >
-                                <div className="bg-white rounded-[24px] border border-slate-200 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] p-8">
+                                <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06)] p-8">
                                     <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-6">
                                         <div className="flex items-center gap-4">
                                             <div className="h-12 w-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
@@ -149,7 +149,7 @@ const ForCompanies = () => {
             </section>
 
             {/* 2. OPERATIONAL GAP SECTION (REDESIGNED) */}
-            <section className="py-24 px-6 relative bg-blue-50 border-y border-slate-100 font-inter">
+            <section className="py-24 px-2 sm:px-6 relative bg-blue-50 border-y border-slate-100 font-inter">
                 <div className="container max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-20 items-start lg:items-center">
                     <motion.div {...fadeIn} className="w-full lg:w-1/2">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">The Operational Gap</div>
@@ -191,7 +191,7 @@ const ForCompanies = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.1 }}
-                                className="p-8 bg-white rounded-[16px] border border-slate-200 shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
+                                className="p-8 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
                             >
                                 <div className="absolute left-0 top-8 bottom-8 w-[1px] bg-slate-200 group-hover:bg-blue-600 transition-colors" />
                                 <h3 className="text-base font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">{item.title}</h3>
@@ -212,7 +212,7 @@ const ForCompanies = () => {
             </section>
 
             {/* 3. OUR OPERATIONAL MODEL (REDESIGNED) */}
-            <section className="py-24 px-6 bg-white font-inter relative overflow-hidden">
+            <section className="py-24 px-2 sm:px-6 bg-white font-inter relative overflow-hidden">
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-20 gap-8">
                         <div className="max-w-2xl">
@@ -249,7 +249,7 @@ const ForCompanies = () => {
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: i * 0.1 }}
-                                    className="p-10 bg-slate-50/50 rounded-[16px] border border-slate-100 relative group hover:bg-white hover:border-blue-100 hover:shadow-sm transition-all"
+                                    className="p-10 bg-slate-50/50 rounded-2xl border border-slate-100 relative group hover:bg-white hover:border-blue-100 hover:shadow-sm transition-all"
                                 >
                                     <div className="text-4xl font-bold text-slate-200 mb-6 group-hover:text-blue-600/20 transition-colors">{item.number}</div>
                                     <h3 className="text-2xl font-bold text-slate-900 mb-4">{item.title}</h3>
@@ -276,7 +276,7 @@ const ForCompanies = () => {
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: 0.2 + (i * 0.1) }}
-                                    className="p-6 bg-white rounded-[14px] border border-slate-200 hover:border-slate-300 transition-all"
+                                    className="p-6 bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-all"
                                 >
                                     <h4 className="text-base font-bold text-slate-900 mb-2">{item.title}</h4>
                                     <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
@@ -289,9 +289,9 @@ const ForCompanies = () => {
 
 
             {/* 4. ENGAGEMENT STRUCTURE (REDESIGNED) */}
-            <section className="py-24 px-6 bg-slate-50/50 border-t border-slate-100 font-inter">
+            <section className="py-24 px-2 sm:px-6 bg-slate-50/50 border-t border-slate-100 font-inter">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="text-center max-w-3xl mx-auto mb-20">
+                    <div className="text-left md:text-center max-w-3xl mx-auto mb-20">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Engagement Structure</div>
                         <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-slate-900 mb-6 leading-[1.15] tracking-tight">
                             Three Structured Models. <br/>Clear Operational Tradeoffs.
@@ -347,7 +347,7 @@ const ForCompanies = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.1 }}
-                                className={`bg-white p-10 rounded-[20px] border relative group flex flex-col items-start ${model.recommended ? 'border-blue-200 shadow-md ring-1 ring-blue-50' : 'border-slate-200 shadow-sm'}`}
+                                className={`bg-white p-10 rounded-2xl border relative group flex flex-col items-start ${model.recommended ? 'border-blue-200 shadow-md ring-1 ring-blue-50' : 'border-slate-200 shadow-sm'}`}
                             >
                                 {model.recommended && (
                                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.15em] px-4 py-1.5 rounded-full shadow-lg">
@@ -440,9 +440,9 @@ const ForCompanies = () => {
             </section>
 
             {/* 5. OUR PROCESS (REDESIGNED) */}
-            <section className="py-24 px-6 bg-white font-inter relative overflow-hidden">
+            <section className="py-24 px-2 sm:px-6 bg-white font-inter relative overflow-hidden">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="text-center max-w-3xl mx-auto mb-24">
+                    <div className="text-left md:text-center max-w-3xl mx-auto mb-24">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Our Process</div>
                         <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-slate-900 mb-6 leading-[1.15] tracking-tight">
                             A Structured Path from <br/>Need to Execution
@@ -535,9 +535,9 @@ const ForCompanies = () => {
             </section>
 
             {/* 7. CLIENT RESULTS (REDESIGNED) */}
-            <section className="py-24 px-6 bg-white font-inter">
+            <section className="py-24 px-2 sm:px-6 bg-white font-inter">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="text-center mb-20">
+                    <div className="text-left md:text-center mb-20">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Client Results</div>
                         <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 tracking-tight">
                             Trusted by Growing and <br/>Enterprise Teams
@@ -631,7 +631,7 @@ const ForCompanies = () => {
             </section>
 
             {/* 8. WHY OPSLYHR (REDESIGNED) */}
-            <section className="py-24 px-6 bg-slate-50/50 font-inter">
+            <section className="py-24 px-2 sm:px-6 bg-slate-50/50 font-inter">
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="grid lg:grid-cols-2 gap-20 items-start">
                         {/* Left Column: Differentiators */}
@@ -686,7 +686,7 @@ const ForCompanies = () => {
                                 initial={{ opacity: 0, x: 20 }}
                                 whileInView={{ opacity: 1, x: 0 }}
                                 viewport={{ once: true }}
-                                className="bg-white rounded-[20px] border border-slate-200 shadow-xl overflow-hidden"
+                                className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden"
                             >
                                 <div className="p-8 border-b border-slate-100 bg-slate-50/50">
                                     <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Enterprise Performance Metrics</h3>

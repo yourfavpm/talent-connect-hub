@@ -52,7 +52,20 @@ const ServiceModels = () => {
                 keywords="Service Models, Hiring African Talent, Remote Operations Engagement, Directed Placement, Project Based Talent Africa"
             />
 
-            <section className="relative pt-32 md:pt-40 pb-12 md:pb-24 px-3 md:px-4 lg:px-6 bg-white border-b border-slate-100 font-inter overflow-hidden">
+            <section className="relative pt-32 md:pt-40 pb-12 md:pb-24 px-2 sm:px-6 bg-white border-b border-slate-100 font-inter overflow-hidden">
+                {/* Subtle World Map background overlay */}
+                <div 
+                    className="absolute inset-0 w-full h-full opacity-[0.1] pointer-events-none mix-blend-multiply"
+                    style={{
+                        backgroundImage: 'url("https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80")',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat',
+                        filter: 'grayscale(100%) contrast(1.5) brightness(1.1)',
+                        WebkitMaskImage: 'radial-gradient(circle at 70% 50%, black 10%, transparent 80%)',
+                        maskImage: 'radial-gradient(circle at 70% 50%, black 10%, transparent 80%)'
+                    }}
+                />
                 <div className="container max-w-[1200px] mx-auto relative z-10 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
                     <div className="flex-1">
                         <motion.div 
@@ -145,7 +158,7 @@ const ServiceModels = () => {
             </section>
 
             {/* 2. TRUST LOGOS */}
-            <section className="py-12 px-6 border-b border-slate-100 bg-slate-50/50">
+            <section className="py-12 px-2 sm:px-6 border-b border-slate-100 bg-slate-50/50">
                 <div className="container max-w-6xl mx-auto">
                     <p className="text-center text-sm font-bold text-slate-400 uppercase tracking-widest mb-8">Trusted by Companies Across Industries</p>
                     <div className="relative w-full overflow-hidden">
@@ -169,9 +182,9 @@ const ServiceModels = () => {
             </section>
 
             {/* 3. ENGAGEMENT FRAMEWORK (REDESIGNED) */}
-            <section className="py-24 px-6 bg-white font-inter" id="engagement-models">
+            <section className="py-24 px-2 sm:px-6 bg-white font-inter" id="engagement-models">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="text-center mb-20 animate-slide-up">
+                    <div className="text-left md:text-center mb-20 animate-slide-up">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
                             Engagement Framework
                         </div>
@@ -305,9 +318,9 @@ const ServiceModels = () => {
             </section>
 
             {/* 4. GLOBAL OPERATIONS (REDESIGNED) */}
-            <section className="py-24 px-6 bg-[#0B0F19] text-white font-inter relative overflow-hidden">
+            <section className="py-24 px-2 sm:px-6 bg-[#0B0F19] text-white font-inter relative overflow-hidden">
                 {/* Subtle World Map background overlay */}
-                <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80')] bg-cover bg-center grayscale invert"></div>
+                <div className="absolute inset-0 opacity-[0.3] pointer-events-none bg-[url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80')] bg-cover bg-center grayscale invert brightness-[1.2]" style={{ WebkitMaskImage: 'radial-gradient(circle at center, black 30%, transparent 95%)', maskImage: 'radial-gradient(circle at center, black 30%, transparent 95%)' }}></div>
                 
                 <div className="container max-w-[1200px] mx-auto relative z-10">
                     <div className="flex flex-wrap items-center -mx-4">
@@ -390,9 +403,9 @@ const ServiceModels = () => {
             </section>
 
             {/* 5. PROCESS (REDESIGNED) */}
-            <section className="py-24 px-6 bg-white border-y border-slate-100 font-inter">
+            <section className="py-24 px-2 sm:px-6 bg-white border-y border-slate-100 font-inter">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="text-center mb-24 animate-slide-up">
+                    <div className="text-left md:text-center mb-24 animate-slide-up">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
                             Process
                         </div>
@@ -452,9 +465,9 @@ const ServiceModels = () => {
             </section>
 
             {/* 6. DECISION CLARITY (FAQ REDESIGNED) */}
-            <section className="py-24 px-6 bg-white font-inter">
+            <section className="py-24 px-2 sm:px-6 bg-white font-inter">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="text-center mb-20 animate-slide-up">
+                    <div className="text-left md:text-center mb-20 animate-slide-up">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
                             Decision Clarity
                         </div>

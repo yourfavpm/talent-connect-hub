@@ -173,24 +173,24 @@ const Index = () => {
     <div className="bg-white min-h-screen text-foreground overflow-x-hidden selection:bg-primary selection:text-white font-sans">
 
       {/* 2. ENTERPRISE HERO SECTION (REDESIGNED) */}
-      <section className="relative pt-44 pb-16 md:pt-52 md:pb-32 px-6 overflow-hidden bg-white font-inter">
+      <section className="relative pt-44 pb-16 md:pt-52 md:pb-32 px-2 sm:px-6 overflow-hidden bg-white font-inter">
         {/* World Map Background (Subtle) */}
         <div 
-          className="absolute right-[-5%] top-0 w-1/2 h-full opacity-[0.15] pointer-events-none mix-blend-multiply"
+          className="absolute inset-0 w-full h-full opacity-[0.2] pointer-events-none mix-blend-multiply"
           style={{
             backgroundImage: 'url("https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80")',
             backgroundSize: 'cover',
-            backgroundPosition: 'center right',
+            backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
-            filter: 'grayscale(100%) brightness(1.5) contrast(1.1)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent, black 40%)',
-            maskImage: 'linear-gradient(to right, transparent, black 40%)'
+            filter: 'grayscale(100%) contrast(2) brightness(1.1)',
+            WebkitMaskImage: 'radial-gradient(circle at 60% 50%, black 10%, transparent 80%)',
+            maskImage: 'radial-gradient(circle at 60% 50%, black 10%, transparent 80%)'
           }}
         />
         
         <div className="container max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-12 lg:gap-20 items-center relative z-10">
           {/* Left Side: Content & Trust Indicators */}
-          <div className="animate-slide-up flex flex-col items-center text-center lg:items-start lg:text-left flex-1 min-w-0">
+          <div className="animate-slide-up flex flex-col items-start text-left flex-1 min-w-0">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
               The Global Infrastructure for Exceptional Operations Talent.
             </h1>
@@ -199,7 +199,7 @@ const Index = () => {
               We connect global businesses with high-impact professionals through strategic placements, end-to-end workforce management, and professional education.
             </p>
 
-            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-14 w-full">
+            <div className="flex flex-col sm:flex-row justify-start gap-4 mb-14 w-full">
               <Link to="/book-consultation" className="w-full sm:w-auto">
                 <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/10 transition-all font-semibold w-full">
                   Schedule a call
@@ -247,7 +247,7 @@ const Index = () => {
             </motion.div>
 
             {/* Trust Indicators */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-200">
+            <div className="flex flex-wrap items-center justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-200">
               {[
                 "48h Average Shortlist",
                 "98% Placement Rate",
@@ -271,7 +271,7 @@ const Index = () => {
                 tags: ["Strategy", "Process", "Scaling"],
                 tz: "GMT-4",
                 exp: "3 Yrs",
-                offset: "rotate-[-4deg] translate-y-12 z-10"
+                offset: "translate-y-12 z-10 opacity-40 scale-95"
               },
               {
                 name: "Kate Ogbuka",
@@ -280,7 +280,7 @@ const Index = () => {
                 tags: ["HR Strategy", "Culture", "Talent"],
                 tz: "GMT+1",
                 exp: "8 Yrs",
-                offset: "rotate-[2deg] translate-x-12 -translate-y-2 z-20"
+                offset: "translate-x-12 -translate-y-2 z-20 opacity-70 scale-[0.98]"
               },
               {
                 name: "SYLVIA AGALA",
@@ -289,13 +289,13 @@ const Index = () => {
                 tags: ["Email Marketing", "Data Analysis", "Support"],
                 tz: "GMT",
                 exp: "3 Yrs",
-                offset: "rotate-[-2deg] -translate-x-4 translate-y-32 z-30 shadow-xl"
+                offset: "-translate-x-4 translate-y-32 z-30 shadow-xl"
               }
             ].map((talent, i) => (
               <motion.div 
                 key={i}
-                whileHover={{ y: -8, rotate: 0, scale: 1.02 }}
-                className={`absolute top-0 right-0 w-[360px] bg-white rounded-[16px] p-6 shadow-2xl shadow-slate-950/5 border border-slate-100 transition-all duration-500 ${talent.offset}`}
+                whileHover={{ y: -8, scale: 1.02 }}
+                className={`absolute top-0 right-0 w-[360px] aspect-square bg-white rounded-2xl p-8 shadow-2xl shadow-slate-950/5 border border-slate-100 transition-all duration-500 flex flex-col justify-center ${talent.offset}`}
               >
                 <div className="flex items-center gap-4 mb-6">
                   <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold border border-slate-50 shadow-sm ${getAvatarColor(talent.name)}`}>
@@ -348,9 +348,9 @@ const Index = () => {
 
       {/* 3. TRUST & CREDIBILITY (REPOSITIONED) */}
       <section className="py-12 md:py-16 border-b border-slate-200 bg-white">
-        <div className="container max-w-7xl mx-auto text-center">
+        <div className="container max-w-7xl mx-auto text-left md:text-center">
           <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-2">Trusted by Global Teams and Growing Enterprises</p>
-          <p className="text-slate-500 mb-8 max-w-lg mx-auto">Streamlining hiring and operations across industries</p>
+          <p className="text-slate-500 mb-8 max-w-lg mx-auto md:mx-auto">Streamlining hiring and operations across industries</p>
 
           <div className="relative w-full overflow-hidden">
             <div className="flex animate-marquee gap-16 items-center opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
@@ -373,7 +373,7 @@ const Index = () => {
       </section>
 
       {/* ── IMPACT STATISTICS SECTION (REDESIGNED: TYPOGRAPHIC FLOW) ────────────────────────────────── */}
-      <section className="py-24 px-6 bg-white overflow-hidden font-inter border-b border-slate-100 relative">
+      <section className="py-24 px-2 sm:px-6 bg-white overflow-hidden font-inter border-b border-slate-100 relative">
         {/* Subtle Background Grid */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px]"></div>
 
@@ -450,7 +450,7 @@ const Index = () => {
       </section>
 
       {/* NEW TRUST-BUILDING SECTION (STRATEGIC POSITIONING) */}
-      <section className="py-24 px-6 bg-slate-50 font-inter border-b border-slate-200">
+      <section className="py-24 px-2 sm:px-6 bg-slate-50 font-inter border-b border-slate-200">
         <div className="container max-w-[1200px] mx-auto">
           {/* Header */}
           <div className="mb-16 md:mb-20 animate-slide-up">
@@ -464,7 +464,7 @@ const Index = () => {
 
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-20 items-start">
             {/* Left Side: Structured Benefit Blocks (60%) */}
-            <div className="lg:col-span-7 relative pl-8">
+            <div className="lg:col-span-7 relative pl-6 sm:pl-8">
               {/* Vertical Dotted Line */}
               <div className="absolute left-0 top-2 bottom-2 w-px border-l border-dotted border-slate-300"></div>
 
@@ -507,8 +507,8 @@ const Index = () => {
             </div>
 
             {/* Right Side: Trust Visualization (40%) */}
-            <div className="lg:col-span-5">
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 md:p-10 sticky top-32">
+            <div className="lg:col-span-5 w-full">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 md:p-10 sticky top-32">
                 <h4 className="text-base font-semibold text-slate-900 mb-8 uppercase tracking-wider">
                   Enterprise-Level Operational Support
                 </h4>
@@ -554,7 +554,7 @@ const Index = () => {
       </section>
 
       {/* ── OPSly Academy Section (NEW) ────────────────────────────────── */}
-      <section className="py-24 md:py-32 bg-slate-50 relative overflow-hidden font-inter border-t border-slate-200">
+      <section className="py-24 md:py-32 bg-slate-50 relative overflow-hidden font-inter border-t border-slate-200 px-2 sm:px-6">
         <div className="container max-w-[1200px] mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             <motion.div 
@@ -604,14 +604,14 @@ const Index = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative"
+              className="relative w-full"
             >
-              <div className="relative rounded-[32px] overflow-hidden border border-slate-200 shadow-2xl bg-white aspect-[4/3] lg:aspect-auto">
+              <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-2xl bg-white aspect-video lg:min-h-[440px]">
                 {/* BLENDING EFFECT: Image fades into the background */}
                 <div 
                   className="w-full h-full transition-transform duration-700 hover:scale-[1.02]"
                   style={{
-                    backgroundImage: 'url("/images/academy-dashboard.png")',
+                    backgroundImage: 'url("/images/academy-dashboard-v2.png")',
                     backgroundSize: 'cover',
                     backgroundPosition: 'top left',
                     WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%), linear-gradient(to right, black 95%, transparent 100%)',
@@ -641,7 +641,7 @@ const Index = () => {
       </section>
 
       {/* VETTING ENGINE SECTION (ENTERPRISE GRADE) */}
-      <section className="py-24 px-6 bg-white font-inter border-b border-slate-200 overflow-hidden">
+      <section className="py-24 px-2 sm:px-6 bg-white font-inter border-b border-slate-200 overflow-hidden">
         <div className="container max-w-[1200px] mx-auto">
           {/* Header */}
           <div className="mb-16 animate-slide-up">
@@ -728,10 +728,10 @@ const Index = () => {
       </section>
 
       {/* 4. SERVICE MODELS — REDESIGNED COMPARISON SECTION */}
-      <section className="py-24 px-6 bg-white font-inter">
+      <section className="py-24 px-2 sm:px-6 bg-white font-inter">
         <div className="container max-w-[1200px] mx-auto">
           {/* Header */}
-          <div className="text-center max-w-2xl mx-auto mb-20 animate-slide-up">
+          <div className="text-left md:text-center max-w-2xl mx-auto mb-20 animate-slide-up">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Service Models</div>
             <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 leading-tight tracking-tight">
               Choose the Right Engagement Model
@@ -825,7 +825,7 @@ const Index = () => {
       </section>
 
       {/* 4.5. OPERATIONAL PERFORMANCE — REDESIGNED DATA-DRIVEN SECTION */}
-      <section className="py-24 px-6 bg-white font-inter">
+      <section className="py-24 px-2 sm:px-6 bg-white font-inter">
         <div className="container max-w-[1200px] mx-auto">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             {/* Left Column: Metrics Grid */}
@@ -954,10 +954,10 @@ const Index = () => {
       </section>
 
       {/* 5. HOW IT WORKS — REDESIGNED VERTICAL TIMELINE */}
-      <section className="py-24 px-6 bg-slate-50 font-inter">
+      <section className="py-24 px-2 sm:px-6 bg-slate-50 font-inter">
         <div className="container max-w-[1200px] mx-auto">
           {/* Header */}
-          <div className="max-w-3xl mb-24 animate-slide-up">
+          <div className="max-w-3xl mb-24 animate-slide-up text-left">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">How It Works</div>
             <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 leading-tight tracking-tight">
               Structured Hiring, Step by Step
@@ -967,9 +967,9 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="relative pl-12 md:pl-20">
+          <div className="relative pl-8 sm:pl-20">
             {/* Vertical Dotted Line */}
-            <div className="absolute left-4 md:left-6 top-0 bottom-0 w-px border-l-[1.5px] border-dotted border-slate-300"></div>
+            <div className="absolute left-2 sm:left-6 top-0 bottom-0 w-px border-l-[1.5px] border-dotted border-slate-300"></div>
 
             <div className="space-y-16">
               {[
@@ -1018,10 +1018,10 @@ const Index = () => {
                   className="relative group"
                 >
                   {/* Dot Marker */}
-                  <div className="absolute -left-[37px] md:-left-[59px] top-6 w-3 h-3 rounded-full bg-slate-300 border-2 border-slate-50 z-10 group-hover:bg-primary transition-colors duration-300"></div>
+                  <div className="absolute -left-[29px] sm:-left-[59px] top-6 w-3 h-3 rounded-full bg-slate-300 border-2 border-slate-50 z-10 group-hover:bg-primary transition-colors duration-300"></div>
                   
                   {/* Content Card */}
-                  <div className="bg-white p-6 md:p-8 rounded-[12px] border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-300 cursor-default">
+                  <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-300 cursor-default w-full">
                     <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-8">
                       <div className="text-xl font-semibold text-slate-300 group-hover:text-primary transition-colors duration-300 font-display">
                         {step.num}
@@ -1044,13 +1044,13 @@ const Index = () => {
 
 
       {/* 7. OPERATIONS PROFESSIONALS SHOWCASE */}
-      <section className="py-24 px-6 bg-blue-50/50 font-inter overflow-hidden">
+      <section className="py-24 px-2 sm:px-6 bg-blue-50/50 font-inter overflow-hidden">
         <div className="container max-w-7xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+            className="text-left md:text-center mb-16"
           >
             <h2 className="text-3xl md:text-[40px] font-semibold text-slate-900 mb-4 leading-tight">
               Meet Operations Leaders in Our Pipeline
@@ -1161,10 +1161,10 @@ const Index = () => {
 
 
       {/* 9. CLIENT RESULTS — REDESIGNED TESTIMONIAL SECTION */}
-      <section className="py-24 px-6 bg-white font-inter">
+      <section className="py-24 px-2 sm:px-6 bg-white font-inter">
         <div className="container max-w-[1200px] mx-auto">
           {/* Header */}
-          <div className="text-center max-w-2xl mx-auto mb-20 animate-slide-up">
+          <div className="text-left md:text-center max-w-2xl mx-auto mb-20 animate-slide-up">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Client Results</div>
             <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 leading-tight tracking-tight">
               Trusted by Growth-Focused Teams
@@ -1204,7 +1204,7 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 whileHover={{ y: -4 }}
-                className="bg-white p-10 rounded-[16px] border border-slate-200 shadow-sm hover:border-blue-200 transition-all duration-300 flex flex-col h-full"
+                className="bg-white p-10 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-200 transition-all duration-300 flex flex-col h-full w-full"
               >
                 <div className="mb-10 flex-grow">
                   <p className="text-lg text-slate-700 leading-relaxed font-medium italic">

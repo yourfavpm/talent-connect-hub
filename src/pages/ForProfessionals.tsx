@@ -15,7 +15,7 @@ const ForProfessionals = () => {
             />
 
             {/* Header / Hero - Enterprise SaaS Style */}
-            <section className="relative pt-40 pb-12 md:pt-40 md:pb-16 flex flex-col justify-center px-6 bg-slate-50/50 overflow-hidden">
+            <section className="relative pt-40 pb-12 md:pt-40 md:pb-16 flex flex-col justify-center px-2 sm:px-6 bg-slate-50/50 overflow-hidden">
                 <div className="container max-w-[1200px] mx-auto relative z-20 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
                     <div className="flex-1">
                         <div className="flex flex-col items-start text-left">
@@ -51,7 +51,7 @@ const ForProfessionals = () => {
                     </div>
 
                     <div className="flex-1 w-full relative hidden lg:block">
-                        <div className="relative z-10 bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 md:p-8 overflow-hidden min-h-[380px] md:min-h-[480px] flex flex-col">
+                        <div className="relative z-10 bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 md:p-8 overflow-hidden min-h-[380px] md:min-h-[480px] flex flex-col">
                             {/* Profile Header */}
                             <div className="flex items-center gap-6 mb-8 pb-6 border-b border-slate-100">
                                 <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center overflow-hidden">
@@ -124,7 +124,7 @@ const ForProfessionals = () => {
             </section>
 
             {/* THE DEAL: Minimalist Grid */}
-            <section className="py-16 md:py-24 px-6">
+            <section className="py-16 md:py-24 px-2 sm:px-6">
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="grid md:grid-cols-3 gap-12 lg:gap-16">
                         <div className="pt-8 border-t border-slate-200">
@@ -152,11 +152,11 @@ const ForProfessionals = () => {
                 </div>
             </section>
 
-            {/* STRUCTURED TALENT PORTAL: Dashboard Preview */}
-            <section className="py-24 px-6 bg-slate-50 border-y border-slate-100 font-inter overflow-hidden">
+            {/* 5. PROCESS (REDESIGNED) */}
+            <section className="py-24 px-2 sm:px-6 bg-white border-y border-slate-100 font-inter">
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="flex flex-col lg:flex-row gap-16 lg:gap-24 items-center">
-                        <div className="flex-1 animate-slide-up">
+                        <div className="flex-1">
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">Centralized Operations</div>
                             <h2 className="text-4xl md:text-5xl font-bold mb-8 text-slate-900 leading-tight tracking-tight">Your Career, <br />Managed Structurally.</h2>
                             <p className="text-lg text-slate-600 mb-10 font-medium leading-relaxed max-w-md">
@@ -182,45 +182,21 @@ const ForProfessionals = () => {
                             </div>
                         </div>
 
-                        <div className="flex-[1.5] w-full relative group">
-                            <motion.div 
-                                initial={{ opacity: 0, y: 100 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                                className="relative w-full overflow-visible"
-                                style={{ perspective: "2000px" }}
-                            >
-                                <motion.div
-                                    initial={{ rotateX: 10, scale: 0.95 }}
-                                    whileInView={{ rotateX: 0, scale: 1 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 1.5, delay: 0.2 }}
-                                    className="relative z-10"
-                                >
-                                    <img 
-                                        src="/images/talent-portal.png" 
-                                        alt="Talent Portal Dashboard" 
-                                        className="w-full h-auto shadow-[0_50px_100px_-20px_rgba(0,0,0,0.1)] rounded-xl"
-                                        style={{ 
-                                            maskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 95%)',
-                                            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 95%)'
-                                        }}
-                                    />
-                                </motion.div>
-                                
-                                {/* Background Glow to further blend */}
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-blue-50 rounded-full blur-[120px] -z-10 opacity-60" />
-                            </motion.div>
+                        <div className="flex-[1.5] w-full">
+                            <img 
+                                src="/images/talent-portal.png" 
+                                alt="Talent Portal Dashboard" 
+                                className="w-full h-auto rounded-2xl border border-slate-200 shadow-xl"
+                            />
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* OUR VETTING STANDARD: Process Flow */}
-            <section className="py-16 md:py-24 px-6 bg-white font-inter">
+            {/* 3. ENGAGEMENT FRAMEWORK (REDESIGNED) */}
+            <section className="py-24 px-2 sm:px-6 bg-white font-inter" id="engagement-models">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="text-center mb-16 md:mb-24">
+                    <div className="text-left md:text-center mb-16 md:mb-24">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">Our Vetting Standard</div>
                         <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">A Structured Path Into the Network</h2>
                         <p className="text-base md:text-lg text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto mb-4">
