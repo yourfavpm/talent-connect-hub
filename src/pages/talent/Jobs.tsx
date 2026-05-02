@@ -246,8 +246,15 @@ const TalentJobs = () => {
 
   const handleApply = async () => {
     if (!talent || !selectedJob) return;
-    setApplying(true);
+    
+    // Direct link for external jobs
+    if (selectedJob.job_type === 'external' && selectedJob.external_url) {
+      window.open(selectedJob.external_url, '_blank', 'noopener,noreferrer');
+      setApplyDialogOpen(false);
+      return;
+    }
 
+    setApplying(true);
     try {
       const { error } = await supabase.from("job_applications").insert({
         job_id: selectedJob.id,
@@ -294,6 +301,10 @@ const TalentJobs = () => {
   );
 
   const openJobDetail = (job: Job) => {
+    if (job.job_type === 'external' && job.external_url) {
+      window.open(job.external_url, '_blank', 'noopener,noreferrer');
+      return;
+    }
     navigate(getInternalPath(`/talent/jobs/${job.id}`));
   };
 
@@ -780,7 +791,14 @@ const TalentJobs = () => {
                           </div>
                         </div>
                         <div className="flex items-center justify-between md:justify-end gap-6 shrink-0 border-t md:border-t-0 pt-4 md:pt-0">
-                           {hasApplied(job.id) ? (
+                           {job.job_type === 'external' ? (
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); window.open(job.external_url, '_blank', 'noopener,noreferrer'); }}
+                                className="flex items-center gap-2 group/btn px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-sm active:scale-[0.98]"
+                              >
+                                Apply on Site <ExternalLink className="h-3.5 w-3.5" />
+                              </button>
+                           ) : hasApplied(job.id) ? (
                              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl text-[11px] font-bold text-emerald-600 uppercase tracking-widest">
                                <CheckCircle className="h-3.5 w-3.5" /> Applied
                              </div>

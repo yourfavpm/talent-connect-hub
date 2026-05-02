@@ -69,6 +69,11 @@ const PublicJobs = () => {
     };
 
     const handleApply = (job: any) => {
+        if (job.job_type === 'external' && job.external_url) {
+            window.open(job.external_url, '_blank', 'noopener,noreferrer');
+            return;
+        }
+        
         if (!user) {
             setSelectedJob(job);
             setShowAuthDialog(true);
@@ -85,7 +90,9 @@ const PublicJobs = () => {
             job.location?.toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesCategory = selectedCategory === "all" || job.category === selectedCategory;
-        const matchesServiceModel = selectedServiceModel === "all" || job.service_model === selectedServiceModel;
+        const matchesServiceModel = selectedServiceModel === "all" || 
+                                    job.service_model === selectedServiceModel || 
+                                    (job.job_type === 'external' && selectedServiceModel === 'direct_hire');
 
         return matchesSearch && matchesCategory && matchesServiceModel;
     });
@@ -211,8 +218,8 @@ const PublicJobs = () => {
                                                 {job.clients?.company_name}
                                             </CardDescription>
                                         </div>
-                                        <Badge variant="outline" className="ml-4">
-                                            {job.service_model?.replace(/_/g, " ")}
+                                        <Badge variant="outline" className={job.job_type === 'external' ? "ml-4 bg-blue-50 text-blue-600 border-blue-100" : "ml-4"}>
+                                            {job.job_type === 'external' ? "External Role" : (job.service_model?.replace(/_/g, " ") || "Partner Role")}
                                         </Badge>
                                     </div>
                                 </CardHeader>
@@ -236,8 +243,8 @@ const PublicJobs = () => {
                                             </div>
                                         </div>
                                         <div className="flex gap-2 pt-4">
-                                            <Button onClick={() => handleApply(job)} className="flex-1">
-                                                Apply Now
+                                            <Button onClick={() => handleApply(job)} className="flex-1 bg-slate-900 hover:bg-slate-800 text-white">
+                                                {job.job_type === 'external' ? "Apply on Site" : "Apply Now"}
                                             </Button>
                                             <Button variant="outline" onClick={() => navigate(`/jobs/${job.id}`)}>
                                                 View Details

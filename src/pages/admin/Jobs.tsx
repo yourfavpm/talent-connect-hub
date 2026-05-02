@@ -669,6 +669,7 @@ function PostExternalJobModal({ onJobPosted }: { onJobPosted: () => void }) {
         years_of_experience: formData.years_of_experience || null,
         industry: formData.industry || null,
         role_needed: formData.role_needed,
+        service_model: "direct_hire", // Default for external jobs
         job_type: "external",
         status: "published",
         visibility: "public",
