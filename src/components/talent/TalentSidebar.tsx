@@ -17,14 +17,15 @@ import {
   DollarSign,
   Copy,
   Check,
-  Video
+  Video,
+  GraduationCap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { getInternalPath } from "@/utils/subdomain";
+import { getInternalPath, getZoneUrl, Zone } from "@/utils/subdomain";
 import Logo from "@/components/Logo";
 
 const navigation = [
@@ -229,6 +230,19 @@ const TalentSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
             <nav className="space-y-1">
               {renderNavItems(secondaryNavigation)}
             </nav>
+            
+            <div className="pt-2 border-t border-gray-50">
+               <a
+                 href={getZoneUrl(Zone.ACADEMY, "/dashboard")}
+                 className={cn(
+                   "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group text-gray-500 hover:text-blue-600 hover:bg-blue-50/50",
+                   isCollapsed && "justify-center px-0"
+                 )}
+               >
+                 <GraduationCap className={cn("h-[18px] w-[18px] shrink-0 text-gray-400 group-hover:text-blue-600")} />
+                 {!isCollapsed && <span className="text-[14px] font-medium tracking-tight">Go to Academy Hub</span>}
+               </a>
+            </div>
           </div>
         </div>
 

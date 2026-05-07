@@ -22,12 +22,29 @@ const AcademyLogin = () => {
         setLoading(true);
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
+            const { data: { user }, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
 
             if (error) throw error;
+
+            // Role Check: Admin or Client are not allowed in Academy
+            if (user) {
+                const { data: rolesData } = await supabase
+                    .from("user_roles")
+                    .select("role")
+                    .eq("user_id", user.id);
+                
+                const userRoles = rolesData?.map(r => r.role) || [];
+                const isBlocked = userRoles.includes('super_admin') || userRoles.includes('operations_admin') || userRoles.includes('client');
+                const isAllowed = userRoles.includes('student') || userRoles.includes('talent');
+
+                if (isBlocked || !isAllowed) {
+                    await supabase.auth.signOut();
+                    throw new Error("This portal is only for Students and Talents. Please use your respective portal.");
+                }
+            }
 
             toast({
                 title: "Welcome back!",

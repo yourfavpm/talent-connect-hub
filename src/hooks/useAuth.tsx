@@ -12,6 +12,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   userRole: string | null;
+  roles: string[];
   permissions: string[];
   hasPermission: (permission: string) => boolean;
   roleLoading: boolean;
@@ -25,6 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [roleLoading, setRoleLoading] = useState(false);
   const fetchingForUser = useRef<string | null>(null);
@@ -34,6 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (roleCache.has(userId)) {
       const cached = roleCache.get(userId)!;
       setUserRole(cached.role);
+      setRoles(cached.roles || []);
       setPermissions(cached.permissions);
       return;
     }
@@ -50,12 +53,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .maybeSingle();
 
       let primaryRole: string | null = null;
+      let allRoles: string[] = [];
 
       if (adminRoleData && (adminRoleData as any).role) {
         // Map "Talent Manager" -> "talent_manager" for consistent internal logic
         primaryRole = (adminRoleData as any).role.name
           .toLowerCase()
           .replace(/ /g, "_");
+        allRoles = [primaryRole];
       } else {
         // 2. Fallback to legacy user_roles
         const { data: roleRecords, error: roleError } = await supabase
@@ -70,11 +75,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
 
-        const roles = roleRecords?.map(r => r.role) || [];
-        primaryRole = roles[0] || null;
+        allRoles = roleRecords?.map(r => r.role) || [];
+        primaryRole = allRoles[0] || null;
       }
       
       setUserRole(primaryRole);
+      setRoles(allRoles);
 
       let perms: string[] = [];
       if (isAdminRole(primaryRole)) {
@@ -90,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Cache the result for this session
-      roleCache.set(userId, { role: primaryRole, permissions: perms });
+      roleCache.set(userId, { role: primaryRole, roles: allRoles, permissions: perms });
     } catch (error) {
       console.error("Error in fetchUserRole:", error);
     } finally {
@@ -118,6 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }, 0);
         } else {
           setUserRole(null);
+          setRoles([]);
           setPermissions([]);
           setRoleLoading(false);
         }
@@ -142,6 +149,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setSession(null);
     setUserRole(null);
+    setRoles([]);
     setPermissions([]);
     
     // Redirect to Auth Hub after logout
@@ -149,7 +157,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, userRole, permissions, hasPermission, roleLoading, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, userRole, roles, permissions, hasPermission, roleLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

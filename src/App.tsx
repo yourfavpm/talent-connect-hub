@@ -252,6 +252,33 @@ const ZoneGuard = ({
     return null;
   }
 
+  // 3. Academy Access Restriction: Only talent and student can access
+  if (isProtected && currentZone === Zone.ACADEMY && user) {
+    // We check roles here. Since roles are fetched asynchronously, we might need a small wait or use roleLoading.
+    // But since ZoneGuard is at the top level, we can use useAuth's roles array.
+    const { roles, roleLoading } = useAuth();
+    
+    if (!roleLoading) {
+      const isAllowed = roles.includes("student") || roles.includes("talent");
+      const isBlocked = roles.includes("super_admin") || roles.includes("operations_admin") || roles.includes("client");
+      
+      if (isBlocked || !isAllowed) {
+        // Redirect blocked users to their own dashboard
+        if (roles.includes("super_admin") || roles.includes("operations_admin")) {
+          window.location.href = getZoneUrl(Zone.ADMIN, "/dashboard");
+          return null;
+        }
+        if (roles.includes("client")) {
+          window.location.href = getZoneUrl(Zone.CLIENT, "/dashboard");
+          return null;
+        }
+        
+        // If they have NO role or an unknown role, send to home
+        return <Navigate to="/" replace />;
+      }
+    }
+  }
+
   return <>{children}</>;
 };
 

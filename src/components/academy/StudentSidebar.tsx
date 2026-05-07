@@ -12,7 +12,9 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Award
+  Award,
+  Briefcase,
+  ArrowUpRight
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -22,6 +24,7 @@ import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
+import { Zone, getZoneUrl } from "@/utils/subdomain";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -106,6 +109,20 @@ const StudentSidebar = ({ collapsed, setCollapsed }: { collapsed: boolean; setCo
             </Link>
           );
         })}
+        
+        {/* Switch to Talent Portal */}
+        <div className="pt-4 mt-4 border-t border-slate-50">
+           <a
+             href={Zone.TALENT ? getZoneUrl(Zone.TALENT, "/dashboard") : "#"}
+             className={cn(
+               "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group text-slate-500 hover:text-blue-600 hover:bg-blue-50/50"
+             )}
+           >
+             <Briefcase className="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-600" />
+             {!collapsed && <span className="text-[13px] font-medium">Go to Talent Portal</span>}
+             {!collapsed && <ArrowUpRight className="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />}
+           </a>
+        </div>
       </nav>
 
       {/* Footer Actions / User Profile */}

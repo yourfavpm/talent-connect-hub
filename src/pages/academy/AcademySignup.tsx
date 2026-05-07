@@ -39,16 +39,30 @@ const AcademySignup = () => {
 
             if (authError) throw authError;
 
-            // 2. Assign Student Role (via user_roles table)
+            // 2. Assign Roles (via user_roles table)
             if (data.user) {
+                // Assign both student and talent roles as they are shared/linked
                 const { error: roleError } = await supabase
                     .from("user_roles")
-                    .insert([{ 
-                        user_id: data.user.id, 
-                        role: "student" 
-                    }]);
+                    .insert([
+                        { user_id: data.user.id, role: "student" },
+                        { user_id: data.user.id, role: "talent" }
+                    ]);
                 
                 if (roleError) console.warn("Auto-role assignment failed:", roleError);
+
+                // 3. Create initial talent record to trigger profile completion indicator
+                const { error: talentError } = await supabase
+                    .from("talents")
+                    .insert([{
+                        user_id: data.user.id,
+                        first_name: formData.fullName.split(' ')[0],
+                        last_name: formData.fullName.split(' ').slice(1).join(' '),
+                        profile_status: 'draft',
+                        onboarding_completed: false
+                    }]);
+                
+                if (talentError) console.warn("Initial talent record creation failed:", talentError);
             }
 
             toast({
