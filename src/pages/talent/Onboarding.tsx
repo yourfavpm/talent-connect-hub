@@ -138,7 +138,6 @@ const onboardSchema = z.object({
   functionalAreas: z.array(z.string()).default([]),
   governmentIdUrl: z.string().optional(),
   cvUrl: z.string().optional(),
-  proofOfAddressUrl: z.string().optional(),
   portfolioUrl: z.string().optional(),
   workHistory: z.array(z.object({
     id: z.string(),
@@ -243,7 +242,6 @@ const TalentOnboarding = () => {
       languagesSpoken: [],
       governmentIdUrl: "",
       cvUrl: "",
-      proofOfAddressUrl: "",
       portfolioUrl: "",
       headline: "",
       shortBio: "",
@@ -348,7 +346,7 @@ const TalentOnboarding = () => {
         } else if (currentStep === 3) {
           Object.assign(sectionData, { workHistory: values.workHistory });
         } else if (currentStep === 4) {
-          Object.assign(sectionData, { cvUrl: values.cvUrl, governmentIdUrl: values.governmentIdUrl, proofOfAddressUrl: values.proofOfAddressUrl, portfolioUrl: values.portfolioUrl });
+          Object.assign(sectionData, { cvUrl: values.cvUrl, governmentIdUrl: values.governmentIdUrl, portfolioUrl: values.portfolioUrl });
         } else if (currentStep === 5) {
           Object.assign(sectionData, { education: values.education });
         } else if (currentStep === 6) {
@@ -639,8 +637,7 @@ const TalentOnboarding = () => {
             </div>
             <div className="space-y-3">
               <FileUploadRow label="CV / Resume" hint="PDF or Word format" accept=".pdf,.doc,.docx" uploaded={!!formData.cvUrl} uploading={!!uploadingFields["cvUrl"]} onUpload={(e) => handleFileUpload(e, "cvUrl")} />
-              <FileUploadRow label="Government ID" hint="Clear photo of Passport or National ID" accept="image/*,.pdf" uploaded={!!formData.governmentIdUrl} uploading={!!uploadingFields["governmentIdUrl"]} onUpload={(e) => handleFileUpload(e, "governmentIdUrl")} />
-              <FileUploadRow label="Proof of Address" hint="Utility bill, bank statement, or rental agreement" accept="image/*,.pdf" uploaded={!!formData.proofOfAddressUrl} uploading={!!uploadingFields["proofOfAddressUrl"]} onUpload={(e) => handleFileUpload(e, "proofOfAddressUrl")} />
+              <FileUploadRow label="Government ID (Optional)" hint="Clear photo of Passport or National ID" accept="image/*,.pdf" uploaded={!!formData.governmentIdUrl} uploading={!!uploadingFields["governmentIdUrl"]} onUpload={(e) => handleFileUpload(e, "governmentIdUrl")} />
             </div>
             <div className="space-y-3">
               <FieldGroup label="Portfolio Link (Optional)">
@@ -765,7 +762,6 @@ const TalentOnboarding = () => {
               { title: "Documents", step: 4, rows: [
                 ["CV / Resume", formData.cvUrl ? "✓ Uploaded" : "Not uploaded"],
                 ["Government ID", formData.governmentIdUrl ? "✓ Uploaded" : "Not uploaded"],
-                ["Proof of Address", formData.proofOfAddressUrl ? "✓ Uploaded" : "Not uploaded"],
                 ["Portfolio", formData.portfolioUrl || "—"],
               ]},
               { title: "Education", step: 5, rows: (formData.education || []).filter(e => e.institutionName).map(e => [e.institutionName, e.degree || "—"]) },

@@ -99,9 +99,8 @@ export const onboardSchema = z.object({
   languagesSpoken: z.array(z.string()).default([]),
   industryFocus: z.array(z.string()).default([]),
   functionalAreas: z.array(z.string()).default([]),
-  governmentIdUrl: z.string().min(1, "Government ID is required"),
+  governmentIdUrl: z.string().optional(),
   cvUrl: z.string().min(1, "Resume/CV is required"),
-  proofOfAddressUrl: z.string().min(1, "Proof of address is required"),
   portfolioUrl: z.string().optional(),
   workHistory: z.array(z.object({
     id: z.string(), companyName: z.string().min(2, "Company name required"),
@@ -136,7 +135,7 @@ export function getSectionData(step: number, values: OnboardFormValues): Record<
     case 1: return { firstName: values.firstName, lastName: values.lastName, phone: values.phone, country: values.country, timezone: values.timezone, languagesSpoken: values.languagesSpoken };
     case 2: return { roleCategory: values.roleCategory, primaryRole: values.primaryRole, headline: values.headline, shortBio: values.shortBio, yearsOfExperience: values.yearsOfExperience, availability: values.availability, secondarySkills: values.secondarySkills, toolsFamiliarWith: values.toolsFamiliarWith, industryFocus: values.industryFocus, functionalAreas: values.functionalAreas };
     case 3: return { workHistory: values.workHistory };
-    case 4: return { cvUrl: values.cvUrl, governmentIdUrl: values.governmentIdUrl, proofOfAddressUrl: values.proofOfAddressUrl, portfolioUrl: values.portfolioUrl };
+    case 4: return { cvUrl: values.cvUrl, governmentIdUrl: values.governmentIdUrl, portfolioUrl: values.portfolioUrl };
     case 5: return { education: values.education };
     case 6: return { certifications: values.certifications };
     case 7: return { references: values.references };
@@ -290,8 +289,7 @@ export const DocumentsForm = ({ disabled, uploadingFields, onUpload }: { disable
   return (
     <div className="space-y-4">
       <FileUploadRow label="Resume / CV" hint="PDF or DOCX" accept=".pdf,.doc,.docx" uploaded={!!formData.cvUrl} uploading={!!uploadingFields.cvUrl} disabled={disabled} onUpload={e => onUpload(e, "cvUrl")} />
-      <FileUploadRow label="Government ID" hint="Passport, National ID, or Driver's License" accept=".pdf,.jpg,.png" uploaded={!!formData.governmentIdUrl} uploading={!!uploadingFields.governmentIdUrl} disabled={disabled} onUpload={e => onUpload(e, "governmentIdUrl")} />
-      <FileUploadRow label="Proof of Address" hint="Utility bill or bank statement" accept=".pdf,.jpg,.png" uploaded={!!formData.proofOfAddressUrl} uploading={!!uploadingFields.proofOfAddressUrl} disabled={disabled} onUpload={e => onUpload(e, "proofOfAddressUrl")} />
+      <FileUploadRow label="Government ID (Optional)" hint="Passport, National ID, or Driver's License" accept=".pdf,.jpg,.png" uploaded={!!formData.governmentIdUrl} uploading={!!uploadingFields.governmentIdUrl} disabled={disabled} onUpload={e => onUpload(e, "governmentIdUrl")} />
       <FieldGroup label="Portfolio URL (optional)">
         <Input className={OB_INPUT_CLASS} value={formData.portfolioUrl || ""} onChange={e => setValue("portfolioUrl", e.target.value)} placeholder="https://..." disabled={disabled} />
       </FieldGroup>

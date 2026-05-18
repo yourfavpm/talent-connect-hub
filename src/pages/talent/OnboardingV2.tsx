@@ -73,7 +73,7 @@ const OnboardingV2 = () => {
     1: ["firstName", "lastName", "phone", "country", "timezone"],
     2: ["roleCategory", "primaryRole", "yearsOfExperience", "availability", "headline", "shortBio"],
     3: ["workHistory"],
-    4: ["cvUrl", "governmentIdUrl", "proofOfAddressUrl"],
+    4: ["cvUrl"],
     5: ["education"],
     6: ["certifications"],
     7: ["references"],
