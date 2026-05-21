@@ -64,11 +64,21 @@ const SupportTicketForm = () => {
       return;
     }
 
+    if (!user) {
+      toast({
+        title: "Session expired",
+        description: "Please sign in again to submit a support request.",
+        variant: "destructive",
+      });
+      navigate("/auth/login?portal=talent");
+      return;
+    }
+
     setLoading(true);
     try {
       // NOTE: We are intentionally preserving the exact DB insert logic as instructed
       const { data, error } = await supabase.from("support_tickets").insert({
-        user_id: user?.id,
+        user_id: user.id,
         category: formData.category,
         priority: formData.priority,
         subject: formData.subject,
@@ -79,7 +89,7 @@ const SupportTicketForm = () => {
       if (error) throw error;
 
       await notifyUser(
-        user!.id,
+        user.id,
         "Support Ticket Created",
         `Your ticket "${formData.subject}" has been created. ID: ${data.id}`,
         "support",

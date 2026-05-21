@@ -3,6 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 export type NotificationType = "system" | "job" | "application" | "interview" | "offer" | "contract" | "payment" | "security" | "support";
 
 export const notifyUser = async (userId: string, title: string, message: string, type: NotificationType = "system", actionUrl?: string) => {
+    if (!userId) {
+        console.warn("notifyUser skipped because userId is missing");
+        return;
+    }
+
     try {
         const { error } = await supabase
             .from("notifications" as any)

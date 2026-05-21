@@ -372,33 +372,17 @@ export const sendTalentApplicationShortlistedEmail = async (application: {
     firstName: string;
     jobTitle: string;
 }) => {
-        const subject = `Good news — you've been shortlisted for ${application.jobTitle}`;
-        const htmlTemplate = `
-            <div style="font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;">
-                <div style="background:#0f2147;padding:28px 20px;border-radius:12px;color:#fff;text-align:center;">
-                    <img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="height:36px;margin-bottom:12px;" />
-                    <h1 style="margin:0;font-size:20px;font-weight:700;">You've Been Shortlisted</h1>
-                    <p style="margin:8px 0 0;font-size:14px;opacity:0.95">for the role of</p>
-                    <h2 style="margin:8px 0 0;font-size:18px;font-weight:700">${application.jobTitle}</h2>
-                </div>
-                <div style="padding:20px;background:#ffffff;border-radius:0 0 12px 12px;margin-top:8px;color:#0f2147;">
-                    <p style="margin:0;font-size:14px;color:#243b60">Hi ${application.firstName || 'there'},</p>
-                    <p style="margin:12px 0 0;font-size:14px;color:#334155">Our team has shortlisted you for <strong>${application.jobTitle}</strong>. Please check your OPSlyHR dashboard for next steps and to submit your application if you haven't yet.</p>
-                    <p style="margin:18px 0 0;font-size:14px;color:#334155">Best,<br/>The OPSlyHR Team</p>
-                    <div style="margin-top:20px;text-align:center">
-                        <a href="https://talent.opslyhr.com/jobs" style="display:inline-block;padding:10px 18px;background:#0f2147;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">View Jobs</a>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        await queueEmail({
-                to: application.email,
-                toName: application.firstName,
-                subject,
-                htmlTemplate,
-                priority: 'high'
-        });
+    await queueEmail({
+        to: application.email,
+        toName: application.firstName,
+        templateKey: 'talent_application_shortlisted',
+        variables: {
+            talent_name: application.firstName || 'there',
+            job_title: application.jobTitle,
+            job_link: `${TALENT_URL}/jobs`,
+        },
+        priority: 'high',
+    });
 };
 
 /**

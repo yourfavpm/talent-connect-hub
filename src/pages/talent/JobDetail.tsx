@@ -190,13 +190,6 @@ const TalentJobDetail = () => {
             </div>
         </div>
 
-                {job.isV2 && job.status === 'closed' && job.close_reason && (
-                    <div className="max-w-[1280px] mx-auto px-6 -mt-4 mb-8">
-                        <div className="rounded-lg bg-red-50 border border-red-100 text-red-700 p-4">
-                            <strong>Closed:</strong> {job.close_reason}
-                        </div>
-                    </div>
-                )}
     );
 
     if (!job) return (
@@ -223,46 +216,47 @@ const TalentJobDetail = () => {
                     <span className="text-[10px] font-black uppercase tracking-[0.2em]">Back to Jobs</span>
                 </Button>
 
-                {/* Hero Header Card */}
-                <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden mb-10 transition-all duration-500 hover:shadow-md">
-                    <div className="h-24 w-full bg-slate-900 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent opacity-50" />
-                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5" />
+                {job.status === 'closed' && job.close_reason && (
+                    <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-4 text-rose-700">
+                        <strong>Closed:</strong> {job.close_reason}
                     </div>
+                )}
 
-                    <div className="px-10 pb-10 -mt-8 relative">
-                        <div className="flex flex-col lg:flex-row gap-8 items-end justify-between">
+                {/* Hero Header Card */}
+                <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden mb-10 transition-all duration-500 hover:shadow-md">
+                    <div className="px-10 py-8">
+                        <div className="flex flex-col lg:flex-row gap-6 items-start justify-between">
                             <div className="space-y-4 flex-1">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-16 w-16 bg-white rounded-3xl border border-slate-100 shadow-xl flex items-center justify-center text-slate-900">
-                                        <Briefcase className="h-8 w-8" />
+                                    <div className="h-14 w-14 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-center text-slate-900">
+                                        <Briefcase className="h-7 w-7" />
                                     </div>
-                                    <div className="space-y-0.5 pt-4">
-                                        <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{job.title}</h1>
-                                        <div className="flex items-center gap-2 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                                    <div className="space-y-1">
+                                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{job.title}</h1>
+                                        <div className="flex items-center gap-2 text-slate-400 font-semibold uppercase tracking-[0.2em] text-[11px]">
                                             <Building2 className="h-3.5 w-3.5" /> {job.company_name}
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex flex-wrap gap-6 pt-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest border-t border-slate-50">
-                                    <div className="flex items-center gap-2">
+                                <div className="mt-4 flex flex-wrap gap-4 text-[11px] font-semibold text-slate-500 uppercase tracking-[0.2em]">
+                                    <span className="inline-flex items-center gap-2">
                                         <MapPin className="h-4 w-4 text-slate-300" /> {job.location || job.location_preference || "Remote"}
-                                    </div>
-                                    <div className="flex items-center gap-2">
+                                    </span>
+                                    <span className="inline-flex items-center gap-2">
                                         <Globe className="h-4 w-4 text-slate-300" /> {job.work_mode || "Flexible"}
-                                    </div>
-                                    <div className="flex items-center gap-2">
+                                    </span>
+                                    <span className="inline-flex items-center gap-2">
                                         <Clock className="h-4 w-4 text-slate-300" /> {job.weekly_hours || 40}h / Week
-                                    </div>
+                                    </span>
                                 </div>
                             </div>
                             
                             {application && (
-                                <div className="flex items-center gap-3 px-6 py-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                                <div className="flex items-center gap-3 px-5 py-3 bg-emerald-50 border border-emerald-100 rounded-2xl">
                                     <CheckCircle className="h-5 w-5 text-emerald-600" />
                                     <div className="space-y-0.5">
-                                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Applied for Role</p>
-                                        <p className="text-xs font-bold text-emerald-800/60">Status: {application.status.toUpperCase()}</p>
+                                        <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em]">Applied</p>
+                                        <p className="text-xs font-semibold text-emerald-800/60">{application.status.toUpperCase()}</p>
                                     </div>
                                 </div>
                             )}
@@ -363,58 +357,58 @@ const TalentJobDetail = () => {
                                             <Button 
                                                 size="lg" 
                                                 onClick={handleApplyAction}
-                                                className="w-full h-16 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-blue-500/20 group transition-all hover:-translate-y-1"
+                                                className="w-full h-14 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-bold uppercase tracking-[0.16em] text-[11px] shadow-lg shadow-blue-500/20 transition-all"
                                             >
-                                                Apply on Site <ExternalLink className="h-4 w-4 ml-4" />
+                                                Apply on Site <ExternalLink className="h-4 w-4 ml-2" />
                                             </Button>
                                         ) : (
                                             <Dialog open={applyDialogOpen} onOpenChange={setApplyDialogOpen}>
                                                 <DialogTrigger asChild>
-                                                    <Button size="lg" className="w-full h-16 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-blue-500/20 group transition-all hover:-translate-y-1">
-                                                        Apply for Role <ArrowLeft className="h-4 w-4 ml-4 rotate-180 transition-transform group-hover:translate-x-1" />
+                                                    <Button size="lg" className="w-full h-14 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-bold uppercase tracking-[0.16em] text-[11px] shadow-lg shadow-blue-500/20 transition-all">
+                                                        Apply for Role <ArrowLeft className="h-4 w-4 ml-2 rotate-180 transition-transform" />
                                                     </Button>
                                                 </DialogTrigger>
-                                                <DialogContent className="sm:max-w-3xl p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-white">
-                                                    <DialogHeader className="px-12 py-12 bg-slate-900 text-white space-y-4">
+                                                <DialogContent className="sm:max-w-3xl p-0 overflow-hidden rounded-[2rem] border border-slate-100 shadow-2xl bg-white">
+                                                    <DialogHeader className="px-10 py-10 bg-slate-900 text-white space-y-4">
                                                         <div className="h-12 w-12 bg-blue-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg mb-2">
                                                             <Zap className="h-6 w-6" />
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <DialogTitle className="text-3xl font-black tracking-tight underline decoration-blue-500 decoration-4 underline-offset-8 inline-block">Submit Your Application</DialogTitle>
-                                                            <DialogDescription className="text-slate-400 font-medium text-base pt-2 leading-relaxed">
-                                                                Applying for <span className="text-white font-bold">{job.title}</span>. Your professional credentials will be reviewed by our success team.
+                                                            <DialogTitle className="text-2xl font-bold tracking-tight">Submit Your Application</DialogTitle>
+                                                            <DialogDescription className="text-slate-300 font-medium text-sm leading-relaxed">
+                                                                Applying for <span className="text-white font-semibold">{job.title}</span>. Your credentials will be shared with the hiring team.
                                                             </DialogDescription>
                                                         </div>
                                                     </DialogHeader>
                                                     
-                                                    <div className="px-12 pt-10 pb-16 space-y-10 bg-white">
-                                                        <div className="space-y-4">
+                                                    <div className="px-10 pt-8 pb-12 space-y-8 bg-white">
+                                                        <div className="space-y-3">
                                                             <div className="flex items-center gap-2">
                                                                 <MessageSquare className="h-4 w-4 text-blue-600" />
-                                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cover Note (Optional)</span>
+                                                                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400">Cover Note (Optional)</span>
                                                             </div>
                                                             <Textarea 
-                                                                placeholder="Why are you the perfect fit for this role?" 
-                                                                className="min-h-[160px] rounded-2xl border-slate-100 bg-slate-50/50 p-6 font-medium text-slate-600 focus:ring-2 focus:ring-blue-600 text-base font-medium leading-relaxed transition-all border outline-none"
+                                                                placeholder="Why are you the right fit for this position?" 
+                                                                className="min-h-[150px] rounded-2xl border-slate-200 bg-slate-50 p-4 font-medium text-slate-700 focus:ring-2 focus:ring-blue-600 text-sm leading-relaxed transition-all"
                                                                 value={coverLetter}
                                                                 onChange={(e) => setCoverLetter(e.target.value)}
                                                             />
                                                         </div>
-    
-                                                        <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center gap-6">
+
+                                                        <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
                                                             <Button 
-                                                                variant="ghost" 
+                                                                variant="outline" 
                                                                 onClick={() => setApplyDialogOpen(false)} 
-                                                                className="w-full sm:w-auto rounded-xl h-16 px-10 font-black uppercase tracking-[0.2em] text-[10px] text-slate-400 hover:text-slate-900 transition-all font-sans"
+                                                                className="w-full sm:w-auto rounded-2xl h-14 px-8 font-bold uppercase tracking-[0.16em] text-[11px] text-slate-500 hover:text-slate-900 transition-all"
                                                             >
-                                                                Abandon
+                                                                Cancel
                                                             </Button>
                                                             <Button 
                                                                 onClick={() => applyMutation.mutate()} 
                                                                 disabled={applyMutation.isPending}
-                                                                className="w-full sm:flex-1 h-16 px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-blue-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0 font-sans"
+                                                                className="w-full sm:flex-1 h-14 px-8 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold uppercase tracking-[0.16em] text-[11px] shadow-lg shadow-blue-500/20 transition-all"
                                                             >
-                                                                {applyMutation.isPending ? "Syncing..." : "Finalize Application"}
+                                                                {applyMutation.isPending ? "Submitting..." : "Submit Application"}
                                                             </Button>
                                                         </div>
                                                     </div>
@@ -422,10 +416,10 @@ const TalentJobDetail = () => {
                                             </Dialog>
                                         )
                                     ) : (
-                                        <div className="space-y-4 pt-4 border-t border-slate-50">
-                                            <p className="text-xs text-center font-bold text-slate-400 uppercase tracking-widest">Application Tracked</p>
-                                            <Button variant="outline" className="w-full h-14 rounded-2xl border-slate-200 text-slate-400 font-bold uppercase tracking-widest text-[10px] cursor-not-allowed">
-                                               View My Application
+                                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                                            <p className="text-xs text-center font-bold text-slate-400 uppercase tracking-[0.2em]">Application recorded</p>
+                                            <Button variant="outline" className="w-full h-14 rounded-2xl border-slate-200 text-slate-500 font-bold uppercase tracking-[0.16em] text-[10px] cursor-not-allowed">
+                                               View Application
                                             </Button>
                                         </div>
                                     )}

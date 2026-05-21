@@ -754,15 +754,14 @@ const TalentJobs = () => {
                     {filteredJobs.map((job) => (
                       <div
                         key={job.id}
-                        onClick={() => openJobDetail(job)}
-                        className="group px-8 py-7 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-all cursor-pointer relative"
+                        className="group px-8 py-7 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 transition-colors"
                       >
                         <div className="flex-1 min-w-0 space-y-4">
                           <div>
                             <div className="flex flex-wrap items-center gap-2 mb-1">
-                              <h3 className="text-[16px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">{job.title}</h3>
+                              <h3 className="text-[16px] font-bold text-slate-900 truncate">{job.title}</h3>
                               {job.service_model && (
-                                <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest bg-slate-50 text-slate-500 border-slate-200/60 transition-colors group-hover:bg-white px-2 py-0.5">
+                                <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest bg-slate-50 text-slate-500 border-slate-200/60 px-2 py-0.5">
                                   {SERVICE_MODEL_LABELS[job.service_model] || job.service_model.replace('_', ' ')}
                                 </Badge>
                               )}
@@ -773,28 +772,29 @@ const TalentJobs = () => {
                               <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-slate-300" /> {job.location || "Remote"}</span>
                             </div>
                           </div>
-                          <div className="flex flex-wrap items-center gap-y-2 gap-x-6">
-                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                          <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <div className="flex items-center gap-1.5">
                               <DollarSign className="h-3.5 w-3.5" />
                               <span className="text-slate-900">{getCurrencySymbol(job.preferred_currency)}{job.budget_min}-{job.budget_max}</span>
                               <span className="opacity-60">/{job.salary_type || "hr"}</span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <div className="flex items-center gap-1.5">
                               <Timer className="h-3.5 w-3.5" /><span className="text-slate-900">{job.weekly_hours || "40"} hrs/week</span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <div className="flex items-center gap-1.5">
                               <Calendar className="h-3.5 w-3.5" /><span className="text-slate-900">{job.duration || "Ongoing"}</span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <div className="flex items-center gap-1.5">
                               <Clock className="h-3.5 w-3.5" /><span className="text-slate-500">Posted {format(new Date(job.published_at || job.created_at), "MMM d, yyyy")}</span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between md:justify-end gap-6 shrink-0 border-t md:border-t-0 pt-4 md:pt-0">
+                        <div className="flex items-center justify-end gap-4 shrink-0 pt-2 md:pt-0">
                            {job.job_type === 'external' ? (
                               <button 
+                                type="button"
                                 onClick={(e) => { e.stopPropagation(); window.open(job.external_url, '_blank', 'noopener,noreferrer'); }}
-                                className="flex items-center gap-2 group/btn px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-sm active:scale-[0.98]"
+                                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-sm active:scale-[0.98]"
                               >
                                 Apply on Site <ExternalLink className="h-3.5 w-3.5" />
                               </button>
@@ -803,8 +803,12 @@ const TalentJobs = () => {
                                <CheckCircle className="h-3.5 w-3.5" /> Applied
                              </div>
                            ) : (
-                             <button className="flex items-center gap-2 group/btn px-5 py-2.5 bg-slate-50 hover:bg-slate-900 text-slate-600 hover:text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all border border-slate-100 hover:border-slate-900 shadow-sm active:scale-[0.98]">
-                               View Role <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-0.5" />
+                             <button
+                               type="button"
+                               onClick={(e) => { e.stopPropagation(); openJobDetail(job); }}
+                               className="flex items-center gap-2 px-5 py-2.5 bg-slate-50 hover:bg-slate-900 text-slate-600 hover:text-white rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all border border-slate-100 hover:border-slate-900 shadow-sm active:scale-[0.98]"
+                             >
+                               View Details <ChevronRight className="h-3.5 w-3.5 transition-transform" />
                              </button>
                            )}
                         </div>

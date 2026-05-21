@@ -38,7 +38,6 @@ const SECTIONS = [
   { id: "account", label: "Account", sub: "Enterprise and organizational settings", icon: Building },
   { id: "security", label: "Security", sub: "Password and access management", icon: Shield },
   { id: "notifications", label: "Notifications", sub: "Platform alerts and preferences", icon: Bell },
-  { id: "payout", label: "Payment & Payout", sub: "Banking and currency setup", icon: CreditCard },
   { id: "preferences", label: "Preferences", sub: "System language and localization", icon: Sliders },
   { id: "danger", label: "Danger Zone", sub: "Irreversible account actions", icon: AlertTriangle, danger: true },
 ];
