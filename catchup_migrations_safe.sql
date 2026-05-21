@@ -2750,6 +2750,60 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.hr_v2_admin_create_request(payload JSONB) CASCADE;
+CREATE OR REPLACE FUNCTION public.hr_v2_admin_create_request(payload JSONB)
+RETURNS UUID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    new_id UUID;
+    client_uid UUID;
+BEGIN
+    IF NOT public.is_admin(auth.uid()) THEN
+        RAISE EXCEPTION 'Only admins can create requests';
+    END IF;
+
+    client_uid := NULLIF(payload->>'client_user_id', '')::UUID;
+    IF client_uid IS NULL THEN
+        RAISE EXCEPTION 'client_user_id is required';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM public.clients WHERE user_id = client_uid) THEN
+        RAISE EXCEPTION 'Client not found';
+    END IF;
+
+    INSERT INTO public.hr_v2_hire_requests (
+        client_user_id, service_model, title, role_summary, responsibilities, requirements,
+        location_preference, timezone_overlap, engagement_type, budget_type,
+        budget_min, budget_max, fixed_budget, hours_per_week, requires_timesheets, status
+    ) VALUES (
+        client_uid,
+        (payload->>'service_model')::public.hr_v2_service_model,
+        payload->>'title',
+        payload->>'role_summary',
+        payload->>'responsibilities',
+        payload->>'requirements',
+        payload->>'location_preference',
+        payload->>'timezone_overlap',
+        payload->>'engagement_type',
+        payload->>'budget_type',
+        (payload->>'budget_min')::NUMERIC,
+        (payload->>'budget_max')::NUMERIC,
+        (payload->>'fixed_budget')::NUMERIC,
+        (payload->>'hours_per_week')::INTEGER,
+        COALESCE((payload->>'requires_timesheets')::BOOLEAN, false),
+        'draft'
+    ) RETURNING id INTO new_id;
+
+    INSERT INTO public.hr_v2_request_events (hire_request_id, actor_type, actor_user_id, event_type)
+    VALUES (new_id, 'admin', auth.uid(), 'CREATED');
+
+    RETURN new_id;
+END;
+$$;
+
 DROP FUNCTION IF EXISTS public.hr_v2_submit_request(req_id UUID) CASCADE;
 CREATE OR REPLACE FUNCTION public.hr_v2_submit_request(req_id UUID)
 RETURNS VOID

@@ -157,6 +157,7 @@ const AdminTalentDirectory = lazy(() => import("./pages/admin/TalentDirectory/Ad
 const AdminTalentProfileView = lazy(() => import("./pages/admin/TalentDirectory/AdminTalentProfileView"));
 const AdminHireRequestsList = lazy(() => import("./pages/admin/HireRequests/AdminHireRequestsList"));
 const AdminHireRequestDetail = lazy(() => import("./pages/admin/HireRequests/AdminHireRequestDetail"));
+const AdminCreateHireRequest = lazy(() => import("./pages/admin/HireRequests/CreateAdminHireRequest"));
 
 // Admin Academy
 const AcademyManagement = lazy(() => import("@/pages/admin/Academy/AcademyManagement"));
@@ -494,6 +495,7 @@ const App = () => {
                           <Route path="jobs" element={<AdminJobs />} />
                           <Route path="jobs/:id" element={<AdminJobDetail />} />
                           <Route path="hire-requests" element={<AdminHireRequestsList />} />
+                          <Route path="hire-requests/new" element={<AdminCreateHireRequest />} />
                           <Route path="hire-requests/:id" element={<AdminHireRequestDetail />} />
                           <Route path="offers" element={<AdminOffers />} />
                           <Route path="offers/:offerId/configure" element={<AdminOfferConfig />} />
