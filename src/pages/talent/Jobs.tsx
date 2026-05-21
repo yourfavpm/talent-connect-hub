@@ -62,6 +62,7 @@ interface Job {
   external_company?: string;
   salary_range?: string;
   years_of_experience?: string;
+  experience_required?: string | number;
   industry?: string;
 }
 
@@ -496,7 +497,7 @@ const TalentJobs = () => {
             <div className="lg:col-span-8 space-y-6">
               <div className="flex items-center justify-between px-1">
                 <h3 className="text-[16px] font-bold text-slate-900 tracking-tight">Recent Activity</h3>
-                <button className="text-[12px] font-bold text-blue-600 uppercase tracking-widest hover:text-blue-700 transition-colors">View All</button>
+                <button type="button" onClick={() => navigate(getInternalPath('/talent/applications'))} className="text-[12px] font-bold text-blue-600 uppercase tracking-widest hover:text-blue-700 transition-colors">View All</button>
               </div>
 
               <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
@@ -691,7 +692,14 @@ const TalentJobs = () => {
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center justify-between md:justify-end gap-4 shrink-0 border-t md:border-t-0 pt-4 md:pt-0">
+                          <div className="flex items-center justify-between md:justify-end gap-3 shrink-0 border-t md:border-t-0 pt-4 md:pt-0">
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/talent/jobs/${req.id}`)); }}
+                              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all shadow-sm"
+                            >
+                              View Details
+                            </button>
                             {alreadyApplied ? (
                               <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl text-[11px] font-bold text-emerald-600 uppercase tracking-widest">
                                 <CheckCircle className="h-3.5 w-3.5" /> Applied

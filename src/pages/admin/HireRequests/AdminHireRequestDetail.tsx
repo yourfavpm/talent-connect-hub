@@ -114,16 +114,75 @@ export default function AdminHireRequestDetail() {
   const [calendlyLink, setCalendlyLink] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
 
+  const resolveTalentProfileByUserId = useCallback(async (userId: string) => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("first_name, last_name, title, skills, avatar_url, email")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (profile) {
+      return profile as ProfileSnippet;
+    }
+
+    const { data: talent } = await supabase
+      .from("talents")
+      .select("first_name, last_name, email, primary_role")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!talent) return null;
+
+    return {
+      first_name: talent.first_name || null,
+      last_name: talent.last_name || null,
+      email: talent.email || null,
+      title: talent.primary_role || null,
+      skills: [],
+      avatar_url: null,
+    } as ProfileSnippet;
+  }, []);
+
+  const resolveAdminTalentProfileId = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from("v2_talent_profiles")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    return data?.id ?? null;
+  }, []);
+
   /* ── fetch vetted talents ─────────────────────────────────── */
   const fetchVettedTalents = useCallback(async () => {
     setLoadingVettedTalents(true);
     try {
       const { data } = await supabase
-        .from("profiles")
-        .select("id, first_name, last_name, email, title, skills, avatar_url, vetting_status")
-        .in("vetting_status", ["fully_vetted", "approved", "vetted"])
-        .order("first_name", { ascending: true });
-      setVettedTalents((data as (ProfileSnippet & { id: string })[]) || []);
+        .from("v2_talent_profiles")
+        .select(`
+          id,
+          user_id,
+          status,
+          talents:user_id (first_name, last_name, email, primary_role),
+          profiles:user_id (title, skills, avatar_url)
+        `)
+        .in("status", ["fully_vetted", "approved", "vetted"])
+        .order("created_at", { ascending: true });
+
+      const formatted = ((data as any[]) || []).map((profile) => ({
+        id: profile.user_id,
+        profile_id: profile.id,
+        user_id: profile.user_id,
+        first_name: profile.talents?.first_name ?? profile.profiles?.first_name ?? null,
+        last_name: profile.talents?.last_name ?? profile.profiles?.last_name ?? null,
+        email: profile.talents?.email ?? profile.profiles?.email ?? null,
+        title: profile.talents?.primary_role ?? profile.profiles?.title ?? null,
+        skills: profile.profiles?.skills ?? [],
+        avatar_url: profile.profiles?.avatar_url ?? null,
+        vetting_status: profile.status,
+      })) as (ProfileSnippet & { id: string; profile_id?: string; user_id: string })[];
+
+      setVettedTalents(formatted);
     } catch (err) {
       console.error("Failed to load vetted talents:", err);
     } finally {
@@ -210,8 +269,8 @@ export default function AdminHireRequestDetail() {
       const { data: profile } = await supabase
         .from("profiles")
         .select("first_name, last_name, email")
-        .eq("id", typedReq.client_user_id)
-        .single();
+        .eq("user_id", typedReq.client_user_id)
+        .maybeSingle();
       setClientProfile(profile as ProfileSnippet | null);
 
       // 3. Applications
@@ -221,15 +280,16 @@ export default function AdminHireRequestDetail() {
         .eq("hire_request_id", id as string)
         .order("created_at", { ascending: false });
 
-      const enrichedApps: EnrichedRow[] = [];
-      for (const app of (appData || [])) {
-        const { data: prof } = await supabase
-          .from("profiles")
-          .select("first_name, last_name, title, skills")
-          .eq("id", (app as Record<string, unknown>).talent_user_id as string)
-          .single();
-        enrichedApps.push({ ...(app as Record<string, unknown>), profiles: prof as ProfileSnippet | null } as EnrichedRow);
-      }
+      const enrichedApps: EnrichedRow[] = await Promise.all(
+        (appData || []).map(async (app) => {
+          const talentUserId = (app as Record<string, unknown>).talent_user_id as string;
+          const [profiles, v2ProfileId] = await Promise.all([
+            resolveTalentProfileByUserId(talentUserId),
+            resolveAdminTalentProfileId(talentUserId),
+          ]);
+          return { ...(app as Record<string, unknown>), profiles, v2_profile_id: v2ProfileId } as EnrichedRow;
+        })
+      );
       setApplications(enrichedApps);
 
       // 4. Shortlist
@@ -239,15 +299,16 @@ export default function AdminHireRequestDetail() {
         .eq("hire_request_id", id as string)
         .order("created_at", { ascending: false });
 
-      const enrichedShort: EnrichedRow[] = [];
-      for (const item of (shortData || [])) {
-        const { data: prof } = await supabase
-          .from("profiles")
-          .select("first_name, last_name, title, skills")
-          .eq("id", (item as Record<string, unknown>).talent_user_id as string)
-          .single();
-        enrichedShort.push({ ...(item as Record<string, unknown>), profiles: prof as ProfileSnippet | null } as EnrichedRow);
-      }
+      const enrichedShort: EnrichedRow[] = await Promise.all(
+        (shortData || []).map(async (item) => {
+          const talentUserId = (item as Record<string, unknown>).talent_user_id as string;
+          const [profiles, v2ProfileId] = await Promise.all([
+            resolveTalentProfileByUserId(talentUserId),
+            resolveAdminTalentProfileId(talentUserId),
+          ]);
+          return { ...(item as Record<string, unknown>), profiles, v2_profile_id: v2ProfileId } as EnrichedRow;
+        })
+      );
       setShortlist(enrichedShort);
 
       // 5. Interviews
@@ -257,15 +318,13 @@ export default function AdminHireRequestDetail() {
         .eq("hire_request_id", id as string)
         .order("created_at", { ascending: false });
 
-      const enrichedInt: EnrichedRow[] = [];
-      for (const intv of (intData || [])) {
-        const { data: prof } = await supabase
-          .from("profiles")
-          .select("first_name, last_name")
-          .eq("id", (intv as Record<string, unknown>).talent_user_id as string)
-          .single();
-        enrichedInt.push({ ...(intv as Record<string, unknown>), profiles: prof as ProfileSnippet | null } as EnrichedRow);
-      }
+      const enrichedInt: EnrichedRow[] = await Promise.all(
+        (intData || []).map(async (intv) => {
+          const talentUserId = (intv as Record<string, unknown>).talent_user_id as string;
+          const profiles = await resolveTalentProfileByUserId(talentUserId);
+          return { ...(intv as Record<string, unknown>), profiles } as EnrichedRow;
+        })
+      );
       setInterviews(enrichedInt);
 
       // 6. Events
@@ -579,7 +638,7 @@ export default function AdminHireRequestDetail() {
                     {shortlistedTalentIds.has(app.talent_user_id) && (
                       <Badge className="bg-emerald-100 text-emerald-700 border-none text-[10px]">Shortlisted</Badge>
                     )}
-                    <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => navigate(getInternalPath(`/admin/talents/${app.talent_user_id}`))}>
+                    <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => navigate(getInternalPath(`/admin/talents/${(app as any).v2_profile_id || app.talent_user_id}`))}>
                       <Eye className="w-3 h-3 mr-1" /> View
                     </Button>
                   </div>
@@ -624,7 +683,7 @@ export default function AdminHireRequestDetail() {
                           <Award className="w-3 h-3 mr-1" /> Finalize Hire
                         </Button>
                       )}
-                      <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => navigate(getInternalPath(`/admin/talents/${item.talent_user_id}`))}>
+                      <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => navigate(getInternalPath(`/admin/talents/${(item as any).v2_profile_id || item.talent_user_id}`))}>
                         <Eye className="w-3 h-3 mr-1" /> View
                       </Button>
                     </div>
@@ -777,7 +836,7 @@ export default function AdminHireRequestDetail() {
                               <Badge className="bg-emerald-100 text-emerald-700 border-none text-[10px]">Already Added</Badge>
                             ) : (
                               <>
-                                <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-400" onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/admin/talents/${talent.id}`)); }}>
+                                <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-400" onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/admin/talents/${talent.profile_id || talent.id}`)); }}>
                                   <Eye className="w-3 h-3 mr-1" /> Profile
                                 </Button>
                                 <UserPlus className="w-4 h-4 text-emerald-500" />

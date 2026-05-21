@@ -28,15 +28,16 @@ interface Application {
   id: string;
   job_id: string;
   status: string;
-  cover_letter: string;
+  cover_letter?: string;
+  application_note?: string;
   created_at: string;
   updated_at: string;
   job: {
     id: string;
     title: string;
-    role_needed: string;
-    weekly_hours: number;
-    location: string;
+    role_needed?: string;
+    weekly_hours?: number;
+    location?: string;
     client: {
       company_name: string;
     };
@@ -69,25 +70,72 @@ const TalentApplications = () => {
 
   const fetchApplications = async () => {
     try {
+      const loadedApps: Application[] = [];
+
       const { data: talent } = await supabase
         .from("talents")
         .select("id")
         .eq("user_id", user?.id)
-        .single();
+        .maybeSingle();
 
-      if (!talent) return;
+      if (talent?.id) {
+        const { data, error } = await supabase
+          .from("job_applications")
+          .select(`
+            id, job_id, status, cover_letter, created_at, updated_at,
+            job:jobs (id, title, role_needed, weekly_hours, location, client:clients(company_name))
+          `)
+          .eq("talent_id", talent.id)
+          .order("created_at", { ascending: false });
 
-      const { data, error } = await supabase
-        .from("job_applications")
-        .select(`
-          id, job_id, status, cover_letter, created_at, updated_at,
-          job:jobs (id, title, role_needed, weekly_hours, location, client:clients(company_name))
-        `)
-        .eq("talent_id", talent.id)
+        if (error) throw error;
+        loadedApps.push(...((data as Application[]) || []));
+      }
+
+      const { data: v2Data, error: v2Error } = await supabase
+        .from("hr_v2_applications")
+        .select("id, hire_request_id, status, application_note, created_at, updated_at")
+        .eq("talent_user_id", user?.id)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setApplications(data || []);
+      if (v2Error) throw v2Error;
+
+      if (v2Data?.length) {
+        const requestIds = Array.from(new Set((v2Data as any[]).map((app) => app.hire_request_id)));
+        const { data: requestData } = await supabase
+          .from("hr_v2_hire_requests")
+          .select("id, title, role_summary, location_preference, service_model, hours_per_week")
+          .in("id", requestIds);
+
+        const requestMap = ((requestData as any[]) || []).reduce<Record<string, any>>((acc, req) => {
+          acc[req.id] = req;
+          return acc;
+        }, {});
+
+        loadedApps.push(
+          ...(v2Data as any[]).map((app) => ({
+            id: app.id,
+            job_id: app.hire_request_id,
+            status: app.status,
+            cover_letter: app.application_note ?? "",
+            application_note: app.application_note ?? "",
+            created_at: app.created_at,
+            updated_at: app.updated_at,
+            job: {
+              id: app.hire_request_id,
+              title: requestMap[app.hire_request_id]?.title || "Hire Request",
+              role_needed: requestMap[app.hire_request_id]?.role_summary || requestMap[app.hire_request_id]?.service_model || "OPSlyHR Request",
+              weekly_hours: requestMap[app.hire_request_id]?.hours_per_week ?? 0,
+              location: requestMap[app.hire_request_id]?.location_preference || "Remote",
+              client: { company_name: "Verified OPSly Partner" },
+            },
+          }))
+        );
+      }
+
+      setApplications(
+        loadedApps.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      );
     } catch (error) {
       console.error("Error fetching applications:", error);
     } finally {
@@ -380,7 +428,7 @@ const TalentApplications = () => {
                    
                    <div className="pt-2">
                      <Button variant="outline" className="h-11 px-6 border-slate-200 text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 rounded-xl transition-all" asChild>
-                       <Link to={getInternalPath(`/talent/jobs?id=${selectedApp.job_id}`)}>
+                       <Link to={getInternalPath(`/talent/jobs/${selectedApp.job_id}`)}>
                          View Full Job Briefing
                          <ArrowRight className="h-3.5 w-3.5 ml-2" />
                        </Link>
@@ -388,11 +436,11 @@ const TalentApplications = () => {
                    </div>
                  </section>
                  
-                 {selectedApp.cover_letter && (
+                 {(selectedApp.cover_letter || selectedApp.application_note) && (
                     <section className="space-y-6">
                        <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest border-l-2 border-slate-200 pl-4 py-1">My Cover Note</h3>
                        <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100 text-[14px] text-slate-600 font-medium whitespace-pre-wrap leading-relaxed">
-                         {selectedApp.cover_letter}
+                         {selectedApp.cover_letter || selectedApp.application_note}
                        </div>
                     </section>
                  )}

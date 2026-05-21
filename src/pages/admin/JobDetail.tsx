@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getInternalPath } from "@/utils/subdomain";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -60,6 +60,8 @@ const AdminJobDetail = () => {
     // Admin Notes
     const [adminNotes, setAdminNotes] = useState("");
     const [savingNotes, setSavingNotes] = useState(false);
+    const [isEditingJob, setIsEditingJob] = useState(false);
+    const [jobForm, setJobForm] = useState<Record<string, any> | null>(null);
 
     // Fetch Job Data
     const { data: job, isLoading: jobLoading } = useQuery({
@@ -146,6 +148,52 @@ const AdminJobDetail = () => {
         }
     };
 
+    useEffect(() => {
+        if (job) {
+            setJobForm({
+                title: job.title || "",
+                location: job.location || "",
+                preferred_currency: job.preferred_currency || "",
+                budget_min: job.budget_min?.toString() || "",
+                budget_max: job.budget_max?.toString() || "",
+                salary_type: job.salary_type || "",
+                weekly_hours: job.weekly_hours?.toString() || "",
+                duration: job.duration || "",
+                work_mode: job.work_mode || "",
+                years_of_experience: job.years_of_experience || "",
+                responsibilities: Array.isArray(job.responsibilities) ? job.responsibilities.join("\n") : job.responsibilities || "",
+            });
+        }
+    }, [job]);
+
+    const saveJobMutation = useMutation({
+        mutationFn: async () => {
+            if (!jobForm) return;
+            const { error } = await (supabase.from('jobs') as any).update({
+                title: jobForm.title,
+                location: jobForm.location,
+                preferred_currency: jobForm.preferred_currency,
+                budget_min: jobForm.budget_min ? parseFloat(jobForm.budget_min) : null,
+                budget_max: jobForm.budget_max ? parseFloat(jobForm.budget_max) : null,
+                salary_type: jobForm.salary_type || null,
+                weekly_hours: jobForm.weekly_hours ? parseInt(jobForm.weekly_hours, 10) : null,
+                duration: jobForm.duration || null,
+                work_mode: jobForm.work_mode || null,
+                years_of_experience: jobForm.years_of_experience || null,
+                responsibilities: jobForm.responsibilities ? jobForm.responsibilities.split(/\r?\n/).filter(Boolean) : null,
+            }).eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            toast({ title: "Job updated" });
+            setIsEditingJob(false);
+            queryClient.invalidateQueries({ queryKey: ['job', id] });
+        },
+        onError: (err: any) => {
+            toast({ title: "Error", description: err.message, variant: "destructive" });
+        }
+    });
+
     const updateAppStatusMutation = useMutation({
         mutationFn: async ({ appId, status }: { appId: string, status: string }) => {
             const { error } = await (supabase
@@ -158,10 +206,12 @@ const AdminJobDetail = () => {
             if (status === 'shortlisted') {
                 try {
                     const app = applications?.find((a: any) => a.id === appId);
-                    if (app?.talent?.profiles?.email) {
+                    const talentEmail = app?.talent?.profiles?.email || app?.talent?.email;
+                    const talentFirstName = app?.talent?.first_name || app?.talent?.profiles?.first_name || 'there';
+                    if (talentEmail) {
                         await sendTalentApplicationShortlistedEmail({
-                            email: app.talent.profiles.email,
-                            firstName: app.talent.first_name,
+                            email: talentEmail,
+                            firstName: talentFirstName,
                             jobTitle: job.title
                         });
                     }
@@ -303,8 +353,42 @@ const AdminJobDetail = () => {
                 <div className="lg:col-span-1 space-y-6">
                     <Card className="border-gray-200 shadow-sm sticky top-6">
                         <CardContent className="p-6">
-                            <h1 className="text-xl font-semibold text-gray-900 leading-tight mb-2">{job.title}</h1>
-                            <p className="text-sm font-medium text-gray-600 mb-4">{job.client?.company_name}</p>
+                            {!isEditingJob ? (
+                              <>
+                                <h1 className="text-xl font-semibold text-gray-900 leading-tight mb-2">{job.title}</h1>
+                                <p className="text-sm font-medium text-gray-600 mb-4">{job.client?.company_name}</p>
+                              </>
+                            ) : (
+                              <div className="space-y-4">
+                                <div>
+                                  <Label htmlFor="job-title" className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Job Title</Label>
+                                  <Input
+                                    id="job-title"
+                                    value={jobForm?.title || ""}
+                                    onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })}
+                                    className="mt-2"
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="job-location" className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Location</Label>
+                                  <Input
+                                    id="job-location"
+                                    value={jobForm?.location || ""}
+                                    onChange={(e) => setJobForm({ ...jobForm, location: e.target.value })}
+                                    className="mt-2"
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="job-years" className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Years of Experience</Label>
+                                  <Input
+                                    id="job-years"
+                                    value={jobForm?.years_of_experience || ""}
+                                    onChange={(e) => setJobForm({ ...jobForm, years_of_experience: e.target.value })}
+                                    className="mt-2"
+                                  />
+                                </div>
+                              </div>
+                            )}
                             
                             <Badge variant="outline" className={`${styles[job.status] || "bg-gray-100"} uppercase text-[10px] tracking-wider mb-6 border-transparent`}>
                                 {job.status.replace("_", " ")}
@@ -312,19 +396,34 @@ const AdminJobDetail = () => {
                             
                             <div className="space-y-3 pt-6 border-t border-gray-100">
                                 <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Admin Actions</h3>
-                                
+
+                                {!isEditingJob ? (
+                                    <Button className="w-full justify-start bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setIsEditingJob(true)}>
+                                        <Search className="h-4 w-4 mr-2" /> Edit Job
+                                    </Button>
+                                ) : (
+                                    <div className="space-y-3">
+                                        <Button className="w-full justify-start bg-slate-900 hover:bg-slate-800 text-white" onClick={() => saveJobMutation.mutate()}>
+                                            Save changes
+                                        </Button>
+                                        <Button variant="outline" className="w-full justify-start text-slate-600 hover:text-slate-900 hover:bg-slate-50" onClick={() => setIsEditingJob(false)}>
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                )}
+
                                 {job.status === 'submitted' && (
                                     <Button className="w-full justify-start bg-green-600 hover:bg-green-700 text-white" onClick={() => updateJobStatusMutation.mutate('published')}>
                                         <CheckCircle className="h-4 w-4 mr-2" /> Approve & Publish
                                     </Button>
                                 )}
-                                
+
                                 {['published', 'submitted'].includes(job.status) && (
                                     <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => updateJobStatusMutation.mutate('closed')}>
                                         <XCircle className="h-4 w-4 mr-2" /> Pause / Close Job
                                     </Button>
                                 )}
-                                
+
                                 <Button variant="secondary" className="w-full justify-start bg-blue-50 text-blue-700 hover:bg-blue-100" onClick={() => openAction('sourcing')}>
                                     <Search className="h-4 w-4 mr-2" /> Talent Sourcing Match
                                 </Button>

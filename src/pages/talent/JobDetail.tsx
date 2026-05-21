@@ -142,7 +142,7 @@ const TalentJobDetail = () => {
                     hire_request_id: id,
                     talent_user_id: user.id,
                     status: 'applied',
-                    note: coverLetter
+                    application_note: coverLetter
                 });
                 if (error) throw error;
             } else {

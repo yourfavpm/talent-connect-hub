@@ -48,12 +48,22 @@ export default function AdminHireRequestsList() {
       // Enrich with client names and counts
       const enriched: HireRequest[] = [];
       for (const req of (data || [])) {
-        // Get client profile
+        // Get client profile by auth user id
         const { data: profile } = await supabase
           .from("profiles")
           .select("first_name, last_name")
-          .eq("id", req.client_user_id)
-          .single();
+          .eq("user_id", req.client_user_id)
+          .maybeSingle();
+
+        let clientName = profile ? `${profile.first_name} ${profile.last_name}` : null;
+        if (!clientName) {
+          const { data: client } = await supabase
+            .from("clients")
+            .select("company_name")
+            .eq("user_id", req.client_user_id)
+            .maybeSingle();
+          clientName = client?.company_name || null;
+        }
 
         // Get counts
         const [apps, shorts, intrvs] = await Promise.all([
@@ -64,7 +74,7 @@ export default function AdminHireRequestsList() {
 
         enriched.push({
           ...req,
-          client_name: profile ? `${profile.first_name} ${profile.last_name}` : "—",
+          client_name: clientName || "—",
           app_count: apps.count || 0,
           shortlist_count: shorts.count || 0,
           interview_count: intrvs.count || 0,
