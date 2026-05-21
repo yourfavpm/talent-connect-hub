@@ -316,10 +316,20 @@ export default function AdminHireRequestDetail() {
         jobTitle: request?.title || "Job Opportunity"
       });
     }
-
     setShowShortlistDialog(false);
     setSelectedTalentForShortlist(null);
     setShortlistReason("");
+  };
+
+  // Close job dialog
+  const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [closeReason, setCloseReason] = useState("");
+
+  const handleCloseRequest = async () => {
+    if (!id) return;
+    await callRpc("hr_v2_admin_close_request", { req_id: id, reason: closeReason }, "Request closed");
+    setShowCloseDialog(false);
+    setCloseReason("");
   };
 
   const handleScheduleInterview = async () => {
@@ -452,6 +462,11 @@ export default function AdminHireRequestDetail() {
           {!isTalentManager && request.status === "published" && (
             <Button variant="outline" onClick={openShortlistDialog} className="h-9 text-sm border-slate-200">
               <UserPlus className="w-4 h-4 mr-1.5" /> Shortlist Talent
+            </Button>
+          )}
+          {!isTalentManager && ['published','approved','submitted'].includes(request.status) && (
+            <Button variant="outline" onClick={() => setShowCloseDialog(true)} className="h-9 text-sm border-red-200 text-red-600">
+              <AlertCircle className="w-4 h-4 mr-1.5" /> Close Job
             </Button>
           )}
           {!isTalentManager && request.status === "approved" && (
@@ -682,17 +697,22 @@ export default function AdminHireRequestDetail() {
         </TabsContent>
       </Tabs>
 
-      {/* ── Shortlist Dialog — Browse Vetted Talents ──────────── */}
-      <Dialog open={showShortlistDialog} onOpenChange={setShowShortlistDialog}>
-        <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
-            <DialogTitle className="text-lg">Shortlist a Vetted Talent</DialogTitle>
-          </DialogHeader>
 
-          {/* Step 1: Pick talent → Step 2: Confirm with reason */}
+      {/* Shortlist Side Panel */}
+      {showShortlistDialog && (
+        <aside className="fixed right-0 top-0 h-full w-full md:w-[480px] bg-white shadow-2xl z-50 overflow-auto">
+          <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold">Shortlist a Vetted Talent</h3>
+              <p className="text-sm text-slate-500">Browse vetted talents and add them to this request.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => { setShowShortlistDialog(false); setSelectedTalentForShortlist(null); }}>Close</Button>
+            </div>
+          </div>
+
           {selectedTalentForShortlist ? (
-            /* ── Confirmation step ────────────────────────────── */
-            <div className="px-6 py-6 space-y-5 flex-1 overflow-auto">
+            <div className="px-6 py-6 space-y-5">
               <div className="flex items-center gap-4 p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-emerald-700 font-bold text-sm shrink-0 border border-emerald-200 shadow-sm">
                   {selectedTalentForShortlist.first_name?.[0]}{selectedTalentForShortlist.last_name?.[0]}
@@ -709,18 +729,20 @@ export default function AdminHireRequestDetail() {
                 <label className="text-sm font-medium text-slate-700">Reason for shortlisting (optional)</label>
                 <Textarea placeholder="Strong skills match, relevant experience..." value={shortlistReason} onChange={(e) => setShortlistReason(e.target.value)} className="min-h-[100px]" />
               </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={() => { setSelectedTalentForShortlist(null); }}>Back</Button>
+                <Button onClick={handleShortlist} disabled={!!actionLoading} className="bg-emerald-600 text-white hover:bg-emerald-700">
+                  <UserPlus className="w-4 h-4 mr-1.5" /> Confirm Shortlist
+                </Button>
+              </div>
             </div>
           ) : (
-            /* ── Browse vetted talents step ───────────────────── */
-            <div className="flex-1 overflow-hidden flex flex-col">
-              <div className="px-6 py-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input placeholder="Search by name, title, or skill..." value={shortlistSearch} onChange={(e) => setShortlistSearch(e.target.value)} className="pl-9 h-10 bg-slate-50 border-slate-200 text-sm" />
-                </div>
+            <div className="px-6 py-4">
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input placeholder="Search by name, title, or skill..." value={shortlistSearch} onChange={(e) => setShortlistSearch(e.target.value)} className="pl-9 h-10 bg-slate-50 border-slate-200 text-sm" />
               </div>
-
-              <div className="flex-1 overflow-auto px-6 pb-4 min-h-0">
+              <div className="space-y-2">
                 {loadingVettedTalents ? (
                   <div className="py-12 text-center text-sm text-slate-500">Loading vetted talents...</div>
                 ) : filteredVettedTalents.length === 0 ? (
@@ -770,14 +792,23 @@ export default function AdminHireRequestDetail() {
               </div>
             </div>
           )}
+        </aside>
+      )}
 
-          <DialogFooter className="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
-            <Button variant="outline" onClick={() => { setShowShortlistDialog(false); setSelectedTalentForShortlist(null); }}>Cancel</Button>
-            {selectedTalentForShortlist && (
-              <Button onClick={handleShortlist} disabled={!!actionLoading} className="bg-emerald-600 text-white hover:bg-emerald-700">
-                <UserPlus className="w-4 h-4 mr-1.5" /> Confirm Shortlist
-              </Button>
-            )}
+      {/* Close Job Dialog */}
+      <Dialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Close Job</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-500">Provide a reason for closing this job. This will be visible to talents and clients.</p>
+            <div>
+              <label className="text-sm font-medium text-slate-700">Reason</label>
+              <Textarea value={closeReason} onChange={(e) => setCloseReason(e.target.value)} className="mt-2" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCloseDialog(false)}>Cancel</Button>
+            <Button onClick={handleCloseRequest} className="bg-red-600 text-white">Close Job</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -189,6 +189,14 @@ const TalentJobDetail = () => {
                 </div>
             </div>
         </div>
+
+                {job.isV2 && job.status === 'closed' && job.close_reason && (
+                    <div className="max-w-[1280px] mx-auto px-6 -mt-4 mb-8">
+                        <div className="rounded-lg bg-red-50 border border-red-100 text-red-700 p-4">
+                            <strong>Closed:</strong> {job.close_reason}
+                        </div>
+                    </div>
+                )}
     );
 
     if (!job) return (

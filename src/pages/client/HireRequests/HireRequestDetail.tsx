@@ -126,6 +126,12 @@ export default function HireRequestDetail() {
         </div>
       </div>
 
+      {request.status === 'closed' && request.close_reason && (
+        <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-100 text-red-700">
+          <strong>Closed:</strong> {request.close_reason}
+        </div>
+      )}
+
       <Tabs defaultValue="overview" className="space-y-8">
         <TabsList className="bg-white border text-slate-500 border-slate-200 p-1 w-full justify-start rounded-xl h-auto overflow-x-auto">
           <TabsTrigger value="overview" className="data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 py-2.5 px-6 rounded-lg text-sm font-medium">
