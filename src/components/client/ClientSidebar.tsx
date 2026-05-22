@@ -150,11 +150,11 @@ const ClientSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
         <div className="flex items-center justify-between px-6 h-24 shrink-0 pt-4">
           {!isCollapsed ? (
             <Link to="/" className="flex flex-col">
-              <Logo showText={false} imgHeight="h-56" className="-ml-8" />
+              <Logo showText={false} imgHeight="h-8" className="-ml-4" />
             </Link>
           ) : (
              <Link to="/">
-               <Logo showText={false} imgHeight="h-10" className="mx-auto" />
+               <Logo showText={false} imgHeight="h-8" className="mx-auto" />
              </Link>
           )}
         </div>

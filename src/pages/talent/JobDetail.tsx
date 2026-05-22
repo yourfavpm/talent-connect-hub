@@ -347,7 +347,7 @@ const TalentJobDetail = () => {
                                                     </div>
                                                     <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Experience</span>
                                                 </div>
-                                                <span className="text-base font-black text-slate-900">{job.experience_required || 0}y+ Required</span>
+                                                <span className="text-base font-black text-slate-900">{(job.years_of_experience || job.experience_required) ? `${job.years_of_experience || job.experience_required}y+ Required` : "Any"}</span>
                                             </div>
                                         </div>
                                     </div>

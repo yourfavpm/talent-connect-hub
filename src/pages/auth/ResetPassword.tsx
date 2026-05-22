@@ -76,7 +76,7 @@ const ResetPassword = () => {
             <div className="relative z-10 p-8 lg:p-16 flex flex-col justify-between h-full">
                 <div>
                     <Link to="/" className="inline-block mb-16 lg:mb-24">
-                        <Logo showText={false} imgHeight="h-56" variant="light" />
+                        <Logo showText={false} imgHeight="h-20" variant="light" />
                     </Link>
                     <div className="max-w-md">
                         <h2 className="text-2xl lg:text-3xl font-bold text-white leading-tight mb-4 tracking-tight">Recover your account.</h2>
@@ -132,8 +132,7 @@ const ResetPassword = () => {
         <div className="relative z-10 p-8 lg:p-16 flex flex-col justify-between h-full">
           <div>
             <Link to="/" className="inline-block mb-16 lg:mb-24">
-              <Logo showText={false} imgHeight="h-56" variant="light" />
-            </Link>
+                            <Logo showText={false} imgHeight="h-20" variant="light" />
 
             <div className="max-w-md">
               <h2 className="text-2xl lg:text-3xl font-bold text-white leading-tight mb-4 tracking-tight">

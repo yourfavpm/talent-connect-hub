@@ -9,7 +9,7 @@ const Logo = ({
   className = "", 
   showText = true, 
   variant = "dark",
-  imgHeight = "h-40" 
+  imgHeight = "h-12" 
 }: LogoProps) => {
   const logoPath = variant === "light" ? "/images/logoplain.png" : "/images/logocolored.svg";
   

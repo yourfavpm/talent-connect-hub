@@ -68,7 +68,7 @@ const WebsiteNavbar = () => {
                 
                 {/* Left: Logo */}
                 <Link to="/" className="flex items-center shrink-0 -ml-4 lg:-ml-6 py-2 transition-transform hover:scale-[1.05]">
-                    <Logo showText={false} imgHeight="h-48" />
+                    <Logo showText={false} imgHeight="h-8" />
                 </Link>
 
                 {/* Center: Desktop Nav */}
@@ -184,7 +184,7 @@ const WebsiteNavbar = () => {
                         >
                             {/* Header */}
                             <div className="h-24 px-6 flex items-center justify-between border-b border-slate-100">
-                                <Logo showText={false} imgHeight="h-32" className="-ml-6" />
+                                <Logo showText={false} imgHeight="h-8" className="-ml-6" />
                                 <button onClick={toggleMenu} className="p-2 text-slate-500 hover:text-slate-900">
                                     <X className="h-6 w-6" />
                                 </button>

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Star, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Logo from "@/components/Logo";
 
 import { z } from "zod";
 import { getFriendlyErrorMessage } from "@/utils/errorHandling";
@@ -275,7 +276,7 @@ const TalentSignup = () => {
         {/* Mobile Header */}
         <div className="lg:hidden flex flex-col items-center mb-10 text-center">
           <Link to="/" className="mb-6">
-            <img src="/images/logocolored.svg" alt="OPSlyHR" className="h-28" />
+            <Logo showText={false} imgHeight="h-20" />
           </Link>
           <h1 className="text-2xl font-semibold text-slate-900 tracking-tight leading-tight mb-3">
             Apply as Talent

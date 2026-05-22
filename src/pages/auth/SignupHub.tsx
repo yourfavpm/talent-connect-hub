@@ -22,7 +22,7 @@ const SignupHub = () => {
       <div className="max-w-5xl w-full">
         {/* Logo */}
         <div className="flex justify-center mb-8 md:mb-12">
-            <Logo variant="light" showText={false} imgHeight="h-32 md:h-56" />
+            <Logo variant="light" showText={false} imgHeight="h-20 md:h-32" />
         </div>
         
         {/* Header */}

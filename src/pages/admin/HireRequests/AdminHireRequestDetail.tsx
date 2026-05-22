@@ -143,6 +143,24 @@ export default function AdminHireRequestDetail() {
     } as ProfileSnippet;
   }, []);
 
+  const resolveTalentEmailByUserId = useCallback(async (userId: string) => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("email")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (profile?.email) return profile.email;
+
+    const { data: talent } = await supabase
+      .from("talents")
+      .select("email")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    return talent?.email || null;
+  }, []);
+
   const resolveAdminTalentProfileId = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from("v2_talent_profiles")
@@ -271,7 +289,18 @@ export default function AdminHireRequestDetail() {
         .select("first_name, last_name, email")
         .eq("user_id", typedReq.client_user_id)
         .maybeSingle();
-      setClientProfile(profile as ProfileSnippet | null);
+
+      if (profile && (profile.first_name || profile.last_name)) {
+        setClientProfile(profile as ProfileSnippet);
+      } else {
+        const { data: client } = await supabase
+          .from("clients")
+          .select("company_name")
+          .eq("user_id", typedReq.client_user_id)
+          .maybeSingle();
+
+        setClientProfile(client ? { first_name: client.company_name, last_name: "", email: profile?.email || null } : null);
+      }
 
       // 3. Applications
       const { data: appData } = await supabase
@@ -367,11 +396,13 @@ export default function AdminHireRequestDetail() {
     if (!selectedTalentForShortlist) return;
     await callRpc("hr_v2_admin_shortlist_talent", { req_id: id, t_user_id: selectedTalentForShortlist.id, reason: shortlistReason }, "Talent shortlisted");
     
-    // Branded email notification for shortlisting
-    if (selectedTalentForShortlist.email) {
+    const talentEmail = selectedTalentForShortlist.email || await resolveTalentEmailByUserId(selectedTalentForShortlist.id);
+    const talentFirstName = selectedTalentForShortlist.first_name || "Talent";
+
+    if (talentEmail) {
       await sendTalentApplicationShortlistedEmail({
-        email: selectedTalentForShortlist.email,
-        firstName: selectedTalentForShortlist.first_name || "Talent",
+        email: talentEmail,
+        firstName: talentFirstName,
         jobTitle: request?.title || "Job Opportunity"
       });
     }

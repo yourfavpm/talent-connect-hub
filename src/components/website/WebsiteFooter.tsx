@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Linkedin, Instagram, Mail, MapPin } from "lucide-react";
 import { Zone, getZoneUrl } from "@/utils/subdomain";
+import Logo from "@/components/Logo";
 
 const WebsiteFooter = () => {
   return (
@@ -11,7 +12,7 @@ const WebsiteFooter = () => {
           {/* Brand & Mission Block */}
           <div className="lg:col-span-4 space-y-6">
             <Link to="/" className="inline-block">
-              <img src="/images/logocolored.svg" alt="OPSlyHR" className="h-16 w-auto" />
+              <Logo showText={false} imgHeight="h-16" />
             </Link>
             <p className="text-sm text-slate-500 leading-relaxed font-medium max-w-sm">
               OPSlyHR connects vetted product and operations professionals across EMEA with growth-focused companies globally.

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Linkedin, Instagram, Mail, MapPin } from "lucide-react";
 import { Zone, getZoneUrl, getInternalPath } from "@/utils/subdomain";
+import Logo from "@/components/Logo";
 
 const AcademyFooter = () => {
     return (
@@ -11,7 +12,7 @@ const AcademyFooter = () => {
                     {/* Brand & Mission Block */}
                     <div className="lg:col-span-4 space-y-6">
                         <Link to="/" className="inline-block">
-                            <img src="/images/logocolored.svg" alt="OPSly Academy" className="h-16 w-auto brightness-0 invert" />
+                            <Logo showText={false} imgHeight="h-16" className="brightness-0 invert" />
                         </Link>
                         <p className="text-xs text-slate-400 leading-relaxed font-light max-w-sm">
                             OPSly Academy is a career-accelerating learning ecosystem designed to equip African operations professionals with high-income skills and connect them to global remote opportunities.

@@ -46,7 +46,7 @@ export const OverviewTab = ({ job, getCurrencySymbol }: OverviewTabProps) => {
         </div>
         <div className="bg-white p-4 rounded-xl border border-gray-100">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5" /> Experience</span>
-          <span className="text-sm font-medium text-gray-900 block mt-1">{job.experience_required ? `${job.experience_required}+ Years` : "Not specified"}</span>
+          <span className="text-sm font-medium text-gray-900 block mt-1">{(job.years_of_experience || job.experience_required) ? `${job.years_of_experience || job.experience_required}+ Years` : "Not specified"}</span>
         </div>
       </div>
 

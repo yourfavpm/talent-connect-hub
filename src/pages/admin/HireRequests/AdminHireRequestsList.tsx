@@ -45,27 +45,34 @@ export default function AdminHireRequestsList() {
 
       if (error) throw error;
 
-      // Enrich with client names and counts
+      const requestsData = (data || []) as HireRequest[];
+      const clientUserIds = [...new Set(requestsData.map((req) => req.client_user_id).filter(Boolean))];
+
+      let profiles: any[] = [];
+      let clients: any[] = [];
+      if (clientUserIds.length > 0) {
+        const [{ data: profilesData }, { data: clientsData }] = await Promise.all([
+          supabase.from("profiles").select("user_id, first_name, last_name").in("user_id", clientUserIds),
+          supabase.from("clients").select("user_id, company_name").in("user_id", clientUserIds),
+        ]);
+        profiles = profilesData || [];
+        clients = clientsData || [];
+      }
+
+      const profileMap = profiles.reduce((acc, profile) => {
+        acc[profile.user_id] = `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+        return acc;
+      }, {} as Record<string, string>);
+
+      const clientMap = clients.reduce((acc, client) => {
+        acc[client.user_id] = client.company_name;
+        return acc;
+      }, {} as Record<string, string>);
+
       const enriched: HireRequest[] = [];
-      for (const req of (data || [])) {
-        // Get client profile by auth user id
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("first_name, last_name")
-          .eq("user_id", req.client_user_id)
-          .maybeSingle();
+      for (const req of requestsData) {
+        const clientName = profileMap[req.client_user_id] || clientMap[req.client_user_id] || "—";
 
-        let clientName = profile ? `${profile.first_name} ${profile.last_name}` : null;
-        if (!clientName) {
-          const { data: client } = await supabase
-            .from("clients")
-            .select("company_name")
-            .eq("user_id", req.client_user_id)
-            .maybeSingle();
-          clientName = client?.company_name || null;
-        }
-
-        // Get counts
         const [apps, shorts, intrvs] = await Promise.all([
           supabase.from("hr_v2_applications").select("id", { count: "exact", head: true }).eq("hire_request_id", req.id),
           supabase.from("hr_v2_shortlists").select("id", { count: "exact", head: true }).eq("hire_request_id", req.id),
@@ -74,7 +81,7 @@ export default function AdminHireRequestsList() {
 
         enriched.push({
           ...req,
-          client_name: clientName || "—",
+          client_name: clientName,
           app_count: apps.count || 0,
           shortlist_count: shorts.count || 0,
           interview_count: intrvs.count || 0,

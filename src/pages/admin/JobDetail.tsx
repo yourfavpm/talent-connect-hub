@@ -160,7 +160,7 @@ const AdminJobDetail = () => {
                 weekly_hours: job.weekly_hours?.toString() || "",
                 duration: job.duration || "",
                 work_mode: job.work_mode || "",
-                years_of_experience: job.years_of_experience || "",
+                years_of_experience: job.years_of_experience || job.experience_required || "",
                 responsibilities: Array.isArray(job.responsibilities) ? job.responsibilities.join("\n") : job.responsibilities || "",
             });
         }
@@ -486,7 +486,7 @@ const AdminJobDetail = () => {
                                     <CardContent className="p-4 space-y-1">
                                         <div className="text-gray-500 mb-2"><UserCheck className="h-4 w-4" /></div>
                                         <p className="text-[10px] uppercase font-semibold text-gray-400">Experience</p>
-                                        <p className="text-sm font-medium text-gray-900">{job.experience_required ? `${job.experience_required}+ Years` : "Any"}</p>
+                                        <p className="text-sm font-medium text-gray-900">{(job.years_of_experience || job.experience_required) ? `${job.years_of_experience || job.experience_required}+ Years` : "Any"}</p>
                                     </CardContent>
                                 </Card>
                             </div>
