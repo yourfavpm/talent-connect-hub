@@ -56,7 +56,7 @@ export const queueEmail = async (options: QueueEmailOptions): Promise<string> =>
         // Inject standard branding variables into every email
         const brandVariables = {
             brand_color: '#0f2147', // Deep OPSly Blue
-            brand_logo: 'https://opslyhr.com/images/logocolored.png',
+            brand_logo: 'https://opslyhr.com/images/logocolored.svg',
             brand_name: 'OPSlyHR',
             brand_website: 'https://opslyhr.com',
             social_linkedin: 'https://linkedin.com/company/opslyhr',

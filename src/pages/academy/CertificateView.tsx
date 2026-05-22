@@ -155,7 +155,7 @@ const CertificateView = () => {
             <div className="relative z-10 flex flex-col items-center justify-center h-full text-center">
               {/* Logo */}
               <img
-                src="https://opslyhr.com/images/logocolored.png"
+                src="https://opslyhr.com/images/logocolored.svg"
                 alt="OPSlyHR"
                 className="h-10 md:h-12 mb-8 object-contain"
                 crossOrigin="anonymous"

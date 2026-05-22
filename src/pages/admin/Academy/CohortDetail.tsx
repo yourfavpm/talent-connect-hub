@@ -467,7 +467,7 @@ const CohortDetail = () => {
                         htmlTemplate: `
                             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
                                 <div style="background: #0f2147; padding: 40px; text-align: center;">
-                                    <img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="width: 140px;" />
+                                    <img src="https://opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="width: 140px;" />
                                 </div>
                                 <div style="padding: 40px; background: #fff;">
                                     <h1 style="color: #0f2147; font-size: 24px; margin-bottom: 20px;">Class Reminder</h1>
@@ -625,7 +625,7 @@ const CohortDetail = () => {
                                 htmlTemplate: `
                                     <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
                                         <div style="background: #0f2147; padding: 48px 40px; text-align: center;">
-                                            <img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="width: 140px; margin-bottom: 24px;" />
+                                            <img src="https://opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="width: 140px; margin-bottom: 24px;" />
                                             <h1 style="color: #fff; font-size: 28px; margin: 0; letter-spacing: -0.5px;">🎓 Congratulations!</h1>
                                         </div>
                                         <div style="padding: 48px 40px; background: #fff;">

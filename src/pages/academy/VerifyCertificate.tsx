@@ -62,7 +62,7 @@ const VerifyCertificate = () => {
         {/* Header */}
         <div className="bg-slate-900 p-8 text-center">
           <img
-            src="https://opslyhr.com/images/logocolored.png"
+            src="https://opslyhr.com/images/logocolored.svg"
             alt="OPSlyHR"
             className="h-8 mx-auto mb-4"
           />

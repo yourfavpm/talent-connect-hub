@@ -38,7 +38,7 @@ serve(async (req) => {
             htmlTemplate: \`
               <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
                 <div style="background: #0f2147; padding: 40px; text-align: center;">
-                  <img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="width: 140px;" />
+                  <img src="https://opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="width: 140px;" />
                 </div>
                 <div style="padding: 40px; background: #fff;">
                   <h1 style="color: #0f2147; font-size: 24px; margin-bottom: 20px;">Enrollment Successful!</h1>
@@ -85,7 +85,7 @@ serve(async (req) => {
               htmlTemplate: \`
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
                   <div style="background: #0f2147; padding: 40px; text-align: center;">
-                    <img src="https://opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="width: 140px;" />
+                    <img src="https://opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="width: 140px;" />
                   </div>
                   <div style="padding: 40px; background: #fff;">
                     <h1 style="color: #0f2147; font-size: 24px; margin-bottom: 20px;">New Announcement</h1>

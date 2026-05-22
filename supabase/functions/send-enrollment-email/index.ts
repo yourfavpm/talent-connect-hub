@@ -217,7 +217,7 @@ async function sendEnrollmentEmail(input: EnrollmentInput) {
         <div class="wrapper">
             <div class="container">
                 <div class="header">
-                    <img src="https://opslyhr.com/images/logocolored.png" alt="Opsly" class="logo" />
+                    <img src="https://opslyhr.com/images/logocolored.svg" alt="Opsly" class="logo" />
                 </div>
                 <div class="content">
                     <div class="welcome-tag">Enrollment Confirmed</div>

@@ -99,7 +99,7 @@ const AcademySignup = () => {
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop')] opacity-10 mix-blend-overlay grayscale" />
                 
                 <div className="relative z-10 space-y-12">
-                    <img src="/images/logocolored.png" alt="OPSly Academy" className="h-24 brightness-0 invert" />
+                    <img src="/images/logocolored.svg" alt="OPSly Academy" className="h-24 brightness-0 invert" />
                     
                     <div className="space-y-8">
                         <h2 className="text-4xl font-bold text-white tracking-tight leading-tight">

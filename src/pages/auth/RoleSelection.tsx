@@ -134,7 +134,7 @@ const RoleSelection = () => {
       <div className="w-full max-w-4xl">
         <div className="text-center mb-12">
           <Link to="/" className="inline-block mb-8">
-            <img src="/images/logocolored.png" alt="OPSLY" className="h-12 mx-auto" />
+            <img src="/images/logocolored.svg" alt="OPSLY" className="h-12 mx-auto" />
           </Link>
           <motion.h1 
             initial={{ opacity: 0, y: -20 }}

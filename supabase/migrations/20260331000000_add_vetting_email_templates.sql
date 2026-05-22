@@ -7,7 +7,7 @@ INSERT INTO public.email_templates (template_key, name, subject, body_html, body
 'Congratulations! Your OPSlyHR Profile is Now Active',
 '<html><body style="font-family: Arial, sans-serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 24px;">
 <div style="text-align: center; margin-bottom: 32px;">
-  <img src="https://www.opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="height: 48px;" />
+  <img src="https://www.opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="height: 48px;" />
 </div>
 <h1 style="color: #059669; font-size: 24px; margin-bottom: 8px;">You''re Approved, {{talent_name}}! 🎉</h1>
 <p style="font-size: 16px; line-height: 1.6; color: #374151;">Great news — your profile has been reviewed and approved by our vetting team. You now have full access to the OPSlyHR talent marketplace.</p>
@@ -46,7 +46,7 @@ The OPSlyHR Vetting Team',
 'Update on Your OPSlyHR Application',
 '<html><body style="font-family: Arial, sans-serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 24px;">
 <div style="text-align: center; margin-bottom: 32px;">
-  <img src="https://www.opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="height: 48px;" />
+  <img src="https://www.opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="height: 48px;" />
 </div>
 <h1 style="color: #1e293b; font-size: 24px; margin-bottom: 8px;">Hi {{talent_name}},</h1>
 <p style="font-size: 16px; line-height: 1.6; color: #374151;">Thank you for your interest in joining the OPSlyHR talent network. After careful review, we were unable to approve your profile at this time.</p>
@@ -109,7 +109,7 @@ Review Submission: {{review_link}}',
 'Contract Signed Successfully - {{contract_id}}',
 '<html><body style="font-family: Arial, sans-serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 24px;">
 <div style="text-align: center; margin-bottom: 32px;">
-  <img src="https://www.opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="height: 48px;" />
+  <img src="https://www.opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="height: 48px;" />
 </div>
 <h1 style="color: #059669; font-size: 24px;">Contract Signed, {{client_name}}! ✓</h1>
 <p style="font-size: 16px; line-height: 1.6; color: #374151;">Your contract with <strong>{{talent_name}}</strong> has been signed successfully.</p>
@@ -140,7 +140,7 @@ The OPSlyHR Team',
 'Payment Received - Invoice #{{invoice_id}}',
 '<html><body style="font-family: Arial, sans-serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 24px;">
 <div style="text-align: center; margin-bottom: 32px;">
-  <img src="https://www.opslyhr.com/images/logocolored.png" alt="OPSlyHR" style="height: 48px;" />
+  <img src="https://www.opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="height: 48px;" />
 </div>
 <h1 style="color: #059669; font-size: 24px;">Payment Received ✓</h1>
 <p style="font-size: 16px; line-height: 1.6; color: #374151;">Hi {{client_name}}, we''ve received your payment.</p>

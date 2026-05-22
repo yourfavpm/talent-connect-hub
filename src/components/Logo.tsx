@@ -11,7 +11,7 @@ const Logo = ({
   variant = "dark",
   imgHeight = "h-40" 
 }: LogoProps) => {
-  const logoPath = variant === "light" ? "/images/logoplain.png" : "/images/logocolored.png";
+  const logoPath = variant === "light" ? "/images/logoplain.png" : "/images/logocolored.svg";
   
   return (
     <div className={`flex items-center gap-3 ${className} transition-all duration-300`}>

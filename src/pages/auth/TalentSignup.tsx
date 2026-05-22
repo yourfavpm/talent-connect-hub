@@ -275,7 +275,7 @@ const TalentSignup = () => {
         {/* Mobile Header */}
         <div className="lg:hidden flex flex-col items-center mb-10 text-center">
           <Link to="/" className="mb-6">
-            <img src="/images/logocolored.png" alt="OPSlyHR" className="h-28" />
+            <img src="/images/logocolored.svg" alt="OPSlyHR" className="h-28" />
           </Link>
           <h1 className="text-2xl font-semibold text-slate-900 tracking-tight leading-tight mb-3">
             Apply as Talent
