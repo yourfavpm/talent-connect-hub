@@ -184,7 +184,7 @@ export default function AdminHireRequestDetail() {
           talents:user_id (first_name, last_name, email, primary_role),
           profiles:user_id (title, skills, avatar_url)
         `)
-        .in("status", ["fully_vetted", "approved", "vetted"])
+        .in("status", ["fully_vetted", "approved", "vetted", "FULLY_VETTED", "APPROVED", "VETTED"])
         .order("created_at", { ascending: true });
 
       const formatted = ((data as any[]) || []).map((profile) => ({

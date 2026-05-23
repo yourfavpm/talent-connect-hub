@@ -89,9 +89,14 @@ const TalentDrawerContent = ({ talent, jobId, jobStatus, onClose }: { talent: an
                                     <span className="font-medium block">{v.level_name.replace(/_/g, ' ')}</span>
                                     {v.admin_notes && <p className="text-muted-foreground text-xs">{v.admin_notes}</p>}
                                 </div>
-                                <Badge variant={v.status === 'approved' ? 'default' : v.status === 'rejected' ? 'destructive' : 'secondary'} className="capitalize bg-opacity-80">
-                                    {v.status}
-                                </Badge>
+                                {(() => {
+                                    const lowerStatus = `${v.status || ''}`.toLowerCase();
+                                    return (
+                                        <Badge variant={lowerStatus === 'approved' ? 'default' : lowerStatus === 'rejected' ? 'destructive' : 'secondary'} className="capitalize bg-opacity-80">
+                                            {v.status}
+                                        </Badge>
+                                    );
+                                })()}
                             </div>
                         ))}
                         {vetting?.length === 0 && <p className="text-sm text-muted-foreground">No vetting records found.</p>}
@@ -208,12 +213,32 @@ export const BrowseTalentsList = ({ jobId, jobStatus }: { jobId: string, jobStat
         queryKey: ['vetting_talents'],
         queryFn: async () => {
             const { data } = await supabase
-                .from('talents')
-                .select('*')
-                .eq('vetting_status', 'fully_vetted')
+                .from('v2_talent_profiles')
+                .select(`
+                    id,
+                    user_id,
+                    status,
+                    talents:user_id(id, first_name, last_name, email, primary_role, avatar_url, country, years_of_experience),
+                    profiles:user_id(title, skills, avatar_url)
+                `)
+                .in('status', ['fully_vetted', 'approved', 'vetted', 'FULLY_VETTED', 'APPROVED', 'VETTED'])
                 .order('created_at', { ascending: false })
                 .limit(50);
-            return data || [];
+
+            return ((data as any[]) || []).map((profile) => ({
+                id: profile.talents?.id || profile.user_id,
+                user_id: profile.user_id,
+                profile_id: profile.id,
+                first_name: profile.talents?.first_name ?? null,
+                last_name: profile.talents?.last_name ?? null,
+                email: profile.talents?.email ?? null,
+                primary_role: profile.talents?.primary_role ?? profile.profiles?.title ?? null,
+                avatar_url: profile.talents?.avatar_url ?? profile.profiles?.avatar_url ?? null,
+                skills: profile.profiles?.skills ?? [],
+                country: profile.talents?.country ?? 'Remote',
+                years_of_experience: profile.talents?.years_of_experience ?? 0,
+                vetting_status: profile.status,
+            }));
         }
     });
 

@@ -176,6 +176,43 @@ const TalentJobDetail = () => {
         return CURRENCIES.find(c => c.value === code)?.symbol || "$";
     };
 
+    const getApplicationStatusLabel = (status: string) => {
+        if (!status) return "Applied";
+        if (status === "pending") return "Applied";
+        if (status === "applied") return "Applied";
+        if (status === "shortlisted") return "Shortlisted";
+        if (status === "interview_requested" || status === "interview_scheduled") return "Invited to interview";
+        if (status === "hired") return "Hired";
+        return status.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+    };
+
+    const overviewCards = [
+        {
+            label: "Format",
+            value: job?.service_model?.replace(/_/g, " ") || job?.engagement_type?.replace(/_/g, " ") || "—",
+            icon: Clock,
+        },
+        {
+            label: "Location",
+            value: job?.location_preference || job?.location || "Remote",
+            icon: MapPin,
+        },
+        {
+            label: "Hours",
+            value: job?.hours_per_week || job?.weekly_hours || "40",
+            icon: Calendar,
+        },
+        {
+            label: "Budget",
+            value: job?.budget_type === 'fixed'
+                ? job?.fixed_budget ? `${getCurrencySymbol(job?.preferred_currency || 'USD')}${job?.fixed_budget}` : "TBD"
+                : job?.budget_min && job?.budget_max
+                    ? `${getCurrencySymbol(job?.preferred_currency || 'USD')}${job?.budget_min}-${getCurrencySymbol(job?.preferred_currency || 'USD')}${job?.budget_max}`
+                    : "TBD",
+            icon: DollarSign,
+        },
+    ];
+
     if (jobLoading || appCheckLoading) return (
         <div className="max-w-[1280px] mx-auto p-8 space-y-12">
             <Skeleton className="h-10 w-32 rounded-xl" />
@@ -238,16 +275,13 @@ const TalentJobDetail = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-4 flex flex-wrap gap-4 text-[11px] font-semibold text-slate-500 uppercase tracking-[0.2em]">
-                                    <span className="inline-flex items-center gap-2">
-                                        <MapPin className="h-4 w-4 text-slate-300" /> {job.location || job.location_preference || "Remote"}
-                                    </span>
-                                    <span className="inline-flex items-center gap-2">
-                                        <Globe className="h-4 w-4 text-slate-300" /> {job.work_mode || "Flexible"}
-                                    </span>
-                                    <span className="inline-flex items-center gap-2">
-                                        <Clock className="h-4 w-4 text-slate-300" /> {job.weekly_hours || 40}h / Week
-                                    </span>
+                                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-semibold text-slate-500 uppercase tracking-[0.2em]">
+                                    {overviewCards.map((item) => (
+                                        <div key={item.label} className="inline-flex items-center gap-2 py-3 px-4 rounded-3xl bg-slate-50 border border-slate-100">
+                                            <item.icon className="h-4 w-4 text-slate-400" />
+                                            <span>{item.label}: <strong className="text-slate-900 normal-case font-semibold">{item.value}</strong></span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                             
@@ -255,8 +289,8 @@ const TalentJobDetail = () => {
                                 <div className="flex items-center gap-3 px-5 py-3 bg-emerald-50 border border-emerald-100 rounded-2xl">
                                     <CheckCircle className="h-5 w-5 text-emerald-600" />
                                     <div className="space-y-0.5">
-                                        <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em]">Applied</p>
-                                        <p className="text-xs font-semibold text-emerald-800/60">{application.status.toUpperCase()}</p>
+                                        <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em]">{getApplicationStatusLabel(application.status)}</p>
+                                        <p className="text-xs font-semibold text-emerald-800/60">{getApplicationStatusLabel(application.status)}</p>
                                     </div>
                                 </div>
                             )}

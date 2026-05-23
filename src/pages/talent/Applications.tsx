@@ -46,9 +46,10 @@ interface Application {
 
 const STATUS_MAP: Record<string, { label: string; colorClass: string; icon: React.ReactNode; accent: string }> = {
   applied: { label: "Applied", colorClass: "text-blue-600 bg-blue-50/50 border-blue-100", accent: "bg-blue-600", icon: <Clock className="h-3.5 w-3.5" /> },
-  shortlisted: { label: "Under Review", colorClass: "text-indigo-600 bg-indigo-50/50 border-indigo-100", accent: "bg-indigo-600", icon: <FileText className="h-3.5 w-3.5" /> },
-  interview_requested: { label: "Interview Requested", colorClass: "text-amber-600 bg-amber-50/50 border-amber-100", accent: "bg-amber-600", icon: <Timer className="h-3.5 w-3.5" /> },
-  interview_scheduled: { label: "Interview Scheduled", colorClass: "text-amber-600 bg-amber-50/50 border-amber-100", accent: "bg-amber-600", icon: <Calendar className="h-3.5 w-3.5" /> },
+  pending: { label: "Applied", colorClass: "text-blue-600 bg-blue-50/50 border-blue-100", accent: "bg-blue-600", icon: <Clock className="h-3.5 w-3.5" /> },
+  shortlisted: { label: "Shortlisted", colorClass: "text-indigo-600 bg-indigo-50/50 border-indigo-100", accent: "bg-indigo-600", icon: <FileText className="h-3.5 w-3.5" /> },
+  interview_requested: { label: "Invited to interview", colorClass: "text-amber-600 bg-amber-50/50 border-amber-100", accent: "bg-amber-600", icon: <Timer className="h-3.5 w-3.5" /> },
+  interview_scheduled: { label: "Invited to interview", colorClass: "text-amber-600 bg-amber-50/50 border-amber-100", accent: "bg-amber-600", icon: <Calendar className="h-3.5 w-3.5" /> },
   offer_initiated: { label: "Offer Pending", colorClass: "text-purple-600 bg-purple-50/50 border-purple-100", accent: "bg-purple-600", icon: <DollarSign className="h-3.5 w-3.5" /> },
   offer_sent: { label: "Offer Received", colorClass: "text-purple-600 bg-purple-50/50 border-purple-100", accent: "bg-purple-600", icon: <DollarSign className="h-3.5 w-3.5" /> },
   hired: { label: "Hired", colorClass: "text-emerald-600 bg-emerald-50/50 border-emerald-100", accent: "bg-emerald-600", icon: <CheckCircle className="h-3.5 w-3.5" /> },
@@ -165,12 +166,23 @@ const TalentApplications = () => {
 
   const getStatusStage = (status: string) => {
     switch(status) {
-      case "applied": return 1;
-      case "shortlisted": return 2;
-      case "interview_requested": case "interview_scheduled": return 3;
-      case "offer_initiated": case "offer_sent": return 4;
-      case "hired": case "rejected": case "withdrawn": return 5;
-      default: return 1;
+      case "applied":
+      case "pending":
+        return 1;
+      case "shortlisted":
+        return 2;
+      case "interview_requested":
+      case "interview_scheduled":
+        return 3;
+      case "offer_initiated":
+      case "offer_sent":
+        return 4;
+      case "hired":
+      case "rejected":
+      case "withdrawn":
+        return 5;
+      default:
+        return 1;
     }
   };
 
