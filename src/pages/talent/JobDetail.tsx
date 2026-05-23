@@ -186,6 +186,17 @@ const TalentJobDetail = () => {
         return status.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
     };
 
+    const normalizeToArray = (val: any): string[] => {
+        if (!val) return [];
+        if (Array.isArray(val)) return val as string[];
+        if (typeof val === 'string') {
+            return val.split(/\r?\n|,|;/).map(s => s.trim()).filter(Boolean);
+        }
+        return [];
+    };
+
+    const requirementsArray = normalizeToArray(job?.required_skills ?? job?.skills ?? job?.requirements);
+
     const overviewCards = [
         {
             label: "Format",
@@ -262,28 +273,28 @@ const TalentJobDetail = () => {
                 {/* Hero Header Card */}
                 <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden mb-10 transition-all duration-500 hover:shadow-md">
                     <div className="px-10 py-8">
-                        <div className="flex flex-col lg:flex-row gap-6 items-start justify-between">
-                            <div className="space-y-4 flex-1">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-14 w-14 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-center text-slate-900">
-                                        <Briefcase className="h-7 w-7" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{job.title}</h1>
-                                        <div className="flex items-center gap-2 text-slate-400 font-semibold uppercase tracking-[0.2em] text-[11px]">
-                                            <Building2 className="h-3.5 w-3.5" /> {job.company_name}
+                                <div className="flex flex-col lg:flex-row gap-6 items-start justify-between">
+                                    <div className="space-y-3 flex-1">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-12 w-12 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-center text-slate-900">
+                                                <Briefcase className="h-6 w-6" />
+                                            </div>
+                                            <div className="space-y-0.5">
+                                                <h1 className="text-xl font-semibold text-slate-900 tracking-tight">{job.title}</h1>
+                                                <div className="flex items-center gap-2 text-slate-500 font-medium text-sm">
+                                                    <Building2 className="h-4 w-4" /> <span className="truncate">{job.company_name}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-500">
+                                            {overviewCards.map((item) => (
+                                                <div key={item.label} className="inline-flex items-center gap-2 py-2 px-3 rounded-xl bg-slate-50 border border-slate-100">
+                                                    <item.icon className="h-4 w-4 text-slate-400" />
+                                                    <span className="text-sm">{item.label}: <strong className="text-slate-900 normal-case font-medium">{item.value}</strong></span>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-                                </div>
-                                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-semibold text-slate-500 uppercase tracking-[0.2em]">
-                                    {overviewCards.map((item) => (
-                                        <div key={item.label} className="inline-flex items-center gap-2 py-3 px-4 rounded-3xl bg-slate-50 border border-slate-100">
-                                            <item.icon className="h-4 w-4 text-slate-400" />
-                                            <span>{item.label}: <strong className="text-slate-900 normal-case font-semibold">{item.value}</strong></span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
                             
                             {application && (
                                 <div className="flex items-center gap-3 px-5 py-3 bg-emerald-50 border border-emerald-100 rounded-2xl">
@@ -302,36 +313,36 @@ const TalentJobDetail = () => {
                     {/* Main Content (Left) */}
                     <div className="lg:col-span-8 space-y-10">
                         {/* Summary / Description */}
-                        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-10 space-y-10">
+                        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
                             <div className="flex items-center gap-4">
                                 <div className="h-10 w-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-900">
                                     <FileText className="h-5 w-5" />
                                 </div>
-                                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Role Information</h2>
+                                <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Role Information</h2>
                             </div>
-                            
-                            <div className="prose prose-slate max-w-none">
-                                <h3 className="text-xl font-bold text-slate-900 mb-6 underline decoration-blue-600 decoration-4 underline-offset-8">Description & Focus</h3>
-                                <p className="text-lg text-slate-600 leading-relaxed font-medium whitespace-pre-wrap">
+                            <div>
+                                <h3 className="text-sm font-semibold text-slate-900">Description</h3>
+                                <p className="text-sm text-slate-600 leading-relaxed mt-2 whitespace-pre-wrap">
                                     {job.description || job.role_summary || job.responsibilities || "No detailed description provided."}
                                 </p>
                             </div>
 
                             {(job.responsibilities && (job.description || job.role_summary)) && (
-                                <div className="pt-10 border-t border-slate-50">
-                                    <h3 className="text-xl font-bold text-slate-900 mb-6">Key Responsibilities</h3>
-                                    <p className="text-lg text-slate-600 leading-relaxed font-medium whitespace-pre-wrap">
-                                        {job.responsibilities}
+                                <div className="pt-4 border-t border-slate-50">
+                                    <h3 className="text-sm font-semibold text-slate-900">Key Responsibilities</h3>
+                                    <p className="text-sm text-slate-600 leading-relaxed mt-2 whitespace-pre-wrap">
+                                        {Array.isArray(job.responsibilities) ? job.responsibilities.join('\n') : job.responsibilities}
                                     </p>
                                 </div>
                             )}
 
-                            {job.required_skills && job.required_skills.length > 0 && (
-                                <div className="pt-10 border-t border-slate-50 space-y-6">
-                                    <h3 className="text-xl font-bold text-slate-900">Required Competencies</h3>
-                                    <div className="flex flex-wrap gap-3">
-                                        {job.required_skills.map((skill: string) => (
-                                            <Badge key={skill} variant="secondary" className="bg-slate-50 text-slate-600 font-bold px-4 py-2 border border-slate-100 shadow-sm hover:scale-105 transition-all">
+                            {/* Requirements / Skills */}
+                            {requirementsArray.length > 0 && (
+                                <div className="pt-4 border-t border-slate-50 space-y-4">
+                                    <h3 className="text-sm font-semibold text-slate-900">Requirements & Skills</h3>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {requirementsArray.map((skill: string) => (
+                                            <Badge key={skill} variant="secondary" className="bg-slate-50 text-slate-600 font-medium px-3 py-1 border border-slate-100">
                                                 {skill}
                                             </Badge>
                                         ))}

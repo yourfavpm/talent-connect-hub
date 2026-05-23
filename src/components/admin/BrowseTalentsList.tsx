@@ -46,6 +46,17 @@ const TalentDrawerContent = ({ talent, jobId, jobStatus, onClose }: { talent: an
 
     const addCandidateMutation = useMutation({
         mutationFn: async ({ status }: { status: string }) => {
+            // If this jobId corresponds to a v2 hire request, call the v2 RPC to shortlist
+            const { data: maybeV2 } = await supabase.from('hr_v2_hire_requests').select('id').eq('id', jobId).maybeSingle();
+            if (maybeV2) {
+                // Use RPC to shortlist so platform workflows and emails trigger consistently
+                const rpcName = 'hr_v2_admin_shortlist_talent';
+                const tUserId = talent.user_id || talent.id;
+                const { error: rpcErr } = await (supabase as any).rpc(rpcName, { req_id: jobId, t_user_id: tUserId, reason: status === 'shortlisted' ? 'Shortlisted via sourcing' : '' });
+                if (rpcErr) throw rpcErr;
+                return;
+            }
+
             const { error } = await supabase.from('job_applications').insert({
                 job_id: jobId,
                 talent_id: talent.id,
@@ -245,11 +256,15 @@ export const BrowseTalentsList = ({ jobId, jobStatus }: { jobId: string, jobStat
     const { data: existingApps } = useQuery({
         queryKey: ['job_applications_ids', jobId],
         queryFn: async () => {
-            const { data } = await supabase
-                .from('job_applications')
-                .select('talent_id')
-                .eq('job_id', jobId);
-            return data?.map(d => d.talent_id) || [];
+            // Fetch legacy job_applications and v2 shortlists so we can hide already-added talents
+            const [{ data: legacy }, { data: v2Short }] = await Promise.all([
+                supabase.from('job_applications').select('talent_id').eq('job_id', jobId),
+                supabase.from('hr_v2_shortlists').select('talent_user_id').eq('hire_request_id', jobId)
+            ]);
+
+            const legacyIds = (legacy || []).map((d: any) => d.talent_id).filter(Boolean);
+            const v2Ids = (v2Short || []).map((d: any) => d.talent_user_id).filter(Boolean);
+            return Array.from(new Set([...legacyIds, ...v2Ids]));
         }
     });
 
