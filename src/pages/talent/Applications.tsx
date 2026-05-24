@@ -45,15 +45,15 @@ interface Application {
 }
 
 const STATUS_MAP: Record<string, { label: string; colorClass: string; icon: React.ReactNode; accent: string }> = {
-  applied: { label: "Applied", colorClass: "text-blue-600 bg-blue-50/50 border-blue-100", accent: "bg-blue-600", icon: <Clock className="h-3.5 w-3.5" /> },
-  pending: { label: "Applied", colorClass: "text-blue-600 bg-blue-50/50 border-blue-100", accent: "bg-blue-600", icon: <Clock className="h-3.5 w-3.5" /> },
+  applied: { label: "Application Submitted", colorClass: "text-blue-600 bg-blue-50/50 border-blue-100", accent: "bg-blue-600", icon: <Clock className="h-3.5 w-3.5" /> },
+  pending: { label: "Application Submitted", colorClass: "text-blue-600 bg-blue-50/50 border-blue-100", accent: "bg-blue-600", icon: <Clock className="h-3.5 w-3.5" /> },
   shortlisted: { label: "Shortlisted", colorClass: "text-indigo-600 bg-indigo-50/50 border-indigo-100", accent: "bg-indigo-600", icon: <FileText className="h-3.5 w-3.5" /> },
-  interview_requested: { label: "Invited to interview", colorClass: "text-amber-600 bg-amber-50/50 border-amber-100", accent: "bg-amber-600", icon: <Timer className="h-3.5 w-3.5" /> },
-  interview_scheduled: { label: "Invited to interview", colorClass: "text-amber-600 bg-amber-50/50 border-amber-100", accent: "bg-amber-600", icon: <Calendar className="h-3.5 w-3.5" /> },
-  offer_initiated: { label: "Offer Pending", colorClass: "text-purple-600 bg-purple-50/50 border-purple-100", accent: "bg-purple-600", icon: <DollarSign className="h-3.5 w-3.5" /> },
-  offer_sent: { label: "Offer Received", colorClass: "text-purple-600 bg-purple-50/50 border-purple-100", accent: "bg-purple-600", icon: <DollarSign className="h-3.5 w-3.5" /> },
+  interview_requested: { label: "Interviewing", colorClass: "text-amber-600 bg-amber-50/50 border-amber-100", accent: "bg-amber-600", icon: <Timer className="h-3.5 w-3.5" /> },
+  interview_scheduled: { label: "Interviewing", colorClass: "text-amber-600 bg-amber-50/50 border-amber-100", accent: "bg-amber-600", icon: <Calendar className="h-3.5 w-3.5" /> },
+  offer_initiated: { label: "Interviewing", colorClass: "text-purple-600 bg-purple-50/50 border-purple-100", accent: "bg-purple-600", icon: <DollarSign className="h-3.5 w-3.5" /> },
+  offer_sent: { label: "Interviewing", colorClass: "text-purple-600 bg-purple-50/50 border-purple-100", accent: "bg-purple-600", icon: <DollarSign className="h-3.5 w-3.5" /> },
   hired: { label: "Hired", colorClass: "text-emerald-600 bg-emerald-50/50 border-emerald-100", accent: "bg-emerald-600", icon: <CheckCircle className="h-3.5 w-3.5" /> },
-  rejected: { label: "Not Selected", colorClass: "text-red-600 bg-red-50/50 border-red-100", accent: "bg-red-600", icon: <XCircle className="h-3.5 w-3.5" /> },
+  rejected: { label: "Rejected", colorClass: "text-red-600 bg-red-50/50 border-red-100", accent: "bg-red-600", icon: <XCircle className="h-3.5 w-3.5" /> },
   withdrawn: { label: "Withdrawn", colorClass: "text-slate-400 bg-slate-50 border-slate-200", accent: "bg-slate-400", icon: <XCircle className="h-3.5 w-3.5" /> },
 };
 

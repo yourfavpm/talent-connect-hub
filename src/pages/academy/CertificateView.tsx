@@ -135,109 +135,116 @@ const CertificateView = () => {
         </div>
 
         {/* Certificate Card */}
-        <div className="bg-white rounded-[32px] shadow-xl shadow-slate-200/50 overflow-hidden mb-8">
+        <div className="bg-white rounded-[12px] shadow-2xl shadow-slate-300/50 overflow-hidden mb-8 max-w-5xl mx-auto border border-slate-100">
           <div
             ref={certRef}
-            className="relative p-16 md:p-20"
-            style={{ width: "100%", maxWidth: "1120px", aspectRatio: "1120 / 800", margin: "0 auto" }}
+            className="relative bg-white"
+            style={{ width: "100%", maxWidth: "1040px", aspectRatio: "1040 / 720", margin: "0 auto", padding: "40px" }}
           >
-            {/* Decorative Border */}
-            <div className="absolute inset-6 border-2 border-slate-200/60 rounded-[24px] pointer-events-none" />
-            <div className="absolute inset-8 border border-slate-100/80 rounded-[20px] pointer-events-none" />
+            {/* Decorative borders */}
+            <div className="absolute inset-[20px] border-[8px] border-blue-600 rounded-xl pointer-events-none" />
+            <div className="absolute inset-[34px] border border-slate-400 rounded pointer-events-none" />
 
-            {/* Subtle corner accents */}
-            <div className="absolute top-10 left-10 w-16 h-16 border-l-2 border-t-2 border-blue-200/50 rounded-tl-xl pointer-events-none" />
-            <div className="absolute top-10 right-10 w-16 h-16 border-r-2 border-t-2 border-blue-200/50 rounded-tr-xl pointer-events-none" />
-            <div className="absolute bottom-10 left-10 w-16 h-16 border-l-2 border-b-2 border-blue-200/50 rounded-bl-xl pointer-events-none" />
-            <div className="absolute bottom-10 right-10 w-16 h-16 border-r-2 border-b-2 border-blue-200/50 rounded-br-xl pointer-events-none" />
+            {/* Watermark / Background Accent */}
+            <div
+              className="absolute inset-0 opacity-[0.02] mix-blend-multiply pointer-events-none"
+              style={{
+                backgroundImage: "url('https://opslyhr.com/images/logocolored.svg')",
+                backgroundSize: "50%",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+            />
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center h-full text-center">
+            <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-12">
               {/* Logo */}
               <img
                 src="https://opslyhr.com/images/logocolored.svg"
                 alt="OPSlyHR"
-                className="h-10 md:h-12 mb-8 object-contain"
+                className="h-12 md:h-14 mb-8 object-contain"
                 crossOrigin="anonymous"
               />
 
               {/* Title */}
-              <h1
-                className="text-2xl md:text-4xl font-bold text-slate-800 mb-10 tracking-wide"
-                style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-              >
+              <h1 className="text-3xl md:text-5xl font-bold text-slate-800 mb-4 tracking-widest uppercase">
                 Certificate of Completion
               </h1>
 
               {/* Certification Text */}
-              <p className="text-sm md:text-base text-slate-500 font-medium mb-4 max-w-xl leading-relaxed">
-                This certifies that
-              </p>
+              <p className="text-lg text-slate-500 italic mb-8">This is to certify that</p>
 
               {/* Student Name */}
-              <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight leading-tight">
+              <h2 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6 border-b-2 border-slate-300 pb-3 min-w-[60%] inline-block">
                 {cert.student_name}
               </h2>
 
-              <p className="text-sm md:text-base text-slate-500 font-medium mb-2 max-w-xl leading-relaxed">
-                has successfully completed the program
+              <p className="text-base text-slate-600 mb-6 max-w-2xl leading-relaxed">
+                has successfully completed the program and demonstrated the required skills and competencies in
               </p>
 
               {/* Course Title */}
-              <h3
-                className="text-xl md:text-2xl font-bold text-blue-700 mb-10 tracking-tight"
-                style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-              >
+              <h3 className="text-2xl md:text-4xl font-semibold text-blue-600 mb-12">
                 {cert.course_title}
               </h3>
 
-              {/* Completion Date */}
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-12">
-                Completed on{" "}
-                {new Date(cert.completion_date).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </p>
-
-              {/* Signatures */}
-              {mentors.length > 0 && (
-                <div className="flex items-end justify-center gap-16 mb-10">
-                  {mentors.map((mentor, i) => (
-                    <div key={i} className="text-center">
-                      <div className="w-32 border-b border-slate-300 mb-2" />
-                      <p className="text-sm font-bold text-slate-800">{mentor.name}</p>
-                      <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-                        {mentor.title || "Instructor"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Footer: Certificate ID + QR Code */}
-              <div className="flex items-end justify-between w-full mt-auto">
-                <div className="text-left">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                    Certificate ID
-                  </p>
-                  <p className="text-xs font-mono text-slate-500">{cert.certificate_id}</p>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                      Verify at
-                    </p>
-                    <p className="text-[10px] text-blue-600 font-medium">{cert.verification_url}</p>
+              {/* Footer Section: Date, Stamp, Signatory */}
+              <div className="w-full flex items-end justify-between px-8 mt-4">
+                {/* Date Section */}
+                <div className="text-center w-48">
+                  <div className="text-lg font-bold text-slate-700 mb-2 border-b border-slate-400 pb-1">
+                    {new Date(cert.completion_date).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
                   </div>
+                  <div className="text-xs text-slate-500 uppercase tracking-widest font-semibold">
+                    Date Issued
+                  </div>
+                </div>
+
+                {/* Stamp Section */}
+                <div className="flex flex-col items-center justify-center">
+                  <div className="w-24 h-24 rounded-full border-[3px] border-blue-600 flex items-center justify-center shadow-[0_0_0_4px_white,0_0_0_6px_#bfdbfe] bg-white">
+                    <div className="text-center text-blue-600">
+                      <div className="text-[10px] font-black uppercase tracking-widest mb-1">
+                        Verified
+                      </div>
+                      <div className="text-2xl leading-none">✓</div>
+                      <div className="text-[9px] font-bold uppercase mt-1">
+                        Opsly Academy
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Signatory Section */}
+                <div className="text-center w-48">
+                  <div
+                    className="text-4xl text-slate-900 mb-0 border-b border-slate-400 pb-1 h-12 leading-[48px]"
+                    style={{ fontFamily: "'Brush Script MT', cursive, sans-serif" }}
+                  >
+                    Opsly Team
+                  </div>
+                  <div className="text-sm text-slate-600 font-bold mt-1">OPSly Academy Team</div>
+                  <div className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">
+                    Program Manager
+                  </div>
+                </div>
+              </div>
+
+              {/* Certificate ID Footer */}
+              <div className="mt-12 text-xs text-slate-400 font-sans tracking-wider flex items-center justify-between w-full px-8">
+                <div>CERTIFICATE ID: {cert.certificate_id}</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-widest">Verify:</span>
                   <QRCodeSVG
                     value={cert.verification_url || "https://academy.opslyhr.com"}
-                    size={64}
+                    size={40}
                     level="M"
                     bgColor="transparent"
-                    fgColor="#334155"
+                    fgColor="#94a3b8"
                   />
                 </div>
               </div>

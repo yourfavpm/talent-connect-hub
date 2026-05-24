@@ -60,7 +60,7 @@ interface DashboardStats {
   applications: number;
   activeAssignments: number;
   pendingTimesheets: number;
-  unreadMessages: number;
+  activeShortlists: number;
   openTickets: number;
 }
 
@@ -151,17 +151,24 @@ const TalentDashboard = () => {
         }
       }
 
-      const [applicationsRes, contractsRes, timesheetsRes, messagesRes, ticketsRes, notificationsRes, profileRes, profileV2Res, sectionsRes] = await Promise.all([
-        (supabase.from("job_applications" as any).select("*", { count: "exact", head: true }).eq("talent_id", (talentData as any).id) as any),
+      const [v2AppsRes, v2ShortlistsRes, contractsRes, timesheetsRes, ticketsRes, openRequestsRes, profileRes, profileV2Res, sectionsRes] = await Promise.all([
+        supabase.from("hr_v2_applications").select("hire_request_id").eq("talent_user_id", user.id),
+        supabase.from("hr_v2_shortlists").select("hire_request_id, status").eq("talent_user_id", user.id),
         (supabase.from("contracts" as any).select("*", { count: "exact", head: true }).eq("talent_id", (talentData as any).id).eq("status", "active") as any),
         (supabase.from("timesheets" as any).select("*", { count: "exact", head: true }).eq("talent_id", (talentData as any).id).eq("status", "draft") as any),
-        (supabase.from("messages" as any).select("*", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null) as any),
         (supabase.from("support_tickets" as any).select("*", { count: "exact", head: true }).eq("user_id", user.id).in("status", ["open", "in_progress"]) as any),
-        (supabase.from("notifications" as any).select("*").eq("user_id", user.id).order('created_at', { ascending: false }).limit(5) as any),
+        supabase.from("hr_v2_hire_requests").select("id, title, role_summary, created_at").eq("status", "published").order("created_at", { ascending: false }).limit(3),
         (supabase.from("profiles" as any).select("*").eq("user_id", user.id).maybeSingle() as any),
         (supabase.from("v2_talent_profiles" as any).select("*").eq("user_id", user.id).maybeSingle() as any),
         (supabase.from("v2_profile_sections" as any).select("*").eq("user_id", user.id) as any)
       ]);
+
+      const uniqueAppIds = new Set([
+        ...(v2AppsRes.data || []).map(a => a.hire_request_id),
+        ...(v2ShortlistsRes.data || []).map(s => s.hire_request_id)
+      ]);
+      const applicationsCount = uniqueAppIds.size;
+      const activeShortlistCount = (v2ShortlistsRes.data || []).filter(s => s.status !== 'rejected' && s.status !== 'withdrawn').length;
 
       const baseProfile = (profileRes as any).data;
       const profile = (profileV2Res as any).data;
@@ -187,13 +194,13 @@ const TalentDashboard = () => {
           assigned_manager_email: managerEmail
         } : null,
         stats: {
-          applications: (applicationsRes as any).count || 0,
+          applications: applicationsCount || 0,
           activeAssignments: (contractsRes as any).count || 0,
           pendingTimesheets: (timesheetsRes as any).count || 0,
-          unreadMessages: (messagesRes as any).count || 0,
+          activeShortlists: activeShortlistCount || 0,
           openTickets: (ticketsRes as any).count || 0,
         } as DashboardStats,
-        notifications: (notificationsRes.data as Notification[]) || [],
+        opportunities: openRequestsRes.data || [],
         profile: profile,
         baseProfile: baseProfile,
         sections: sections
@@ -203,10 +210,10 @@ const TalentDashboard = () => {
     staleTime: 1000 * 60 * 1, // 1 minute cache
   });
  
-  const { talent, stats, notifications, profile, baseProfile, sections } = (dashboardData as any) || {
+  const { talent, stats, opportunities, profile, baseProfile, sections } = (dashboardData as any) || {
     talent: null,
-    stats: { applications: 0, activeAssignments: 0, pendingTimesheets: 0, unreadMessages: 0, openTickets: 0 },
-    notifications: [],
+    stats: { applications: 0, activeAssignments: 0, pendingTimesheets: 0, activeShortlists: 0, openTickets: 0 },
+    opportunities: [],
     profile: null,
     baseProfile: null,
     sections: []
@@ -247,7 +254,7 @@ const TalentDashboard = () => {
           </h1>
           <div className="flex flex-col gap-1 mt-1">
             <p className="text-xs text-slate-400 font-light flex items-center gap-2">
-              <span>You have <span className="text-slate-900 font-medium">{stats.unreadMessages || 0} unread messages</span> and <span className="text-slate-900 font-medium">{stats.openTickets || 0} active support tickets</span>.</span>
+              <span>You have <span className="text-slate-900 font-medium">{stats.activeShortlists || 0} active shortlists</span> and <span className="text-slate-900 font-medium">{stats.openTickets || 0} active support tickets</span>.</span>
             </p>
             {profile?.status === "draft" && (
               <Link 
@@ -305,7 +312,7 @@ const TalentDashboard = () => {
           { label: "Active Contracts", value: stats.activeAssignments, icon: FileText, color: "blue" },
           { label: "Pending Timesheets", value: stats.pendingTimesheets, icon: Clock, color: "indigo" },
           { label: "Job Applications", value: stats.applications, icon: Briefcase, color: "emerald" },
-          { label: "Unread Messages", value: stats.unreadMessages, icon: MessageSquare, color: "cyan" },
+          { label: "Active Shortlists", value: stats.activeShortlists, icon: FileText, color: "cyan" },
         ].map((kpi) => (
           <div key={kpi.label} className="p-5 bg-white border border-slate-100/50 rounded-2xl space-y-3 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)] transition-all hover:border-slate-200">
              <div className={`h-8 w-8 rounded-lg bg-${kpi.color}-50 flex items-center justify-center text-${kpi.color}-600 border border-${kpi.color}-100/50`}>
@@ -321,7 +328,46 @@ const TalentDashboard = () => {
 
 
       {/* ── Dashboard Grid Section ───────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+        
+        {/* Opportunities Row */}
+        <div className="bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-sm flex flex-col h-full">
+          <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
+            <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest leading-none">Opportunities</h3>
+            <Link to={getInternalPath("/talent/jobs")} className="h-8 px-4 bg-slate-50 hover:bg-slate-900 border border-slate-100 hover:border-slate-900 rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-all">View All</Link>
+          </div>
+          <div className="flex-1 flex flex-col divide-y divide-slate-100/50">
+            {opportunities && opportunities.length > 0 ? (
+               opportunities.map((opp: any) => (
+                 <div key={opp.id} className="px-8 py-5 hover:bg-slate-50/50 transition-all flex items-start gap-4 group">
+                    <div className="mt-1 flex-shrink-0 h-10 w-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
+                      <Briefcase className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <h4 className="text-[14px] font-bold text-slate-900 truncate">{opp.title}</h4>
+                      <p className="text-[12px] text-slate-500 font-medium line-clamp-1">{opp.role_summary || "Open role"}</p>
+                    </div>
+                    <Link to={getInternalPath(`/talent/jobs/${opp.id}`)} className="mt-1 flex-shrink-0 h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 hover:text-slate-900 border border-slate-100 transition-all">
+                      <ChevronRight className="h-5 w-5" />
+                    </Link>
+                 </div>
+               ))
+            ) : (
+                <div className="px-8 py-16 text-center space-y-6">
+                  <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-100">
+                    <Briefcase className="h-8 w-8" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[13px] text-slate-500 font-medium">Your career hunt begins here.</p>
+                  </div>
+                  <Button className="h-11 px-8 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-500/10" asChild>
+                    <Link to={getInternalPath("/talent/jobs")}>Find Opportunities</Link>
+                  </Button>
+                </div>
+            )}
+          </div>
+        </div>
+
         {/* Active Contracts Row */}
         <div className="bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-sm flex flex-col h-full">
           <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
@@ -376,84 +422,6 @@ const TalentDashboard = () => {
               </div>
             </div>
 
-          </div>
-        </div>
-
-        {/* Applications Row */}
-        <div className="bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-sm flex flex-col h-full">
-          <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
-            <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest leading-none">Pipeline</h3>
-            <Link to={getInternalPath("/talent/applications")} className="h-8 px-4 bg-slate-50 hover:bg-slate-900 border border-slate-100 hover:border-slate-900 rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-all">View All</Link>
-          </div>
-          <div className="flex-1 flex flex-col">
-            {stats.applications > 0 ? (
-               <div className="px-8 py-12 text-center space-y-4">
-                  <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-200">
-                    <Briefcase className="h-8 w-8" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[15px] font-bold text-slate-900">Tracking {stats.applications} Applications</p>
-                    <p className="text-[13px] text-slate-500 font-medium italic">Keep an eye on your status updates.</p>
-                  </div>
-               </div>
-            ) : (
-                <div className="px-8 py-16 text-center space-y-6">
-                  <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-100">
-                    <Briefcase className="h-8 w-8" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[13px] text-slate-500 font-medium">Your career hunt begins here.</p>
-                  </div>
-                  <Button className="h-11 px-8 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-500/10" asChild>
-                    <Link to={getInternalPath("/talent/jobs")}>Find Opportunities</Link>
-                  </Button>
-                </div>
-            )}
-          </div>
-        </div>
-
-        {/* Activity Row */}
-        <div className="bg-white border border-slate-100 rounded-[32px] overflow-hidden shadow-sm flex flex-col h-full">
-          <div className="px-8 py-6 border-b border-slate-50">
-            <h3 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest leading-none">Intelligence</h3>
-          </div>
-          <div className="flex-1 flex flex-col max-h-[400px] overflow-y-auto divide-y divide-slate-100/50">
-            {notifications && notifications.length > 0 ? (
-                notifications.map((notif: Notification) => (
-                  <div key={notif.id} className="px-8 py-5 hover:bg-slate-50/50 transition-all flex items-start gap-5 relative group">
-                    <div className={clsx("mt-1 flex-shrink-0 h-10 w-10 rounded-xl flex items-center justify-center border transition-all", 
-                      notif.type === 'offer' ? 'bg-purple-50 border-purple-100 text-purple-600' :
-                      notif.type === 'interview' ? 'bg-blue-50 border-blue-100 text-blue-600' :
-                      notif.type === 'system' ? 'bg-slate-50 border-slate-100 text-slate-400' :
-                      'bg-slate-50 border-slate-100 text-slate-400'
-                    )}>
-                      <Bell className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-[14px] font-bold text-slate-900 truncate">{notif.title}</h4>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300">{format(new Date(notif.created_at), 'MMM d')}</p>
-                      </div>
-                      <p className="text-[12px] text-slate-500 font-medium line-clamp-1 group-hover:line-clamp-none transition-all">{notif.message}</p>
-                    </div>
-                    {notif.action_url && (
-                      <Link to={getInternalPath(notif.action_url)} className="mt-1 flex-shrink-0 h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 hover:text-slate-900 border border-slate-100 transition-all">
-                        <ChevronRight className="h-5 w-5" />
-                      </Link>
-                    )}
-                  </div>
-                ))
-            ) : (
-              <div className="px-8 py-16 text-center space-y-4">
-                <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-100">
-                  <Bell className="h-8 w-8" />
-                </div>
-                <div className="space-y-1 text-slate-300">
-                  <p className="text-[14px] font-bold uppercase tracking-widest leading-none">In Sync</p>
-                  <p className="text-[12px] font-medium">Everything is currently up to date.</p>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
