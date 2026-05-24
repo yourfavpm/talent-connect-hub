@@ -123,6 +123,9 @@ const VerifyCertificate = () => {
                       const { jsPDF } = await import("jspdf");
 
                       const temp = document.createElement('div');
+                      temp.style.position = 'fixed';
+                      temp.style.left = '-9999px';
+                      temp.style.top = '0';
                       temp.style.width = '1120px';
                       temp.style.height = '800px';
                       temp.style.padding = '40px';
@@ -194,11 +197,18 @@ const VerifyCertificate = () => {
                       `;
                       document.body.appendChild(temp);
                       const canvas = await html2canvas(temp, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                      document.body.removeChild(temp);
                       const imgData = canvas.toDataURL('image/png');
                       const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [1120, 800] });
                       pdf.addImage(imgData, 'PNG', 0, 0, 1120, 800);
-                      pdf.save(`Opsly-Certificate-${cert.certificate_id}.pdf`);
-                      document.body.removeChild(temp);
+                      // Trigger proper file download via blob URL — avoids rendering into the page
+                      const blob = pdf.output('blob');
+                      const blobUrl = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = blobUrl;
+                      a.download = `Opsly-Certificate-${cert.certificate_id}.pdf`;
+                      a.click();
+                      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
                     } catch (err) {
                       console.error('Certificate download error:', err);
                     }

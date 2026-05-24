@@ -24,6 +24,7 @@ interface AcademyCourse {
     category: string;
     is_flagship?: boolean;
     created_at: string;
+    has_open_cohort?: boolean;
 }
 
 const BrowseCourses = () => {
@@ -95,6 +96,18 @@ const BrowseCourses = () => {
                     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
                 });
 
+                setCourses(fetchedCourses);
+                
+                // Fetch open cohorts and mark courses
+                const { data: openCohorts } = await supabase
+                    .from('cohorts')
+                    .select('course_id')
+                    .eq('status', 'open');
+                const openCourseIds = new Set((openCohorts || []).map((c: any) => c.course_id));
+                fetchedCourses = fetchedCourses.map(course => ({
+                    ...course,
+                    has_open_cohort: openCourseIds.has(course.id)
+                }));
                 setCourses(fetchedCourses);
                 
                 // Extract dynamic categories

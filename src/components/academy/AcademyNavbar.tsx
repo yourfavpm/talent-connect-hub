@@ -172,7 +172,7 @@ const AcademyNavbar = () => {
                                         to="/signup"
                                         className="flex items-center justify-between w-full py-4 px-6 bg-slate-900 text-white font-bold text-base rounded-2xl group transition-all"
                                     >
-                                        <span>Start Learning</span>
+                                        <span>Get Started</span>
                                         <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                     </Link>
                                 )}
