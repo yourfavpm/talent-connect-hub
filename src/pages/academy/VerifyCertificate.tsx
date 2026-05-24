@@ -111,9 +111,61 @@ const VerifyCertificate = () => {
         </div>
       `;
       document.body.appendChild(temp);
-      const canvas = await html2canvas(temp, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+      let canvas;
+      try {
+        canvas = await html2canvas(temp, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+      } catch (canvasErr) {
+        console.warn('html2canvas failed:', canvasErr);
+        // remove temp node before fallback
+        document.body.removeChild(temp);
+        // Fallback: open printable certificate in new tab
+        const fallbackHtml = `
+          <html><head><title>Opsly Certificate</title><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>${temp.innerHTML}</body></html>`;
+        try {
+          const w = window.open('', '_blank');
+          if (w) {
+            w.document.write(fallbackHtml);
+            w.document.close();
+            // give the browser a moment to render then trigger print
+            setTimeout(() => { try { w.print(); } catch (e) { /* ignore */ } }, 500);
+            setGenerating(false);
+            return;
+          } else {
+            alert('Cannot open print window — your browser may be blocking popups. Please enable popups and try again.');
+            setGenerating(false);
+            return;
+          }
+        } catch (fallbackErr) {
+          console.error('Fallback print failed:', fallbackErr);
+          alert('Failed to generate certificate. See console for details.');
+          setGenerating(false);
+          return;
+        }
+      }
+
       document.body.removeChild(temp);
-      const imgData = canvas.toDataURL('image/png');
+
+      // canvas.toDataURL may throw if canvas is tainted (CORS). Catch and provide fallback.
+      let imgData;
+      try {
+        imgData = canvas.toDataURL('image/png');
+      } catch (exportErr) {
+        console.warn('Canvas export failed (tainted canvas likely):', exportErr);
+        // Fallback: open printable certificate in new tab
+        const fallbackHtml = `
+          <html><head><title>Opsly Certificate</title><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>${temp.innerHTML}</body></html>`;
+        const w = window.open('', '_blank');
+        if (w) {
+          w.document.write(fallbackHtml);
+          w.document.close();
+          setTimeout(() => { try { w.print(); } catch (e) { /* ignore */ } }, 500);
+        } else {
+          alert('Cannot open print window — your browser may be blocking popups. Please enable popups and try again.');
+        }
+        setGenerating(false);
+        return;
+      }
+
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [1120, 800] });
       pdf.addImage(imgData, 'PNG', 0, 0, 1120, 800);
       const blob = pdf.output('blob');
