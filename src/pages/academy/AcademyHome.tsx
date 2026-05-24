@@ -53,19 +53,35 @@ const AcademyHome = () => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const { data, error } = await supabase
-                    .from("academy_courses")
-                    .select("*")
-                    .eq("is_live", true)
-                    .order("created_at", { ascending: false });
+                let allCourses: DynamicCourse[] = [];
+                let attempts = 0;
+                const maxAttempts = 3;
 
-                if (error) {
-                    console.error("Failed to fetch courses:", error);
-                    setLoading(false);
-                    return;
+                while (attempts < maxAttempts) {
+                    try {
+                        const { data, error } = await supabase
+                            .from("academy_courses")
+                            .select("*")
+                            .eq("is_live", true)
+                            .order("created_at", { ascending: false });
+
+                        if (error) throw error;
+
+                        allCourses = (data || []) as DynamicCourse[];
+                        break;
+                    } catch (err) {
+                        attempts++;
+                        console.error(`Attempt ${attempts} failed to fetch courses:`, err);
+                        if (attempts >= maxAttempts) {
+                            console.error("All attempts to fetch courses failed.");
+                            setLoading(false);
+                            return;
+                        } else {
+                            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempts)));
+                        }
+                    }
                 }
 
-                const allCourses = (data || []) as DynamicCourse[];
                 setCourses(allCourses);
 
                 // Find flagship course

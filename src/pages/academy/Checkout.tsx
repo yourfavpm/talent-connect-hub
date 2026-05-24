@@ -237,113 +237,43 @@ const Checkout = () => {
     const processPostPaymentSuccess = async (reference: string, sessionId: string) => {
         try {
             console.log("Processing post-payment for session:", sessionId);
-            let isUserLoggedIn = false;
-            let activeUserId: string | null = null;
             
-            // STEP 1: Authenticate the user
+            // STEP 1: Determine active user if they happen to be logged in (optional for guest checkout)
+            let activeUserId: string | null = null;
             try {
-                if (!isExistingUser) {
-                    // Generate a random password since we no longer ask the user for one
-                    const generatedPassword = "Ops_" + Math.random().toString(36).slice(2, 12) + "!";
-                    const { data: authData, error: signUpError } = await supabase.auth.signUp({
-                        email: email.trim().toLowerCase(),
-                        password: generatedPassword
-                    });
-                    
-                    if (!signUpError && authData.user) {
-                        isUserLoggedIn = true;
-                        activeUserId = authData.user.id;
-                        console.log("New user signed up successfully with random password:", activeUserId);
-                    } else if (signUpError) {
-                        console.log("Signup error:", signUpError.message);
-                    }
-                } else {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    isUserLoggedIn = !!session;
-                    activeUserId = session?.user?.id || null;
-                    
-                    // If user exists but is not logged in, we need a way to create their enrollment 
-                    // since RLS will block client-side inserts. We will rely on the Paystack webhook 
-                    // which runs with service_role privileges to insert the enrollment.
-                    if (!activeUserId) {
-                        console.log("Existing user not logged in. Will rely on webhook for enrollment.");
-                    }
-                }
-            } catch (authErr) {
-                console.error("Auth processing error:", authErr);
+                const { data: { session } } = await supabase.auth.getSession();
+                activeUserId = session?.user?.id || null;
+            } catch (err) {
+                console.log("Not logged in, proceeding as guest checkout.");
             }
 
-            // STEP 2: Always create enrollment client-side (webhook is backup)
-            if (activeUserId && course) {
-                // Check if enrollment already exists for THIS SPECIFIC COHORT (not just course)
-                const { data: existingEnrollment } = await supabase
-                    .from("academy_enrollments")
-                    .select("id")
-                    .eq("user_id", activeUserId)
-                    .eq("cohort_id", selectedCohortId)
-                    .maybeSingle();
+            // STEP 2: Securely record enrollment and transaction via RPC
+            // This works completely decoupled from auth.users (supports guest checkout)
+            try {
+                const { error: rpcError } = await supabase.rpc('finalize_academy_enrollment', {
+                    p_email: email.trim().toLowerCase(),
+                    p_student_name: fullName.trim() || email.split('@')[0],
+                    p_course_slug: course?.slug || "",
+                    p_cohort_id: selectedCohortId,
+                    p_course_title: course?.title || "",
+                    p_price_naira: course?.price_naira || 0,
+                    p_price_usd: course?.price_usd || 0,
+                    p_paystack_reference: reference,
+                    p_user_id: activeUserId // can be null, the RPC handles it
+                });
 
-                if (!existingEnrollment) {
-                    const { data: enrollData, error: enrollErr } = await supabase.from("academy_enrollments").insert({
-                        user_id: activeUserId,
-                        course_id: course.slug,
-                        cohort_id: selectedCohortId, // ENFORCED: Never null
-                        course_name: course.title,
-                        student_email: email.trim().toLowerCase(),
-                        student_name: fullName.trim() || email.split('@')[0],
-                        enrollment_status: "active",
-                        price_naira: course.price_naira,
-                        price_usd: course.price_usd,
-                        enrollment_date: new Date().toISOString(),
-                        access_granted_at: new Date().toISOString()
-                    }).select("id").single();
-
-                    const enrollmentId = enrollData?.id;
-                    if (enrollErr) {
-                        console.error("Enrollment insert error:", enrollErr);
-                        toast({
-                            title: "Enrollment Failed",
-                            description: "Payment succeeded, but we couldn't save your enrollment. Please contact support. Error: " + enrollErr.message,
-                            variant: "destructive"
-                        });
-                        setProcessing(false);
-                        return; // Stop the flow
-                    } else {
-                        console.log("Enrollment record created successfully");
-                        
-                        // Increment cohort slots atomically to prevent race conditions
-                        try {
-                            const { error: countErr } = await supabase.rpc('increment_cohort_slots', { 
-                                p_cohort_id: selectedCohortId 
-                            });
-                            
-                            if (countErr) {
-                                console.error("Failed to update cohort slots via RPC:", countErr);
-                                // Fallback to manual update only if RPC fails (though RPC is preferred)
-                                const { data: cohortData } = await supabase
-                                    .from("cohorts")
-                                    .select("current_slots")
-                                    .eq("id", selectedCohortId)
-                                    .single();
-                                    
-                                if (cohortData) {
-                                    await supabase
-                                        .from("cohorts")
-                                        .update({ current_slots: (cohortData.current_slots || 0) + 1 })
-                                        .eq("id", selectedCohortId);
-                                }
-                            } else {
-                                console.log("Cohort slots incremented atomically");
-                            }
-                        } catch (countErr) {
-                            console.error("Critical error updating slots:", countErr);
-                        }
-                    }
+                if (rpcError) {
+                    console.error("Enrollment RPC error:", rpcError);
+                    toast({
+                        title: "Warning",
+                        description: "Payment succeeded, but we had a slight issue saving your enrollment. Our team will manually sync it.",
+                        variant: "destructive"
+                    });
                 } else {
-                    console.log("Enrollment already exists:", existingEnrollment.id);
+                    console.log("Enrollment and transaction recorded successfully via RPC");
                 }
-            } else {
-                console.log("Could not process enrollment client-side due to missing auth. Webhook will handle it.");
+            } catch (err) {
+                console.error("RPC execution exception:", err);
             }
 
             // STEP 3: Send enrollment confirmation email directly (reliable path)

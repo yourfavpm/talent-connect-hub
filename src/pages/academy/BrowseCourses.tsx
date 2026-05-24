@@ -47,16 +47,32 @@ const BrowseCourses = () => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const { data, error } = await supabase
-                    .from("academy_courses")
-                    .select("*")
-                    .eq("is_live", true);
+                let fetchedCourses: AcademyCourse[] = [];
+                let attempts = 0;
+                const maxAttempts = 3;
                 
-                if (error) {
-                    console.error("Failed to fetch courses:", error);
+                while (attempts < maxAttempts) {
+                    try {
+                        const { data, error } = await supabase
+                            .from("academy_courses")
+                            .select("*")
+                            .eq("is_live", true);
+                        
+                        if (error) throw error;
+                        
+                        fetchedCourses = (data as AcademyCourse[]) || [];
+                        break; // Success, exit loop
+                    } catch (err) {
+                        attempts++;
+                        console.error(`Attempt ${attempts} failed to fetch courses:`, err);
+                        if (attempts >= maxAttempts) {
+                            console.error("All attempts to fetch courses failed.");
+                        } else {
+                            // Wait before retrying (exponential backoff)
+                            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempts)));
+                        }
+                    }
                 }
-                
-                let fetchedCourses = (data as AcademyCourse[]) || [];
                 
                 // Set flagship for the "Current Trend" card
                 const flagship = fetchedCourses.find(c => c.is_flagship) || fetchedCourses[0];
