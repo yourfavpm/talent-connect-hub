@@ -21,6 +21,7 @@ const VerifyCertificate = () => {
   const certRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     const fetchCert = async () => {
@@ -65,6 +66,70 @@ const VerifyCertificate = () => {
 
     if (certificateId) fetchCert();
   }, [certificateId]);
+
+  const handleDownload = async () => {
+    if (!cert) return;
+    setGenerating(true);
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+
+      const temp = document.createElement('div');
+      temp.style.position = 'fixed';
+      temp.style.left = '-9999px';
+      temp.style.top = '0';
+      temp.style.width = '1120px';
+      temp.style.height = '800px';
+      temp.style.padding = '40px';
+      temp.style.boxSizing = 'border-box';
+      temp.innerHTML = `
+        <div style="font-family: Georgia, 'Times New Roman', serif; width:1040px; height:720px; display:flex; align-items:center; justify-content:center; background:#ffffff; position:relative; overflow:hidden;">
+          <div style="position:absolute; inset:20px; border:8px solid #2563eb; border-radius:12px;"></div>
+          <div style="position:absolute; inset:34px; border:1px solid #94a3b8; border-radius:4px;"></div>
+          <div style="position:absolute; inset:0; opacity:0.04; background-image:url('data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'160\\' height=\\'160\\'><text x=\\'20\\' y=\\'80\\' font-family=\\'sans-serif\\' font-size=\\'24\\' font-weight=\\'bold\\' fill=\\'%232563eb\\' transform=\\'rotate(-45 80 80)\\'>OPSlyHR</text></svg>'); background-repeat:repeat; pointer-events:none; mix-blend-mode:multiply;"></div>
+          <div style="position:relative; z-index:10; width:800px; text-align:center;">
+            <img src="https://opslyhr.com/images/logocolored.svg" crossorigin="anonymous" style="height:56px; margin-bottom:30px;" />
+            <h1 style="font-size:48px; font-weight:700; color:#1e293b; margin:0 0 16px 0; letter-spacing:2px; text-transform:uppercase;">Certificate of Completion</h1>
+            <p style="font-size:18px; color:#64748b; font-style:italic; margin:0 0 32px 0;">This is to certify that</p>
+            <h2 style="font-size:54px; font-weight:700; color:#0f172a; margin:0 0 24px 0; border-bottom:2px solid #cbd5e1; padding-bottom:12px; display:inline-block; min-width:600px;">${cert.student_name}</h2>
+            <p style="font-size:16px; color:#475569; line-height:1.6; margin:0 auto 24px auto; max-width:600px;">has successfully completed the program and demonstrated the required skills and competencies in</p>
+            <h3 style="font-size:32px; font-weight:600; color:#2563eb; margin:0 0 40px 0;">${cert.course_title}</h3>
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:60px; padding:0 40px;">
+              <div style="text-align:center; width:200px;">
+                <div style="font-size:18px; font-weight:600; color:#334155; margin-bottom:8px; border-bottom:1px solid #94a3b8; padding-bottom:4px;">${new Date(cert.completion_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</div>
+                <div style="font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Date Issued</div>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div style="width:100px; height:100px; border-radius:50%; border:3px solid #2563eb; display:flex; align-items:center; justify-content:center; position:relative; box-shadow:0 0 0 4px white, 0 0 0 6px #bfdbfe;">
+                  <div style="text-align:center; color:#2563eb;"><div style="font-size:10px; font-weight:800; font-family:sans-serif; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Verified</div><div style="font-size:24px; line-height:1;">✓</div><div style="font-size:9px; font-weight:700; font-family:sans-serif; text-transform:uppercase; margin-top:2px;">Opsly Academy</div></div>
+                </div>
+              </div>
+              <div style="text-align:center; width:200px;"><div style="font-family:'Brush Script MT', cursive, sans-serif; font-size:36px; color:#0f172a; margin-bottom:0px; border-bottom:1px solid #94a3b8; padding-bottom:4px; height:48px; line-height:48px;">Opsly Team</div><div style="font-size:12px; color:#64748b; font-weight:600; margin-top:4px;">OPSly Academy Team</div><div style="font-size:10px; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-top:2px;">Program Manager</div></div>
+            </div>
+            <div style="margin-top:50px; font-size:11px; color:#94a3b8; font-family:sans-serif; letter-spacing:1px;">CERTIFICATE ID: ${cert.certificate_id}</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(temp);
+      const canvas = await html2canvas(temp, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+      document.body.removeChild(temp);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [1120, 800] });
+      pdf.addImage(imgData, 'PNG', 0, 0, 1120, 800);
+      const blob = pdf.output('blob');
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `Opsly-Certificate-${cert.certificate_id}.pdf`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    } catch (err) {
+      console.error('Certificate download error:', err);
+      try { window.alert('Failed to generate certificate. Check console for details.'); } catch (_) {}
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -135,106 +200,15 @@ const VerifyCertificate = () => {
 
               <div className="mb-8 flex items-center justify-center gap-3">
                 <Button
+                  type="button"
                   onClick={async () => {
-                    if (!cert) return;
-                    try {
-                      const html2canvas = (await import("html2canvas")).default;
-                      const { jsPDF } = await import("jspdf");
-
-                      const temp = document.createElement('div');
-                      temp.style.position = 'fixed';
-                      temp.style.left = '-9999px';
-                      temp.style.top = '0';
-                      temp.style.width = '1120px';
-                      temp.style.height = '800px';
-                      temp.style.padding = '40px';
-                      temp.style.boxSizing = 'border-box';
-                      temp.innerHTML = `
-                        <div style="font-family: Georgia, 'Times New Roman', serif; width:1040px; height:720px; display:flex; align-items:center; justify-content:center; background:#ffffff; position:relative; overflow:hidden;">
-                          <!-- Decorative borders -->
-                          <div style="position:absolute; inset:20px; border:8px solid #2563eb; border-radius:12px;"></div>
-                          <div style="position:absolute; inset:34px; border:1px solid #94a3b8; border-radius:4px;"></div>
-                          
-                          <!-- Watermark / Background Accent -->
-                          <div style="position:absolute; inset:0; opacity:0.04; background-image:url('data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'160\\' height=\\'160\\'><text x=\\'20\\' y=\\'80\\' font-family=\\'sans-serif\\' font-size=\\'24\\' font-weight=\\'bold\\' fill=\\'%232563eb\\' transform=\\'rotate(-45 80 80)\\'>OPSlyHR</text></svg>'); background-repeat:repeat; pointer-events:none; mix-blend-mode:multiply;"></div>
-                          
-                          <div style="position:relative; z-index:10; width:800px; text-align:center;">
-                            <!-- Header / Logo -->
-                            <img src="https://opslyhr.com/images/logocolored.svg" crossorigin="anonymous" style="height:56px; margin-bottom:30px;" />
-                            
-                            <h1 style="font-size:48px; font-weight:700; color:#1e293b; margin:0 0 16px 0; letter-spacing:2px; text-transform:uppercase;">Certificate of Completion</h1>
-                            
-                            <p style="font-size:18px; color:#64748b; font-style:italic; margin:0 0 32px 0;">This is to certify that</p>
-                            
-                            <h2 style="font-size:54px; font-weight:700; color:#0f172a; margin:0 0 24px 0; border-bottom:2px solid #cbd5e1; padding-bottom:12px; display:inline-block; min-width:600px;">${cert.student_name}</h2>
-                            
-                            <p style="font-size:16px; color:#475569; line-height:1.6; margin:0 auto 24px auto; max-width:600px;">
-                              has successfully completed the program and demonstrated the required skills and competencies in
-                            </p>
-                            
-                            <h3 style="font-size:32px; font-weight:600; color:#2563eb; margin:0 0 40px 0;">${cert.course_title}</h3>
-                            
-                            <!-- Signatures & Stamps Footer -->
-                            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:60px; padding:0 40px;">
-                              
-                              <!-- Date Section -->
-                              <div style="text-align:center; width:200px;">
-                                <div style="font-size:18px; font-weight:600; color:#334155; margin-bottom:8px; border-bottom:1px solid #94a3b8; padding-bottom:4px;">
-                                  ${new Date(cert.completion_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                                </div>
-                                <div style="font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Date Issued</div>
-                              </div>
-                              
-                              <!-- Stamp -->
-                              <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                                <div style="width:100px; height:100px; border-radius:50%; border:3px solid #2563eb; display:flex; align-items:center; justify-content:center; position:relative; box-shadow:0 0 0 4px white, 0 0 0 6px #bfdbfe;">
-                                  <div style="text-align:center; color:#2563eb;">
-                                    <div style="font-size:10px; font-weight:800; font-family:sans-serif; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Verified</div>
-                                    <div style="font-size:24px; line-height:1;">✓</div>
-                                    <div style="font-size:9px; font-weight:700; font-family:sans-serif; text-transform:uppercase; margin-top:2px;">Opsly Academy</div>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <!-- Signatory Section -->
-                              <div style="text-align:center; width:200px;">
-                                <div style="font-family:'Brush Script MT', cursive, sans-serif; font-size:36px; color:#0f172a; margin-bottom:0px; border-bottom:1px solid #94a3b8; padding-bottom:4px; height:48px; line-height:48px;">
-                                  Opsly Team
-                                </div>
-                                <div style="font-size:12px; color:#64748b; font-weight:600; margin-top:4px;">OPSly Academy Team</div>
-                                <div style="font-size:10px; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-top:2px;">Program Manager</div>
-                              </div>
-                              
-                            </div>
-                            
-                            <!-- Certificate ID Footer -->
-                            <div style="margin-top:50px; font-size:11px; color:#94a3b8; font-family:sans-serif; letter-spacing:1px;">
-                              CERTIFICATE ID: ${cert.certificate_id}
-                            </div>
-                          </div>
-                        </div>
-                      `;
-                      document.body.appendChild(temp);
-                      const canvas = await html2canvas(temp, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-                      document.body.removeChild(temp);
-                      const imgData = canvas.toDataURL('image/png');
-                      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [1120, 800] });
-                      pdf.addImage(imgData, 'PNG', 0, 0, 1120, 800);
-                      // Trigger proper file download via blob URL — avoids rendering into the page
-                      const blob = pdf.output('blob');
-                      const blobUrl = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = blobUrl;
-                      a.download = `Opsly-Certificate-${cert.certificate_id}.pdf`;
-                      a.click();
-                      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-                    } catch (err) {
-                      console.error('Certificate download error:', err);
-                    }
+                    // delegate to handler to ensure state updates and visible feedback
+                    handleDownload();
                   }}
+                  disabled={generating}
                   className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold w-full sm:w-auto"
                 >
-                  Download Certificate
+                  {generating ? "Generating..." : "Download Certificate"}
                 </Button>
               </div>
 
