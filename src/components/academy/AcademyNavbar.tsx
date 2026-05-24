@@ -61,11 +61,17 @@ const AcademyNavbar = () => {
 
                 {/* Right: CTAs */}
                 <div className="hidden lg:flex items-center gap-4">
-                    {user ? (
+                    <Link
+                        to="/courses"
+                        className="px-6 py-2.5 bg-slate-100 text-slate-900 border border-slate-200 text-sm font-bold rounded-xl hover:bg-slate-200 transition-all font-inter"
+                    >
+                        Explore Courses
+                    </Link>
+                    {user && (
                         <>
                             <Link
                                 to="/dashboard"
-                                className="px-6 py-2.5 bg-slate-100 text-slate-900 border border-slate-200 text-sm font-bold rounded-xl hover:bg-slate-200 transition-all font-inter"
+                                className="px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all font-inter"
                             >
                                 Student Dashboard
                             </Link>
@@ -76,13 +82,6 @@ const AcademyNavbar = () => {
                                 Sign Out
                             </button>
                         </>
-                    ) : (
-                        <Link
-                            to="/signup"
-                            className="px-8 py-3 bg-slate-900 text-white text-[15px] font-bold rounded-xl hover:bg-blue-700 transition-all shadow-sm font-inter"
-                        >
-                            Get Started
-                        </Link>
                     )}
                 </div>
 
