@@ -181,7 +181,7 @@ export default function AdminHireRequestDetail() {
           id,
           user_id,
           status,
-          talents:talents (first_name, last_name, email, primary_role, secondary_skills, avatar_url)
+          talents:user_id (first_name, last_name, email, primary_role, secondary_skills)
         `)
         .in("status", ["fully_vetted", "approved", "vetted", "FULLY_VETTED", "APPROVED", "VETTED"])
         .order("created_at", { ascending: true });
@@ -214,7 +214,7 @@ export default function AdminHireRequestDetail() {
       // Fetch talents where this admin is the manager
       const { data: v2Profiles } = await supabase
         .from("v2_talent_profiles")
-        .select("user_id, talents:talents(first_name, last_name, email, primary_role)")
+        .select("user_id, talents:user_id(first_name, last_name, email, primary_role)")
         .eq("talent_manager_admin_id", user.id);
       
       const formatted = (v2Profiles || []).map(p => ({

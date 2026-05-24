@@ -93,16 +93,72 @@ const TalentApplications = () => {
         loadedApps.push(...((data as Application[]) || []));
       }
 
-      const { data: v2Data, error: v2Error } = await supabase
-        .from("hr_v2_applications")
-        .select("id, hire_request_id, status, application_note, created_at, updated_at")
-        .eq("talent_user_id", user?.id)
-        .order("created_at", { ascending: false });
+      const [v2AppRes, shortlistRes, interviewRes, hireRes] = await Promise.all([
+        supabase.from("hr_v2_applications").select("id, hire_request_id, status, application_note, created_at, updated_at").eq("talent_user_id", user?.id),
+        supabase.from("hr_v2_shortlists").select("id, hire_request_id, status, created_at, updated_at").eq("talent_user_id", user?.id),
+        supabase.from("hr_v2_interviews").select("id, hire_request_id, status, created_at, updated_at").eq("talent_user_id", user?.id),
+        supabase.from("hr_v2_hires").select("id, hire_request_id, hire_status, created_at, updated_at").eq("talent_user_id", user?.id),
+      ]);
 
-      if (v2Error) throw v2Error;
+      const hrMap = new Map<string, any>();
+      
+      (v2AppRes.data || []).forEach(a => {
+        hrMap.set(a.hire_request_id, {
+          id: a.id,
+          hire_request_id: a.hire_request_id,
+          status: a.status,
+          application_note: a.application_note,
+          created_at: a.created_at,
+          updated_at: a.updated_at
+        });
+      });
 
-      if (v2Data?.length) {
-        const requestIds = Array.from(new Set((v2Data as any[]).map((app) => app.hire_request_id)));
+      (shortlistRes.data || []).forEach(s => {
+        const existing = hrMap.get(s.hire_request_id) || {
+          id: s.id,
+          hire_request_id: s.hire_request_id,
+          status: 'applied',
+          created_at: s.created_at,
+          updated_at: s.updated_at
+        };
+        if (!['rejected', 'withdrawn'].includes(existing.status)) {
+           existing.status = s.status === 'interview_requested' || s.status === 'interview_scheduled' || s.status === 'interviewed' ? s.status : 'shortlisted';
+        }
+        hrMap.set(s.hire_request_id, existing);
+      });
+
+      (interviewRes.data || []).forEach(i => {
+        const existing = hrMap.get(i.hire_request_id) || {
+          id: i.id,
+          hire_request_id: i.hire_request_id,
+          status: 'applied',
+          created_at: i.created_at,
+          updated_at: i.updated_at
+        };
+        if (!['rejected', 'withdrawn'].includes(existing.status)) {
+           existing.status = i.status === 'scheduled' ? 'interview_scheduled' : i.status === 'pending' ? 'interview_requested' : 'interviewed';
+        }
+        hrMap.set(i.hire_request_id, existing);
+      });
+
+      (hireRes.data || []).forEach(h => {
+        const existing = hrMap.get(h.hire_request_id) || {
+          id: h.id,
+          hire_request_id: h.hire_request_id,
+          status: 'applied',
+          created_at: h.created_at,
+          updated_at: h.updated_at
+        };
+        if (!['rejected', 'withdrawn'].includes(existing.status)) {
+           existing.status = h.hire_status === 'active' || h.hire_status === 'contract_signed' ? 'hired' : 'offer_initiated';
+        }
+        hrMap.set(h.hire_request_id, existing);
+      });
+
+      const mergedV2Apps = Array.from(hrMap.values());
+
+      if (mergedV2Apps.length > 0) {
+        const requestIds = mergedV2Apps.map((app) => app.hire_request_id);
         const { data: requestData } = await supabase
           .from("hr_v2_hire_requests")
           .select("id, title, role_summary, location_preference, service_model, hours_per_week")
@@ -114,7 +170,7 @@ const TalentApplications = () => {
         }, {});
 
         loadedApps.push(
-          ...(v2Data as any[]).map((app) => ({
+          ...mergedV2Apps.map((app) => ({
             id: app.id,
             job_id: app.hire_request_id,
             status: app.status,

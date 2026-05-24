@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sendTalentApplicationShortlistedEmail } from "@/lib/email/triggers";
 import { 
   Mail, 
   UserPlus, 
@@ -54,6 +55,57 @@ const TalentActionsDrawers = ({
   // Email state
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
+
+  // Shortlist state
+  const [activeHireRequests, setActiveHireRequests] = useState<any[]>([]);
+  const [selectedHireRequestId, setSelectedHireRequestId] = useState<string | null>(null);
+  const [shortlistLoading, setShortlistLoading] = useState(false);
+
+  const fetchActiveHireRequests = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("hr_v2_hire_requests")
+        .select("id, title, service_model")
+        .in("status", ["published", "approved"])
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      setActiveHireRequests(data || []);
+    } catch (err: any) {
+      toast.error("Failed to load hire requests: " + err.message);
+    }
+  };
+
+  const handleShortlist = async () => {
+    if (!selectedHireRequestId) return;
+    setShortlistLoading(true);
+    try {
+      const { error } = await supabase.rpc("hr_v2_admin_shortlist_talent", {
+        req_id: selectedHireRequestId,
+        t_user_id: tp.user_id,
+        reason: "Shortlisted from Talent Directory"
+      });
+      if (error) throw error;
+
+      toast.success("Talent shortlisted successfully");
+
+      const job = activeHireRequests.find(r => r.id === selectedHireRequestId);
+      const email = tp?.talents?.email;
+      if (email) {
+        await sendTalentApplicationShortlistedEmail({
+          email,
+          firstName: tp?.talents?.first_name || "Talent",
+          jobTitle: job?.title || "Job Opportunity"
+        });
+      }
+
+      setShortlistOpen(false);
+      onSuccess();
+    } catch (err: any) {
+      toast.error("Failed to shortlist talent: " + err.message);
+    } finally {
+      setShortlistLoading(false);
+    }
+  };
 
   const handleSuspend = async () => {
     setLoading(true);
@@ -298,20 +350,59 @@ const TalentActionsDrawers = ({
         </SheetContent>
       </Sheet>
 
-      {/* Shortlist Drawer - Simplified Placeholder */}
-      <Sheet open={shortlistOpen} onOpenChange={setShortlistOpen}>
-        <SheetContent className="sm:max-w-md">
-          <SheetHeader>
+      {/* Shortlist Drawer */}
+      <Sheet open={shortlistOpen} onOpenChange={(v) => {
+        setShortlistOpen(v);
+        if (v) fetchActiveHireRequests();
+      }}>
+        <SheetContent className="sm:max-w-md flex flex-col h-full p-0">
+          <SheetHeader className="p-6 border-b border-slate-100">
             <SheetTitle className="flex items-center gap-2">
               <UserPlus className="h-5 w-5" /> Shortlist Talent
             </SheetTitle>
             <SheetDescription>Add {tp?.talents?.first_name} to a project shortlist.</SheetDescription>
           </SheetHeader>
-          <div className="py-20 text-center text-slate-400">
-            <p className="text-sm italic">Job selection and shortlisting logic coming in Phase 2.1</p>
+          <div className="p-6 flex-1 overflow-y-auto space-y-4">
+            <div className="relative">
+               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+               <Input 
+                 placeholder="Filter hire requests..." 
+                 className="pl-10" 
+                 value={searchQuery}
+                 onChange={e => setSearchQuery(e.target.value)}
+               />
+            </div>
+            {activeHireRequests.length === 0 ? (
+              <div className="py-12 text-center text-slate-400">
+                <p className="text-sm">No active hire requests found.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {activeHireRequests.filter(hr => hr.title.toLowerCase().includes(searchQuery.toLowerCase())).map((hr) => (
+                  <button
+                    key={hr.id}
+                    onClick={() => setSelectedHireRequestId(hr.id)}
+                    className={cn(
+                      "w-full p-3 flex flex-col gap-1 rounded-xl border transition-all text-left",
+                      selectedHireRequestId === hr.id ? "bg-indigo-50 border-indigo-200" : "bg-white border-slate-100 hover:bg-slate-50"
+                    )}
+                  >
+                    <div className="flex justify-between w-full items-center">
+                      <p className="text-sm font-bold text-slate-900">{hr.title}</p>
+                      {selectedHireRequestId === hr.id && <Check className="h-4 w-4 text-indigo-600" />}
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                       {hr.client?.company_name ? hr.client.company_name : "OPSly Partner"} • {hr.service_model.replace(/_/g, ' ')}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <SheetFooter>
-            <Button variant="outline" className="w-full" onClick={() => setShortlistOpen(false)}>Close</Button>
+          <SheetFooter className="p-6 border-t border-slate-100">
+            <Button className="w-full" disabled={!selectedHireRequestId || shortlistLoading} onClick={handleShortlist}>
+              {shortlistLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm Shortlist"}
+            </Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>

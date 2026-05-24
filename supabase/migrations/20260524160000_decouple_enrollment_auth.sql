@@ -1,7 +1,7 @@
 -- Decouple academy enrollments and transactions from auth.users
 
 -- 1. Drop NOT NULL constraints
-ALTER TABLE public.academy_enrollments ALTER COLUMN user_id DROP NOT NULL;
+ALTER TABLE public.academy_enrollments ALTER COLUMN student_id DROP NOT NULL;
 ALTER TABLE public.course_transactions ALTER COLUMN user_id DROP NOT NULL;
 
 -- 2. Update the finalize_academy_enrollment RPC to support NULL user_id
@@ -42,7 +42,7 @@ BEGIN
     -- 3. Create Enrollment if it doesn't exist
     IF v_enrollment_id IS NULL THEN
         INSERT INTO public.academy_enrollments (
-            user_id, 
+            student_id, 
             course_id, 
             cohort_id, 
             course_name, 
@@ -69,7 +69,7 @@ BEGIN
 
         -- Increment cohort slots
         UPDATE public.cohorts 
-        SET slots_filled = COALESCE(slots_filled, 0) + 1 
+        SET current_slots = COALESCE(current_slots, 0) + 1 
         WHERE id = p_cohort_id;
     END IF;
 
