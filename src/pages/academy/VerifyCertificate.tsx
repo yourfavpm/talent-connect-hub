@@ -25,16 +25,35 @@ const VerifyCertificate = () => {
   useEffect(() => {
     const fetchCert = async () => {
       try {
-        const { data, error } = await supabase
-          .from("certificates")
-          .select("id, certificate_id, student_name, course_title, course_description, completion_date, issued_at, mentors, verification_url, status")
-          .eq("certificate_id", certificateId)
-          .single();
+        const tablesToTry = ["certificates", "academy_certificates"];
+        let resolvedData: CertificateData | null = null;
 
-        if (error || !data) {
+        for (const table of tablesToTry) {
+          try {
+            const { data, error } = await supabase
+              .from(table)
+              .select("id, certificate_id, student_name, course_title, course_description, completion_date, issued_at, mentors, verification_url, status")
+              .eq("certificate_id", certificateId)
+              .single();
+
+            if (data) {
+              resolvedData = data as unknown as CertificateData;
+              break;
+            }
+
+            // If the table doesn't exist or the query fails, keep trying the next fallback.
+            if (error) {
+              console.warn(`Certificate lookup failed on table ${table}:`, error.message || error);
+            }
+          } catch (innerError) {
+            console.warn(`Certificate lookup exception on table ${table}:`, innerError);
+          }
+        }
+
+        if (!resolvedData) {
           setNotFound(true);
         } else {
-          setCert(data as unknown as CertificateData);
+          setCert(resolvedData);
         }
       } catch (e) {
         console.error(e);
