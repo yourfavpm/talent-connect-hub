@@ -636,7 +636,7 @@ const CohortDetail = () => {
                                                 <p style="color: #166534; font-size: 22px; font-weight: bold; font-family: monospace; margin: 0;">${certId}</p>
                                             </div>
                                             <div style="text-align: center; margin-bottom: 40px;">
-                                                <a href="https://academy.opslyhr.com/certificate/${certId}" style="background: #0f2147; color: #fff; padding: 16px 40px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">View & Download Certificate</a>
+                                                <a href="https://academy.opslyhr.com/verify/${certId}" style="background: #0f2147; color: #fff; padding: 16px 40px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">View & Download Certificate</a>
                                             </div>
                                             <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 32px 0;" />
                                             <p style="color: #444; font-size: 16px; line-height: 1.7; margin-bottom: 16px;">Your skills are now in demand. We encourage you to <strong>join the OPSly Talent Marketplace</strong> — where top-tier companies hire Opsly-certified professionals like you.</p>

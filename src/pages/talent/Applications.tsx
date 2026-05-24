@@ -248,14 +248,15 @@ const TalentApplications = () => {
   };
 
   const renderTimeline = (app: Application) => {
-    const currentStage = getStatusStage(app.status);
+    let currentStage = getStatusStage(app.status);
+    // Adjust max stage to 4 based on user request
+    if (currentStage > 4) currentStage = 4;
     const isTerminal = ["hired", "rejected", "withdrawn"].includes(app.status);
     const timelineData = [
-      { step: 1, label: "Submitted", desc: format(new Date(app.created_at), "MMM d, yyyy"), icon: FileText },
-      { step: 2, label: "Reviewing", desc: currentStage >= 2 ? "Candidate under consideration" : "Queueing for review", icon: Search },
-      { step: 3, label: "Meeting", desc: currentStage >= 3 ? "Interview stage reached" : (isTerminal ? "Stage not reached" : "Awaiting schedule"), icon: Calendar },
-      { step: 4, label: "Decision", desc: currentStage >= 4 ? "Offer process started" : (isTerminal ? "Stage not reached" : "Decision pending"), icon: DollarSign },
-      { step: 5, label: app.status === "rejected" ? "Not Selected" : app.status === "withdrawn" ? "Withdrawn" : "Outcome", desc: currentStage === 5 ? "Final Status" : "TBD", icon: CheckCircle }
+      { step: 1, label: "Application Submitted", desc: format(new Date(app.created_at), "MMM d, yyyy"), icon: FileText },
+      { step: 2, label: "Shortlisted", desc: currentStage >= 2 ? "You've been shortlisted" : "Awaiting review", icon: Search },
+      { step: 3, label: "Interviewing", desc: currentStage >= 3 ? "Interview stage" : (isTerminal ? "Skipped" : "Awaiting schedule"), icon: Calendar },
+      { step: 4, label: app.status === "rejected" ? "Rejected" : app.status === "withdrawn" ? "Withdrawn" : "Hired", desc: currentStage === 4 ? "Final Decision" : "TBD", icon: CheckCircle }
     ];
 
     return (

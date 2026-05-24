@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, XCircle, AlertTriangle, Loader2, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 interface CertificateData {
@@ -17,6 +18,7 @@ interface CertificateData {
 const VerifyCertificate = () => {
   const { certificateId } = useParams<{ certificateId: string }>();
   const [cert, setCert] = useState<CertificateData | null>(null);
+  const certRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -25,7 +27,7 @@ const VerifyCertificate = () => {
       try {
         const { data, error } = await supabase
           .from("certificates")
-          .select("id, certificate_id, student_name, course_title, completion_date, issued_at, status")
+          .select("id, certificate_id, student_name, course_title, course_description, completion_date, issued_at, mentors, verification_url, status")
           .eq("certificate_id", certificateId)
           .single();
 
@@ -34,7 +36,8 @@ const VerifyCertificate = () => {
         } else {
           setCert(data as unknown as CertificateData);
         }
-      } catch {
+      } catch (e) {
+        console.error(e);
         setNotFound(true);
       } finally {
         setLoading(false);
@@ -126,9 +129,53 @@ const VerifyCertificate = () => {
                 <InfoRow label="Status" value="✅ Verified" valueClassName="text-emerald-600 font-bold" />
               </div>
 
-              <div className="mt-8 flex items-center justify-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                Issued by Opsly Academy
+              <div className="mt-6 flex items-center justify-center gap-3">
+                <Button
+                  onClick={async () => {
+                    if (!cert) return;
+                    try {
+                      const html2canvas = (await import("html2canvas")).default;
+                      const { jsPDF } = await import("jspdf");
+
+                      // Render a printable certificate card in-memory
+                      const temp = document.createElement('div');
+                      temp.style.width = '1120px';
+                      temp.style.height = '800px';
+                      temp.style.padding = '40px';
+                      temp.style.boxSizing = 'border-box';
+                      temp.innerHTML = `
+                        <div style="font-family: Georgia, 'Times New Roman', serif; width:1120px; height:800px; display:flex; align-items:center; justify-content:center; background:#fff;">
+                          <div style="width:1000px; height:720px; padding:40px; border:2px solid #e6edf6; border-radius:20px; text-align:center;">
+                            <img src=\"https://opslyhr.com/images/logocolored.svg\" style=\"height:48px; margin-bottom:24px;\" />
+                            <h1 style=\"font-size:36px; color:#0f2147; margin:0 0 12px 0;\">Certificate of Completion</h1>
+                            <p style=\"font-size:16px; color:#475569; margin:8px 0 24px 0;\">This certifies that</p>
+                            <h2 style=\"font-size:40px; margin:0 0 12px 0; color:#111;\">${cert.student_name}</h2>
+                            <p style=\"font-size:16px; color:#475569; margin:8px 0 24px 0;\">has successfully completed the program</p>
+                            <h3 style=\"font-size:24px; color:#0f4a8b; margin:0 0 18px 0;\">${cert.course_title}</h3>
+                            <p style=\"font-size:12px; color:#64748b; margin-top:30px;\">Certificate ID: ${cert.certificate_id}</p>
+                          </div>
+                        </div>
+                      `;
+                      document.body.appendChild(temp);
+                      const canvas = await html2canvas(temp, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                      const imgData = canvas.toDataURL('image/png');
+                      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [1120, 800] });
+                      pdf.addImage(imgData, 'PNG', 0, 0, 1120, 800);
+                      pdf.save(`Opsly-Certificate-${cert.certificate_id}.pdf`);
+                      document.body.removeChild(temp);
+                    } catch (err) {
+                      console.error('Certificate download error:', err);
+                    }
+                  }}
+                  className="h-12 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold"
+                >
+                  Download Certificate
+                </Button>
+
+                <div className="mt-0 flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  Issued by Opsly Academy
+                </div>
               </div>
             </div>
           )}
