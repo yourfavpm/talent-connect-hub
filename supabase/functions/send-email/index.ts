@@ -66,7 +66,8 @@ serve(async (req) => {
       'talent_auth_verify_required', 
       'talent_onboarding_welcome', 
       'client_onboarding_welcome',
-      'client_auth_verify_required'
+      'client_auth_verify_required',
+      'academy_enrollment_success'
     ].includes(templateKey);
     
     // Also loosely allow custom HTML templates if they are welcome/verification emails

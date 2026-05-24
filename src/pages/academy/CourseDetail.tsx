@@ -361,7 +361,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                             <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">Tools You'll <span className="text-emerald-500">Master.</span></h2>
                         </div>
                         <div className="flex flex-wrap justify-center gap-4">
-                            {course.tools.map((tool, i) => (
+                            {(course.tools || []).map((tool, i) => (
                                 <div key={i} className="px-8 py-5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3 group hover:border-emerald-200 transition-all shadow-sm">
                                     <Monitor className="w-5 h-5 text-emerald-500" />
                                     <span className="font-bold text-slate-700">{tool}</span>
@@ -381,7 +381,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold tracking-widest uppercase mb-6">Ideal Candidates</div>
                                 <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-8 tracking-tight">Who Is This <span className="text-blue-600">For?</span></h2>
                                 <div className="space-y-4">
-                                    {course.who_is_it_for.map((item, i) => (
+                                    {(course.who_is_it_for || []).map((item, i) => (
                                         <div key={i} className="flex items-start gap-4 p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
                                             <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-1">
                                                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
@@ -432,7 +432,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                                         <p className="text-slate-400 text-sm mb-8">To graduate and access the marketplace, you must complete and present this system.</p>
                                         
                                         <div className="space-y-4">
-                                            {course.final_project.requirements.map((req, i) => (
+                                            {(course.final_project?.requirements || []).map((req, i) => (
                                                 <div key={i} className="flex items-start gap-3">
                                                     <div className="mt-1 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-blue-500" />
                                                     <span className="text-sm text-slate-300 font-medium">{req}</span>
@@ -460,7 +460,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                                     <p className="text-lg text-blue-50 mb-10 max-w-xl">Every student exits with more than just skills. We prepare you to be an elite professional in the OPSly marketplace.</p>
                                     
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {course.marketplace_readiness.map((item, i) => (
+                                        {(course.marketplace_readiness || []).map((item, i) => (
                                             <div key={i} className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
                                                 <CheckCircle className="w-5 h-5 text-blue-200" />
                                                 <span className="text-sm font-bold">{item}</span>
@@ -513,7 +513,7 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                             <p className="text-base md:text-lg text-slate-500 font-normal max-w-2xl mx-auto">Hear from graduates who transformed their careers through this program.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {course.testimonials.map((t, i) => (
+                            {(course.testimonials || []).map((t, i) => (
                                 <TestimonialCard key={i} testimonial={t} />
                             ))}
                         </div>

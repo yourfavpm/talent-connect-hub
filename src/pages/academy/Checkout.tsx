@@ -47,6 +47,7 @@ const Checkout = () => {
     // Frictionless Flow State
     const [step, setStep] = useState<CheckoutStep>('cohort-selection');
     const [email, setEmail] = useState("");
+    const [fullName, setFullName] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -106,33 +107,27 @@ const Checkout = () => {
             toast({ title: "Invalid Email", description: "Please enter a valid email address.", variant: "destructive" });
             return;
         }
+        if (!fullName.trim()) {
+            toast({ title: "Name Required", description: "Please enter your full name.", variant: "destructive" });
+            return;
+        }
 
         setProcessing(true);
         try {
             // Check if user exists using the secure RPC
             const { data: exists, error } = await supabase.rpc('check_user_exists', { p_email: email.trim().toLowerCase() });
             
-            if (error) throw error;
-
-            setIsExistingUser(Boolean(exists));
-            
-            if (exists) {
-                // Check if already logged in as this user
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session && session.user.email?.toLowerCase() === email.trim().toLowerCase()) {
-                    setStep('payment');
-                } else {
-                    // User exists but not logged in (or logged in as someone else)
-                    // We need them to authenticate to link the enrollment
-                    setStep('auth');
-                }
-            } else {
-                // New users must create a password to secure their account
-                setStep('auth');
+            if (!error) {
+                setIsExistingUser(Boolean(exists));
             }
+
+            // We no longer require users to set passwords during checkout
+            // Go directly to payment
+            setStep('payment');
         } catch (err: any) {
             console.error("Failed to check user:", err);
-            toast({ title: "Error", description: "Could not verify email. Please try again.", variant: "destructive" });
+            // Even if the check fails, we can proceed to payment
+            setStep('payment');
         } finally {
             setProcessing(false);
         }
@@ -213,11 +208,12 @@ const Checkout = () => {
                 email: email.trim().toLowerCase(),
                 reference: reference,
                 metadata: {
-                    checkout_session_id: sessionId,
-                    email: email.trim().toLowerCase(),
+                    user_id: null,
                     course_id: course.slug,
-                    cohort_id: selectedCohortId, // NEVER null
-                    type: 'academy_enrollment_frictionless'
+                    cohort_id: selectedCohortId,
+                    type: "academy_enrollment",
+                    checkout_session_id: sessionId,
+                    student_name: fullName.trim() || email.split('@')[0],
                 },
                 onSuccess: (response) => {
                     console.log("Payment confirmed by Paystack:", response.reference);
@@ -246,33 +242,32 @@ const Checkout = () => {
             
             // STEP 1: Authenticate the user
             try {
-                if (!isExistingUser && password) {
+                if (!isExistingUser) {
+                    // Generate a random password since we no longer ask the user for one
+                    const generatedPassword = "Ops_" + Math.random().toString(36).slice(2, 12) + "!";
                     const { data: authData, error: signUpError } = await supabase.auth.signUp({
                         email: email.trim().toLowerCase(),
-                        password: password
+                        password: generatedPassword
                     });
                     
                     if (!signUpError && authData.user) {
                         isUserLoggedIn = true;
                         activeUserId = authData.user.id;
-                        console.log("New user signed up successfully:", activeUserId);
+                        console.log("New user signed up successfully with random password:", activeUserId);
                     } else if (signUpError) {
-                        console.log("Signup error, trying sign-in:", signUpError.message);
-                        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                            email: email.trim().toLowerCase(),
-                            password: password
-                        });
-                        if (!signInError && signInData.user) {
-                            isUserLoggedIn = true;
-                            activeUserId = signInData.user.id;
-                            console.log("Signed in successfully:", activeUserId);
-                        }
+                        console.log("Signup error:", signUpError.message);
                     }
-                } else if (isExistingUser) {
+                } else {
                     const { data: { session } } = await supabase.auth.getSession();
                     isUserLoggedIn = !!session;
                     activeUserId = session?.user?.id || null;
-                    console.log("Existing user login state:", isUserLoggedIn, activeUserId);
+                    
+                    // If user exists but is not logged in, we need a way to create their enrollment 
+                    // since RLS will block client-side inserts. We will rely on the Paystack webhook 
+                    // which runs with service_role privileges to insert the enrollment.
+                    if (!activeUserId) {
+                        console.log("Existing user not logged in. Will rely on webhook for enrollment.");
+                    }
                 }
             } catch (authErr) {
                 console.error("Auth processing error:", authErr);
@@ -295,7 +290,7 @@ const Checkout = () => {
                         cohort_id: selectedCohortId, // ENFORCED: Never null
                         course_name: course.title,
                         student_email: email.trim().toLowerCase(),
-                        student_name: email.split('@')[0],
+                        student_name: fullName.trim() || email.split('@')[0],
                         enrollment_status: "active",
                         price_naira: course.price_naira,
                         price_usd: course.price_usd,
@@ -343,65 +338,49 @@ const Checkout = () => {
                         } catch (countErr) {
                             console.error("Critical error updating slots:", countErr);
                         }
-
-                        // Trigger Branded Enrollment Email via specialized function
-                        try {
-                            await supabase.functions.invoke('send-enrollment-email', {
-                                body: {
-                                    enrollmentId: enrollmentId || "",
-                                    studentEmail: email.trim().toLowerCase(),
-                                    studentName: email.split('@')[0],
-                                    courseName: course.title,
-                                    duration: course.duration || "4 Weeks",
-                                    level: course.level || "Beginner",
-                                    amountNaira: course.price_naira || 0,
-                                    reference: reference || "academy_checkout"
-                                }
-                            });
-                            console.log("Enrollment email sent successfully via edge function");
-                        } catch (emailErr) {
-                            console.error("Failed to send enrollment email:", emailErr);
-                            
-                            // Fallback to basic send-email if specialized one fails
-                            try {
-                                await supabase.functions.invoke('send-email', {
-                                    body: {
-                                        to: email.trim().toLowerCase(),
-                                        subject: `Welcome to ${course.title}!`,
-                                        htmlTemplate: `
-                                            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
-                                                <div style="background: #0f2147; padding: 40px; text-align: center;">
-                                                    <img src="https://opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="width: 140px;" />
-                                                </div>
-                                                <div style="padding: 40px; background: #fff;">
-                                                    <h1 style="color: #0f2147; font-size: 24px; margin-bottom: 20px;">Enrollment Confirmed!</h1>
-                                                    <p style="color: #444; font-size: 16px; line-height: 1.6;">Hello,</p>
-                                                    <p style="color: #444; font-size: 16px; line-height: 1.6;">Your enrollment in <strong>${course.title}</strong> has been successful.</p>
-                                                    <div style="margin: 40px 0; text-align: center;">
-                                                        <a href="https://academy.opslyhr.com/dashboard" style="background: #0f2147; color: #fff; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">Go to Student Dashboard</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        `
-                                    }
-                                });
-                            } catch (fallbackErr) {
-                                console.error("Fallback email also failed:", fallbackErr);
-                            }
-                        }
                     }
                 } else {
                     console.log("Enrollment already exists:", existingEnrollment.id);
                 }
             } else {
-                toast({
-                    title: "Authentication Error",
-                    description: "Payment succeeded, but we couldn't log you in. Please log in manually.",
-                    variant: "destructive"
+                console.log("Could not process enrollment client-side due to missing auth. Webhook will handle it.");
+            }
+
+            // STEP 3: Send enrollment confirmation email directly (reliable path)
+            // This fires whether or not the user was logged in — the send-email function
+            // allows academy_enrollment_success without authentication.
+            try {
+                // Get cohort name for the email
+                const { data: cohortInfo } = await supabase
+                    .from("cohorts")
+                    .select("name")
+                    .eq("id", selectedCohortId)
+                    .single();
+
+                const { error: emailError } = await supabase.functions.invoke("send-email", {
+                    body: {
+                        templateKey: "academy_enrollment_success",
+                        to: email.trim().toLowerCase(),
+                        variables: {
+                            studentName: fullName.trim() || email.split('@')[0],
+                            courseName: course?.title || "Your Course",
+                            cohortName: cohortInfo?.name || "Upcoming Cohort",
+                            duration: "4 Weeks",
+                            level: course?.level || "Beginner",
+                            amountNaira: String(course?.price_naira || 0),
+                            reference: reference,
+                        }
+                    }
                 });
-                setProcessing(false);
-                setTimeout(() => navigate("/login?redirect=/dashboard"), 3000);
-                return;
+
+                if (emailError) {
+                    console.error("Failed to send enrollment email:", emailError);
+                } else {
+                    console.log("Enrollment confirmation email sent to:", email);
+                }
+            } catch (emailErr) {
+                console.error("Email send exception:", emailErr);
+                // Don't block the success flow if email fails
             }
 
             setSuccess(true);
@@ -409,27 +388,17 @@ const Checkout = () => {
             
             toast({
                 title: "Enrollment Successful! 🎉",
-                description: `Welcome to ${course?.title}. We're preparing your hub.`,
+                description: `Check your email at ${email} for confirmation details.`,
             });
-
-            // Delay redirect to show success state
-            setTimeout(() => {
-                if (isUserLoggedIn) {
-                    redirectToZone(Zone.ACADEMY, "/dashboard");
-                } else {
-                    redirectToZone(Zone.ACADEMY, "/login?redirect=/dashboard");
-                }
-            }, 3000);
 
         } catch (err: any) {
             console.error("Post-payment sync error:", err);
             toast({
                 title: "Warning",
-                description: "Payment successful, but we had trouble logging you in automatically. Please log in manually.",
+                description: "Payment successful, but we had trouble logging you in. Check your email for access details.",
             });
-            setTimeout(() => {
-                navigate("/login?redirect=/dashboard");
-            }, 3000);
+            setSuccess(true);
+            setProcessing(false);
         } finally {
             setProcessing(false);
         }
@@ -582,18 +551,31 @@ const Checkout = () => {
                                                 <p className="text-slate-500 font-medium">Enter your email to verify your identity.</p>
                                             </div>
                                             <form onSubmit={handleEmailSubmit} className="space-y-6">
-                                                <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Email Address</label>
-                                                    <div className="relative">
-                                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Full Name</label>
                                                         <input 
-                                                            type="email" 
+                                                            type="text" 
                                                             required
-                                                            placeholder="name@example.com"
-                                                            className="w-full h-14 pl-12 pr-6 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
-                                                            value={email}
-                                                            onChange={(e) => setEmail(e.target.value)}
+                                                            placeholder="John Doe"
+                                                            className="w-full h-14 px-6 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                                            value={fullName}
+                                                            onChange={(e) => setFullName(e.target.value)}
                                                         />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Email Address</label>
+                                                        <div className="relative">
+                                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                                            <input 
+                                                                type="email" 
+                                                                required
+                                                                placeholder="name@example.com"
+                                                                className="w-full h-14 pl-12 pr-6 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                                                value={email}
+                                                                onChange={(e) => setEmail(e.target.value)}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-3">
@@ -695,11 +677,7 @@ const Checkout = () => {
                                         <div className="space-y-8">
                                             <div>
                                                 <h1 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">Complete Enrollment</h1>
-                                                {isExistingUser ? (
-                                                     <p className="text-slate-500 font-medium">Welcome back, <span className="font-bold text-slate-900">{email}</span>. Please complete your payment.</p>
-                                                ) : (
-                                                     <p className="text-slate-500 font-medium">Your account is ready. Complete your payment to get instant access.</p>
-                                                )}
+                                                <p className="text-slate-500 font-medium">Complete your payment to confirm your enrollment in {course?.title}.</p>
                                             </div>
 
                                             <div className="space-y-4">
@@ -747,14 +725,46 @@ const Checkout = () => {
                             <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-8">
                                 <CheckCircle2 className="w-12 h-12 text-emerald-500" />
                             </div>
-                            <h2 className="text-4xl font-bold text-slate-900 mb-4 tracking-tight">You're Enrolled! 🎉</h2>
-                            <p className="text-lg text-slate-500 font-medium mb-12">
-                                We've successfully processed your enrollment for <span className="text-blue-600 font-bold">{course?.title}</span>. 
-                                Redirecting you to your learning hub in a moment...
+                            <h2 className="text-4xl font-bold text-slate-900 mb-4 tracking-tight">Payment Confirmed! 🎉</h2>
+                            <p className="text-lg text-slate-500 font-medium mb-8">
+                                Your enrollment for <span className="text-blue-600 font-bold">{course?.title}</span> has been confirmed.
                             </p>
-                            <div className="flex items-center justify-center gap-3">
-                                <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
-                                <span className="text-sm font-bold text-blue-600 uppercase tracking-widest">Entering Student Hub</span>
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+                                <div className="flex items-center justify-center gap-3 mb-3">
+                                    <Mail className="w-5 h-5 text-blue-600" />
+                                    <p className="font-bold text-slate-900">Check your email</p>
+                                </div>
+                                <p className="text-sm text-slate-600 mb-3">
+                                    We've sent a confirmation email to <span className="font-bold text-slate-900">{email}</span> with all the details you need to get started.
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                    If you don't see the email, check your spam folder or contact support at <span className="font-bold">academy@opslyhr.com</span>
+                                </p>
+                            </div>
+                            <div className="space-y-3">
+                                <p className="text-sm font-medium text-slate-600">Next steps:</p>
+                                <ul className="text-left max-w-md mx-auto space-y-2">
+                                    <li className="text-sm text-slate-600 flex items-center gap-3">
+                                        <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold">1</span>
+                                        Check your email for welcome details
+                                    </li>
+                                    <li className="text-sm text-slate-600 flex items-center gap-3">
+                                        <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold">2</span>
+                                        Complete your student profile setup
+                                    </li>
+                                    <li className="text-sm text-slate-600 flex items-center gap-3">
+                                        <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold">3</span>
+                                        Access the student workspace
+                                    </li>
+                                </ul>
+                            </div>
+                            <div className="pt-8 border-t border-slate-200 mt-8">
+                                <Button 
+                                    onClick={() => navigate("/browse")}
+                                    className="mx-auto h-12 px-8 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold"
+                                >
+                                    Browse More Courses
+                                </Button>
                             </div>
                         </motion.div>
                     )}

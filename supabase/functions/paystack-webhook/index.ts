@@ -20,19 +20,22 @@ async function verifyPaystackSignature(body: string, signature: string): Promise
   return hashHex === signature;
 }
 
-// Trigger Enrollment Email
-async function triggerEnrollmentEmail(enrollmentId: string, email: string, name: string, courseName: string, duration: string, level: string, amount: number, reference: string) {
+// Trigger Enrollment Email using the centralized send-email function
+async function triggerEnrollmentEmail(email: string, name: string, courseName: string, cohortName: string, duration: string, level: string, amount: number, reference: string) {
   try {
-    const { data: funcData, error: funcError } = await supabase.functions.invoke("send-enrollment-email", {
+    const { data: funcData, error: funcError } = await supabase.functions.invoke("send-email", {
       body: {
-        enrollmentId,
-        studentEmail: email,
-        studentName: name,
-        courseName,
-        duration,
-        level,
-        amountNaira: amount,
-        reference
+        templateKey: "academy_enrollment_success",
+        to: email,
+        variables: {
+          studentName: name,
+          courseName,
+          cohortName,
+          duration,
+          level,
+          amountNaira: String(amount),
+          reference
+        }
       }
     });
     if (funcError) console.error("Email function error:", funcError);
@@ -167,7 +170,7 @@ serve(async (req: Request) => {
                  cohort_id: cohortId,
                  course_name: courseData.title,
                  student_email: email,
-                 student_name: email.split('@')[0],
+                 student_name: metadata?.student_name || email.split('@')[0],
                  enrollment_status: "active",
                  price_naira: courseData.price_naira || 0,
                  price_usd: courseData.price_usd || 0,
@@ -185,10 +188,10 @@ serve(async (req: Request) => {
                
                // Trigger Branded Enrollment Email
                await triggerEnrollmentEmail(
-                 newEnroll.id,
                  email,
-                 email.split('@')[0],
+                 metadata?.student_name || email.split('@')[0],
                  courseData.title,
+                 cohortData.name,
                  courseData.duration || "4 Weeks",
                  courseData.level || "Beginner",
                  (courseData.price_naira || 0),
@@ -287,10 +290,10 @@ serve(async (req: Request) => {
         
       if (enrollData) {
         await triggerEnrollmentEmail(
-          enrollData.id,
           enrollData.student_email,
           enrollData.student_name,
           enrollData.course_name,
+          enrollData.cohorts?.name || "Upcoming Cohort",
           "4 Weeks", // Fallback
           "Beginner", // Fallback
           amount / 100,
