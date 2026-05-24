@@ -117,7 +117,7 @@ export default function AdminHireRequestDetail() {
   const resolveTalentProfileByUserId = useCallback(async (userId: string) => {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("first_name, last_name, title, skills, avatar_url, email")
+      .select("first_name, last_name, email, avatar_url")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -181,8 +181,7 @@ export default function AdminHireRequestDetail() {
           id,
           user_id,
           status,
-          talents:user_id (first_name, last_name, email, primary_role),
-          profiles:user_id (title, skills, avatar_url)
+          talents:talents (first_name, last_name, email, primary_role, secondary_skills, avatar_url)
         `)
         .in("status", ["fully_vetted", "approved", "vetted", "FULLY_VETTED", "APPROVED", "VETTED"])
         .order("created_at", { ascending: true });
@@ -191,12 +190,12 @@ export default function AdminHireRequestDetail() {
         id: profile.user_id,
         profile_id: profile.id,
         user_id: profile.user_id,
-        first_name: profile.talents?.first_name ?? profile.profiles?.first_name ?? null,
-        last_name: profile.talents?.last_name ?? profile.profiles?.last_name ?? null,
-        email: profile.talents?.email ?? profile.profiles?.email ?? null,
-        title: profile.talents?.primary_role ?? profile.profiles?.title ?? null,
-        skills: profile.profiles?.skills ?? [],
-        avatar_url: profile.profiles?.avatar_url ?? null,
+        first_name: profile.talents?.first_name ?? null,
+        last_name: profile.talents?.last_name ?? null,
+        email: profile.talents?.email ?? null,
+        title: profile.talents?.primary_role ?? null,
+        skills: profile.talents?.secondary_skills ?? [],
+        avatar_url: profile.talents?.avatar_url ?? null,
         vetting_status: profile.status,
       })) as (ProfileSnippet & { id: string; profile_id?: string; user_id: string })[];
 
@@ -215,7 +214,7 @@ export default function AdminHireRequestDetail() {
       // Fetch talents where this admin is the manager
       const { data: v2Profiles } = await supabase
         .from("v2_talent_profiles")
-        .select("user_id, talents:user_id(first_name, last_name, email, primary_role)")
+        .select("user_id, talents:talents(first_name, last_name, email, primary_role)")
         .eq("talent_manager_admin_id", user.id);
       
       const formatted = (v2Profiles || []).map(p => ({

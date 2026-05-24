@@ -43,9 +43,9 @@ export default function HireRequestDetail() {
       for (const item of (shortlistData || [])) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('first_name, last_name, title, skills, avatar_url')
+          .select('first_name, last_name, email, avatar_url')
           .eq('id', item.talent_user_id)
-          .single();
+          .maybeSingle();
         enrichedShortlist.push({ ...item, profiles: profile });
       }
       setShortlist(enrichedShortlist);

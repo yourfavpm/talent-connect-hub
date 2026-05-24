@@ -4,7 +4,7 @@ import type { Database } from './types';
 import { getCookieDomain } from '@/utils/subdomain';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Validate required environment variables
 if (!SUPABASE_URL) {
@@ -12,9 +12,9 @@ if (!SUPABASE_URL) {
   throw new Error('Supabase configuration error: Missing VITE_SUPABASE_URL');
 }
 
-if (!SUPABASE_PUBLISHABLE_KEY) {
-  console.error('[SUPABASE] Missing environment variable: VITE_SUPABASE_PUBLISHABLE_KEY');
-  throw new Error('Supabase configuration error: Missing VITE_SUPABASE_PUBLISHABLE_KEY');
+if (!SUPABASE_ANON_KEY) {
+  console.error('[SUPABASE] Missing environment variable: VITE_SUPABASE_ANON_KEY');
+  throw new Error('Supabase configuration error: Missing VITE_SUPABASE_ANON_KEY');
 }
 
 const domain = getCookieDomain();
@@ -60,7 +60,7 @@ const cookieStorage = {
   },
 };
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     storage: cookieStorage,
     persistSession: true,

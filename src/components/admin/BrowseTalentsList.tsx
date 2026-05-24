@@ -229,8 +229,7 @@ export const BrowseTalentsList = ({ jobId, jobStatus }: { jobId: string, jobStat
                     id,
                     user_id,
                     status,
-                    talents:user_id(id, first_name, last_name, email, primary_role, avatar_url, country, years_of_experience),
-                    profiles:user_id(title, skills, avatar_url)
+                    talents:talents(id, first_name, last_name, email, primary_role, secondary_skills, avatar_url, country, years_of_experience)
                 `)
                 .in('status', ['fully_vetted', 'approved', 'vetted', 'FULLY_VETTED', 'APPROVED', 'VETTED'])
                 .order('created_at', { ascending: false })
@@ -243,9 +242,9 @@ export const BrowseTalentsList = ({ jobId, jobStatus }: { jobId: string, jobStat
                 first_name: profile.talents?.first_name ?? null,
                 last_name: profile.talents?.last_name ?? null,
                 email: profile.talents?.email ?? null,
-                primary_role: profile.talents?.primary_role ?? profile.profiles?.title ?? null,
-                avatar_url: profile.talents?.avatar_url ?? profile.profiles?.avatar_url ?? null,
-                skills: profile.profiles?.skills ?? [],
+                primary_role: profile.talents?.primary_role ?? null,
+                avatar_url: profile.talents?.avatar_url ?? null,
+                skills: profile.talents?.secondary_skills ?? [],
                 country: profile.talents?.country ?? 'Remote',
                 years_of_experience: profile.talents?.years_of_experience ?? 0,
                 vetting_status: profile.status,
