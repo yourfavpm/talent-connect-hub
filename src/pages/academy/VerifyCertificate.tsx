@@ -134,11 +134,11 @@ const VerifyCertificate = () => {
                           <div style="position:absolute; inset:34px; border:1px solid #94a3b8; border-radius:4px;"></div>
                           
                           <!-- Watermark / Background Accent -->
-                          <div style="position:absolute; inset:0; opacity:0.02; background-image:url('https://opslyhr.com/images/logocolored.svg'); background-size:50%; background-position:center; background-repeat:no-repeat; mix-blend-mode:multiply;"></div>
+                          <div style="position:absolute; inset:0; opacity:0.04; background-image:url('data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'160\\' height=\\'160\\'><text x=\\'20\\' y=\\'80\\' font-family=\\'sans-serif\\' font-size=\\'24\\' font-weight=\\'bold\\' fill=\\'%232563eb\\' transform=\\'rotate(-45 80 80)\\'>OPSlyHR</text></svg>'); background-repeat:repeat; pointer-events:none; mix-blend-mode:multiply;"></div>
                           
                           <div style="position:relative; z-index:10; width:800px; text-align:center;">
                             <!-- Header / Logo -->
-                            <img src="https://opslyhr.com/images/logocolored.svg" style="height:56px; margin-bottom:30px;" />
+                            <img src="https://opslyhr.com/images/logocolored.svg" crossorigin="anonymous" style="height:56px; margin-bottom:30px;" />
                             
                             <h1 style="font-size:48px; font-weight:700; color:#1e293b; margin:0 0 16px 0; letter-spacing:2px; text-transform:uppercase;">Certificate of Completion</h1>
                             

@@ -147,12 +147,10 @@ const CertificateView = () => {
 
             {/* Watermark / Background Accent */}
             <div
-              className="absolute inset-0 opacity-[0.02] mix-blend-multiply pointer-events-none"
+              className="absolute inset-0 opacity-[0.04] mix-blend-multiply pointer-events-none"
               style={{
-                backgroundImage: "url('https://opslyhr.com/images/logocolored.svg')",
-                backgroundSize: "50%",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
+                backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><text x='20' y='80' font-family='sans-serif' font-size='24' font-weight='bold' fill='%232563eb' transform='rotate(-45 80 80)'>OPSlyHR</text></svg>\")",
+                backgroundRepeat: "repeat",
               }}
             />
 
