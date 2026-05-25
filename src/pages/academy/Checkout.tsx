@@ -208,11 +208,17 @@ const Checkout = () => {
             if (paymentProvider === 'kora') {
                 // Kora HQ Payment Flow
                 const koraPublicKey = import.meta.env.VITE_KORA_PUBLIC_KEY;
-                
+
+                // Helpful dev-time logging
+                if (import.meta.env.DEV) {
+                    // eslint-disable-next-line no-console
+                    console.debug("VITE_KORA_PUBLIC_KEY=", koraPublicKey);
+                }
+
                 if (!koraPublicKey || koraPublicKey === "") {
-                    console.warn("Kora key missing or empty, falling back to Paystack");
-                    setPaymentProvider('paystack');
-                    return handlePayment(); // Retry with Paystack
+                    setProcessing(false);
+                    toast({ title: "Kora key missing", description: "Kora public key not found. Restart dev server after updating .env or set VITE_KORA_PUBLIC_KEY.", variant: "destructive" });
+                    return;
                 }
 
                 const kora = new KoraService({ publicKey: koraPublicKey });

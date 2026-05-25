@@ -39,6 +39,13 @@ export class KoraService {
     script.id = "kora-script";
     script.src = "https://sdk.korahq.com/v1/inline.js";
     script.async = true;
+    // Attach basic error handler so we can detect failed network loads
+    script.onerror = () => {
+      console.warn("Kora SDK failed to load (network error)");
+      // mark the element so callers can detect load failure if needed
+      script.setAttribute("data-load-error", "1");
+    };
+
     document.body.appendChild(script);
   }
 
@@ -50,8 +57,32 @@ export class KoraService {
     return new Promise((resolve, reject) => {
       const { email, amount, reference, metadata, onSuccess, onClose } = params;
 
-      // Check if Kora SDK is loaded
+      const start = Date.now();
+      const timeoutMs = 7000; // wait up to 7s for SDK to load
+      let settled = false;
+
+      const safeResolve = (val: any) => {
+        if (settled) return;
+        settled = true;
+        resolve(val);
+      };
+
+      const safeReject = (err: any) => {
+        if (settled) return;
+        settled = true;
+        reject(err);
+      };
+
+      // Check if Kora SDK is loaded and usable
       const checkKora = () => {
+        const scriptEl = document.getElementById("kora-script") as HTMLScriptElement | null;
+        // If script element exists and had a load error, fallback immediately
+        if (scriptEl?.getAttribute("data-load-error") === "1") {
+          console.warn("Kora SDK script reported load error; falling back to hosted checkout");
+          this.openHostedCheckout(params, safeResolve, safeReject);
+          return;
+        }
+
         if ((window as any).Kora) {
           // Use Kora SDK if available
           try {
@@ -64,23 +95,38 @@ export class KoraService {
               onClose: () => {
                 console.log("Kora payment window closed");
                 if (onClose) onClose();
-                reject(new Error("Payment cancelled"));
+                safeReject(new Error("Payment cancelled"));
               },
               callback: (response: KoraResponse) => {
                 console.log("Kora payment successful:", response);
                 if (onSuccess) onSuccess(response);
-                resolve(response);
+                safeResolve(response);
               },
             });
-            handler.openIframe?.() || handler.open?.();
+            // Attempt to open iframe or popup
+            try {
+              handler.openIframe?.() || handler.open?.();
+            } catch (err) {
+              console.warn("Kora handler open failed, falling back to hosted checkout:", err);
+              this.openHostedCheckout(params, safeResolve, safeReject);
+            }
+            return;
           } catch (err) {
             console.warn("Kora SDK setup failed, falling back to hosted checkout:", err);
-            // Fallback to hosted checkout URL
-            this.openHostedCheckout(params, resolve, reject);
+            this.openHostedCheckout(params, safeResolve, safeReject);
+            return;
           }
-        } else {
-          setTimeout(checkKora, 100);
         }
+
+        // If we've waited too long, fallback to hosted checkout
+        if (Date.now() - start > timeoutMs) {
+          console.warn("Kora SDK did not appear within timeout; using hosted checkout fallback");
+          this.openHostedCheckout(params, safeResolve, safeReject);
+          return;
+        }
+
+        // Continue polling
+        setTimeout(checkKora, 150);
       };
 
       checkKora();
