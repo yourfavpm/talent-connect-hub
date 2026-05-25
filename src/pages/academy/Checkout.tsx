@@ -16,6 +16,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { PaystackService } from "@/lib/paystack";
+import { KoraService } from "@/lib/kora";
 import { redirectToZone, Zone } from "@/utils/subdomain";
 
 interface AcademyCourse {
@@ -30,6 +31,8 @@ interface AcademyCourse {
 
 type CheckoutStep = 'cohort-selection' | 'email' | 'auth' | 'payment';
 
+type PaymentProvider = 'paystack' | 'kora';
+
 const Checkout = () => {
     const { slug } = useParams();
     const [searchParams] = useSearchParams();
@@ -43,6 +46,7 @@ const Checkout = () => {
     const [availableCohorts, setAvailableCohorts] = useState<any[]>([]);
     const [selectedCohortId, setSelectedCohortId] = useState<string>("");
     const [success, setSuccess] = useState(false);
+    const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>('paystack');
 
     // Frictionless Flow State
     const [step, setStep] = useState<CheckoutStep>('cohort-selection');
@@ -189,43 +193,75 @@ const Checkout = () => {
 
             const sessionId = sessionData.id;
             
-            const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-            
-            if (!paystackPublicKey || paystackPublicKey === "") {
-                console.warn("Paystack key missing or empty, using simulated flow. Key found:", paystackPublicKey);
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                return processPostPaymentSuccess("simulated_ref_" + Date.now(), sessionId);
-            }
-
-            const paystack = new PaystackService({ publicKey: paystackPublicKey });
+            // Determine which payment provider to use
             const amountKobo = Math.round((course.price_naira || 0) * 100);
-            
-            // Unique reference format
             const reference = `ENR_FRIC_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+            const paymentMetadata = {
+                user_id: null,
+                course_id: course.slug,
+                cohort_id: selectedCohortId,
+                type: "academy_enrollment",
+                checkout_session_id: sessionId,
+                student_name: fullName.trim() || email.split('@')[0],
+            };
 
-            await paystack.initializePayment({
-                amount: amountKobo,
-                email: email.trim().toLowerCase(),
-                reference: reference,
-                metadata: {
-                    user_id: null,
-                    course_id: course.slug,
-                    cohort_id: selectedCohortId,
-                    type: "academy_enrollment",
-                    checkout_session_id: sessionId,
-                    student_name: fullName.trim() || email.split('@')[0],
-                },
-                onSuccess: (response) => {
-                    console.log("Payment confirmed by Paystack:", response.reference);
-                    setProcessing(false);
-                    setSuccess(true);
-                    processPostPaymentSuccess(response.reference, sessionId);
-                },
-                onClose: () => {
-                    toast({ title: "Cancelled", description: "Payment was cancelled." });
-                    setProcessing(false);
+            if (paymentProvider === 'kora') {
+                // Kora HQ Payment Flow
+                const koraPublicKey = import.meta.env.VITE_KORA_PUBLIC_KEY;
+                
+                if (!koraPublicKey || koraPublicKey === "") {
+                    console.warn("Kora key missing or empty, falling back to Paystack");
+                    setPaymentProvider('paystack');
+                    return handlePayment(); // Retry with Paystack
                 }
-            });
+
+                const kora = new KoraService({ publicKey: koraPublicKey });
+
+                await kora.initializePayment({
+                    amount: amountKobo,
+                    email: email.trim().toLowerCase(),
+                    reference: reference,
+                    metadata: paymentMetadata,
+                    onSuccess: (response) => {
+                        console.log("Payment confirmed by Kora:", response.reference);
+                        setProcessing(false);
+                        setSuccess(true);
+                        processPostPaymentSuccess(response.reference, sessionId);
+                    },
+                    onClose: () => {
+                        toast({ title: "Cancelled", description: "Payment was cancelled." });
+                        setProcessing(false);
+                    }
+                });
+            } else {
+                // Paystack Payment Flow (default)
+                const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+                
+                if (!paystackPublicKey || paystackPublicKey === "") {
+                    console.warn("Paystack key missing or empty, using simulated flow. Key found:", paystackPublicKey);
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    return processPostPaymentSuccess("simulated_ref_" + Date.now(), sessionId);
+                }
+
+                const paystack = new PaystackService({ publicKey: paystackPublicKey });
+
+                await paystack.initializePayment({
+                    amount: amountKobo,
+                    email: email.trim().toLowerCase(),
+                    reference: reference,
+                    metadata: paymentMetadata,
+                    onSuccess: (response) => {
+                        console.log("Payment confirmed by Paystack:", response.reference);
+                        setProcessing(false);
+                        setSuccess(true);
+                        processPostPaymentSuccess(response.reference, sessionId);
+                    },
+                    onClose: () => {
+                        toast({ title: "Cancelled", description: "Payment was cancelled." });
+                        setProcessing(false);
+                    }
+                });
+            }
         } catch (err: unknown) {
             console.error("Payment initialization error:", err);
             const errorMessage = err instanceof Error ? err.message : "Failed to initialize payment";
@@ -612,16 +648,48 @@ const Checkout = () => {
 
                                             <div className="space-y-4">
                                                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Payment Method</h3>
-                                                <div className="border-2 border-blue-600 bg-blue-50/50 p-6 rounded-xl relative flex items-center justify-between">
-                                                    <div className="flex items-center gap-4">
-                                                        <CreditCard className="w-6 h-6 text-blue-600" />
-                                                        <div>
-                                                            <div className="font-bold text-slate-900">Card Payment (Paystack)</div>
-                                                            <div className="text-xs text-slate-500 font-medium">Visa, Mastercard, Verve</div>
+                                                
+                                                {/* Paystack Option */}
+                                                <button
+                                                    onClick={() => setPaymentProvider('paystack')}
+                                                    className={`w-full p-6 rounded-xl border-2 transition-all text-left ${
+                                                        paymentProvider === 'paystack'
+                                                            ? 'border-blue-600 bg-blue-50/50'
+                                                            : 'border-slate-200 bg-white hover:border-slate-300'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-4">
+                                                            <CreditCard className="w-6 h-6 text-blue-600" />
+                                                            <div>
+                                                                <div className="font-bold text-slate-900">Paystack</div>
+                                                                <div className="text-xs text-slate-500 font-medium">Visa, Mastercard, Verve</div>
+                                                            </div>
                                                         </div>
+                                                        {paymentProvider === 'paystack' && <CheckCircle2 className="w-5 h-5 text-blue-600" />}
                                                     </div>
-                                                    <CheckCircle2 className="w-5 h-5 text-blue-600" />
-                                                </div>
+                                                </button>
+
+                                                {/* Kora Option */}
+                                                <button
+                                                    onClick={() => setPaymentProvider('kora')}
+                                                    className={`w-full p-6 rounded-xl border-2 transition-all text-left ${
+                                                        paymentProvider === 'kora'
+                                                            ? 'border-blue-600 bg-blue-50/50'
+                                                            : 'border-slate-200 bg-white hover:border-slate-300'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-4">
+                                                            <CreditCard className="w-6 h-6 text-green-600" />
+                                                            <div>
+                                                                <div className="font-bold text-slate-900">Kora HQ</div>
+                                                                <div className="text-xs text-slate-500 font-medium">Fast, Secure & Reliable</div>
+                                                            </div>
+                                                        </div>
+                                                        {paymentProvider === 'kora' && <CheckCircle2 className="w-5 h-5 text-blue-600" />}
+                                                    </div>
+                                                </button>
                                             </div>
 
                                             <Button 
