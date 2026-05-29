@@ -668,136 +668,144 @@ const Checkout = () => {
                                                 </Button>
                                             </div>
                                         </div>
-                                    )}
+                                     )}
 
-                                    {step === 'email' && (
-                                        <div className="space-y-6">
-                                            <div>
-                                                <h1 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">Let's get started</h1>
-                                                <p className="text-slate-500 font-medium">Enter your email to verify your identity.</p>
-                                            </div>
-                                            <form onSubmit={handleEmailSubmit} className="space-y-6">
-                                                <div className="space-y-4">
-                                                    <div className="space-y-2">
-                                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Full Name</label>
-                                                        <input 
-                                                            type="text" 
-                                                            required
-                                                            placeholder="John Doe"
-                                                            className="w-full h-14 px-6 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
-                                                            value={fullName}
-                                                            onChange={(e) => setFullName(e.target.value)}
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Email Address</label>
-                                                        <div className="relative">
-                                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                                            <input 
-                                                                type="email" 
-                                                                required
-                                                                placeholder="name@example.com"
-                                                                className="w-full h-14 pl-12 pr-6 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
-                                                                value={email}
-                                                                onChange={(e) => setEmail(e.target.value)}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-3">
-                                                    <Button 
-                                                        type="button"
-                                                        onClick={() => setStep('cohort-selection')}
-                                                        className="flex-1 h-14 bg-slate-200 hover:bg-slate-300 text-slate-900 rounded-xl font-bold text-lg"
-                                                    >
-                                                        Back
-                                                    </Button>
-                                                    <Button 
-                                                        type="submit" 
-                                                        disabled={processing}
-                                                        className="flex-1 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg shadow-sm"
-                                                    >
-                                                        {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continue"}
-                                                    </Button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    )}
+                                     {step === 'email' && (
+                                         <div>
+                                             <div className="px-6 py-5 border-b border-slate-100">
+                                                 <h1 className="text-base font-semibold text-slate-800">Personal Information</h1>
+                                                 <p className="text-xs text-slate-400 mt-0.5">Let's get started on setting up your profile</p>
+                                             </div>
 
-                                    {step === 'auth' && (
-                                        <div className="space-y-6">
-                                            <div>
-                                                <h1 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">
-                                                    {isExistingUser ? "Welcome back!" : "Create your account"}
-                                                </h1>
-                                                <p className="text-slate-500 font-medium">
-                                                    {isExistingUser 
-                                                        ? "Sign in to your account to continue with the enrollment."
-                                                        : "Set a password to access your account after payment."}
-                                                </p>
-                                            </div>
-                                            <div className="px-4 py-3 bg-blue-50 text-blue-800 rounded-lg text-sm font-medium border border-blue-100 flex items-center gap-3">
-                                                 <Mail className="w-4 h-4 text-blue-500" /> {email}
-                                            </div>
-                                            <form onSubmit={handleAuthSubmit} className="space-y-6">
-                                                <div className="space-y-4">
-                                                    <div className="space-y-2">
-                                                        <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">
-                                                            {isExistingUser ? "Your Password" : "Create Password"}
-                                                        </label>
-                                                        <div className="relative">
-                                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                                            <input 
-                                                                type={showPassword ? "text" : "password"} 
-                                                                required
-                                                                placeholder={isExistingUser ? "Enter your password" : "Min. 8 characters"}
-                                                                className="w-full h-14 pl-12 pr-14 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
-                                                                value={password}
-                                                                onChange={(e) => setPassword(e.target.value)}
-                                                            />
-                                                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2">
-                                                                {showPassword ? <EyeOff className="w-5 h-5 text-slate-400" /> : <Eye className="w-5 h-5 text-slate-400" />}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    {!isExistingUser && (
-                                                        <div className="space-y-2">
-                                                            <label className="text-xs font-bold text-slate-900 uppercase tracking-widest">Confirm Password</label>
-                                                            <div className="relative">
-                                                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                                                <input 
-                                                                    type={showPassword ? "text" : "password"} 
-                                                                    required
-                                                                    placeholder="Confirm password"
-                                                                    className="w-full h-14 pl-12 pr-14 bg-slate-50 rounded-2xl border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
-                                                                    value={confirmPassword}
-                                                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="flex gap-3">
-                                                    <Button 
-                                                        type="button"
-                                                        onClick={() => setStep('email')}
-                                                        className="flex-1 h-14 bg-slate-200 hover:bg-slate-300 text-slate-900 rounded-xl font-bold text-lg"
-                                                    >
-                                                        Back
-                                                    </Button>
-                                                    <Button 
-                                                        type="submit" 
-                                                        className="flex-1 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg shadow-sm"
-                                                    >
-                                                        Continue to Payment
-                                                    </Button>
-                                                </div>
-                                            </form>
-                                            <button onClick={() => setStep('cohort-selection')} className="text-sm font-bold text-slate-500 hover:text-slate-900">
-                                                Change cohort
-                                            </button>
-                                        </div>
-                                    )}
+                                             <form onSubmit={handleEmailSubmit} className="p-6 space-y-4">
+                                                 <div className="space-y-4">
+                                                     <div className="space-y-1.5">
+                                                         <label className="text-xs font-semibold text-slate-500">Full Name</label>
+                                                         <input 
+                                                             type="text" 
+                                                             required
+                                                             placeholder="John Doe"
+                                                             className="w-full h-10 px-3.5 bg-white rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm text-slate-800 font-normal placeholder:text-slate-400 transition-all"
+                                                             value={fullName}
+                                                             onChange={(e) => setFullName(e.target.value)}
+                                                         />
+                                                     </div>
+                                                     <div className="space-y-1.5">
+                                                         <label className="text-xs font-semibold text-slate-500">Email Address</label>
+                                                         <div className="relative">
+                                                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                                             <input 
+                                                                 type="email" 
+                                                                 required
+                                                                 placeholder="name@example.com"
+                                                                 className="w-full h-10 pl-10 pr-3.5 bg-white rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm text-slate-800 font-normal placeholder:text-slate-400 transition-all"
+                                                                 value={email}
+                                                                 onChange={(e) => setEmail(e.target.value)}
+                                                             />
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                                 <div className="flex gap-3 pt-2">
+                                                     <Button 
+                                                         type="button"
+                                                         onClick={() => setStep('cohort-selection')}
+                                                         className="flex-1 h-10 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium text-sm transition-all"
+                                                     >
+                                                         Back
+                                                     </Button>
+                                                     <Button 
+                                                         type="submit" 
+                                                         disabled={processing}
+                                                         className="flex-1 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm shadow-sm transition-all flex items-center justify-center gap-1.5"
+                                                     >
+                                                         {processing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Continue"}
+                                                     </Button>
+                                                 </div>
+                                             </form>
+                                         </div>
+                                     )}
+
+                                     {step === 'auth' && (
+                                         <div>
+                                             <div className="px-6 py-5 border-b border-slate-100">
+                                                 <h1 className="text-base font-semibold text-slate-800">
+                                                     {isExistingUser ? "Welcome back!" : "Create your account"}
+                                                 </h1>
+                                                 <p className="text-xs text-slate-400 mt-0.5">
+                                                     {isExistingUser 
+                                                         ? "Sign in to your account to continue with the enrollment."
+                                                         : "Set a password to access your account after payment."}
+                                                 </p>
+                                             </div>
+
+                                             <div className="p-6 space-y-4">
+                                                 <div className="px-4 py-3 bg-blue-50/60 text-blue-700 rounded-lg text-xs font-semibold border border-blue-100/50 flex items-center gap-2">
+                                                     <Mail className="w-3.5 h-3.5 text-blue-500" /> {email}
+                                                 </div>
+
+                                                 <form onSubmit={handleAuthSubmit} className="space-y-4">
+                                                     <div className="space-y-4">
+                                                         <div className="space-y-1.5">
+                                                             <label className="text-xs font-semibold text-slate-500">
+                                                                 {isExistingUser ? "Your Password" : "Create Password"}
+                                                             </label>
+                                                             <div className="relative">
+                                                                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                                                 <input 
+                                                                     type={showPassword ? "text" : "password"} 
+                                                                     required
+                                                                     placeholder={isExistingUser ? "Enter your password" : "Min. 8 characters"}
+                                                                     className="w-full h-10 pl-10 pr-10 bg-white rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm text-slate-800 font-normal placeholder:text-slate-400 transition-all"
+                                                                     value={password}
+                                                                     onChange={(e) => setPassword(e.target.value)}
+                                                                 />
+                                                                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors">
+                                                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                                 </button>
+                                                             </div>
+                                                         </div>
+                                                         {!isExistingUser && (
+                                                             <div className="space-y-1.5">
+                                                                 <label className="text-xs font-semibold text-slate-500">Confirm Password</label>
+                                                                 <div className="relative">
+                                                                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                                                     <input 
+                                                                         type={showPassword ? "text" : "password"} 
+                                                                         required
+                                                                         placeholder="Confirm password"
+                                                                         className="w-full h-10 pl-10 pr-4 bg-white rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm text-slate-800 font-normal placeholder:text-slate-400 transition-all"
+                                                                         value={confirmPassword}
+                                                                         onChange={(e) => setConfirmPassword(e.target.value)}
+                                                                     />
+                                                                 </div>
+                                                             </div>
+                                                         )}
+                                                     </div>
+                                                     <div className="flex gap-3 pt-2">
+                                                         <Button 
+                                                             type="button"
+                                                             onClick={() => setStep('email')}
+                                                             className="flex-1 h-10 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium text-sm transition-all"
+                                                         >
+                                                             Back
+                                                         </Button>
+                                                         <Button 
+                                                             type="submit" 
+                                                             className="flex-1 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm shadow-sm transition-all"
+                                                         >
+                                                             Continue to Payment
+                                                         </Button>
+                                                     </div>
+                                                 </form>
+
+                                                 <div className="text-center pt-2">
+                                                     <button onClick={() => setStep('cohort-selection')} className="text-xs font-semibold text-slate-400 hover:text-blue-600 transition-colors">
+                                                         Change cohort
+                                                     </button>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     )}
 
                                     {step === 'payment' && (
                                         <div>
