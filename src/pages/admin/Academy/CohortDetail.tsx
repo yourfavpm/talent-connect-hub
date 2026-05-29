@@ -23,7 +23,9 @@ import {
     AlertTriangle,
     Mail,
     X,
-    Search
+    Search,
+    Receipt,
+    UserCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -96,6 +98,15 @@ interface Submission {
     profiles: { full_name: string; email: string };
 }
 
+interface ReceiptSubmission {
+    id: string;
+    email: string;
+    student_name: string;
+    receipt_url: string;
+    status: string;
+    created_at: string;
+}
+
 const CohortDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -108,6 +119,8 @@ const CohortDetail = () => {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [assignments, setAssignments] = useState<Assignment[]>([]);
     const [submissions, setSubmissions] = useState<Submission[]>([]);
+    const [receiptSubmissions, setReceiptSubmissions] = useState<ReceiptSubmission[]>([]);
+    const [admittingId, setAdmittingId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState("students");
 
     // Form States
@@ -212,13 +225,16 @@ const CohortDetail = () => {
             });
 
             // 2. Fetch All Data
-            const [enrollmentsRes, sessionsRes, announcementsRes, assignmentsRes, submissionsRes] = await Promise.all([
+            const [enrollmentsRes, sessionsRes, announcementsRes, assignmentsRes, submissionsRes, receiptsRes] = await Promise.all([
                 supabase.from("academy_enrollments").select("*").eq("cohort_id", id),
                 supabase.from("sessions").select("*").eq("cohort_id", id).order("session_date", { ascending: true }),
                 supabase.from("announcements").select("*").eq("cohort_id", id).order("created_at", { ascending: false }),
                 supabase.from("assignments").select("*").eq("cohort_id", id).order("created_at", { ascending: false }),
-                supabase.from("submissions").select("*, assignments!inner(title, cohort_id)").eq("assignments.cohort_id", id).order("created_at", { ascending: false })
+                supabase.from("submissions").select("*, assignments!inner(title, cohort_id)").eq("assignments.cohort_id", id).order("created_at", { ascending: false }),
+                supabase.from("payment_receipt_submissions").select("*").eq("cohort_id", id).order("created_at", { ascending: false })
             ]);
+
+            setReceiptSubmissions((receiptsRes.data as ReceiptSubmission[]) || []);
 
             // 3. Process Students & Profiles
             const enrollments = enrollmentsRes.data || [];
@@ -499,7 +515,85 @@ const CohortDetail = () => {
         }
     };
 
+    const handleAdmitStudent = async (student: Student) => {
+        const receipt = receiptSubmissions.find(
+            r => r.email.toLowerCase() === student.student_email?.toLowerCase()
+        );
+
+        setAdmittingId(student.id);
+        try {
+            // 1. Update the enrollment status to 'active'
+            const { error: enrollError } = await supabase
+                .from('academy_enrollments')
+                .update({ enrollment_status: 'active' })
+                .eq('id', student.id);
+
+            if (enrollError) throw enrollError;
+
+            // 2. Mark the receipt submission as admitted (if any)
+            if (receipt) {
+                await supabase
+                    .from('payment_receipt_submissions')
+                    .update({ status: 'admitted', admitted_at: new Date().toISOString() })
+                    .eq('id', receipt.id);
+            }
+
+            // 3. Send the full enrollment confirmation email
+            try {
+                const { data: cohortInfo } = await supabase
+                    .from('cohorts')
+                    .select('name')
+                    .eq('id', id)
+                    .single();
+
+                const { data: courseData } = await supabase
+                    .from('academy_courses')
+                    .select('title, level, price_naira, price_usd')
+                    .eq('id', cohort!.course_id)
+                    .single();
+
+                await supabase.functions.invoke('send-email', {
+                    body: {
+                        templateKey: 'academy_enrollment_success',
+                        to: student.student_email,
+                        variables: {
+                            studentName: student.student_name,
+                            courseName: courseData?.title || cohort?.name || 'Your Course',
+                            cohortName: cohortInfo?.name || 'Upcoming Cohort',
+                            duration: '4 Weeks',
+                            level: courseData?.level || 'Beginner',
+                            amountNaira: String(courseData?.price_naira || cohort?.price_naira || 0),
+                            reference: `MANUAL_ADMIT_${Date.now()}`,
+                        }
+                    }
+                });
+            } catch (emailErr) {
+                console.error('Enrollment email error:', emailErr);
+                // Non-fatal — don't block admission
+            }
+
+            // 4. Update local state
+            setStudents(prev =>
+                prev.map(s => s.id === student.id ? { ...s, enrollment_status: 'active' } : s)
+            );
+            setReceiptSubmissions(prev =>
+                prev.map(r => r.email.toLowerCase() === student.student_email?.toLowerCase()
+                    ? { ...r, status: 'admitted' }
+                    : r
+                )
+            );
+
+            toast({ title: '✅ Student Admitted', description: `${student.student_name} has been admitted and sent the enrollment email.` });
+        } catch (err: any) {
+            console.error('Admit error:', err);
+            toast({ title: 'Error', description: err.message || 'Failed to admit student.', variant: 'destructive' });
+        } finally {
+            setAdmittingId(null);
+        }
+    };
+
     const handleDeleteCohort = async () => {
+
         if (!cohort) return;
         
         if (!window.confirm(`Are you sure you want to delete "${cohort.name}"? This will permanently remove all student enrollments, assignments, sessions, and data associated with this cohort. This action cannot be undone.`)) {
@@ -787,8 +881,9 @@ const CohortDetail = () => {
                                         <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Progress</th>
                                         <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Streak/Hours</th>
                                         <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Status</th>
+                                        <th className="px-8 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Receipt</th>
                                         <th className="px-8 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Top Grad</th>
-                                        <th className="px-8 py-5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Action</th>
+                                        <th className="px-8 py-5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Admit</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
@@ -847,8 +942,35 @@ const CohortDetail = () => {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded uppercase tracking-wider">{student.enrollment_status}</span>
+                                                <span className={`px-2 py-0.5 text-[9px] font-bold rounded uppercase tracking-wider ${
+                                                    student.enrollment_status === 'active'
+                                                        ? 'bg-emerald-50 text-emerald-600'
+                                                        : 'bg-amber-50 text-amber-600'
+                                                }`}>{student.enrollment_status}</span>
                                             </td>
+                                            {/* Receipt column */}
+                                            <td className="px-8 py-6 text-center">
+                                                {(() => {
+                                                    const receipt = receiptSubmissions.find(
+                                                        r => r.email.toLowerCase() === student.student_email?.toLowerCase()
+                                                    );
+                                                    if (!receipt) return <span className="text-slate-300 text-sm">—</span>;
+                                                    return (
+                                                        <a
+                                                            href={receipt.receipt_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg transition-colors"
+                                                            title={`Status: ${receipt.status}`}
+                                                        >
+                                                            <Receipt className="w-3.5 h-3.5" />
+                                                            View
+                                                            {receipt.status === 'admitted' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+                                                        </a>
+                                                    );
+                                                })()}
+                                            </td>
+                                            {/* Top Grad column */}
                                             <td className="px-8 py-6 text-center">
                                                 <button 
                                                     onClick={async () => {
@@ -865,8 +987,27 @@ const CohortDetail = () => {
                                                     <Star className={`w-4 h-4 ${student.is_top_grad ? 'fill-amber-400' : ''}`} />
                                                 </button>
                                             </td>
+                                            {/* Admit column */}
                                             <td className="px-8 py-6 text-right">
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg"><MoreVertical className="w-4 h-4 text-slate-400" /></Button>
+                                                {student.enrollment_status === 'active' ? (
+                                                    <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-lg">
+                                                        <CheckCircle2 className="w-3.5 h-3.5" /> Admitted
+                                                    </span>
+                                                ) : (
+                                                    <Button
+                                                        size="sm"
+                                                        disabled={admittingId === student.id}
+                                                        onClick={() => handleAdmitStudent(student)}
+                                                        className="h-8 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs gap-1.5 shadow-sm"
+                                                    >
+                                                        {admittingId === student.id ? (
+                                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                        ) : (
+                                                            <UserCheck className="w-3.5 h-3.5" />
+                                                        )}
+                                                        Admit
+                                                    </Button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
