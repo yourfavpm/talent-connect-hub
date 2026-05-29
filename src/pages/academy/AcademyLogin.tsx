@@ -10,7 +10,7 @@ const AcademyLogin = () => {
     const { toast } = useToast();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const redirectPath = searchParams.get("redirect") || "/dashboard";
+    const redirectPath = searchParams.get("redirect") || "/courses";
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -48,7 +48,7 @@ const AcademyLogin = () => {
 
             toast({
                 title: "Welcome back!",
-                description: "Redirecting to your student dashboard...",
+                description: "Redirecting to your courses...",
             });
 
             const isLocal = window.location.hostname === "localhost" || window.location.hostname.endsWith(".localhost");
@@ -97,7 +97,7 @@ const AcademyLogin = () => {
                     </div>
 
                     <div className="mb-12">
-                        <h2 className="text-3xl font-bold text-slate-800 tracking-tight mb-2">Student Access</h2>
+                        <h2 className="text-3xl font-bold text-slate-800 tracking-tight mb-2">Academy Access</h2>
                         <p className="text-slate-500 font-medium">Please enter your credentials to continue your journey.</p>
                     </div>
 

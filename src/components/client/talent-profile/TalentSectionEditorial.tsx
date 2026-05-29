@@ -11,24 +11,20 @@ interface TalentSectionEditorialProps {
 
 export function TalentSectionEditorial({ title, children, icon: Icon, className = "", id }: TalentSectionEditorialProps) {
   return (
-    <div 
-      className={`bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md ${className}`} 
+    <div
+      className={`bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden ${className}`}
       id={id}
     >
-      <div className="p-8 md:p-10">
-        <div className="flex items-center gap-4 mb-10">
-          {Icon && (
-            <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-900 border border-slate-100 shadow-sm">
-               <Icon className="w-5 h-5" />
-            </div>
-          )}
-          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-            {title}
-          </h2>
-        </div>
-        <div className="min-w-0">
-          {children}
-        </div>
+      <div className="px-5 sm:px-6 py-5 border-b border-slate-100 flex items-center gap-3">
+        {Icon && (
+          <div className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+            <Icon className="w-3.5 h-3.5 text-slate-500" />
+          </div>
+        )}
+        <h2 className="text-sm font-semibold text-slate-700">{title}</h2>
+      </div>
+      <div className="px-5 sm:px-6 py-5">
+        {children}
       </div>
     </div>
   );

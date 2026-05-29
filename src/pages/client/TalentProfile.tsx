@@ -123,50 +123,52 @@ const ClientTalentProfile = () => {
   if (!talent) return null;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans selection:bg-blue-100 selection:text-blue-900 border-x border-slate-50 max-w-[1440px] mx-auto">
-      <div className="max-w-[1280px] mx-auto px-6 py-12">
-        <Button 
-          variant="ghost" 
+    <div className="min-h-screen bg-[#f8f9fc] font-inter">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+
+        {/* Back */}
+        <button
           onClick={() => navigate(-1)}
-          className="mb-10 -ml-4 text-slate-400 hover:text-slate-900 group hover:bg-transparent"
+          className="flex items-center gap-2 text-slate-400 hover:text-slate-700 text-sm font-medium mb-6 transition-colors group"
         >
-          <ArrowLeft className="w-4 h-4 mr-3 group-hover:-translate-x-2 transition-transform duration-500" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Exit to Catalog</span>
-        </Button>
-        
-        {/* New Spacing Strategy: Header is full width, content uses optimized 2-column grid */}
-        <div className="space-y-10">
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          Back to Talent Catalog
+        </button>
+
+        <div className="space-y-5">
           <TalentProfileHeader talent={talent} onInvite={handleInvite} onMessage={() => navigate(getInternalPath(`/client/messages`))} />
 
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-12 items-start">
-            <div className="flex-1 min-w-0 space-y-8">
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-5 items-start">
+            <div className="min-w-0 space-y-4">
               <TalentSections talent={talent} />
             </div>
-            
-            <div className="w-full shrink-0 space-y-8">
-              <TalentActionPanel 
-                talent={talent} 
+
+            <div className="space-y-4">
+              <TalentActionPanel
+                talent={talent}
                 onInvite={handleInvite}
                 onMessage={() => navigate(getInternalPath(`/client/messages`))}
               />
-              
-              <div className="group cursor-pointer" onClick={handleRequestCV}>
-                 <div className="p-8 rounded-3xl bg-white border border-slate-100 group-hover:border-blue-300 group-hover:bg-blue-50/30 transition-all duration-500 text-center shadow-sm">
-                   <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 group-hover:text-blue-600">Confidentiality Notice</div>
-                   <p className="text-[12px] text-slate-500 font-medium leading-relaxed mb-6">
-                     Full resumes contain PII and are shared via our Talent Success team.
-                   </p>
-                   <Button variant="outline" className="w-full h-12 rounded-xl font-bold uppercase tracking-widest text-[10px] bg-white border-slate-200 text-slate-900 group-hover:border-blue-600 group-hover:text-blue-600 transition-all">
-                      Request Comprehensive CV
-                   </Button>
-                 </div>
+
+              {/* CV Request card */}
+              <div
+                className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-5 cursor-pointer group hover:border-blue-200 transition-all"
+                onClick={handleRequestCV}
+              >
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 group-hover:text-blue-600 transition-colors">Confidentiality Notice</p>
+                <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                  Full resumes contain PII and are shared via our Talent Success team upon request.
+                </p>
+                <button className="w-full h-9 rounded-xl border border-slate-200 text-slate-700 text-xs font-medium hover:border-blue-400 hover:text-blue-600 transition-all">
+                  Request Full CV
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <InterviewInviteDrawer 
+      <InterviewInviteDrawer
         isOpen={inviteDrawerOpen}
         onClose={() => setInviteDrawerOpen(false)}
         talentId={talentId || ""}
@@ -174,6 +176,7 @@ const ClientTalentProfile = () => {
       />
     </div>
   );
+
 };
 
 export default ClientTalentProfile;

@@ -48,25 +48,9 @@ const BrowseCourses = lazy(() => import("./pages/academy/BrowseCourses"));
 const CourseDetail = lazy(() => import("./pages/academy/CourseDetail"));
 const TalentMarketplace = lazy(() => import("./pages/academy/TalentMarketplace"));
 const ApplyForm = lazy(() => import("./pages/academy/ApplyForm"));
-const StudentDashboard = lazy(() => import("./pages/academy/StudentDashboard"));
-const CourseHub = lazy(() => import("./pages/academy/CourseHub"));
 const Checkout = lazy(() => import("./pages/academy/Checkout"));
 const AcademyLogin = lazy(() => import("./pages/academy/AcademyLogin"));
 const AcademySignup = lazy(() => import("./pages/academy/AcademySignup"));
-
-// Academy Dashboard
-const StudentDashboardLayout = lazy(() => import("./components/academy/StudentDashboardLayout"));
-const DashboardOverview = lazy(() => import("./pages/academy/dashboard/Overview"));
-const MyCohorts = lazy(() => import("./pages/academy/dashboard/MyCohorts"));
-const BrowsePrograms = lazy(() => import("./pages/academy/dashboard/BrowsePrograms"));
-const CohortWorkspace = lazy(() => import("./pages/academy/dashboard/CohortWorkspace"));
-const Assignments = lazy(() => import("./pages/academy/dashboard/Assignments"));
-const Grades = lazy(() => import("./pages/academy/dashboard/Grades"));
-const Mentors = lazy(() => import("./pages/academy/dashboard/Mentors"));
-const Messages = lazy(() => import("./pages/academy/dashboard/Messages"));
-const Profile = lazy(() => import("./pages/academy/dashboard/Profile"));
-const SubmitAssignment = lazy(() => import("./pages/academy/dashboard/SubmitAssignment"));
-const Certificates = lazy(() => import("./pages/academy/dashboard/Certificates"));
 const CertificateView = lazy(() => import("./pages/academy/CertificateView"));
 const VerifyCertificate = lazy(() => import("./pages/academy/VerifyCertificate"));
 
@@ -361,21 +345,6 @@ const App = () => {
                     <Route path="/checkout/:slug" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={false}><Checkout /></ZoneGuard>} />
                     
                     <Route path="*" element={<Navigate to="/" replace />} />
-                  </Route>
-
-                  {/* Protected Academy Dashboard */}
-                  <Route path="/dashboard" element={<ZoneGuard allowedZone={Zone.ACADEMY} protected={true}><StudentDashboardLayout /></ZoneGuard>}>
-                    <Route index element={<DashboardOverview />} />
-                    <Route path="courses" element={<BrowsePrograms />} />
-                    <Route path="cohorts" element={<MyCohorts />} />
-                    <Route path="cohorts/:enrollmentId" element={<CohortWorkspace />} />
-                    <Route path="assignments" element={<Assignments />} />
-                    <Route path="assignments/:id" element={<SubmitAssignment />} />
-                    <Route path="grades" element={<Grades />} />
-                    <Route path="mentors" element={<Mentors />} />
-                    <Route path="messages" element={<Messages />} />
-                    <Route path="profile" element={<Profile />} />
-                    <Route path="certificates" element={<Certificates />} />
                   </Route>
 
                   {/* Certificate View (Protected) */}

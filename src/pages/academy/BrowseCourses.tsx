@@ -88,6 +88,11 @@ const BrowseCourses = () => {
                 ];
                 
                 fetchedCourses.sort((a, b) => {
+                    // Open-cohort courses always first
+                    const aOpen = a.has_open_cohort ? 1 : 0;
+                    const bOpen = b.has_open_cohort ? 1 : 0;
+                    if (aOpen !== bOpen) return bOpen - aOpen;
+                    // Then flagship order
                     const aIndex = flagshipSlugs.indexOf(a.slug);
                     const bIndex = flagshipSlugs.indexOf(b.slug);
                     if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;

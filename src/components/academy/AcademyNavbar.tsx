@@ -68,20 +68,12 @@ const AcademyNavbar = () => {
                         Explore Courses
                     </Link>
                     {user && (
-                        <>
-                            <Link
-                                to="/dashboard"
-                                className="px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all font-inter"
-                            >
-                                Student Dashboard
-                            </Link>
-                            <button
-                                onClick={handleSignOut}
-                                className="px-5 py-2.5 border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:text-red-600 transition-all font-inter"
-                            >
-                                Sign Out
-                            </button>
-                        </>
+                        <button
+                            onClick={handleSignOut}
+                            className="px-5 py-2.5 border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:text-red-600 transition-all font-inter"
+                        >
+                            Sign Out
+                        </button>
                     )}
                 </div>
 
@@ -152,13 +144,6 @@ const AcademyNavbar = () => {
                             <div className="mt-auto px-6 py-10 border-t border-slate-100 bg-white">
                                 {user ? (
                                     <div className="space-y-3">
-                                        <Link 
-                                            to="/dashboard"
-                                            className="flex items-center justify-between w-full py-4 px-6 bg-slate-900 text-white font-bold text-base rounded-2xl group transition-all"
-                                        >
-                                            <span>Student Dashboard</span>
-                                            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                        </Link>
                                         <button 
                                             onClick={handleSignOut}
                                             className="flex items-center justify-between w-full py-4 px-6 bg-slate-50 text-slate-600 font-bold text-base rounded-2xl group transition-all border border-slate-200"

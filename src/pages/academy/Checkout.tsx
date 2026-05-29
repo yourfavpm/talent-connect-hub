@@ -733,7 +733,7 @@ const Checkout = () => {
                                                 <p className="text-slate-500 font-medium">
                                                     {isExistingUser 
                                                         ? "Sign in to your account to continue with the enrollment."
-                                                        : "Set a password to access your student dashboard after payment."}
+                                                        : "Set a password to access your account after payment."}
                                                 </p>
                                             </div>
                                             <div className="px-4 py-3 bg-blue-50 text-blue-800 rounded-lg text-sm font-medium border border-blue-100 flex items-center gap-3">
