@@ -1720,7 +1720,6 @@ const CohortDetail = () => {
                                 </motion.div>
                             </div>
                         )}
-                    </TabsContent>
                 </Tabs>
             </div>
 
