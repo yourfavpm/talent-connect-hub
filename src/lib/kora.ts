@@ -37,7 +37,7 @@ export class KoraService {
 
     const script = document.createElement("script");
     script.id = "kora-script";
-    script.src = "https://sdk.korahq.com/v1/inline.js";
+    script.src = "https://korablobstorage.blob.core.windows.net/modal-bucket/korapay-collections.min.js";
     script.async = true;
     // Attach basic error handler so we can detect failed network loads
     script.onerror = () => {
@@ -83,33 +83,45 @@ export class KoraService {
           return;
         }
 
-        if ((window as any).Kora) {
+        if ((window as any).Korapay) {
           // Use Kora SDK if available
           try {
-            const handler = (window as any).Kora.setup({
+            // Map metadata keys to hyphenated format with <= 5 fields to satisfy Kora validation rules:
+            const koraMetadata: Record<string, any> = {};
+            if (metadata) {
+              if (metadata.course_id) koraMetadata["course-id"] = metadata.course_id;
+              if (metadata.cohort_id) koraMetadata["cohort-id"] = metadata.cohort_id;
+              if (metadata.checkout_session_id) koraMetadata["checkout-session-id"] = metadata.checkout_session_id;
+              if (metadata.student_name) koraMetadata["student-name"] = metadata.student_name;
+              if (metadata.user_id) koraMetadata["user-id"] = metadata.user_id;
+            }
+
+            (window as any).Korapay.initialize({
               key: this.publicKey,
-              email,
-              amount, // amount in kobo/smallest unit (NGN)
-              reference,
-              metadata,
+              reference: reference,
+              amount: amount / 100, // amount in major unit (NGN)
+              currency: "NGN",
+              customer: {
+                name: (metadata?.student_name as string) || email.split("@")[0],
+                email: email,
+              },
+              metadata: koraMetadata,
               onClose: () => {
                 console.log("Kora payment window closed");
                 if (onClose) onClose();
                 safeReject(new Error("Payment cancelled"));
               },
-              callback: (response: KoraResponse) => {
+              onSuccess: (response: any) => {
                 console.log("Kora payment successful:", response);
-                if (onSuccess) onSuccess(response);
-                safeResolve(response);
+                const result: KoraResponse = {
+                  reference: response.reference || reference,
+                  status: "success",
+                  message: "Payment successful",
+                };
+                if (onSuccess) onSuccess(result);
+                safeResolve(result);
               },
             });
-            // Attempt to open iframe or popup
-            try {
-              handler.openIframe?.() || handler.open?.();
-            } catch (err) {
-              console.warn("Kora handler open failed, falling back to hosted checkout:", err);
-              this.openHostedCheckout(params, safeResolve, safeReject);
-            }
             return;
           } catch (err) {
             console.warn("Kora SDK setup failed, falling back to hosted checkout:", err);
@@ -144,12 +156,21 @@ export class KoraService {
     const { email, amount, reference, metadata, onSuccess, onClose } = params;
 
     // Construct hosted checkout URL
-    const checkoutUrl = new URL("https://checkout.korahq.com");
+    const checkoutUrl = new URL("https://checkout.korapay.com");
     checkoutUrl.searchParams.append("public_key", this.publicKey);
     checkoutUrl.searchParams.append("tx_ref", reference);
-    checkoutUrl.searchParams.append("amount", String(amount));
+    checkoutUrl.searchParams.append("amount", String(amount / 100)); // amount in major unit (NGN)
     checkoutUrl.searchParams.append("customer_email", email);
     checkoutUrl.searchParams.append("currency", "NGN");
+
+    // Construct dynamic redirect_url pointing back to checkout page
+    const redirectUrl = new URL(window.location.origin + window.location.pathname);
+    redirectUrl.searchParams.append("payment_status", "success");
+    redirectUrl.searchParams.append("reference", reference);
+    if (metadata?.checkout_session_id) {
+      redirectUrl.searchParams.append("session_id", String(metadata.checkout_session_id));
+    }
+    checkoutUrl.searchParams.append("redirect_url", redirectUrl.toString());
 
     // Add metadata as custom fields
     if (metadata?.cohort_id) {
@@ -190,7 +211,10 @@ export class KoraService {
 
     // Listen for postMessage from checkout (some providers support this)
     const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== "https://checkout.korahq.com") return;
+      if (
+        event.origin !== "https://checkout.korahq.com" &&
+        event.origin !== "https://checkout.korapay.com"
+      ) return;
 
       if (event.data?.status === "success") {
         clearInterval(pollInterval);

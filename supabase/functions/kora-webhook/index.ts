@@ -117,9 +117,9 @@ serve(async (req: Request) => {
       const koraRef = reference || tx_ref;
 
       // 1. Check if this is a new frictionless checkout using metadata
-      const checkoutSessionId = metadata?.checkout_session_id;
-      const courseSlug = metadata?.course_id || metadata?.course_slug;
-      const cohortId = metadata?.cohort_id;
+      const checkoutSessionId = metadata?.checkout_session_id || metadata?.['checkout-session-id'];
+      const courseSlug = metadata?.course_id || metadata?.course_slug || metadata?.['course-id'];
+      const cohortId = metadata?.cohort_id || metadata?.['cohort-id'];
 
       // ENFORCE: cohort_id is REQUIRED for all academy enrollments
       if (!cohortId) {
@@ -127,7 +127,7 @@ serve(async (req: Request) => {
         return new Response(JSON.stringify({ error: "cohort_id required" }), { status: 400 });
       }
 
-      let finalUserId = metadata?.user_id;
+      let finalUserId = metadata?.user_id || metadata?.['user-id'];
 
       if (checkoutSessionId) {
         // Frictionless flow: Webhook ensures user exists
@@ -177,7 +177,7 @@ serve(async (req: Request) => {
         const { data: existingEnrollment, error: checkError } = await supabase
           .from("academy_enrollments")
           .select("id")
-          .eq("user_id", finalUserId)
+          .eq("student_id", finalUserId)
           .eq("cohort_id", cohortId)
           .maybeSingle();
 
@@ -228,12 +228,12 @@ serve(async (req: Request) => {
             const { data: newEnroll, error: enrollError } = await supabase
               .from("academy_enrollments")
               .insert({
-                user_id: finalUserId,
+                student_id: finalUserId,
                 course_id: courseSlug,
                 cohort_id: cohortId,
                 course_name: courseData.title,
                 student_email: email,
-                student_name: metadata?.student_name || email.split("@")[0],
+                student_name: metadata?.student_name || metadata?.['student-name'] || email.split("@")[0],
                 enrollment_status: "active",
                 price_naira: courseData.price_naira || 0,
                 price_usd: courseData.price_usd || 0,
@@ -254,7 +254,7 @@ serve(async (req: Request) => {
               // Trigger Branded Enrollment Email
               await triggerEnrollmentEmail(
                 email,
-                metadata?.student_name || email.split("@")[0],
+                metadata?.student_name || metadata?.['student-name'] || email.split("@")[0],
                 courseData.title,
                 cohortData.name,
                 courseData.duration || "4 Weeks",

@@ -16,3 +16,8 @@ CREATE POLICY "Anyone can insert enrollments" ON public.academy_enrollments
         OR student_id IS NULL 
         OR public.is_admin(auth.uid())
     );
+
+-- 3. Grant INSERT privileges to authenticated and anonymous roles
+-- This is critical so PostgreSQL permits 'anon' connections to insert before checking RLS policies.
+GRANT INSERT ON public.academy_enrollments TO anon, authenticated;
+

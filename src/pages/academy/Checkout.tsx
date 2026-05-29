@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { KoraService } from "@/lib/kora";
+import { PaystackService } from "@/lib/paystack";
 import { Button } from "@/components/ui/button";
 import { 
     CheckCircle2, 
@@ -55,6 +57,7 @@ const Checkout = () => {
     const [availableCohorts, setAvailableCohorts] = useState<any[]>([]);
     const [selectedCohortId, setSelectedCohortId] = useState<string>("");
     const [success, setSuccess] = useState(false);
+    const [isOfflinePayment, setIsOfflinePayment] = useState(false);
 
     // Frictionless Flow State
     const [step, setStep] = useState<CheckoutStep>('cohort-selection');
@@ -70,7 +73,79 @@ const Checkout = () => {
     const [receiptUploading, setReceiptUploading] = useState(false);
     const [copiedField, setCopiedField] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>('kora');
+    const [showBankTransfer, setShowBankTransfer] = useState(false);
     
+    // Proactively preload Kora Script on mount
+    useEffect(() => {
+        const koraPublicKey = import.meta.env.VITE_KORA_PUBLIC_KEY;
+        if (koraPublicKey && koraPublicKey !== "") {
+            try {
+                new KoraService({ publicKey: koraPublicKey });
+            } catch (e) {
+                console.warn("Kora preloading was deferred:", e);
+            }
+        }
+    }, []);
+
+    // Handle Kora hosted checkout redirect callback
+    useEffect(() => {
+        const handleRedirectCallback = async () => {
+            const paymentStatus = searchParams.get("payment_status");
+            const reference = searchParams.get("reference");
+            const sessionId = searchParams.get("session_id");
+
+            if (paymentStatus === "success" && reference && sessionId) {
+                setLoading(true);
+                try {
+                    // Try restoring session info from localStorage
+                    const savedDataStr = localStorage.getItem('checkout_pending_data');
+                    let pendingEmail = "";
+                    let pendingName = "";
+                    let pendingCohortId = "";
+
+                    if (savedDataStr) {
+                        const savedData = JSON.parse(savedDataStr);
+                        pendingEmail = savedData.email || "";
+                        pendingName = savedData.fullName || "";
+                        pendingCohortId = savedData.selectedCohortId || "";
+                    }
+
+                    // Fallback to supabase checkout_sessions query if localStorage was cleared
+                    if (!pendingEmail || !pendingCohortId) {
+                        const { data: session, error } = await supabase
+                            .from("checkout_sessions")
+                            .select("email, cohort_id")
+                            .eq("id", sessionId)
+                            .maybeSingle();
+
+                        if (!error && session) {
+                            pendingEmail = session.email;
+                            pendingCohortId = session.cohort_id;
+                            pendingName = session.email.split('@')[0];
+                        }
+                    }
+
+                    if (pendingEmail && pendingCohortId) {
+                        setEmail(pendingEmail);
+                        setFullName(pendingName);
+                        setSelectedCohortId(pendingCohortId);
+                        setIsOfflinePayment(false);
+                        setSuccess(true);
+                        
+                        await processPostPaymentSuccess(reference, sessionId, pendingEmail, pendingName, pendingCohortId);
+                    }
+                } catch (err) {
+                    console.error("Error processing Kora redirect callback:", err);
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+
+        handleRedirectCallback();
+    }, [searchParams]);
+
     useEffect(() => {
         const fetchCourseAndSession = async () => {
             if (!slug) return;
@@ -290,6 +365,7 @@ const Checkout = () => {
                 console.error('Receipt email failed:', emailErr);
             }
 
+            setIsOfflinePayment(true);
             setSuccess(true);
             toast({
                 title: "Receipt Submitted! 📨",
@@ -337,7 +413,17 @@ const Checkout = () => {
             
             // Determine which payment provider to use
             const amountKobo = Math.round((course.price_naira || 0) * 100);
-            const reference = `ENR_FRIC_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+            
+            // Generate a shorter, completely unique transaction reference (16 chars max, no underscores)
+            const reference = `ENR-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
+            // Save pending checkout state to localStorage to prevent data loss on page redirects
+            localStorage.setItem('checkout_pending_data', JSON.stringify({
+                email: email.trim().toLowerCase(),
+                fullName: fullName.trim(),
+                selectedCohortId: selectedCohortId,
+            }));
+
             const paymentMetadata = {
                 user_id: null,
                 course_id: course.slug,
@@ -372,13 +458,14 @@ const Checkout = () => {
                     metadata: paymentMetadata,
                     onSuccess: (response) => {
                         console.log("Payment confirmed by Kora:", response.reference);
-                        setProcessing(false);
+                        setIsOfflinePayment(false);
                         setSuccess(true);
                         processPostPaymentSuccess(response.reference, sessionId);
                     },
                     onClose: () => {
                         toast({ title: "Cancelled", description: "Payment was cancelled." });
                         setProcessing(false);
+                        localStorage.removeItem('checkout_pending_data');
                     }
                 });
             } else {
@@ -388,6 +475,8 @@ const Checkout = () => {
                 if (!paystackPublicKey || paystackPublicKey === "") {
                     console.warn("Paystack key missing or empty, using simulated flow. Key found:", paystackPublicKey);
                     await new Promise(resolve => setTimeout(resolve, 2000));
+                    setIsOfflinePayment(false);
+                    setSuccess(true);
                     return processPostPaymentSuccess("simulated_ref_" + Date.now(), sessionId);
                 }
 
@@ -400,13 +489,14 @@ const Checkout = () => {
                     metadata: paymentMetadata,
                     onSuccess: (response) => {
                         console.log("Payment confirmed by Paystack:", response.reference);
-                        setProcessing(false);
+                        setIsOfflinePayment(false);
                         setSuccess(true);
                         processPostPaymentSuccess(response.reference, sessionId);
                     },
                     onClose: () => {
                         toast({ title: "Cancelled", description: "Payment was cancelled." });
                         setProcessing(false);
+                        localStorage.removeItem('checkout_pending_data');
                     }
                 });
             }
@@ -415,13 +505,23 @@ const Checkout = () => {
             const errorMessage = err instanceof Error ? err.message : "Failed to initialize payment";
             toast({ title: "Error", description: errorMessage, variant: "destructive" });
             setProcessing(false);
+            localStorage.removeItem('checkout_pending_data');
         }
     };
 
-    const processPostPaymentSuccess = async (reference: string, sessionId: string) => {
+    const processPostPaymentSuccess = async (
+        reference: string, 
+        sessionId: string,
+        customEmail?: string,
+        customFullName?: string,
+        customCohortId?: string
+    ) => {
         try {
             console.log("Processing post-payment for session:", sessionId);
-            
+            const targetEmail = (customEmail || email).trim().toLowerCase();
+            const targetFullName = (customFullName || fullName).trim() || targetEmail.split('@')[0];
+            const targetCohortId = customCohortId || selectedCohortId;
+
             // STEP 1: Determine active user if they happen to be logged in (optional for guest checkout)
             let activeUserId: string | null = null;
             try {
@@ -435,15 +535,17 @@ const Checkout = () => {
             // This works completely decoupled from auth.users (supports guest checkout)
             try {
                 const { error: rpcError } = await supabase.rpc('finalize_academy_enrollment', {
-                    p_email: email.trim().toLowerCase(),
-                    p_student_name: fullName.trim() || email.split('@')[0],
+                    p_email: targetEmail,
+                    p_student_name: targetFullName,
                     p_course_slug: course?.slug || "",
-                    p_cohort_id: selectedCohortId,
+                    p_cohort_id: targetCohortId,
                     p_course_title: course?.title || "",
                     p_price_naira: course?.price_naira || 0,
                     p_price_usd: course?.price_usd || 0,
-                    p_paystack_reference: reference,
-                    p_user_id: activeUserId // can be null, the RPC handles it
+                    p_paystack_reference: paymentProvider === 'paystack' ? reference : null,
+                    p_user_id: activeUserId, // can be null, the RPC handles it
+                    p_payment_method: paymentProvider,
+                    p_kora_reference: paymentProvider === 'kora' ? reference : null
                 });
 
                 if (rpcError) {
@@ -490,19 +592,20 @@ const Checkout = () => {
                 if (emailError) {
                     console.error("Failed to send enrollment email:", emailError);
                 } else {
-                    console.log("Enrollment confirmation email sent to:", email);
+                    console.log("Enrollment confirmation email sent to:", targetEmail);
                 }
             } catch (emailErr) {
                 console.error("Email send exception:", emailErr);
                 // Don't block the success flow if email fails
             }
 
+            setIsOfflinePayment(false);
             setSuccess(true);
             setProcessing(false);
             
             toast({
                 title: "Enrollment Successful! 🎉",
-                description: `Check your email at ${email} for confirmation details.`,
+                description: `Check your email at ${targetEmail} for confirmation details.`,
             });
 
         } catch (err: any) {
@@ -511,10 +614,13 @@ const Checkout = () => {
                 title: "Warning",
                 description: "Payment successful, but we had trouble logging you in. Check your email for access details.",
             });
+            setIsOfflinePayment(false);
             setSuccess(true);
             setProcessing(false);
         } finally {
             setProcessing(false);
+            // Clear pending checkout data from localStorage on completion
+            localStorage.removeItem('checkout_pending_data');
         }
     };
 
@@ -809,158 +915,188 @@ const Checkout = () => {
 
                                     {step === 'payment' && (
                                         <div>
-                                            <div className="px-6 py-5 border-b border-slate-100">
-                                                <h1 className="text-base font-semibold text-slate-800">Complete Enrollment</h1>
-                                                <p className="text-xs text-slate-400 mt-0.5">Transfer the exact amount and upload your receipt below</p>
+                                            <div className="px-6 py-5 border-b border-slate-100 bg-[#fafbfc]">
+                                                <h1 className="text-base font-semibold text-slate-800">Secure Enrollment Checkout</h1>
+                                                <p className="text-xs text-slate-400 mt-0.5">Choose your preferred payment option to complete your registration.</p>
                                             </div>
 
-                                            {/* ── Bank Details ── */}
-                                            <div className="px-6 pt-5 pb-4 space-y-2">
-                                                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                                                    <Building2 className="w-3.5 h-3.5" /> Bank Transfer Details
-                                                </p>
-
-                                                {/* Amount row */}
-                                                <div className="flex items-center justify-between py-3 px-4 bg-slate-50 rounded-lg border border-slate-100">
-                                                    <div>
-                                                        <p className="text-[10px] text-slate-400 mb-0.5">Amount</p>
-                                                        <p className="text-lg font-semibold text-blue-600">₦{course.price_naira.toLocaleString()}</p>
+                                            {/* ── Option 1: Live Online Kora Payment (Primary) ── */}
+                                            <div className="px-6 py-5 bg-gradient-to-br from-blue-50/20 via-white to-white">
+                                                <div className="space-y-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                                                                <CreditCard className="w-5 h-5 text-blue-600" />
+                                                            </div>
+                                                            <div>
+                                                                <h2 className="text-sm font-semibold text-slate-800">Online Checkout (Recommended)</h2>
+                                                                <p className="text-xs text-slate-400">Pay securely with Cards, Bank Transfer, or USSD via Kora</p>
+                                                            </div>
+                                                        </div>
+                                                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full border border-emerald-100 uppercase tracking-wide">
+                                                            Instant
+                                                        </span>
                                                     </div>
-                                                    <button
-                                                        onClick={() => copyToClipboard(String(course.price_naira), 'Amount')}
-                                                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white border border-slate-200 text-slate-500 text-xs font-medium hover:bg-slate-50 transition-colors"
+
+                                                    <Button
+                                                        onClick={handlePayment}
+                                                        disabled={processing}
+                                                        className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2"
                                                     >
-                                                        {copiedField === 'Amount' ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                                                        {copiedField === 'Amount' ? 'Copied' : 'Copy'}
-                                                    </button>
-                                                </div>
-
-                                                {/* Bank name row */}
-                                                <div className="flex items-center justify-between py-3 px-4 bg-slate-50 rounded-lg border border-slate-100">
-                                                    <div>
-                                                        <p className="text-[10px] text-slate-400 mb-0.5">Bank</p>
-                                                        <p className="text-sm font-medium text-slate-800">{BANK_ACCOUNT.bank}</p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Account number row */}
-                                                <div className="flex items-center justify-between py-3 px-4 bg-slate-50 rounded-lg border border-slate-100">
-                                                    <div>
-                                                        <p className="text-[10px] text-slate-400 mb-0.5">Account Number</p>
-                                                        <p className="text-sm font-medium text-slate-800 tracking-wider">{BANK_ACCOUNT.accountNumber}</p>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => copyToClipboard(BANK_ACCOUNT.accountNumber, 'Account number')}
-                                                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white border border-slate-200 text-slate-500 text-xs font-medium hover:bg-slate-50 transition-colors"
-                                                    >
-                                                        {copiedField === 'Account number' ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                                                        {copiedField === 'Account number' ? 'Copied' : 'Copy'}
-                                                    </button>
-                                                </div>
-
-                                                {/* Account name row */}
-                                                <div className="py-3 px-4 bg-slate-50 rounded-lg border border-slate-100">
-                                                    <p className="text-[10px] text-slate-400 mb-0.5">Account Name</p>
-                                                    <p className="text-sm font-medium text-slate-800">{BANK_ACCOUNT.accountName}</p>
-                                                </div>
-                                            </div>
-
-                                            {/* ── Receipt Upload ── */}
-                                            <div className="px-6 pb-4 space-y-2">
-                                                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Upload Receipt</p>
-
-                                                <div
-                                                    onClick={() => fileInputRef.current?.click()}
-                                                    className={`w-full rounded-lg border border-dashed transition-all cursor-pointer px-5 py-4 flex items-center gap-4 ${
-                                                        receiptFile
-                                                            ? 'border-emerald-300 bg-emerald-50/40'
-                                                            : 'border-slate-200 bg-slate-50/60 hover:border-blue-300 hover:bg-blue-50/20'
-                                                    }`}
-                                                >
-                                                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${ receiptFile ? 'bg-emerald-100' : 'bg-slate-100' }`}>
-                                                        {receiptFile ? (
-                                                            <FileCheck className="w-4 h-4 text-emerald-600" />
-                                                        ) : (
-                                                            <Upload className="w-4 h-4 text-slate-400" />
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        {receiptFile ? (
+                                                        {processing ? (
                                                             <>
-                                                                <p className="text-sm font-medium text-slate-800 truncate">{receiptFile.name}</p>
-                                                                <p className="text-xs text-emerald-600">{(receiptFile.size / 1024).toFixed(0)} KB · Click to change</p>
+                                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                                Processing...
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <p className="text-sm font-medium text-slate-600">Click to upload receipt</p>
-                                                                <p className="text-xs text-slate-400">JPG, PNG or PDF · Max 10MB</p>
+                                                                <ShieldCheck className="w-4 h-4" />
+                                                                Pay ₦{course.price_naira.toLocaleString()}
                                                             </>
                                                         )}
-                                                    </div>
+                                                    </Button>
+
+                                                    <p className="text-[10px] text-center text-slate-400 font-normal">
+                                                        Secure 256-bit SSL encrypted checkout. Powered by Kora.
+                                                    </p>
                                                 </div>
-                                                <input
-                                                    ref={fileInputRef}
-                                                    type="file"
-                                                    accept="image/*,application/pdf"
-                                                    className="hidden"
-                                                    onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
-                                                />
                                             </div>
 
-                                            {/* ── Submit ── */}
-                                            <div className="px-6 pb-5">
-                                                <Button
-                                                    onClick={handleReceiptSubmit}
-                                                    disabled={receiptUploading || !receiptFile}
-                                                    className="w-full h-11 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg font-medium text-sm shadow-sm gap-2"
-                                                >
-                                                    {receiptUploading ? (
-                                                        <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>
-                                                    ) : (
-                                                        <><Upload className="w-4 h-4" /> Submit Payment Receipt</>
-                                                    )}
-                                                </Button>
-                                            </div>
-
-                                            {/* ── Coming Soon: Online Payment ── */}
-                                            <div className="px-6 pb-5 space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="flex-1 h-px bg-slate-100" />
-                                                    <span className="text-[10px] font-semibold text-slate-300 uppercase tracking-wider">Online Payment — Coming Soon</span>
-                                                    <div className="flex-1 h-px bg-slate-100" />
-                                                </div>
-
-                                                <div className="flex gap-3">
-                                                    {/* Paystack (disabled) */}
-                                                    <div className="relative flex-1">
-                                                        <div className="w-full px-4 py-3 rounded-lg border border-slate-100 bg-slate-50/50 opacity-40 cursor-not-allowed flex items-center gap-3">
-                                                            <CreditCard className="w-4 h-4 text-slate-300 shrink-0" />
+                                            {/* ── Option 2: Offline Bank Transfer (Disabled) ── */}
+                                            {false && (
+                                                <div className="px-6 py-4">
+                                                    <button
+                                                        onClick={() => setShowBankTransfer(!showBankTransfer)}
+                                                        className="w-full py-3 px-4 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200/50 flex items-center justify-between text-left transition-all duration-200 group"
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 group-hover:bg-slate-200 transition-colors">
+                                                                <Building2 className="w-4 h-4 text-slate-500" />
+                                                            </div>
                                                             <div>
-                                                                <p className="text-xs font-medium text-slate-400">Paystack</p>
-                                                                <p className="text-[10px] text-slate-300">Visa, Mastercard, Verve</p>
+                                                                <p className="text-xs font-semibold text-slate-700">Or Pay via Offline Bank Transfer</p>
+                                                                <p className="text-[10px] text-slate-400 mt-0.5 font-normal">Transfer manually & upload receipt (takes 24 hours)</p>
                                                             </div>
                                                         </div>
-                                                        <span className="absolute -top-1.5 right-2 px-1.5 py-0.5 bg-amber-100 text-amber-600 text-[9px] font-bold rounded-full uppercase tracking-wider">Soon</span>
-                                                    </div>
+                                                        <span className="text-xs font-bold text-slate-500 bg-white px-2.5 py-1 rounded-md border border-slate-200 group-hover:border-slate-300 transition-all">
+                                                            {showBankTransfer ? "Hide" : "Show Details"}
+                                                        </span>
+                                                    </button>
 
-                                                    {/* Kora (disabled) */}
-                                                    <div className="relative flex-1">
-                                                        <div className="w-full px-4 py-3 rounded-lg border border-slate-100 bg-slate-50/50 opacity-40 cursor-not-allowed flex items-center gap-3">
-                                                            <CreditCard className="w-4 h-4 text-slate-300 shrink-0" />
-                                                            <div>
-                                                                <p className="text-xs font-medium text-slate-400">Kora HQ</p>
-                                                                <p className="text-[10px] text-slate-300">Fast & Secure</p>
-                                                            </div>
-                                                        </div>
-                                                        <span className="absolute -top-1.5 right-2 px-1.5 py-0.5 bg-amber-100 text-amber-600 text-[9px] font-bold rounded-full uppercase tracking-wider">Soon</span>
-                                                    </div>
-                                                </div>
+                                                    <AnimatePresence>
+                                                        {showBankTransfer && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, height: 0 }}
+                                                                animate={{ opacity: 1, height: "auto" }}
+                                                                exit={{ opacity: 0, height: 0 }}
+                                                                transition={{ duration: 0.25, ease: "easeInOut" }}
+                                                                className="overflow-hidden mt-4 space-y-4"
+                                                            >
+                                                                <div className="grid grid-cols-1 gap-2.5">
+                                                                    {/* Amount row */}
+                                                                    <div className="flex items-center justify-between py-2.5 px-3.5 bg-slate-50 rounded-lg border border-slate-100">
+                                                                        <div>
+                                                                            <p className="text-[9px] text-slate-400 mb-0.5">Amount</p>
+                                                                            <p className="text-xs font-semibold text-slate-800">₦{course.price_naira.toLocaleString()}</p>
+                                                                        </div>
+                                                                        <button
+                                                                            onClick={() => copyToClipboard(String(course.price_naira), 'Amount')}
+                                                                            className="flex items-center gap-1 px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-500 text-[10px] font-medium hover:bg-slate-50 transition-colors"
+                                                                        >
+                                                                            {copiedField === 'Amount' ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                                                            {copiedField === 'Amount' ? 'Copied' : 'Copy'}
+                                                                        </button>
+                                                                    </div>
 
-                                                <div className="flex items-center gap-2 justify-center pt-1 opacity-50">
-                                                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                                                    <span className="text-[11px] text-slate-400">Your receipt is securely stored and reviewed by our team</span>
+                                                                    {/* Bank name row */}
+                                                                    <div className="flex items-center justify-between py-2.5 px-3.5 bg-slate-50 rounded-lg border border-slate-100">
+                                                                        <div>
+                                                                            <p className="text-[9px] text-slate-400 mb-0.5">Bank</p>
+                                                                            <p className="text-xs font-medium text-slate-700">{BANK_ACCOUNT.bank}</p>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Account number row */}
+                                                                    <div className="flex items-center justify-between py-2.5 px-3.5 bg-slate-50 rounded-lg border border-slate-100">
+                                                                        <div>
+                                                                            <p className="text-[9px] text-slate-400 mb-0.5">Account Number</p>
+                                                                            <p className="text-xs font-medium text-slate-700 tracking-wider">{BANK_ACCOUNT.accountNumber}</p>
+                                                                        </div>
+                                                                        <button
+                                                                            onClick={() => copyToClipboard(BANK_ACCOUNT.accountNumber, 'Account number')}
+                                                                            className="flex items-center gap-1 px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-500 text-[10px] font-medium hover:bg-slate-50 transition-colors"
+                                                                        >
+                                                                            {copiedField === 'Account number' ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                                                            {copiedField === 'Account number' ? 'Copied' : 'Copy'}
+                                                                        </button>
+                                                                    </div>
+
+                                                                    {/* Account name row */}
+                                                                    <div className="py-2.5 px-3.5 bg-slate-50 rounded-lg border border-slate-100">
+                                                                        <p className="text-[9px] text-slate-400 mb-0.5">Account Name</p>
+                                                                        <p className="text-xs font-medium text-slate-700">{BANK_ACCOUNT.accountName}</p>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* ── Receipt Upload ── */}
+                                                                <div className="space-y-2">
+                                                                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Upload Receipt</p>
+
+                                                                    <div
+                                                                        onClick={() => fileInputRef.current?.click()}
+                                                                        className={`w-full rounded-lg border border-dashed transition-all cursor-pointer px-4 py-3 flex items-center gap-3.5 ${
+                                                                            receiptFile
+                                                                                ? 'border-emerald-300 bg-emerald-50/30'
+                                                                                : 'border-slate-200 bg-slate-50/50 hover:border-blue-300 hover:bg-blue-50/10'
+                                                                        }`}
+                                                                    >
+                                                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${ receiptFile ? 'bg-emerald-100' : 'bg-slate-100' }`}>
+                                                                            {receiptFile ? (
+                                                                                <FileCheck className="w-3.5 h-3.5 text-emerald-600" />
+                                                                            ) : (
+                                                                                <Upload className="w-3.5 h-3.5 text-slate-400" />
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="flex-1 min-w-0">
+                                                                            {receiptFile ? (
+                                                                                <>
+                                                                                    <p className="text-xs font-medium text-slate-800 truncate">{receiptFile.name}</p>
+                                                                                    <p className="text-[10px] text-emerald-600">{(receiptFile.size / 1024).toFixed(0)} KB · Click to change</p>
+                                                                                </>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <p className="text-xs font-medium text-slate-600">Click to upload receipt</p>
+                                                                                    <p className="text-[10px] text-slate-400">JPG, PNG or PDF · Max 10MB</p>
+                                                                                </>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                    <input
+                                                                        ref={fileInputRef}
+                                                                        type="file"
+                                                                        accept="image/*,application/pdf"
+                                                                        className="hidden"
+                                                                        onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
+                                                                    />
+                                                                </div>
+
+                                                                {/* ── Submit Offline ── */}
+                                                                <Button
+                                                                    onClick={handleReceiptSubmit}
+                                                                    disabled={receiptUploading || !receiptFile}
+                                                                    className="w-full h-10 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg font-medium text-xs shadow-sm gap-2 transition-all duration-200 flex items-center justify-center"
+                                                                >
+                                                                    {receiptUploading ? (
+                                                                        <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Submitting...</>
+                                                                    ) : (
+                                                                        <><Upload className="w-3.5 h-3.5" /> Submit Payment Receipt</>
+                                                                    )}
+                                                                </Button>
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
                                                 </div>
-                                            </div>
+                                            )}
                                         </div>
                                     )}
                             </div>
@@ -972,45 +1108,89 @@ const Checkout = () => {
                             animate={{ opacity: 1, scale: 1 }}
                             className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"
                         >
-                            <div className="px-8 py-10 text-center border-b border-slate-100">
-                                <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5">
-                                    <FileCheck className="w-7 h-7 text-blue-600" />
-                                </div>
-                                <h2 className="text-xl font-semibold text-slate-800 mb-1">Receipt Submitted 📨</h2>
-                                <p className="text-sm text-slate-400">
-                                    Your receipt for <span className="text-blue-600 font-medium">{course?.title}</span> has been received.
-                                </p>
-                            </div>
-
-                            <div className="px-6 py-5 space-y-3">
-                                {/* Email notice */}
-                                <div className="flex items-start gap-3 py-3 px-4 bg-blue-50/60 rounded-lg border border-blue-100">
-                                    <Mail className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                                    <p className="text-xs text-slate-600">
-                                        Confirmation sent to <span className="font-medium text-slate-800">{email}</span>. We'll send your enrollment email once payment is verified.
-                                    </p>
-                                </div>
-
-                                {/* What happens next */}
-                                <div className="space-y-2">
-                                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider pt-1">What happens next</p>
-                                    {[
-                                        "Our team verifies your bank transfer receipt (usually within 24 hours).",
-                                        "You'll receive your official admission & enrollment email with program access.",
-                                        `If there's an issue, we'll contact you at ${email}.`
-                                    ].map((text, i) => (
-                                        <div key={i} className="flex items-start gap-3 py-2.5 px-4 bg-slate-50 rounded-lg">
-                                            <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-100 text-blue-600 rounded-full text-[10px] font-semibold shrink-0 mt-px">{i + 1}</span>
-                                            <p className="text-xs text-slate-500">{text}</p>
+                            {isOfflinePayment ? (
+                                <>
+                                    {/* Offline/Manual Success: Keep the existing "Receipt Submitted 📨" template */}
+                                    <div className="px-8 py-10 text-center border-b border-slate-100">
+                                        <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5">
+                                            <FileCheck className="w-7 h-7 text-blue-600" />
                                         </div>
-                                    ))}
-                                </div>
+                                        <h2 className="text-xl font-semibold text-slate-800 mb-1">Receipt Submitted 📨</h2>
+                                        <p className="text-sm text-slate-400">
+                                            Your receipt for <span className="text-blue-600 font-medium">{course?.title}</span> has been received.
+                                        </p>
+                                    </div>
 
-                                <div className="flex items-center gap-2 justify-center pt-1 opacity-60">
-                                    <Clock className="w-3.5 h-3.5 text-slate-400" />
-                                    <span className="text-[11px] text-slate-400">Questions? Email academy@opslyhr.com</span>
-                                </div>
-                            </div>
+                                    <div className="px-6 py-5 space-y-3">
+                                        <div className="flex items-start gap-3 py-3 px-4 bg-blue-50/60 rounded-lg border border-blue-100">
+                                            <Mail className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                                            <p className="text-xs text-slate-600">
+                                                Confirmation sent to <span className="font-medium text-slate-800">{email}</span>. We'll send your enrollment email once payment is verified.
+                                            </p>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider pt-1">What happens next</p>
+                                            {[
+                                                "Our team verifies your bank transfer receipt (usually within 24 hours).",
+                                                "You'll receive your official admission & enrollment email with program access.",
+                                                `If there's an issue, we'll contact you at ${email}.`
+                                            ].map((text, i) => (
+                                                <div key={i} className="flex items-start gap-3 py-2.5 px-4 bg-slate-50 rounded-lg">
+                                                    <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-100 text-blue-600 rounded-full text-[10px] font-semibold shrink-0 mt-px">{i + 1}</span>
+                                                    <p className="text-xs text-slate-500">{text}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="flex items-center gap-2 justify-center pt-1 opacity-60">
+                                            <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                            <span className="text-[11px] text-slate-400">Questions? Email academy@opslyhr.com</span>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Online Payment Success: Premium, vibrant design */}
+                                    <div className="px-8 py-10 text-center border-b border-slate-100">
+                                        <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-5 border border-emerald-100">
+                                            <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                                        </div>
+                                        <h2 className="text-xl font-bold text-slate-800 mb-1">Admission Confirmed! 🎉</h2>
+                                        <p className="text-sm text-slate-400">
+                                            Welcome to the cohort! Your enrollment in <span className="text-blue-600 font-semibold">{course?.title}</span> is active.
+                                        </p>
+                                    </div>
+
+                                    <div className="px-6 py-5 space-y-4">
+                                        <div className="flex items-start gap-3 py-3 px-4 bg-emerald-50/60 rounded-lg border border-emerald-100">
+                                            <Mail className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                                            <p className="text-xs text-slate-700 leading-relaxed">
+                                                We've sent a welcome email to <span className="font-semibold text-slate-900">{email}</span> containing your immediate learning portal credentials and onboarding instructions.
+                                            </p>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider pt-1">What to do next</p>
+                                            {[
+                                                "Check your spam/promotions folder if you don't see the enrollment email in 5 minutes.",
+                                                "Join our student community Hub with the link inside your welcome email.",
+                                                "Prepare for your first live session by completing the pre-work module."
+                                            ].map((text, i) => (
+                                                <div key={i} className="flex items-start gap-3 py-2.5 px-4 bg-slate-50 rounded-lg border border-slate-100">
+                                                    <span className="inline-flex items-center justify-center w-5 h-5 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-semibold shrink-0 mt-px">{i + 1}</span>
+                                                    <p className="text-xs text-slate-600 leading-normal">{text}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="flex items-center gap-2 justify-center pt-2 opacity-75">
+                                            <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                            <span className="text-[11px] text-slate-500">Excited to start? Questions? Email academy@opslyhr.com</span>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
 
                             <div className="px-6 pb-6">
                                 <Button 

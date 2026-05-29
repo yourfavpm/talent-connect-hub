@@ -123,7 +123,7 @@ serve(async (req: Request) => {
         const { data: existingEnrollment, error: checkError } = await supabase
           .from("academy_enrollments")
           .select("id")
-          .eq("user_id", finalUserId)
+          .eq("student_id", finalUserId)
           .eq("cohort_id", cohortId)
           .maybeSingle();
 
@@ -165,7 +165,7 @@ serve(async (req: Request) => {
            if (courseData) {
              // Create enrollment for this COHORT
              const { data: newEnroll, error: enrollError } = await supabase.from("academy_enrollments").insert({
-                 user_id: finalUserId,
+                 student_id: finalUserId,
                  course_id: courseSlug,
                  cohort_id: cohortId,
                  course_name: courseData.title,
