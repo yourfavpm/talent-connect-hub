@@ -12,7 +12,7 @@ const AcademyFooter = () => {
                     {/* Brand & Mission Block */}
                     <div className="lg:col-span-4 space-y-6">
                         <Link to="/" className="inline-block">
-                            <Logo showText={false} imgHeight="h-16" className="brightness-0 invert" />
+                            <Logo showText={false} imgHeight="h-7" className="brightness-0 invert" />
                         </Link>
                         <p className="text-xs text-slate-400 leading-relaxed font-light max-w-sm">
                             OPSly Academy is a career-accelerating learning ecosystem designed to equip African operations professionals with high-income skills and connect them to global remote opportunities.

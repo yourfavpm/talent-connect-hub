@@ -313,50 +313,50 @@ const ProfileV2 = () => {
           
           {/* LEFT PANEL: Sticky Summary */}
           <div className="w-full shrink-0 xl:sticky xl:top-8 space-y-6">
-            <Card className="border-slate-100 shadow-sm overflow-hidden bg-white rounded-2xl">
+            <Card className="border-slate-200/60 shadow-xs overflow-hidden bg-white rounded-xl">
               <div className="h-28 bg-slate-900 flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent opacity-50" />
-                <Avatar className="h-20 w-20 border-4 border-white shadow-xl bg-white">
+                <Avatar className="h-20 w-20 border-2 border-white shadow-lg bg-white">
                   <AvatarFallback className="bg-slate-50 text-xl font-bold text-slate-400">
                     {(formData.firstName?.[0] || "") + (formData.lastName?.[0] || "")}
                   </AvatarFallback>
                 </Avatar>
               </div>
               
-              <CardContent className="p-6 pt-6">
-                <div className="text-center space-y-1.5 mb-8">
+              <CardContent className="p-5 pt-6">
+                <div className="text-center space-y-1.5 mb-6">
                   <h2 className="text-xl font-bold tracking-tight text-slate-900">
                     {formData.firstName} {formData.lastName}
                   </h2>
-                  <div className="flex flex-wrap items-center justify-center gap-2 text-slate-400 text-[13px] font-medium">
-                    <span className="flex items-center gap-1.5 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
-                      <Briefcase className="h-3 w-3" />
+                  <div className="flex flex-wrap items-center justify-center gap-1.5 text-slate-400 text-[12px] font-semibold">
+                    <span className="flex items-center gap-1.5 bg-slate-50 px-2 py-0.5 rounded border border-slate-200/60">
+                      <Briefcase className="h-3 w-3 text-slate-400" />
                       {formData.primaryRole || "Professional"}
                     </span>
-                    <span className="flex items-center gap-1.5 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
-                      <MapPin className="h-3 w-3" />
+                    <span className="flex items-center gap-1.5 bg-slate-50 px-2 py-0.5 rounded border border-slate-200/60">
+                      <MapPin className="h-3 w-3 text-slate-400" />
                       {formData.country || "Remote"}
                     </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 pt-6 border-t border-slate-100">
+                <div className="grid grid-cols-1 gap-4 pt-5 border-t border-slate-100">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Verification Status</span>
-                    <Badge className={clsx(statusInfo.bg, statusInfo.text, "font-bold text-[10px] px-2 py-0.5 shadow-none border-none")}>{statusInfo.label}</Badge>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Verification Status</span>
+                    <Badge className={clsx(statusInfo.bg, statusInfo.text, "font-bold text-[9px] px-2 py-0.5 shadow-none border-none")}>{statusInfo.label}</Badge>
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Vetting Level</span>
-                    <span className="text-sm font-bold text-slate-700">{profile.vetting_level_text || "Unranked"}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Vetting Level</span>
+                    <span className="text-[13px] font-bold text-slate-700">{profile.vetting_level_text || "Unranked"}</span>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Profile Completion</span>
-                      <span className="text-sm font-bold text-slate-900">{profile.progress_percent}%</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profile Completion</span>
+                      <span className="text-[13px] font-bold text-slate-900">{profile.progress_percent}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                    <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-200/40">
                       <div className="h-full bg-slate-900 transition-all duration-700 ease-out" style={{ width: `${profile.progress_percent}%` }} />
                     </div>
                   </div>
@@ -365,15 +365,15 @@ const ProfileV2 = () => {
               
               {managerData && (
                 <div 
-                  className="bg-slate-50/50 px-6 py-4 border-t border-slate-100 flex items-center justify-between group cursor-pointer hover:bg-slate-50 transition-colors"
+                  className="bg-slate-50/20 px-5 py-3 border-t border-slate-150 flex items-center justify-between group cursor-pointer hover:bg-slate-50 transition-colors"
                   onClick={() => managerData.email && window.open(`mailto:${managerData.email}`)}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 text-[10px] font-bold">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 text-[10px] font-bold shadow-xs">
                       {managerData.full_name?.[0] || "A"}
                     </div>
                     <div>
-                      <p className="text-[9px] font-bold uppercase text-slate-400 tracking-tighter">Assigned Manager</p>
+                      <p className="text-[9px] font-bold uppercase text-slate-400 tracking-tighter leading-none mb-0.5">Assigned Manager</p>
                       <p className="text-[12px] font-bold text-slate-700 leading-tight">{managerData.full_name}</p>
                       {managerData.email && (
                         <p className="text-[10px] text-slate-400 font-medium truncate max-w-[140px]">{managerData.email}</p>
@@ -385,11 +385,11 @@ const ProfileV2 = () => {
               )}
             </Card>
 
-            <div className="p-5 bg-blue-50/50 border border-blue-100 rounded-2xl md:block hidden">
-              <h4 className="text-[11px] font-bold text-blue-700 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+            <div className="p-4 bg-blue-50/30 border border-blue-100 rounded-xl md:block hidden shadow-xs">
+              <h4 className="text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-1 flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Tips for Vetting
               </h4>
-              <p className="text-[12px] text-blue-900/70 font-medium leading-relaxed">
+              <p className="text-[12px] text-blue-900/75 font-medium leading-relaxed italic">
                 Ensure your LinkedIn URL is updated and your CV clearly states your technical achievements. This speeds up the review process.
               </p>
             </div>
@@ -409,7 +409,7 @@ const ProfileV2 = () => {
               return (
                 <div key={step.key} className={clsx(
                   "bg-white border transition-all duration-200",
-                  isExpanded ? "rounded-2xl border-slate-200 shadow-md ring-1 ring-slate-900/5" : "rounded-xl border-slate-100 shadow-sm hover:border-slate-200"
+                  isExpanded ? "rounded-xl border-slate-300 shadow-sm" : "rounded-xl border-slate-200/60 shadow-xs hover:border-slate-300/80"
                 )}>
                   {/* Collapsible Header */}
                   <div 
@@ -417,29 +417,29 @@ const ProfileV2 = () => {
                         if (window.innerWidth < 768) setExpandedSections(p => ({...p, [step.key]: !p[step.key]}));
                     }}
                     className={clsx(
-                      "flex items-center justify-between p-5 md:p-6 cursor-pointer md:cursor-default",
-                      isExpanded && "border-b border-slate-50"
+                      "flex items-center justify-between p-4 md:p-5 cursor-pointer md:cursor-default",
+                      isExpanded && "border-b border-slate-100/60"
                     )}
                   >
-                    <div className="flex items-center gap-4 min-w-0">
+                    <div className="flex items-center gap-3.5 min-w-0">
                       <div className={clsx(
-                        "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border transition-colors",
-                        isExpanded ? "bg-slate-900 border-slate-900 text-white" : "bg-slate-50 border-slate-100 text-slate-400"
+                        "h-9 w-9 rounded-lg flex items-center justify-center shrink-0 border transition-colors text-sm font-semibold",
+                        isExpanded ? "bg-slate-900 border-slate-900 text-white" : "bg-slate-50 border-slate-200/60 text-slate-400"
                       )}>
                         {step.id}
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-3 mb-0.5">
-                          <h3 className="text-[15px] font-bold text-slate-900 truncate">{step.title}</h3>
-                          <Badge className={clsx(SColor.bg, SColor.text, "shadow-none font-bold text-[8px] uppercase tracking-tighter px-1.5 py-0 border-none md:block hidden")}>
+                        <div className="flex items-center gap-2.5 mb-0.5">
+                          <h3 className="text-[14.5px] font-bold text-slate-900 truncate">{step.title}</h3>
+                          <Badge className={clsx(SColor.bg, SColor.text, "shadow-none font-bold text-[8px] uppercase tracking-tighter px-1.5 py-0.5 border-none md:block hidden rounded")}>
                             {SColor.label}
                           </Badge>
                         </div>
-                        <p className="text-[12px] text-slate-400 font-medium md:hidden">
+                        <p className="text-[11.5px] text-slate-400 font-medium md:hidden">
                           {isExpanded ? "Tap to collapse" : "Tap to view/edit"}
                         </p>
                         {isEditable && !isExpanded && (
-                          <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-tight hidden md:block">Interactive Session</p>
+                          <p className="text-[9.5px] text-emerald-600 font-bold uppercase tracking-tight hidden md:block">Interactive Session</p>
                         )}
                       </div>
                     </div>
@@ -453,14 +453,14 @@ const ProfileV2 = () => {
                             handleSaveSection(step.key);
                           }} 
                           disabled={isSaving}
-                          className="bg-slate-900 hover:bg-slate-800 text-white gap-2 h-9 px-4 rounded-lg hidden md:flex"
+                          className="bg-slate-900 hover:bg-slate-800 text-white gap-1.5 h-8 px-3 rounded-lg hidden md:flex text-xs font-bold shadow-sm"
                         >
-                          {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                          {isSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
                           Save
                         </Button>
                       )}
                       <ChevronRight className={clsx(
-                        "h-5 w-5 text-slate-300 transition-transform md:hidden",
+                        "h-4 w-4 text-slate-300 transition-transform md:hidden",
                         isExpanded && "rotate-90"
                       )} />
                     </div>
@@ -468,15 +468,15 @@ const ProfileV2 = () => {
 
                   {/* Desktop always visible, Mobile collapsible */}
                   <CardContent className={clsx(
-                    "p-6",
+                    "p-5",
                     !isExpanded && "hidden md:block" // Hidden on mobile if not expanded, always visible on desktop
                   )}>
                     {adminNote && status === "changes_requested" && (
-                      <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+                      <div className="mb-6 p-3.5 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2.5 shadow-xs">
                         <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
                         <div>
-                          <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-1.5">Action Required</p>
-                          <p className="text-[13px] text-red-900 font-medium leading-relaxed">{adminNote}</p>
+                          <p className="text-[9px] font-bold text-red-600 uppercase tracking-widest mb-1">Action Required</p>
+                          <p className="text-[12.5px] text-red-900 font-semibold leading-relaxed">{adminNote}</p>
                         </div>
                       </div>
                     )}
@@ -486,27 +486,27 @@ const ProfileV2 = () => {
                       {step.key === "professional_details" && <ProfessionalDetailsForm disabled={!isEditable} />}
                       {step.key === "work_history" && <WorkHistoryForm disabled={!isEditable} />}
                       {step.key === "documents" && (
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                           <DocumentsForm disabled={!isEditable} uploadingFields={uploadingFields} onUpload={handleFileUpload} />
                           
                           {/* Slimmer Cloud Document Rows */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                             {["cvUrl", "governmentIdUrl", "proofOfAddressUrl", "portfolioUrl"].map(field => {
                                const path = formData[field as keyof OnboardFormValues] as string;
                                if (!path) return null;
                                const label = field.replace("Url", "").replace(/([A-Z])/g, " $1").trim();
                                return (
-                                 <div key={field} className="flex items-center justify-between p-3.5 bg-slate-50/50 border border-slate-100 rounded-xl group transition-all hover:bg-white hover:shadow-sm">
-                                   <div className="flex items-center gap-3">
-                                     <div className="h-9 w-9 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 group-hover:text-blue-500 transition-colors">
+                                 <div key={field} className="flex items-center justify-between p-3 bg-white border border-slate-200/60 rounded-xl shadow-xs group transition-all hover:border-slate-350 hover:shadow-sm">
+                                   <div className="flex items-center gap-2.5">
+                                     <div className="h-8 w-8 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 group-hover:text-blue-500 transition-colors">
                                        <Cloud className="h-4 w-4" />
                                      </div>
                                      <div>
-                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tighter leading-none mb-0.5">Verified</p>
-                                        <span className="text-[13px] font-bold text-slate-700 capitalize">{label}</span>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter leading-none mb-0.5">Verified</p>
+                                        <span className="text-[12.5px] font-bold text-slate-700 capitalize">{label}</span>
                                      </div>
                                    </div>
-                                   <Button variant="ghost" size="sm" asChild className="h-8 text-slate-500 hover:text-slate-900">
+                                   <Button variant="ghost" size="sm" asChild className="h-7 px-2.5 text-slate-500 hover:text-slate-900 text-xs">
                                       <a href={field === "portfolioUrl" ? (path.startsWith('http') ? path : `https://${path}`) : supabase.storage.from("talent_documents").getPublicUrl(path).data.publicUrl} target="_blank" rel="noreferrer">
                                         Open
                                       </a>
@@ -524,7 +524,7 @@ const ProfileV2 = () => {
 
                     {/* Mobile Only Save Button */}
                     {isEditable && (
-                      <div className="mt-8 md:hidden">
+                      <div className="mt-6 md:hidden">
                         <Button 
                           onClick={() => handleSaveSection(step.key)} 
                           disabled={isSaving}

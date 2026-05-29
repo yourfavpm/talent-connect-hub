@@ -236,6 +236,43 @@ const Checkout = () => {
                 // Non-fatal — continue to send email
             }
 
+            // 2.5 Record enrollment with 'pending_payment' status so it shows up in CohortDetail
+            let studentId: string | null = null;
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                studentId = session?.user?.id || null;
+            } catch (e) {
+                console.log("Session fetch error:", e);
+            }
+
+            if (!studentId) {
+                try {
+                    const { data: existingUserId } = await supabase.rpc('get_user_id_by_email', { p_email: email.trim().toLowerCase() });
+                    studentId = existingUserId || null;
+                } catch (e) {
+                    console.log("RPC get_user_id_by_email error:", e);
+                }
+            }
+
+            const { error: enrollError } = await supabase
+                .from('academy_enrollments')
+                .insert({
+                    student_id: studentId,
+                    course_id: course.slug,
+                    cohort_id: selectedCohortId,
+                    course_name: course.title,
+                    student_email: email.trim().toLowerCase(),
+                    student_name: fullName.trim() || email.split('@')[0],
+                    enrollment_status: 'pending_payment',
+                    price_naira: course.price_naira || 0,
+                    price_usd: course.price_usd || 0,
+                    enrollment_date: new Date().toISOString()
+                });
+
+            if (enrollError) {
+                console.error('Enrollment insert error:', enrollError);
+            }
+
             // 3. Send receipt confirmation email
             try {
                 const firstName = (fullName.trim() || email.split('@')[0]).split(' ')[0];
@@ -501,64 +538,68 @@ const Checkout = () => {
     }
 
     return (
-        <div className="min-h-screen bg-white pt-32 pb-24 px-6 lg:px-12 font-inter">
-            <div className="w-full max-w-none">
+        <div className="min-h-screen bg-[#f8f9fc] pt-24 pb-16 px-4 sm:px-6 lg:px-8 font-inter">
+            <div className="max-w-3xl mx-auto">
                 <AnimatePresence mode="wait">
                     {availableCohorts.length === 0 ? (
                         <motion.div 
                             key="nocohorts"
-                            className="bg-white rounded-3xl p-10 shadow border border-slate-100 flex flex-col items-center justify-center text-center mx-4 max-w-2xl mt-12 mb-12 lg:col-span-4"
+                            className="bg-white rounded-2xl p-10 shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                         >
-                            <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-6">
-                                <Lock className="w-8 h-8 text-slate-300" />
+                            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-5">
+                                <Lock className="w-5 h-5 text-slate-300" />
                             </div>
-                            <h2 className="text-2xl font-bold text-slate-900 mb-3">Enrolment Closed</h2>
-                            <p className="text-slate-500 mb-8 max-w-md">There are currently no active cohorts enrolling for this course. Please join the waitlist or check back soon.</p>
-                            <Button className="h-12 px-6 rounded-xl font-bold bg-slate-900 text-white" onClick={() => searchParams.get("from") === "dashboard" ? navigate("/dashboard") : navigate(-1)}>
+                            <h2 className="text-xl font-semibold text-slate-800 mb-2">Enrolment Closed</h2>
+                            <p className="text-sm text-slate-400 mb-7 max-w-sm">There are currently no active cohorts for this course. Check back soon.</p>
+                            <Button className="h-10 px-6 rounded-lg font-medium bg-slate-900 text-white text-sm" onClick={() => searchParams.get("from") === "dashboard" ? navigate("/dashboard") : navigate(-1)}>
                                 Go Back
                             </Button>
                         </motion.div>
                     ) : !success ? (
                         <motion.div 
                             key="checkout"
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="grid grid-cols-1 lg:grid-cols-4 gap-10 w-full"
+                            exit={{ opacity: 0, scale: 0.97 }}
+                            className="space-y-4"
                         >
-                            <div className="lg:col-span-2 space-y-8 lg:col-start-2">
+                            {/* Top Nav */}
+                            <div className="flex items-center justify-between mb-2">
                                 <button 
                                     onClick={() => searchParams.get("from") === "dashboard" ? navigate("/dashboard") : navigate(-1)}
-                                    className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-sm transition-colors mb-4"
+                                    className="flex items-center gap-1.5 text-slate-400 hover:text-slate-700 text-sm transition-colors"
                                 >
-                                    <ArrowLeft className="w-4 h-4" /> {searchParams.get("from") === "dashboard" ? "Back to Dashboard" : "Back to Program"}
+                                    <ArrowLeft className="w-3.5 h-3.5" />
+                                    {searchParams.get("from") === "dashboard" ? "Back to Dashboard" : "Back to Program"}
                                 </button>
-                                
-                                <div className="bg-slate-50 rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-center">
-                                    <div className="w-full md:w-40 aspect-video rounded-lg overflow-hidden shrink-0 shadow-sm">
-                                        <img 
-                                            src={course.image_url || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"} 
-                                            alt={course.title}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-xl font-bold text-slate-900 mb-2">{course.title}</h2>
-                                        <p className="text-sm font-bold text-blue-600 mb-1">Total: ₦{course.price_naira.toLocaleString()}</p>
-                                    </div>
-                                </div>
+                            </div>
 
-                                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 md:p-10">
+                            {/* Course Strip */}
+                            <div className="bg-white rounded-xl border border-slate-100 px-5 py-3.5 flex items-center gap-4 shadow-sm">
+                                <div className="w-14 h-10 rounded-md overflow-hidden shrink-0">
+                                    <img 
+                                        src={course.image_url || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=400&auto=format&fit=crop"} 
+                                        alt={course.title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-slate-800 truncate">{course.title}</p>
+                                </div>
+                                <p className="text-sm font-semibold text-blue-600 shrink-0">₦{course.price_naira.toLocaleString()}</p>
+                            </div>
+
+                            <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
                                     {step === 'cohort-selection' && (
-                                        <div className="space-y-6">
-                                            <div>
-                                                <h1 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">Choose Your Cohort</h1>
-                                                <p className="text-slate-500 font-medium">Select the batch you want to join. Each cohort has its own schedule and community.</p>
+                                        <div>
+                                            <div className="px-6 py-5 border-b border-slate-100">
+                                                <h1 className="text-base font-semibold text-slate-800">Choose Your Cohort</h1>
+                                                <p className="text-xs text-slate-400 mt-0.5">Select the batch you want to join</p>
                                             </div>
-                                            
-                                            <div className="space-y-3 max-h-96 overflow-y-auto">
+
+                                            <div className="divide-y divide-slate-50">
                                                 {availableCohorts.length > 0 ? (
                                                     availableCohorts.map((cohort) => {
                                                         const isSelected = selectedCohortId === cohort.id;
@@ -570,54 +611,62 @@ const Checkout = () => {
                                                             <button
                                                                 key={cohort.id}
                                                                 onClick={() => handleCohortSelection(cohort.id)}
-                                                                className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                                                                className={`w-full px-6 py-4 flex items-center gap-4 text-left transition-colors ${
                                                                     isSelected 
-                                                                        ? 'border-blue-600 bg-blue-50' 
-                                                                        : 'border-slate-200 bg-white hover:border-slate-300'
+                                                                        ? 'bg-blue-50/70' 
+                                                                        : 'bg-white hover:bg-slate-50/60'
                                                                 }`}
                                                             >
-                                                                <div className="flex items-start justify-between gap-3">
-                                                                    <div className="flex-1">
-                                                                        <h3 className="font-bold text-slate-900 mb-1">{cohort.name}</h3>
-                                                                        <div className="grid grid-cols-2 gap-2 text-xs font-medium text-slate-600 mb-2">
-                                                                            <div>📅 Starts: {new Date(cohort.start_date).toLocaleDateString()}</div>
-                                                                            <div>⏳ Ends: {new Date(cohort.end_date).toLocaleDateString()}</div>
-                                                                            <div>🎯 {slotsAvailable} slots available</div>
-                                                                            <div>⏰ {daysLeft} days to enroll</div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                                                                        isSelected 
-                                                                            ? 'border-blue-600 bg-blue-600' 
-                                                                            : 'border-slate-300'
-                                                                    }`}>
-                                                                        {isSelected && <CheckCircle2 className="w-4 h-4 text-white" />}
-                                                                    </div>
+                                                                {/* Radio circle */}
+                                                                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                                                                    isSelected 
+                                                                        ? 'border-blue-600 bg-blue-600' 
+                                                                        : 'border-slate-300'
+                                                                }`}>
+                                                                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                                                </div>
+
+                                                                {/* Main info */}
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className={`text-sm font-medium truncate ${ isSelected ? 'text-blue-700' : 'text-slate-800' }`}>{cohort.name}</p>
+                                                                    <p className="text-xs text-slate-400 mt-0.5">
+                                                                        {new Date(cohort.start_date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}
+                                                                        {' — '}
+                                                                        {new Date(cohort.end_date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}
+                                                                    </p>
+                                                                </div>
+
+                                                                {/* Meta pills */}
+                                                                <div className="hidden sm:flex items-center gap-2 shrink-0">
+                                                                    <span className="text-[11px] text-slate-400 bg-slate-100 rounded-full px-2.5 py-0.5">{slotsAvailable} slots</span>
+                                                                    <span className="text-[11px] text-slate-400 bg-slate-100 rounded-full px-2.5 py-0.5">{daysLeft}d left</span>
                                                                 </div>
                                                             </button>
                                                         );
                                                     })
                                                 ) : (
-                                                    <div className="text-center py-8">
-                                                        <Lock className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                                                        <p className="text-slate-500 font-medium">No active cohorts available</p>
+                                                    <div className="flex flex-col items-center justify-center py-10">
+                                                        <Lock className="w-8 h-8 text-slate-200 mb-2" />
+                                                        <p className="text-sm text-slate-400">No active cohorts available</p>
                                                     </div>
                                                 )}
                                             </div>
 
-                                            <Button 
-                                                onClick={() => {
-                                                    if (!selectedCohortId) {
-                                                        toast({ title: "Select a Cohort", description: "Please select a cohort to proceed.", variant: "destructive" });
-                                                        return;
-                                                    }
-                                                    setStep('email');
-                                                }}
-                                                disabled={!selectedCohortId || availableCohorts.length === 0}
-                                                className="w-full h-14 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-xl font-bold text-lg shadow-sm"
-                                            >
-                                                Continue to Enrollment
-                                            </Button>
+                                            <div className="px-6 py-4 border-t border-slate-100">
+                                                <Button 
+                                                    onClick={() => {
+                                                        if (!selectedCohortId) {
+                                                            toast({ title: "Select a Cohort", description: "Please select a cohort to proceed.", variant: "destructive" });
+                                                            return;
+                                                        }
+                                                        setStep('email');
+                                                    }}
+                                                    disabled={!selectedCohortId || availableCohorts.length === 0}
+                                                    className="w-full h-11 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg font-medium text-sm shadow-sm"
+                                                >
+                                                    Continue
+                                                </Button>
+                                            </div>
                                         </div>
                                     )}
 
@@ -751,102 +800,95 @@ const Checkout = () => {
                                     )}
 
                                     {step === 'payment' && (
-                                        <div className="space-y-7">
-                                            <div>
-                                                <h1 className="text-2xl font-extrabold text-slate-900 mb-2 tracking-tight">Complete Enrollment</h1>
-                                                <p className="text-slate-500 font-medium">Transfer the exact amount below and upload your payment receipt to complete enrollment.</p>
+                                        <div>
+                                            <div className="px-6 py-5 border-b border-slate-100">
+                                                <h1 className="text-base font-semibold text-slate-800">Complete Enrollment</h1>
+                                                <p className="text-xs text-slate-400 mt-0.5">Transfer the exact amount and upload your receipt below</p>
                                             </div>
 
-                                            {/* ── Bank Transfer Card ── */}
-                                            <div className="rounded-2xl border-2 border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50/60 overflow-hidden">
-                                                <div className="flex items-center gap-3 px-6 pt-5 pb-3 border-b border-blue-100">
-                                                    <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shrink-0">
-                                                        <Building2 className="w-5 h-5 text-white" />
-                                                    </div>
+                                            {/* ── Bank Details ── */}
+                                            <div className="px-6 pt-5 pb-4 space-y-2">
+                                                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                                                    <Building2 className="w-3.5 h-3.5" /> Bank Transfer Details
+                                                </p>
+
+                                                {/* Amount row */}
+                                                <div className="flex items-center justify-between py-3 px-4 bg-slate-50 rounded-lg border border-slate-100">
                                                     <div>
-                                                        <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Bank Transfer</p>
-                                                        <p className="text-sm font-bold text-slate-900">Transfer the exact amount to this account</p>
+                                                        <p className="text-[10px] text-slate-400 mb-0.5">Amount</p>
+                                                        <p className="text-lg font-semibold text-blue-600">₦{course.price_naira.toLocaleString()}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => copyToClipboard(String(course.price_naira), 'Amount')}
+                                                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white border border-slate-200 text-slate-500 text-xs font-medium hover:bg-slate-50 transition-colors"
+                                                    >
+                                                        {copiedField === 'Amount' ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                                        {copiedField === 'Amount' ? 'Copied' : 'Copy'}
+                                                    </button>
+                                                </div>
+
+                                                {/* Bank name row */}
+                                                <div className="flex items-center justify-between py-3 px-4 bg-slate-50 rounded-lg border border-slate-100">
+                                                    <div>
+                                                        <p className="text-[10px] text-slate-400 mb-0.5">Bank</p>
+                                                        <p className="text-sm font-medium text-slate-800">{BANK_ACCOUNT.bank}</p>
                                                     </div>
                                                 </div>
-                                                <div className="px-6 py-5 space-y-4">
-                                                    {/* Amount */}
-                                                    <div className="flex items-center justify-between py-3 px-4 bg-white rounded-xl border border-blue-100 shadow-sm">
-                                                        <div>
-                                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Amount to Transfer</p>
-                                                            <p className="text-2xl font-extrabold text-blue-700 tracking-tight">₦{course.price_naira.toLocaleString()}</p>
-                                                        </div>
-                                                        <button
-                                                            onClick={() => copyToClipboard(String(course.price_naira), 'Amount')}
-                                                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold transition-colors"
-                                                        >
-                                                            {copiedField === 'Amount' ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                                                            {copiedField === 'Amount' ? 'Copied' : 'Copy'}
-                                                        </button>
-                                                    </div>
 
-                                                    {/* Bank name */}
-                                                    <div className="grid grid-cols-2 gap-3">
-                                                        <div className="py-3 px-4 bg-white rounded-xl border border-slate-100">
-                                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Bank Name</p>
-                                                            <p className="text-sm font-bold text-slate-900">{BANK_ACCOUNT.bank}</p>
-                                                        </div>
-                                                        <div className="py-3 px-4 bg-white rounded-xl border border-slate-100">
-                                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Account Name</p>
-                                                            <p className="text-sm font-bold text-slate-900">{BANK_ACCOUNT.accountName}</p>
-                                                        </div>
+                                                {/* Account number row */}
+                                                <div className="flex items-center justify-between py-3 px-4 bg-slate-50 rounded-lg border border-slate-100">
+                                                    <div>
+                                                        <p className="text-[10px] text-slate-400 mb-0.5">Account Number</p>
+                                                        <p className="text-sm font-medium text-slate-800 tracking-wider">{BANK_ACCOUNT.accountNumber}</p>
                                                     </div>
+                                                    <button
+                                                        onClick={() => copyToClipboard(BANK_ACCOUNT.accountNumber, 'Account number')}
+                                                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white border border-slate-200 text-slate-500 text-xs font-medium hover:bg-slate-50 transition-colors"
+                                                    >
+                                                        {copiedField === 'Account number' ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                                        {copiedField === 'Account number' ? 'Copied' : 'Copy'}
+                                                    </button>
+                                                </div>
 
-                                                    {/* Account number */}
-                                                    <div className="flex items-center justify-between py-3 px-4 bg-white rounded-xl border border-slate-100">
-                                                        <div>
-                                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Account Number</p>
-                                                            <p className="text-xl font-extrabold text-slate-900 tracking-widest">{BANK_ACCOUNT.accountNumber}</p>
-                                                        </div>
-                                                        <button
-                                                            onClick={() => copyToClipboard(BANK_ACCOUNT.accountNumber, 'Account number')}
-                                                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-colors"
-                                                        >
-                                                            {copiedField === 'Account number' ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                                                            {copiedField === 'Account number' ? 'Copied' : 'Copy'}
-                                                        </button>
-                                                    </div>
+                                                {/* Account name row */}
+                                                <div className="py-3 px-4 bg-slate-50 rounded-lg border border-slate-100">
+                                                    <p className="text-[10px] text-slate-400 mb-0.5">Account Name</p>
+                                                    <p className="text-sm font-medium text-slate-800">{BANK_ACCOUNT.accountName}</p>
                                                 </div>
                                             </div>
 
                                             {/* ── Receipt Upload ── */}
-                                            <div className="space-y-3">
-                                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Upload Payment Receipt</h3>
-                                                <p className="text-xs text-slate-500 font-medium">After transferring, upload a screenshot or PDF of your payment receipt below.</p>
+                                            <div className="px-6 pb-4 space-y-2">
+                                                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Upload Receipt</p>
 
                                                 <div
                                                     onClick={() => fileInputRef.current?.click()}
-                                                    className={`w-full rounded-xl border-2 border-dashed transition-all cursor-pointer p-6 flex flex-col items-center justify-center gap-3 ${
+                                                    className={`w-full rounded-lg border border-dashed transition-all cursor-pointer px-5 py-4 flex items-center gap-4 ${
                                                         receiptFile
-                                                            ? 'border-emerald-400 bg-emerald-50/50'
-                                                            : 'border-slate-200 bg-slate-50 hover:border-blue-400 hover:bg-blue-50/30'
+                                                            ? 'border-emerald-300 bg-emerald-50/40'
+                                                            : 'border-slate-200 bg-slate-50/60 hover:border-blue-300 hover:bg-blue-50/20'
                                                     }`}
                                                 >
-                                                    {receiptFile ? (
-                                                        <>
-                                                            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                                                                <FileCheck className="w-6 h-6 text-emerald-600" />
-                                                            </div>
-                                                            <div className="text-center">
-                                                                <p className="text-sm font-bold text-slate-900 truncate max-w-xs">{receiptFile.name}</p>
-                                                                <p className="text-xs text-emerald-600 font-medium">{(receiptFile.size / 1024).toFixed(0)} KB · Click to change</p>
-                                                            </div>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                                                                <Upload className="w-6 h-6 text-slate-400" />
-                                                            </div>
-                                                            <div className="text-center">
-                                                                <p className="text-sm font-bold text-slate-700">Click to upload receipt</p>
-                                                                <p className="text-xs text-slate-400 font-medium">JPG, PNG, PDF · Max 10MB</p>
-                                                            </div>
-                                                        </>
-                                                    )}
+                                                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${ receiptFile ? 'bg-emerald-100' : 'bg-slate-100' }`}>
+                                                        {receiptFile ? (
+                                                            <FileCheck className="w-4 h-4 text-emerald-600" />
+                                                        ) : (
+                                                            <Upload className="w-4 h-4 text-slate-400" />
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        {receiptFile ? (
+                                                            <>
+                                                                <p className="text-sm font-medium text-slate-800 truncate">{receiptFile.name}</p>
+                                                                <p className="text-xs text-emerald-600">{(receiptFile.size / 1024).toFixed(0)} KB · Click to change</p>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <p className="text-sm font-medium text-slate-600">Click to upload receipt</p>
+                                                                <p className="text-xs text-slate-400">JPG, PNG or PDF · Max 10MB</p>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 <input
                                                     ref={fileInputRef}
@@ -857,121 +899,115 @@ const Checkout = () => {
                                                 />
                                             </div>
 
-                                            {/* ── Submit Receipt Button ── */}
-                                            <Button
-                                                onClick={handleReceiptSubmit}
-                                                disabled={receiptUploading || !receiptFile}
-                                                className="w-full h-14 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl font-bold text-lg shadow-sm gap-3 transition-colors"
-                                            >
-                                                {receiptUploading ? (
-                                                    <><Loader2 className="w-5 h-5 animate-spin" /> Submitting...</>
-                                                ) : (
-                                                    <><Upload className="w-5 h-5" /> Submit Payment Receipt</>
-                                                )}
-                                            </Button>
-
-                                            {/* ── Coming Soon: Online Payment ── */}
-                                            <div className="space-y-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex-1 h-px bg-slate-100" />
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Online Payment — Coming Soon</span>
-                                                    <div className="flex-1 h-px bg-slate-100" />
-                                                </div>
-
-                                                {/* Paystack (disabled) */}
-                                                <div className="relative">
-                                                    <div className="w-full p-5 rounded-xl border-2 border-slate-100 bg-slate-50/60 opacity-50 cursor-not-allowed select-none">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-4">
-                                                                <CreditCard className="w-6 h-6 text-slate-300" />
-                                                                <div>
-                                                                    <div className="font-bold text-slate-400">Paystack</div>
-                                                                    <div className="text-xs text-slate-300 font-medium">Visa, Mastercard, Verve</div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <span className="absolute top-2.5 right-3 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase tracking-wider">Coming Soon</span>
-                                                </div>
-
-                                                {/* Kora (disabled) */}
-                                                <div className="relative">
-                                                    <div className="w-full p-5 rounded-xl border-2 border-slate-100 bg-slate-50/60 opacity-50 cursor-not-allowed select-none">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-4">
-                                                                <CreditCard className="w-6 h-6 text-slate-300" />
-                                                                <div>
-                                                                    <div className="font-bold text-slate-400">Kora HQ</div>
-                                                                    <div className="text-xs text-slate-300 font-medium">Fast, Secure &amp; Reliable</div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <span className="absolute top-2.5 right-3 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase tracking-wider">Coming Soon</span>
-                                                </div>
+                                            {/* ── Submit ── */}
+                                            <div className="px-6 pb-5">
+                                                <Button
+                                                    onClick={handleReceiptSubmit}
+                                                    disabled={receiptUploading || !receiptFile}
+                                                    className="w-full h-11 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg font-medium text-sm shadow-sm gap-2"
+                                                >
+                                                    {receiptUploading ? (
+                                                        <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>
+                                                    ) : (
+                                                        <><Upload className="w-4 h-4" /> Submit Payment Receipt</>
+                                                    )}
+                                                </Button>
                                             </div>
 
-                                            <div className="flex items-center gap-3 justify-center pt-2 opacity-60">
-                                                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                                                <span className="text-xs font-bold text-slate-500">Your receipt is securely stored and reviewed by our team</span>
+                                            {/* ── Coming Soon: Online Payment ── */}
+                                            <div className="px-6 pb-5 space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex-1 h-px bg-slate-100" />
+                                                    <span className="text-[10px] font-semibold text-slate-300 uppercase tracking-wider">Online Payment — Coming Soon</span>
+                                                    <div className="flex-1 h-px bg-slate-100" />
+                                                </div>
+
+                                                <div className="flex gap-3">
+                                                    {/* Paystack (disabled) */}
+                                                    <div className="relative flex-1">
+                                                        <div className="w-full px-4 py-3 rounded-lg border border-slate-100 bg-slate-50/50 opacity-40 cursor-not-allowed flex items-center gap-3">
+                                                            <CreditCard className="w-4 h-4 text-slate-300 shrink-0" />
+                                                            <div>
+                                                                <p className="text-xs font-medium text-slate-400">Paystack</p>
+                                                                <p className="text-[10px] text-slate-300">Visa, Mastercard, Verve</p>
+                                                            </div>
+                                                        </div>
+                                                        <span className="absolute -top-1.5 right-2 px-1.5 py-0.5 bg-amber-100 text-amber-600 text-[9px] font-bold rounded-full uppercase tracking-wider">Soon</span>
+                                                    </div>
+
+                                                    {/* Kora (disabled) */}
+                                                    <div className="relative flex-1">
+                                                        <div className="w-full px-4 py-3 rounded-lg border border-slate-100 bg-slate-50/50 opacity-40 cursor-not-allowed flex items-center gap-3">
+                                                            <CreditCard className="w-4 h-4 text-slate-300 shrink-0" />
+                                                            <div>
+                                                                <p className="text-xs font-medium text-slate-400">Kora HQ</p>
+                                                                <p className="text-[10px] text-slate-300">Fast & Secure</p>
+                                                            </div>
+                                                        </div>
+                                                        <span className="absolute -top-1.5 right-2 px-1.5 py-0.5 bg-amber-100 text-amber-600 text-[9px] font-bold rounded-full uppercase tracking-wider">Soon</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 justify-center pt-1 opacity-50">
+                                                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                                                    <span className="text-[11px] text-slate-400">Your receipt is securely stored and reviewed by our team</span>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
-                                </div>
                             </div>
                         </motion.div>
                     ) : (
                         <motion.div 
                             key="success"
-                            initial={{ opacity: 0, scale: 0.9 }}
+                            initial={{ opacity: 0, scale: 0.96 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="max-w-2xl mx-auto text-center py-20 bg-white rounded-2xl border border-slate-200 shadow-xl px-12"
+                            className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"
                         >
-                            <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-8">
-                                <FileCheck className="w-12 h-12 text-blue-600" />
-                            </div>
-                            <h2 className="text-4xl font-bold text-slate-900 mb-3 tracking-tight">Receipt Submitted! 📨</h2>
-                            <p className="text-lg text-slate-500 font-medium mb-8">
-                                Your payment receipt for <span className="text-blue-600 font-bold">{course?.title}</span> has been received.
-                            </p>
-
-                            {/* Email notice */}
-                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6 text-left">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <Mail className="w-5 h-5 text-blue-600 shrink-0" />
-                                    <p className="font-bold text-slate-900">Confirmation email sent</p>
+                            <div className="px-8 py-10 text-center border-b border-slate-100">
+                                <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5">
+                                    <FileCheck className="w-7 h-7 text-blue-600" />
                                 </div>
-                                <p className="text-sm text-slate-600">
-                                    We've sent a confirmation to <span className="font-bold text-slate-900">{email}</span>. Our team is reviewing your payment and will send your official enrollment email once verified.
+                                <h2 className="text-xl font-semibold text-slate-800 mb-1">Receipt Submitted 📨</h2>
+                                <p className="text-sm text-slate-400">
+                                    Your receipt for <span className="text-blue-600 font-medium">{course?.title}</span> has been received.
                                 </p>
                             </div>
 
-                            {/* What happens next */}
-                            <div className="bg-slate-50 rounded-xl p-6 mb-8 text-left space-y-3">
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">What happens next</p>
-                                <div className="flex items-start gap-3">
-                                    <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold shrink-0 mt-0.5">1</span>
-                                    <p className="text-sm text-slate-600">Our team verifies your bank transfer receipt <span className="font-semibold text-slate-800">(usually within 24 hours)</span>.</p>
+                            <div className="px-6 py-5 space-y-3">
+                                {/* Email notice */}
+                                <div className="flex items-start gap-3 py-3 px-4 bg-blue-50/60 rounded-lg border border-blue-100">
+                                    <Mail className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                                    <p className="text-xs text-slate-600">
+                                        Confirmation sent to <span className="font-medium text-slate-800">{email}</span>. We'll send your enrollment email once payment is verified.
+                                    </p>
                                 </div>
-                                <div className="flex items-start gap-3">
-                                    <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold shrink-0 mt-0.5">2</span>
-                                    <p className="text-sm text-slate-600">Once confirmed, you'll receive your <span className="font-semibold text-slate-800">official admission & enrollment email</span> with program access details.</p>
+
+                                {/* What happens next */}
+                                <div className="space-y-2">
+                                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider pt-1">What happens next</p>
+                                    {[
+                                        "Our team verifies your bank transfer receipt (usually within 24 hours).",
+                                        "You'll receive your official admission & enrollment email with program access.",
+                                        `If there's an issue, we'll contact you at ${email}.`
+                                    ].map((text, i) => (
+                                        <div key={i} className="flex items-start gap-3 py-2.5 px-4 bg-slate-50 rounded-lg">
+                                            <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-100 text-blue-600 rounded-full text-[10px] font-semibold shrink-0 mt-px">{i + 1}</span>
+                                            <p className="text-xs text-slate-500">{text}</p>
+                                        </div>
+                                    ))}
                                 </div>
-                                <div className="flex items-start gap-3">
-                                    <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold shrink-0 mt-0.5">3</span>
-                                    <p className="text-sm text-slate-600">If there's an issue with your receipt, our team will contact you directly at <span className="font-semibold text-slate-800">{email}</span>.</p>
+
+                                <div className="flex items-center gap-2 justify-center pt-1 opacity-60">
+                                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                    <span className="text-[11px] text-slate-400">Questions? Email academy@opslyhr.com</span>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3 justify-center mb-8 opacity-70">
-                                <Clock className="w-4 h-4 text-slate-500" />
-                                <span className="text-xs font-bold text-slate-500">Questions? Email us at academy@opslyhr.com</span>
-                            </div>
-
-                            <div className="pt-6 border-t border-slate-100">
+                            <div className="px-6 pb-6">
                                 <Button 
                                     onClick={() => navigate("/browse")}
-                                    className="mx-auto h-12 px-8 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold"
+                                    className="w-full h-10 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium text-sm"
                                 >
                                     Browse More Courses
                                 </Button>

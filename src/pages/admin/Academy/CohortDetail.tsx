@@ -242,7 +242,7 @@ const CohortDetail = () => {
             let profileMap = {};
 
             if (enrollments.length > 0) {
-                const userIds = enrollments.map(e => e.user_id).filter(Boolean);
+                const userIds = enrollments.map(e => e.student_id || e.user_id).filter(Boolean);
                 const { data: profilesData } = await supabase
                     .from("profiles")
                     .select("user_id, first_name, last_name, email, streak_count, total_study_hours")
@@ -251,7 +251,7 @@ const CohortDetail = () => {
                 profileMap = Object.fromEntries((profilesData || []).map(p => [p.user_id, p]));
 
                 transformedStudents = enrollments.map((s: any) => {
-                    const profile = (profileMap as any)[s.user_id];
+                    const profile = (profileMap as any)[s.student_id || s.user_id];
                     return {
                         ...s,
                         student_name: s.student_name || (profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : null) || s.student_email?.split('@')[0] || "Student",
@@ -780,64 +780,64 @@ const CohortDetail = () => {
     if (!cohort) return null;
 
     return (
-        <div className="p-8 lg:p-12 bg-slate-50/50 min-h-screen font-inter">
+        <div className="p-6 lg:p-8 bg-[#f8f9fc] min-h-screen font-inter">
             <div className="w-full max-w-none">
-                <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-xs uppercase tracking-widest mb-8 transition-colors">
-                    <ArrowLeft className="w-4 h-4" /> Back to Previous
+                <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1.5 text-slate-400 hover:text-slate-600 font-medium text-xs transition-colors mb-6">
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Cohorts
                 </button>
 
                 {/* Header Card */}
-                <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-sm mb-12">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
-                        <div className="flex items-center gap-6">
-                            <div className="w-20 h-20 rounded-[24px] bg-blue-600 flex items-center justify-center text-white shadow-xl shadow-blue-200">
-                                <Users className="w-10 h-10" />
+                <div className="bg-white rounded-xl border border-slate-200/60 p-5 shadow-sm mb-6">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-lg bg-blue-50/70 flex items-center justify-center text-blue-600 shrink-0">
+                                <Users className="w-6 h-6" />
                             </div>
                             <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{cohort.name}</h1>
-                                    <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                                        cohort.status === 'open' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-400'
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <h1 className="text-lg font-semibold text-slate-800 tracking-tight leading-none">{cohort.name}</h1>
+                                    <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${
+                                        cohort.status === 'open' ? 'bg-emerald-50 text-emerald-600 border-emerald-100/50' : 'bg-slate-50 text-slate-400 border-slate-100'
                                     }`}>
                                         {cohort.status}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-6">
-                                    <div className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-widest">
-                                        <Calendar className="w-4 h-4" /> {new Date(cohort.start_date).toLocaleDateString()}
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-slate-400">
+                                    <div className="flex items-center gap-1">
+                                        <Calendar className="w-3.5 h-3.5 text-slate-400" /> Start: {new Date(cohort.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-widest">
-                                        <Users className="w-4 h-4" /> {students.length} Enrolled
+                                    <div className="flex items-center gap-1">
+                                        <Users className="w-3.5 h-3.5 text-slate-400" /> {students.length} Enrolled
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm font-bold text-blue-600 uppercase tracking-widest">
+                                    <div className="flex items-center gap-1 text-blue-600 font-semibold">
                                         ₦{cohort.price_naira.toLocaleString()}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Button 
                                 variant="outline" 
-                                className="h-12 px-6 rounded-xl font-bold gap-2"
+                                className="h-9 px-3 rounded-lg text-xs font-medium text-slate-600 border-slate-200 bg-white hover:bg-slate-50 gap-1.5"
                                 onClick={() => setActiveTab("settings")}
                             >
-                                <Settings className="w-4 h-4" /> Cohort Settings
+                                <Settings className="w-3.5 h-3.5" /> Cohort Settings
                             </Button>
                             <Button 
                                 onClick={handleOpenCertification}
-                                className="h-12 px-8 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold gap-2 shadow-lg shadow-emerald-200"
+                                className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium gap-1.5 shadow-sm"
                             >
-                                <Award className="w-4 h-4" /> Close & Certify
+                                <Award className="w-3.5 h-3.5" /> Close & Certify
                             </Button>
-                            <Button className="h-12 px-8 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold gap-2">
+                            <Button className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-medium gap-1.5 shadow-sm">
                                 Export List
                             </Button>
                             <Button 
                                 onClick={handleDeleteCohort}
                                 variant="outline" 
-                                className="h-12 px-6 rounded-xl font-bold text-red-600 border-red-100 hover:bg-red-50 hover:border-red-200 transition-all gap-2"
+                                className="h-9 px-3 rounded-lg text-xs font-medium text-red-600 border-red-100 hover:bg-red-50 hover:border-red-200 transition-all gap-1.5"
                             >
-                                <Trash2 className="w-4 h-4" /> Delete
+                                <Trash2 className="w-3.5 h-3.5" /> Delete
                             </Button>
                         </div>
                     </div>
@@ -845,64 +845,64 @@ const CohortDetail = () => {
 
                 {/* Content Tabs */}
                 <Tabs defaultValue="students" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="bg-white p-1 rounded-2xl border border-slate-100 h-14 mb-10 shadow-sm inline-flex">
-                        <TabsTrigger value="students" className="px-8 rounded-xl font-bold text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
+                    <TabsList className="bg-white p-1 rounded-xl border border-slate-200/60 h-10 mb-6 shadow-sm inline-flex">
+                        <TabsTrigger value="students" className="px-4 rounded-lg font-medium text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
                             Students ({students.length})
                         </TabsTrigger>
-                        <TabsTrigger value="sessions" className="px-8 rounded-xl font-bold text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
+                        <TabsTrigger value="sessions" className="px-4 rounded-lg font-medium text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
                             Sessions ({sessions.length})
                         </TabsTrigger>
-                        <TabsTrigger value="announcements" className="px-8 rounded-xl font-bold text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
+                        <TabsTrigger value="announcements" className="px-4 rounded-lg font-medium text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
                             Announcements
                         </TabsTrigger>
-                        <TabsTrigger value="assignments" className="px-8 rounded-xl font-bold text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
+                        <TabsTrigger value="assignments" className="px-4 rounded-lg font-medium text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
                             Assignments
                         </TabsTrigger>
-                        <TabsTrigger value="grading" className="px-8 rounded-xl font-bold text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
+                        <TabsTrigger value="grading" className="px-4 rounded-lg font-medium text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
                             Submissions ({submissions.filter(s => s.status === 'submitted').length})
                         </TabsTrigger>
-                        <TabsTrigger value="settings" className="px-8 rounded-xl font-bold text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
+                        <TabsTrigger value="settings" className="px-4 rounded-lg font-medium text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all h-full">
                             Settings
                         </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="students" className="outline-none">
-                        <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
-                            <table className="w-full text-left">
-                                <thead className="bg-slate-50/50">
-                                    <tr>
-                                        <th className="px-8 py-5 w-[40px]">
+                        <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm overflow-hidden">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-slate-50/40">
+                                    <tr className="border-b border-slate-100">
+                                        <th className="px-5 py-3 w-[40px]">
                                             <Checkbox 
                                                 checked={students.length > 0 && selectedIds.length === students.length}
                                                 onCheckedChange={toggleSelectAll}
                                             />
                                         </th>
-                                        <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Student Name</th>
-                                        <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Progress</th>
-                                        <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Streak/Hours</th>
-                                        <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Status</th>
-                                        <th className="px-8 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Receipt</th>
-                                        <th className="px-8 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Top Grad</th>
-                                        <th className="px-8 py-5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Admit</th>
+                                        <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Student Name</th>
+                                        <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Progress</th>
+                                        <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Streak/Hours</th>
+                                        <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Status</th>
+                                        <th className="px-5 py-3 text-center text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Receipt</th>
+                                        <th className="px-5 py-3 text-center text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Top Grad</th>
+                                        <th className="px-5 py-3 text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Admit</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-slate-50">
                                     {students.map((student) => (
-                                        <tr key={student.id} className={`hover:bg-slate-50 transition-colors ${selectedIds.includes(student.id) ? 'bg-blue-50/30' : ''}`}>
-                                            <td className="px-8 py-6">
+                                        <tr key={student.id} className={`hover:bg-slate-50/40 transition-colors ${selectedIds.includes(student.id) ? 'bg-blue-50/20' : ''}`}>
+                                            <td className="px-5 py-3">
                                                 <Checkbox 
                                                     checked={selectedIds.includes(student.id)}
                                                     onCheckedChange={() => toggleSelect(student.id)}
                                                 />
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex flex-col gap-1">
-                                                    <span className="font-bold text-slate-900">{student.student_name}</span>
-                                                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{student.student_email}</span>
+                                            <td className="px-5 py-3">
+                                                <div className="flex flex-col">
+                                                    <span className="font-semibold text-slate-800 text-xs">{student.student_name}</span>
+                                                    <span className="text-[10px] text-slate-400 mt-0.5 font-normal tracking-wide lowercase">{student.student_email}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-2">
+                                            <td className="px-5 py-3">
+                                                <div className="flex items-center gap-1.5">
                                                     <input 
                                                         type="number"
                                                         defaultValue={student.progress_percent || 0}
@@ -910,22 +910,22 @@ const CohortDetail = () => {
                                                             const val = parseInt(e.target.value);
                                                             await supabase.from('academy_enrollments').update({ progress_percent: val }).eq('id', student.id);
                                                         }}
-                                                        className="w-12 h-8 bg-slate-50 border-none rounded-lg text-xs font-bold text-center"
+                                                        className="w-10 h-7 bg-slate-50 border border-slate-100 rounded-md text-xs font-medium text-center focus:bg-white transition-colors"
                                                     />
-                                                    <span className="text-[10px] font-bold text-slate-400">%</span>
+                                                    <span className="text-[10px] font-semibold text-slate-400">%</span>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-3">
+                                            <td className="px-5 py-3">
+                                                <div className="flex items-center gap-1.5">
                                                     <input 
                                                         type="number"
                                                         placeholder="S"
                                                         defaultValue={student.streak_count || 0}
                                                         onBlur={async (e) => {
                                                             const val = parseInt(e.target.value);
-                                                            await supabase.from('profiles').update({ streak_count: val }).eq('id', student.student_id);
+                                                            await supabase.from('profiles').update({ streak_count: val }).eq('user_id', student.student_id);
                                                         }}
-                                                        className="w-10 h-8 bg-slate-50 border-none rounded-lg text-xs font-bold text-center"
+                                                        className="w-8 h-7 bg-slate-50 border border-slate-100 rounded-md text-xs font-medium text-center focus:bg-white transition-colors"
                                                         title="Streak Count"
                                                     />
                                                     <input 
@@ -934,22 +934,22 @@ const CohortDetail = () => {
                                                         defaultValue={student.total_study_hours || 0}
                                                         onBlur={async (e) => {
                                                             const val = parseFloat(e.target.value);
-                                                            await supabase.from('profiles').update({ total_study_hours: val }).eq('id', student.student_id);
+                                                            await supabase.from('profiles').update({ total_study_hours: val }).eq('user_id', student.student_id);
                                                         }}
-                                                        className="w-10 h-8 bg-slate-50 border-none rounded-lg text-xs font-bold text-center"
+                                                        className="w-8 h-7 bg-slate-50 border border-slate-100 rounded-md text-xs font-medium text-center focus:bg-white transition-colors"
                                                         title="Study Hours"
                                                     />
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6">
+                                            <td className="px-5 py-3">
                                                 <span className={`px-2 py-0.5 text-[9px] font-bold rounded uppercase tracking-wider ${
                                                     student.enrollment_status === 'active'
-                                                        ? 'bg-emerald-50 text-emerald-600'
-                                                        : 'bg-amber-50 text-amber-600'
+                                                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50'
+                                                        : 'bg-amber-50 text-amber-600 border border-amber-100/50'
                                                 }`}>{student.enrollment_status}</span>
                                             </td>
                                             {/* Receipt column */}
-                                            <td className="px-8 py-6 text-center">
+                                            <td className="px-5 py-3 text-center">
                                                 {(() => {
                                                     const receipt = receiptSubmissions.find(
                                                         r => r.email.toLowerCase() === student.student_email?.toLowerCase()
@@ -960,18 +960,18 @@ const CohortDetail = () => {
                                                             href={receipt.receipt_url}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg transition-colors"
+                                                            className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50/60 hover:bg-blue-100/60 text-blue-700 text-[10px] font-semibold rounded-md transition-colors"
                                                             title={`Status: ${receipt.status}`}
                                                         >
-                                                            <Receipt className="w-3.5 h-3.5" />
+                                                            <Receipt className="w-3 h-3 mr-0.5" />
                                                             View
-                                                            {receipt.status === 'admitted' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+                                                            {receipt.status === 'admitted' && <CheckCircle2 className="w-3 h-3 text-emerald-500 ml-0.5" />}
                                                         </a>
                                                     );
                                                 })()}
                                             </td>
                                             {/* Top Grad column */}
-                                            <td className="px-8 py-6 text-center">
+                                            <td className="px-5 py-3 text-center">
                                                 <button 
                                                     onClick={async () => {
                                                         const newVal = !student.is_top_grad;
@@ -981,29 +981,29 @@ const CohortDetail = () => {
                                                             toast({ title: newVal ? '⭐ Top Grad Assigned' : 'Top Grad Removed', description: `${student.student_name} ${newVal ? 'is now' : 'is no longer'} a Top Grad.` });
                                                         }
                                                     }}
-                                                    className={`p-2 rounded-xl transition-all ${student.is_top_grad ? 'bg-amber-50 text-amber-500 hover:bg-amber-100' : 'bg-slate-50 text-slate-300 hover:text-amber-400 hover:bg-amber-50'}`}
+                                                    className={`p-1.5 rounded-md transition-all ${student.is_top_grad ? 'bg-amber-50 text-amber-500 hover:bg-amber-100' : 'bg-slate-50 text-slate-300 hover:text-amber-400 hover:bg-amber-50'}`}
                                                     title={student.is_top_grad ? 'Remove Top Grad' : 'Mark as Top Grad'}
                                                 >
-                                                    <Star className={`w-4 h-4 ${student.is_top_grad ? 'fill-amber-400' : ''}`} />
+                                                    <Star className={`w-3.5 h-3.5 ${student.is_top_grad ? 'fill-amber-400' : ''}`} />
                                                 </button>
                                             </td>
                                             {/* Admit column */}
-                                            <td className="px-8 py-6 text-right">
+                                            <td className="px-5 py-3 text-right">
                                                 {student.enrollment_status === 'active' ? (
-                                                    <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-lg">
-                                                        <CheckCircle2 className="w-3.5 h-3.5" /> Admitted
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-semibold rounded-md">
+                                                        <CheckCircle2 className="w-3 h-3" /> Admitted
                                                     </span>
                                                 ) : (
                                                     <Button
                                                         size="sm"
                                                         disabled={admittingId === student.id}
                                                         onClick={() => handleAdmitStudent(student)}
-                                                        className="h-8 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs gap-1.5 shadow-sm"
+                                                        className="h-7 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[10px] font-medium gap-1 shadow-sm"
                                                     >
                                                         {admittingId === student.id ? (
-                                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                            <Loader2 className="w-3 h-3 animate-spin" />
                                                         ) : (
-                                                            <UserCheck className="w-3.5 h-3.5" />
+                                                            <UserCheck className="w-3 h-3" />
                                                         )}
                                                         Admit
                                                     </Button>
@@ -1017,84 +1017,84 @@ const CohortDetail = () => {
                     </TabsContent>
 
                     <TabsContent value="sessions" className="outline-none">
-                        <div className="space-y-10">
-                            <div className="bg-white p-8 rounded-[32px] border border-blue-50 shadow-xl shadow-blue-500/5">
-                                <h3 className="text-sm font-bold text-slate-900 mb-6 uppercase tracking-wider">Schedule New Session</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Topic</label>
+                        <div className="space-y-6">
+                            <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm">
+                                <h3 className="text-xs font-semibold text-slate-800 mb-4 uppercase tracking-wider">Schedule New Session</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Topic</label>
                                         <input 
                                             value={newSession.title} 
                                             onChange={e => setNewSession({...newSession, title: e.target.value})}
                                             placeholder="System Architecture..." 
-                                            className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-blue-600 transition-all text-sm font-medium"
+                                            className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-normal focus:bg-white focus:ring-1 focus:ring-blue-600 transition-all outline-none"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Date</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Date</label>
                                         <input 
                                             type="date"
                                             value={newSession.date} 
                                             onChange={e => setNewSession({...newSession, date: e.target.value})}
-                                            className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-blue-600 transition-all text-sm font-medium"
+                                            className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-normal focus:bg-white focus:ring-1 focus:ring-blue-600 transition-all outline-none"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Meeting URL</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Meeting URL</label>
                                         <input 
                                             value={newSession.url} 
                                             onChange={e => setNewSession({...newSession, url: e.target.value})}
                                             placeholder="Zoom link..." 
-                                            className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent focus:bg-white focus:ring-blue-600 transition-all text-sm font-medium"
+                                            className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-normal focus:bg-white focus:ring-1 focus:ring-blue-600 transition-all outline-none"
                                         />
                                     </div>
-                                    <Button onClick={handleCreateSession} disabled={isSaving} className="h-12 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-100">{isSaving ? 'Scheduling...' : 'Add Class'}</Button>
+                                    <Button onClick={handleCreateSession} disabled={isSaving} className="h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-sm">{isSaving ? 'Scheduling...' : 'Add Class'}</Button>
                                 </div>
                             </div>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
                                 {sessions.map((session, idx) => (
-                                    <div key={session.id} className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm relative group overflow-hidden">
-                                        <div className="absolute top-0 right-0 p-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" className="w-10 h-10 p-0 rounded-xl bg-slate-50 hover:bg-blue-50 text-blue-600"><Settings className="w-4 h-4" /></Button>
-                                            <Button variant="ghost" className="w-10 h-10 p-0 rounded-xl bg-slate-50 hover:bg-red-50 text-red-600"><Trash2 className="w-4 h-4" /></Button>
+                                    <div key={session.id} className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm relative group overflow-hidden">
+                                        <div className="absolute top-4 right-4 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button variant="ghost" className="w-8 h-8 p-0 rounded-md bg-slate-50 hover:bg-blue-50 text-blue-600"><Settings className="w-3.5 h-3.5" /></Button>
+                                            <Button variant="ghost" className="w-8 h-8 p-0 rounded-md bg-slate-50 hover:bg-red-50 text-red-600"><Trash2 className="w-3.5 h-3.5" /></Button>
                                         </div>
-                                        <div className="flex items-center gap-4 mb-6">
-                                            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
-                                                <Video className="w-6 h-6" />
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="w-9 h-9 bg-blue-50/70 rounded-lg flex items-center justify-center text-blue-600 shrink-0">
+                                                <Video className="w-5 h-5" />
                                             </div>
                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Session {idx+1}</span>
                                         </div>
-                                        <h4 className="text-xl font-bold text-slate-900 mb-2 truncate pr-16">{session.title}</h4>
-                                        <div className="flex items-center gap-4 font-bold text-slate-400 text-[10px] uppercase tracking-widest">
-                                            <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {new Date(session.session_date).toLocaleDateString()}</span>
-                                            <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {session.start_time}</span>
+                                        <h4 className="text-sm font-semibold text-slate-800 mb-1.5 truncate pr-16">{session.title}</h4>
+                                        <div className="flex items-center gap-3 text-slate-400 text-[10px] font-medium tracking-wide uppercase">
+                                            <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {new Date(session.session_date).toLocaleDateString()}</span>
+                                            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {session.start_time || 'TBD'}</span>
                                         </div>
-                                        <div className="mt-8 flex items-center justify-between">
-                                            <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider ${
-                                                session.status === 'scheduled' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'
+                                        <div className="mt-4 flex items-center justify-between">
+                                            <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border ${
+                                                session.status === 'scheduled' ? 'bg-blue-50 text-blue-600 border-blue-100/50' : 'bg-emerald-50 text-emerald-600 border-emerald-100/50'
                                             }`}>
                                                 {session.status}
                                             </span>
-                                            <div onClick={() => window.open(session.meeting_url, '_blank')} className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:underline cursor-pointer">
+                                            <div onClick={() => window.open(session.meeting_url, '_blank')} className="flex items-center gap-1 text-[10px] font-semibold text-blue-600 hover:underline cursor-pointer">
                                                 Virtual Link <ChevronRight className="w-3 h-3" />
                                             </div>
                                         </div>
-                                        <div className="mt-6 pt-6 border-t border-slate-50">
+                                        <div className="mt-4 pt-4 border-t border-slate-50">
                                             <Button 
                                                 onClick={() => handleSendSessionReminder(session)}
                                                 variant="outline" 
-                                                className="w-full h-10 rounded-xl border-slate-200 text-xs font-bold gap-2 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-100 transition-all"
+                                                className="w-full h-8 rounded-lg border-slate-200 text-[11px] font-medium gap-1.5 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-100 transition-all"
                                             >
-                                                <Bell className="w-3.5 h-3.5" /> Broadcast Reminder
+                                                <Bell className="w-3 h-3" /> Broadcast Reminder
                                             </Button>
                                         </div>
                                     </div>
                                 ))}
                                 {sessions.length === 0 && (
-                                    <div className="md:col-span-2 py-20 bg-white rounded-3xl border border-dashed border-slate-200 text-center">
-                                        <Calendar className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-                                        <p className="text-slate-500 font-bold">No sessions scheduled yet.</p>
+                                    <div className="md:col-span-2 py-12 bg-white rounded-xl border border-dashed border-slate-200 text-center">
+                                        <Calendar className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                                        <p className="text-xs text-slate-400 font-medium">No sessions scheduled yet.</p>
                                     </div>
                                 )}
                             </div>
@@ -1102,50 +1102,50 @@ const CohortDetail = () => {
                     </TabsContent>
 
                     <TabsContent value="announcements" className="outline-none pb-20">
-                        <div className="max-w-3xl space-y-8">
-                            <div className="bg-white p-8 rounded-3xl border border-blue-100 shadow-xl shadow-blue-500/5">
-                                <h4 className="text-[10px] font-bold text-slate-900 mb-4 uppercase tracking-widest">Broadcast Announcement</h4>
+                        <div className="max-w-3xl space-y-6">
+                            <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm">
+                                <h4 className="text-xs font-semibold text-slate-800 mb-4 uppercase tracking-wider">Broadcast Announcement</h4>
                                 <input 
                                     value={newAnnouncement.title}
                                     onChange={e => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
                                     placeholder="Title..."
-                                    className="w-full h-12 px-6 bg-slate-50 rounded-xl border-transparent mb-4 text-sm font-bold"
+                                    className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg mb-3 text-xs font-medium focus:bg-white outline-none"
                                 />
                                 <input 
                                     value={newAnnouncement.image_url}
                                     onChange={e => setNewAnnouncement({...newAnnouncement, image_url: e.target.value})}
                                     placeholder="Optional Image URL..."
-                                    className="w-full h-12 px-6 bg-slate-50 rounded-xl border-transparent mb-4 text-sm font-medium"
+                                    className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg mb-3 text-xs font-normal focus:bg-white outline-none"
                                 />
                                 <textarea 
                                     value={newAnnouncement.content}
                                     onChange={e => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
                                     placeholder="Keep your cohort informed. Start typing..." 
-                                    className="w-full min-h-[140px] p-6 bg-slate-50 rounded-2xl border-transparent focus:bg-white focus:ring-blue-600 transition-all font-medium text-sm mb-6"
+                                    className="w-full min-h-[100px] p-3 bg-slate-50 border border-slate-100 rounded-lg focus:bg-white focus:ring-1 focus:ring-blue-600 transition-all font-normal text-xs mb-4 outline-none"
                                 />
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Notify students via email
                                     </div>
-                                    <Button onClick={handleCreateAnnouncement} disabled={isSaving} className="h-12 px-8 bg-blue-600 text-white rounded-xl font-bold">{isSaving ? 'Posting...' : 'Post Update'}</Button>
+                                    <Button onClick={handleCreateAnnouncement} disabled={isSaving} className="h-9 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-sm">{isSaving ? 'Posting...' : 'Post Update'}</Button>
                                 </div>
                             </div>
 
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 {announcements.map((ann) => (
-                                    <div key={ann.id} className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm relative group">
-                                        <div className="absolute top-8 right-8 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" className="w-8 h-8 p-0 rounded-lg text-red-600 hover:bg-red-50"><Trash2 className="w-4 h-4" /></Button>
+                                    <div key={ann.id} className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm relative group">
+                                        <div className="absolute top-4 right-4 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button variant="ghost" className="w-7 h-7 p-0 rounded-md text-red-600 hover:bg-red-50"><Trash2 className="w-3.5 h-3.5" /></Button>
                                         </div>
-                                        <div className="flex items-start gap-5">
-                                            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center shrink-0">
-                                                <Bell className="w-5 h-5 text-blue-600" />
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-9 h-9 bg-blue-50/70 rounded-lg flex items-center justify-center shrink-0">
+                                                <Bell className="w-4.5 h-4.5 text-blue-600" />
                                             </div>
-                                            <div className="flex-grow">
-                                                <h5 className="font-bold text-slate-900 mb-1">{ann.title}</h5>
-                                                <p className="text-slate-500 text-sm leading-relaxed mb-4">{ann.content}</p>
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                    Posted {new Date(ann.created_at).toLocaleString()}
+                                            <div className="flex-1 min-w-0">
+                                                <h5 className="font-semibold text-slate-800 text-sm mb-1">{ann.title}</h5>
+                                                <p className="text-slate-500 text-xs leading-relaxed mb-3">{ann.content}</p>
+                                                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+                                                    Posted {new Date(ann.created_at).toLocaleString('en-GB')}
                                                 </span>
                                             </div>
                                         </div>
@@ -1156,40 +1156,40 @@ const CohortDetail = () => {
                     </TabsContent>
 
                     <TabsContent value="assignments" className="outline-none pb-20">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-1">
-                                <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm sticky top-8">
-                                    <h4 className="text-sm font-bold text-slate-900 mb-8 uppercase tracking-widest">Create Assignment</h4>
-                                    <div className="space-y-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase px-1">Title</label>
+                                <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm sticky top-6">
+                                    <h4 className="text-xs font-semibold text-slate-800 mb-4 uppercase tracking-wider">Create Assignment</h4>
+                                    <div className="space-y-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Title</label>
                                             <input 
                                                 value={newAssignment.title}
                                                 onChange={e => setNewAssignment({...newAssignment, title: e.target.value})}
-                                                className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent text-sm font-bold"
+                                                className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-semibold focus:bg-white outline-none"
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase px-1">Deadline</label>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Deadline</label>
                                             <input 
                                                 type="datetime-local"
                                                 value={newAssignment.deadline}
                                                 onChange={e => setNewAssignment({...newAssignment, deadline: e.target.value})}
-                                                className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent text-sm font-bold"
+                                                className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-normal focus:bg-white outline-none"
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase px-1">Description</label>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Description</label>
                                             <textarea 
                                                 value={newAssignment.description}
                                                 onChange={e => setNewAssignment({...newAssignment, description: e.target.value})}
-                                                className="w-full min-h-[100px] p-5 bg-slate-50 rounded-xl border-transparent text-sm font-medium"
+                                                className="w-full min-h-[80px] p-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-normal focus:bg-white outline-none"
                                             />
                                         </div>
 
-                                        <div className="space-y-4 pt-4 border-t border-slate-50">
-                                            <div className="flex items-center justify-between px-1">
-                                                <label className="text-[10px] font-bold text-slate-400 uppercase">Grading Rubric</label>
+                                        <div className="space-y-3 pt-3 border-t border-slate-50">
+                                            <div className="flex items-center justify-between px-0.5">
+                                                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Grading Rubric</label>
                                                 <Button 
                                                     variant="ghost" 
                                                     size="sm"
@@ -1200,23 +1200,23 @@ const CohortDetail = () => {
                                                             rubrics: [...newAssignment.rubrics, { id, title: '', description: '', max_points: 0 }]
                                                         });
                                                     }}
-                                                    className="h-7 px-2 text-blue-600 font-bold text-[10px] gap-1"
+                                                    className="h-6 px-1.5 text-blue-600 font-semibold text-[10px] gap-0.5 hover:bg-blue-50/50"
                                                 >
-                                                    <Plus className="w-3 h-3" /> Add Criterion
+                                                    <Plus className="w-2.5 h-2.5" /> Add Criterion
                                                 </Button>
                                             </div>
                                             
-                                            <div className="space-y-3">
+                                            <div className="space-y-2">
                                                 {newAssignment.rubrics.map((rubric, idx) => (
-                                                    <div key={rubric.id} className="bg-slate-50 p-4 rounded-xl space-y-3 relative group">
+                                                    <div key={rubric.id} className="bg-slate-50/50 border border-slate-100 p-3 rounded-lg space-y-2 relative group">
                                                         <button 
                                                             onClick={() => {
-                                                                const filtered = newAssignment.rubrics.filter((_, i) => i !== idx);
-                                                                setNewAssignment({ ...newAssignment, rubrics: filtered });
+                                                                 const filtered = newAssignment.rubrics.filter((_, i) => i !== idx);
+                                                                 setNewAssignment({ ...newAssignment, rubrics: filtered });
                                                             }}
                                                             className="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors"
                                                         >
-                                                            <Trash2 size={12} />
+                                                            <Trash2 size={11} />
                                                         </button>
                                                         <input 
                                                             value={rubric.title}
@@ -1226,7 +1226,7 @@ const CohortDetail = () => {
                                                                 setNewAssignment({ ...newAssignment, rubrics: updated });
                                                             }}
                                                             placeholder="Criterion Title (e.g. Code Quality)"
-                                                            className="w-full h-8 bg-white px-3 rounded-lg border-transparent text-xs font-bold"
+                                                            className="w-full h-7 bg-white px-2 rounded-md border-slate-100 text-xs font-semibold focus:bg-white outline-none"
                                                         />
                                                         <div className="flex gap-2">
                                                             <input 
@@ -1237,8 +1237,8 @@ const CohortDetail = () => {
                                                                     updated[idx].max_points = Number(e.target.value);
                                                                     setNewAssignment({ ...newAssignment, rubrics: updated });
                                                                 }}
-                                                                placeholder="Max Points"
-                                                                className="w-24 h-8 bg-white px-3 rounded-lg border-transparent text-xs font-medium"
+                                                                placeholder="Max Pts"
+                                                                className="w-20 h-7 bg-white px-2 rounded-md border-slate-100 text-xs font-normal focus:bg-white outline-none"
                                                             />
                                                             <input 
                                                                 value={rubric.description}
@@ -1248,41 +1248,41 @@ const CohortDetail = () => {
                                                                     setNewAssignment({ ...newAssignment, rubrics: updated });
                                                                 }}
                                                                 placeholder="Optional description..."
-                                                                className="flex-grow h-8 bg-white px-3 rounded-lg border-transparent text-xs font-medium"
+                                                                className="flex-grow h-7 bg-white px-2 rounded-md border-slate-100 text-xs font-normal focus:bg-white outline-none"
                                                             />
                                                         </div>
                                                     </div>
                                                 ))}
                                                 {newAssignment.rubrics.length === 0 && (
-                                                    <p className="text-[10px] text-slate-400 italic px-1">No rubrics defined yet. Total score will default to 100.</p>
+                                                    <p className="text-[10px] text-slate-400 italic px-0.5">No rubrics defined yet. Score defaults to 100.</p>
                                                 )}
                                             </div>
                                         </div>
 
-                                        <Button onClick={handleCreateAssignment} disabled={isSaving} className="w-full h-14 bg-slate-900 text-white rounded-2xl font-bold shadow-xl shadow-slate-200">{isSaving ? 'Creating...' : 'Create Task'}</Button>
+                                        <Button onClick={handleCreateAssignment} disabled={isSaving} className="w-full h-9 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-medium shadow-sm">{isSaving ? 'Creating...' : 'Create Task'}</Button>
                                     </div>
                                 </div>
                             </div>
-                            <div className="lg:col-span-2 space-y-6">
+                            <div className="lg:col-span-2 space-y-4">
                                 {assignments.map(asgn => (
-                                    <div key={asgn.id} className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-sm group relative">
-                                        <div className="absolute top-10 right-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" className="w-10 h-10 p-0 rounded-xl bg-slate-50 text-red-600"><Trash2 className="w-4 h-4" /></Button>
+                                    <div key={asgn.id} className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm group relative">
+                                        <div className="absolute top-4 right-4 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button variant="ghost" className="w-8 h-8 p-0 rounded-md bg-slate-50 hover:bg-red-50 text-red-600"><Trash2 className="w-3.5 h-3.5" /></Button>
                                         </div>
-                                        <div className="flex items-center gap-2 mb-4">
+                                        <div className="flex items-center gap-2 mb-2">
                                             <Badge variant="outline" className="bg-blue-50 text-blue-600 border-none font-bold uppercase text-[9px] px-2 py-0.5">Active</Badge>
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Due {new Date(asgn.deadline_at).toLocaleDateString()}</span>
+                                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">Due {new Date(asgn.deadline_at).toLocaleDateString()}</span>
                                         </div>
-                                        <h4 className="text-2xl font-bold text-slate-900 mb-3">{asgn.title}</h4>
-                                        <p className="text-slate-500 text-sm leading-relaxed mb-8">{asgn.description}</p>
-                                        <div className="flex items-center justify-between pt-8 border-t border-slate-50">
-                                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                <Plus className="w-4 h-4" /> 0 Submissions
+                                        <h4 className="text-sm font-semibold text-slate-800 mb-1">{asgn.title}</h4>
+                                        <p className="text-slate-500 text-xs leading-relaxed mb-4">{asgn.description}</p>
+                                        <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                                            <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                                                <Plus className="w-3 h-3 text-slate-400" /> 0 Submissions
                                             </div>
                                             <Button 
                                                 onClick={() => setEditingAssignment(asgn)}
                                                 variant="ghost" 
-                                                className="font-bold text-blue-600 text-xs"
+                                                className="font-semibold text-blue-600 text-xs h-7 px-2 hover:bg-blue-50/50"
                                             >
                                                 Edit Details
                                             </Button>
@@ -1294,27 +1294,27 @@ const CohortDetail = () => {
                     </TabsContent>
 
                     <TabsContent value="settings" className="outline-none pb-20">
-                        <div className="max-w-4xl bg-white p-10 rounded-[40px] border border-slate-100 shadow-sm space-y-10">
+                        <div className="max-w-3xl bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm space-y-6">
                             <div>
-                                <h3 className="text-2xl font-bold text-slate-900 mb-2">Cohort Configuration</h3>
-                                <p className="text-slate-500 text-sm">Update core settings, scheduling, and enrollment windows.</p>
+                                <h3 className="text-sm font-semibold text-slate-800">Cohort Configuration</h3>
+                                <p className="text-xs text-slate-400 mt-0.5">Update core settings, scheduling, and enrollment windows.</p>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Cohort Name</label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Cohort Name</label>
                                     <input 
                                         value={settings.name}
                                         onChange={e => setSettings({...settings, name: e.target.value})}
-                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                        className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-semibold focus:bg-white outline-none"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Status</label>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Status</label>
                                     <select 
                                         value={settings.status}
                                         onChange={e => setSettings({...settings, status: e.target.value})}
-                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm outline-none"
+                                        className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-medium focus:bg-white outline-none"
                                     >
                                         <option value="open">Open (Enrolling)</option>
                                         <option value="ongoing">Ongoing</option>
@@ -1322,112 +1322,112 @@ const CohortDetail = () => {
                                         <option value="cancelled">Cancelled</option>
                                     </select>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Max Capacity</label>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Max Capacity</label>
                                     <input 
                                         type="number"
                                         value={settings.max_slots}
                                         onChange={e => setSettings({...settings, max_slots: Number(e.target.value)})}
-                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                        className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-normal focus:bg-white outline-none"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Duration (Weeks)</label>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Duration (Weeks)</label>
                                     <input 
                                         type="number"
                                         value={settings.duration_weeks}
                                         onChange={e => setSettings({...settings, duration_weeks: Number(e.target.value)})}
-                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                        className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-normal focus:bg-white outline-none"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Enrollment Start</label>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Enrollment Start</label>
                                     <input 
                                         type="datetime-local"
                                         value={settings.enrollment_start_date}
                                         onChange={e => setSettings({...settings, enrollment_start_date: e.target.value})}
-                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                        className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-normal focus:bg-white outline-none"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Enrollment End</label>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Enrollment End</label>
                                     <input 
                                         type="datetime-local"
                                         value={settings.enrollment_end_date}
                                         onChange={e => setSettings({...settings, enrollment_end_date: e.target.value})}
-                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                        className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-normal focus:bg-white outline-none"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Program Start</label>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Program Start</label>
                                     <input 
                                         type="datetime-local"
                                         value={settings.start_date}
                                         onChange={e => setSettings({...settings, start_date: e.target.value})}
-                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                        className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-normal focus:bg-white outline-none"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Program End</label>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Program End</label>
                                     <input 
                                         type="datetime-local"
                                         value={settings.end_date}
                                         onChange={e => setSettings({...settings, end_date: e.target.value})}
-                                        className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                        className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-normal focus:bg-white outline-none"
                                     />
                                 </div>
                             </div>
                             
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Default Meeting Link</label>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-0.5">Default Meeting Link</label>
                                 <input 
                                     value={settings.zoom_link}
                                     onChange={e => setSettings({...settings, zoom_link: e.target.value})}
                                     placeholder="Zoom / Meet Link"
-                                    className="w-full h-12 px-5 bg-slate-50 rounded-xl border-transparent font-bold text-sm"
+                                    className="w-full h-9 px-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-normal focus:bg-white outline-none"
                                 />
                             </div>
 
                             <Button 
                                 onClick={handleUpdateSettings} 
                                 disabled={isSaving}
-                                className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-xl transition-all"
+                                className="w-full h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs shadow-sm transition-all"
                             >
                                 {isSaving ? "Saving..." : "Update Cohort Settings"}
                             </Button>
                         </div>
                     </TabsContent>
                     <TabsContent value="grading" className="outline-none pb-20">
-                        <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
-                            <table className="w-full text-left">
-                                <thead className="bg-slate-50/50 border-b border-slate-100">
+                        <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm overflow-hidden">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-slate-50/40 border-b border-slate-100">
                                     <tr>
-                                        <th className="px-10 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student / Assignment</th>
-                                        <th className="px-10 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Content</th>
-                                        <th className="px-10 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
-                                        <th className="px-10 py-6 text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest">Review</th>
+                                        <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Student / Assignment</th>
+                                        <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Content</th>
+                                        <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Status</th>
+                                        <th className="px-5 py-3 text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Review</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-slate-50">
                                     {submissions.map((sub) => (
-                                        <tr key={sub.id} className="hover:bg-slate-50/50 transition-colors">
-                                            <td className="px-10 py-8">
-                                                <div className="font-bold text-slate-900 mb-1">{sub.profiles?.full_name || 'Student'}</div>
-                                                <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{sub.assignments?.title}</div>
+                                        <tr key={sub.id} className="hover:bg-slate-50/40 transition-colors">
+                                            <td className="px-5 py-3">
+                                                <div className="font-semibold text-slate-800 text-xs">{sub.profiles?.full_name || 'Student'}</div>
+                                                <div className="text-[10px] font-semibold text-blue-600 uppercase mt-0.5 tracking-wider">{sub.assignments?.title}</div>
                                             </td>
-                                            <td className="px-10 py-8">
-                                                <a href={sub.link} target="_blank" className="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-medium transition-colors">
-                                                    <ExternalLink className="w-4 h-4" /> View Work
+                                            <td className="px-5 py-3">
+                                                <a href={sub.link} target="_blank" className="inline-flex items-center gap-1.5 text-slate-500 hover:text-blue-600 text-xs font-normal transition-colors">
+                                                    <ExternalLink className="w-3.5 h-3.5" /> View Work
                                                 </a>
                                             </td>
-                                            <td className="px-10 py-8">
+                                            <td className="px-5 py-3">
                                                 {sub.status === 'reviewed' ? (
-                                                    <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full uppercase tracking-wider">Reviewed</span>
+                                                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded uppercase tracking-wider border border-emerald-100/50">Reviewed</span>
                                                 ) : (
-                                                    <span className="px-2.5 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full uppercase tracking-wider">Pending</span>
+                                                    <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-bold rounded uppercase tracking-wider border border-blue-100/50">Pending</span>
                                                 )}
                                             </td>
-                                            <td className="px-10 py-8 text-right">
+                                            <td className="px-5 py-3 text-right">
                                                 {sub.status !== 'reviewed' ? (
                                                     <Button 
                                                         onClick={() => setGradingSub({ 
@@ -1438,14 +1438,14 @@ const CohortDetail = () => {
                                                             assignment_rubrics: sub.assignments?.rubrics || []
                                                         })} 
                                                         variant="outline" 
-                                                        className="h-10 px-4 rounded-xl font-bold text-xs border-slate-200"
+                                                        className="h-7 px-2.5 rounded-md text-[11px] font-medium border-slate-200"
                                                     >
                                                         Review Work
                                                     </Button>
                                                 ) : (
                                                     <div className="flex flex-col items-end">
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Grade</span>
-                                                        <span className="text-sm font-bold text-slate-900">{sub.grade || 'N/A'}</span>
+                                                        <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Grade</span>
+                                                        <span className="text-xs font-semibold text-slate-800">{sub.grade || 'N/A'}</span>
                                                     </div>
                                                 )}
                                             </td>
@@ -1453,15 +1453,16 @@ const CohortDetail = () => {
                                     ))}
                                     {submissions.length === 0 && (
                                         <tr>
-                                            <td colSpan={4} className="px-10 py-20 text-center">
-                                                <FileText className="w-12 h-12 text-slate-100 mx-auto mb-4" />
-                                                <p className="text-slate-400 font-bold">No submissions yet.</p>
+                                            <td colSpan={4} className="px-5 py-8 text-center">
+                                                <FileText className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                                                <p className="text-xs text-slate-400 font-medium">No submissions yet.</p>
                                             </td>
                                         </tr>
                                     )}
                                 </tbody>
                             </table>
                         </div>
+                    </TabsContent>
 
                         {/* Grading & Feedback Modal */}
                         {gradingSub && (

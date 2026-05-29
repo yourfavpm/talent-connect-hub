@@ -15,7 +15,6 @@ import {
     AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { getInternalPath } from "@/utils/subdomain";
@@ -101,131 +100,142 @@ const AcademyManagement = () => {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50/50">
-                <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="p-6 lg:p-10 bg-white min-h-screen font-inter">
-            <div className="w-full max-w-none">
+        <div className="min-h-screen bg-[#f8f9fc] py-8 px-4 sm:px-6 lg:px-8 font-inter">
+            <div className="max-w-7xl mx-auto space-y-6">
                 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold tracking-widest uppercase mb-4 w-fit">
-                            Admin Portal
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
+                            <span>Admin Portal</span>
+                            <span className="w-1 h-1 rounded-full bg-slate-300" />
+                            <span className="text-blue-600">Academy</span>
                         </div>
-                        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Academy Management</h1>
-                        <p className="text-slate-500 font-medium mt-2">Oversee cohorts, sessions, and academic performance.</p>
+                        <h1 className="text-xl font-semibold text-slate-800 mt-1">Academy Management</h1>
+                        <p className="text-xs text-slate-400 mt-0.5">Oversee cohorts, sessions, and academic performance.</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         <Button 
                             variant="outline" 
-                            className="h-12 px-6 rounded-xl font-bold text-slate-600 border-slate-200 hover:bg-slate-50"
+                            className="h-9 px-4 rounded-lg text-xs font-medium text-slate-600 border-slate-200 bg-white hover:bg-slate-50"
                             onClick={() => navigate(getInternalPath("/admin/academy/courses"))}
                         >
-                            <BookOpen className="mr-2 w-4 h-4 text-blue-600" />
+                            <BookOpen className="mr-2 w-3.5 h-3.5 text-blue-600" />
                             Manage Courses
                         </Button>
                         <Button 
-                            className="h-12 px-6 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200"
+                            className="h-9 px-4 rounded-lg text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
                             onClick={() => navigate(getInternalPath("/admin/academy/courses"))}
                         >
-                            <Plus className="mr-2 w-4 h-4" />
+                            <Plus className="mr-1.5 w-3.5 h-3.5" />
                             Create Cohort
                         </Button>
                     </div>
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: "Active Students", value: stats.totalStudents, icon: Users, color: "bg-blue-600", trend: "+12%" },
-                        { label: "Open Cohorts", value: stats.activeCohorts, icon: BookOpen, color: "bg-emerald-600", trend: "Stable" },
-                        { label: "Est. Revenue", value: `₦${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: "bg-indigo-600", trend: "+8%" },
-                        { label: "Graduations", value: stats.pendingGraduations, icon: CheckCircle2, color: "bg-amber-600", trend: "Pending" }
+                        { label: "Active Students", value: stats.totalStudents, icon: Users, color: "text-blue-600 bg-blue-50/50", trend: "+12%" },
+                        { label: "Open Cohorts", value: stats.activeCohorts, icon: BookOpen, color: "text-emerald-600 bg-emerald-50/50", trend: "Stable" },
+                        { label: "Est. Revenue", value: `₦${stats.totalRevenue.toLocaleString()}`, icon: TrendingUp, color: "text-indigo-600 bg-indigo-50/50", trend: "+8%" },
+                        { label: "Graduations", value: stats.pendingGraduations, icon: CheckCircle2, color: "text-amber-600 bg-amber-50/50", trend: "Pending" }
                     ].map((stat) => (
-                        <div key={stat.label} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-                            <div className="flex items-start justify-between mb-4">
-                                <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center text-white`}>
+                        <div key={stat.label} className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between">
+                            <div className="flex items-center gap-3.5">
+                                <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center shrink-0`}>
                                     <stat.icon className="w-5 h-5" />
                                 </div>
-                                <span className={`text-[10px] font-bold px-2 py-1 rounded-md ${stat.trend.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'}`}>
-                                    {stat.trend}
-                                </span>
+                                <div>
+                                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{stat.label}</p>
+                                    <h3 className="text-lg font-bold text-slate-800 mt-0.5">{stat.value}</h3>
+                                </div>
                             </div>
-                            <h3 className="text-3xl font-extrabold text-slate-900 mb-1">{stat.value}</h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${stat.trend.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-500'}`}>
+                                {stat.trend}
+                            </span>
                         </div>
                     ))}
                 </div>
 
                 {/* Main Table */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-12">
-                    <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-slate-900">Academic Cohorts</h2>
+                <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm overflow-hidden">
+                    <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <h2 className="text-sm font-semibold text-slate-800">Academic Cohorts</h2>
+                            <p className="text-xs text-slate-400 mt-0.5">List of all scheduled, active, and completed cohorts</p>
+                        </div>
                         <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                             <input 
                                 type="text"
                                 placeholder="Search cohorts..." 
-                                className="h-10 pl-11 pr-6 bg-white rounded-lg border border-slate-200 focus:ring-1 focus:ring-blue-600 transition-all font-medium text-sm w-72"
+                                className="h-8 pl-9 pr-4 bg-white rounded-lg border border-slate-200 focus:ring-1 focus:ring-blue-600 transition-all font-normal text-xs w-full sm:w-60"
                             />
                         </div>
                     </div>
                     
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50/50">
-                                <tr>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Course & Cohort Name</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Status</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Start Date</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Students</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Progress</th>
-                                    <th className="px-8 py-5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">Action</th>
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b border-slate-100 bg-slate-50/40">
+                                    <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Course & Cohort Name</th>
+                                    <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Status</th>
+                                    <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Start Date</th>
+                                    <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Students</th>
+                                    <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Progress</th>
+                                    <th className="px-5 py-3 text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-slate-50">
                                 {cohorts.map((cohort) => (
-                                    <tr key={cohort.id} className="hover:bg-slate-50 transition-colors group">
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold shrink-0">
+                                    <tr key={cohort.id} className="hover:bg-slate-50/40 transition-colors group">
+                                        <td className="px-5 py-3.5">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-blue-50/70 flex items-center justify-center text-blue-600 text-xs font-bold shrink-0">
                                                     {cohort.course_id.substring(0,2).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <div className="font-bold text-slate-900 tracking-tight">{cohort.name}</div>
-                                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{cohort.course_id}</div>
+                                                    <div className="text-xs font-medium text-slate-800">{cohort.name}</div>
+                                                    <div className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">{cohort.course_id}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                                        <td className="px-5 py-3.5">
+                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
                                                 cohort.status === 'open' 
-                                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' 
                                                 : cohort.status === 'in-progress' 
-                                                ? 'bg-blue-50 text-blue-600 border border-blue-100'
-                                                : 'bg-slate-50 text-slate-400 border border-slate-100'
+                                                ? 'bg-blue-50 text-blue-600 border border-blue-100/50'
+                                                : 'bg-slate-50 text-slate-400 border border-slate-100/50'
                                             }`}>
                                                 {cohort.status}
                                             </span>
                                         </td>
-                                        <td className="px-8 py-6 font-bold text-slate-600 text-sm">
-                                            {new Date(cohort.start_date).toLocaleDateString()}
+                                        <td className="px-5 py-3.5 text-xs text-slate-500">
+                                            {new Date(cohort.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                                         </td>
-                                        <td className="px-8 py-6 font-bold text-slate-600 text-sm">
+                                        <td className="px-5 py-3.5 text-xs text-slate-500 font-medium">
                                             {cohort.current_slots || 0} / {cohort.max_slots || 25}
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <div className="w-32 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                <div className="h-full bg-blue-600 w-[20%]" />
+                                        <td className="px-5 py-3.5">
+                                            <div className="w-24 h-1 bg-slate-100 rounded-full overflow-hidden">
+                                                <div className="h-full bg-blue-500 w-[20%]" />
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6 text-right">
-                                            <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => navigate(getInternalPath(`/admin/academy/cohorts/${cohort.id}`))}>
-                                                Manage <ArrowUpRight className="ml-2 w-3.5 h-3.5" />
+                                        <td className="px-5 py-3.5 text-right">
+                                            <Button 
+                                                variant="ghost" 
+                                                className="h-7 px-2.5 rounded-md text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 gap-1" 
+                                                onClick={() => navigate(getInternalPath(`/admin/academy/cohorts/${cohort.id}`))}
+                                            >
+                                                Manage <ArrowUpRight className="w-3 h-3" />
                                             </Button>
                                         </td>
                                     </tr>
@@ -233,56 +243,62 @@ const AcademyManagement = () => {
                             </tbody>
                         </table>
                         {cohorts.length === 0 && (
-                            <div className="p-20 text-center">
-                                <AlertCircle className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-                                <p className="text-slate-400 font-bold">No academic cohorts found.</p>
+                            <div className="py-12 text-center">
+                                <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-xs text-slate-400 font-medium">No academic cohorts found.</p>
                             </div>
                         )}
                     </div>
                 </div>
 
                 {/* Activity Feed */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm">
-                        <h3 className="text-xl font-bold text-slate-900 mb-8 flex items-center justify-between">
-                            Upcoming Live Sessions
-                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest cursor-pointer hover:underline">View All</span>
-                        </h3>
-                        <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-sm font-semibold text-slate-800">Upcoming Live Sessions</h3>
+                                <p className="text-[11px] text-slate-400 mt-0.5">Classes scheduled for this week</p>
+                            </div>
+                            <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-widest cursor-pointer hover:underline">View All</span>
+                        </div>
+                        <div className="space-y-3">
                             {[1, 2, 3].map((s) => (
-                                <div key={s} className="flex items-center gap-6 p-4 rounded-3xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100">
-                                    <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex flex-col items-center justify-center text-indigo-600">
-                                        <span className="text-[10px] font-bold uppercase">APR</span>
-                                        <span className="text-xl font-black">{15 + s}</span>
+                                <div key={s} className="flex items-center gap-4 p-3 rounded-lg border border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                    <div className="w-10 h-10 rounded-lg bg-indigo-50/60 flex flex-col items-center justify-center text-indigo-600 shrink-0">
+                                        <span className="text-[9px] font-semibold uppercase">APR</span>
+                                        <span className="text-sm font-bold leading-none mt-0.5">{15 + s}</span>
                                     </div>
-                                    <div className="flex-grow">
-                                        <h4 className="font-bold text-slate-900 tracking-tight">AI Operations Advanced Class</h4>
-                                        <p className="text-xs font-bold text-slate-400 flex items-center gap-2 mt-1 uppercase tracking-widest">
-                                            <Clock className="w-3.5 h-3.5" /> 7:00 PM - 9:00 PM GMT
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-xs font-medium text-slate-800 truncate">AI Operations Advanced Class</h4>
+                                        <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5 uppercase tracking-wider">
+                                            <Clock className="w-3 h-3 text-slate-400" /> 7:00 PM - 9:00 PM GMT
                                         </p>
                                     </div>
-                                    <Button size="sm" variant="ghost" className="rounded-xl font-bold text-[10px] uppercase text-slate-400">Join</Button>
+                                    <Button size="sm" variant="ghost" className="h-7 px-2.5 rounded-md text-[10px] uppercase text-slate-400 hover:text-slate-600">Join</Button>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm">
-                        <h3 className="text-xl font-bold text-slate-900 mb-8 flex items-center justify-between">
-                            Pending Submissions
-                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest cursor-pointer hover:underline">Grade (8)</span>
-                        </h3>
-                        <div className="space-y-6">
+                    <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-sm font-semibold text-slate-800">Pending Submissions</h3>
+                                <p className="text-[11px] text-slate-400 mt-0.5">Assignment uploads awaiting grade</p>
+                            </div>
+                            <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-widest cursor-pointer hover:underline">Grade (8)</span>
+                        </div>
+                        <div className="space-y-3">
                             {[1, 2, 3].map((s) => (
-                                <div key={s} className="flex items-center gap-5 p-4 rounded-3xl hover:bg-slate-50 transition-all">
-                                    <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
-                                        <Users className="w-5 h-5" />
+                                <div key={s} className="flex items-center gap-3.5 p-3 rounded-lg border border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                    <div className="w-9 h-9 bg-emerald-50/70 rounded-lg flex items-center justify-center text-emerald-600 shrink-0">
+                                        <Users className="w-4.5 h-4.5" />
                                     </div>
-                                    <div className="flex-grow">
-                                        <h4 className="font-bold text-slate-900 tracking-tight">Final Roadmap Proposal</h4>
-                                        <p className="text-xs font-bold text-slate-500 mt-1">Ama Mensah submitted 2h ago</p>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-xs font-medium text-slate-800 truncate">Final Roadmap Proposal</h4>
+                                        <p className="text-[10px] text-slate-400 mt-0.5">Ama Mensah submitted 2h ago</p>
                                     </div>
-                                    <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse" />
+                                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
                                 </div>
                             ))}
                         </div>

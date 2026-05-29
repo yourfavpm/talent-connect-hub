@@ -293,22 +293,22 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                         {/* INFO CARD */}
                         <div className="w-full lg:w-[420px] shrink-0">
                             <div className="sticky top-32">
-                                <div className="bg-white rounded-2xl border border-slate-100 p-8 shadow-sm group hover:border-blue-100 transition-colors">
-                                    <div className="inline-flex items-center gap-2 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold uppercase tracking-wider mb-6">Enrollment Status</div>
-                                    <h3 className="text-2xl font-bold text-slate-900 mb-6 tracking-tight leading-tight">Accepting Applicants for 2026</h3>
+                                <div className="bg-white rounded-xl border border-slate-200/60 p-6 shadow-sm group hover:border-slate-300 transition-all duration-300">
+                                    <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-blue-50/60 text-blue-600 border border-blue-100/40 rounded text-[9px] font-bold uppercase tracking-wider mb-4">Enrollment Status</div>
+                                    <h3 className="text-xl font-bold text-slate-900 mb-5 tracking-tight leading-tight">Accepting Applicants for 2026</h3>
                                     
-                                    <div className="space-y-3 mb-8">
-                                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                                            <div className="flex items-center gap-3 text-slate-500">
-                                                <Users className="w-4 h-4" />
-                                                <span className="text-xs font-bold uppercase tracking-widest">Cohort Size</span>
+                                    <div className="space-y-2 mb-6">
+                                        <div className="flex items-center justify-between p-3.5 bg-slate-50/50 border border-slate-100 rounded-xl">
+                                            <div className="flex items-center gap-2.5 text-slate-500">
+                                                <Users className="w-4 h-4 text-slate-400" />
+                                                <span className="text-[10px] font-bold uppercase tracking-widest">Cohort Size</span>
                                             </div>
-                                            <span className="text-xs font-bold text-slate-900">{spotsTotal} seats</span>
+                                            <span className="text-xs font-bold text-slate-800">{spotsTotal} seats</span>
                                         </div>
-                                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                                            <div className="flex items-center gap-3 text-slate-500">
-                                                <Clock className="w-4 h-4" />
-                                                <span className="text-xs font-bold uppercase tracking-widest">Availability</span>
+                                        <div className="flex items-center justify-between p-3.5 bg-slate-50/50 border border-slate-100 rounded-xl">
+                                            <div className="flex items-center gap-2.5 text-slate-500">
+                                                <Clock className="w-4 h-4 text-slate-400" />
+                                                <span className="text-[10px] font-bold uppercase tracking-widest">Availability</span>
                                             </div>
                                             <span className="text-xs font-bold text-blue-600">{spotsLeft} slots left</span>
                                         </div>
@@ -316,18 +316,18 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
 
                                     <Button 
                                         disabled={!isEnrolling}
-                                        className="w-full h-14 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-md disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500"
+                                        className="w-full h-12 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-md disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500"
                                         onClick={handleEnroll}
                                     >
                                         {buttonText}
                                     </Button>
                                     
-                                    <div className="mt-8 pt-8 border-t border-slate-50 grid grid-cols-1 gap-4">
+                                    <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 gap-3.5">
                                         {[
                                             { label: "Live Workshops", icon: Zap },
                                             { label: "Placement Desk", icon: Globe }
                                         ].map((item, i) => (
-                                            <div key={i} className="flex items-center gap-3 text-xs font-bold text-slate-500">
+                                            <div key={i} className="flex items-center gap-2.5 text-xs font-bold text-slate-500">
                                                 <item.icon className="w-4 h-4 text-blue-400" />
                                                 <span>{item.label}</span>
                                             </div>
@@ -362,9 +362,11 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                         </div>
                         <div className="flex flex-wrap justify-center gap-4">
                             {(course.tools || []).map((tool, i) => (
-                                <div key={i} className="px-8 py-5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3 group hover:border-emerald-200 transition-all shadow-sm">
-                                    <Monitor className="w-5 h-5 text-emerald-500" />
-                                    <span className="font-bold text-slate-700">{tool}</span>
+                                <div key={i} className="px-5 py-3 bg-white rounded-xl border border-slate-200/60 flex items-center gap-2.5 group hover:border-emerald-500/20 hover:shadow-sm transition-all duration-300 shadow-xs">
+                                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100/30">
+                                        <Monitor className="w-4 h-4" />
+                                    </div>
+                                    <span className="font-bold text-slate-700 text-sm">{tool}</span>
                                 </div>
                             ))}
                         </div>
@@ -380,23 +382,23 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                             <div className="lg:w-1/2">
                                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold tracking-widest uppercase mb-6">Ideal Candidates</div>
                                 <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-8 tracking-tight">Who Is This <span className="text-blue-600">For?</span></h2>
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     {(course.who_is_it_for || []).map((item, i) => (
-                                        <div key={i} className="flex items-start gap-4 p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-1">
-                                                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                                        <div key={i} className="flex items-start gap-3.5 p-4 bg-white rounded-xl border border-slate-200/60 shadow-xs">
+                                            <div className="w-5.5 h-5.5 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5 border border-blue-100/30">
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
                                             </div>
-                                            <p className="text-slate-600 font-semibold leading-relaxed">{item}</p>
+                                            <p className="text-slate-600 font-medium text-sm leading-relaxed">{item}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                            <div className="lg:w-1/2 bg-blue-600 rounded-[3rem] p-12 text-white relative overflow-hidden hidden lg:block">
+                            <div className="lg:w-1/2 bg-blue-600 rounded-xl p-8 text-white relative overflow-hidden hidden lg:block shadow-md">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[100px] rounded-full" />
                                 <div className="relative z-10">
-                                    <Smile className="w-16 h-16 mb-8 text-blue-200" />
-                                    <h3 className="text-4xl font-bold mb-6 tracking-tight">Built for Africa's Next-Gen Talent.</h3>
-                                    <p className="text-blue-100 text-lg leading-relaxed">We design our programs specifically for ambitious professionals ready to compete in the global remote work economy.</p>
+                                    <Smile className="w-12 h-12 mb-6 text-blue-200" />
+                                    <h3 className="text-2xl font-bold mb-4 tracking-tight">Built for Africa's Next-Gen Talent.</h3>
+                                    <p className="text-blue-100 text-sm leading-relaxed">We design our programs specifically for ambitious professionals ready to compete in the global remote work economy.</p>
                                 </div>
                             </div>
                         </div>
@@ -410,13 +412,13 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                     <div className="grid lg:grid-cols-12 gap-16 items-start">
                         <div className="lg:col-span-8">
                             <h2 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight mb-12">Practical <span className="text-blue-600">Outcomes.</span></h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {(course.what_youll_learn || []).map((item, i) => (
-                                    <div key={i} className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start gap-4">
-                                        <div className="shrink-0 w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-                                            <CheckCircle className="w-4 h-4 text-emerald-600" />
+                                    <div key={i} className="bg-white p-4.5 rounded-xl border border-slate-200/60 shadow-xs flex items-start gap-3 hover:border-slate-300 transition-all duration-300">
+                                        <div className="shrink-0 w-7.5 h-7.5 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100/30">
+                                            <CheckCircle className="w-3.5 h-3.5" />
                                         </div>
-                                        <p className="text-sm font-semibold text-slate-700 leading-snug">{item}</p>
+                                        <p className="text-[13px] font-semibold text-slate-600 leading-snug">{item}</p>
                                     </div>
                                 ))}
                             </div>
@@ -424,18 +426,18 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
 
                         {course.final_project && (
                             <div className="lg:col-span-4">
-                                <div className="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl h-full">
+                                <div className="bg-slate-900 rounded-xl p-6 text-white relative overflow-hidden shadow-lg h-full border border-slate-800/80">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 blur-[60px]" />
                                     <div className="relative z-10">
-                                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Capstone Project</div>
-                                        <h3 className="text-2xl font-bold mb-4">{course.final_project.title}</h3>
-                                        <p className="text-slate-400 text-sm mb-8">To graduate and access the marketplace, you must complete and present this system.</p>
+                                        <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[9px] font-bold tracking-widest uppercase mb-5">Capstone Project</div>
+                                        <h3 className="text-lg font-bold mb-3">{course.final_project.title}</h3>
+                                        <p className="text-slate-400 text-xs mb-6 font-medium">To graduate and access the marketplace, you must complete and present this system.</p>
                                         
-                                        <div className="space-y-4">
+                                        <div className="space-y-3">
                                             {(course.final_project?.requirements || []).map((req, i) => (
-                                                <div key={i} className="flex items-start gap-3">
-                                                    <div className="mt-1 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-blue-500" />
-                                                    <span className="text-sm text-slate-300 font-medium">{req}</span>
+                                                <div key={i} className="flex items-start gap-2.5">
+                                                    <div className="mt-1.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                                    <span className="text-xs text-slate-300 font-medium">{req}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -447,32 +449,32 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                 </div>
             </section>
 
-            {/* MARKETPLACE READINESS */}
+            {/* MARKETPLACE READY */}
             {course.marketplace_readiness && (
-                <section className="py-20 px-4 bg-white border-b border-slate-100">
+                <section className="py-16 px-4 bg-white border-b border-slate-100">
                     <div className="container max-w-[1600px] mx-auto">
-                        <div className="bg-blue-600 rounded-[2rem] p-8 md:p-16 text-white relative overflow-hidden shadow-xl">
+                        <div className="bg-blue-600 rounded-xl p-8 md:p-12 text-white relative overflow-hidden shadow-lg">
                             <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-white/10 to-transparent" />
-                            <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12">
+                            <div className="relative z-10 flex flex-col lg:flex-row items-center gap-10">
                                 <div className="flex-1">
-                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Marketplace Ready</div>
-                                    <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">Your bridge to <span className="text-blue-100">global work.</span></h2>
-                                    <p className="text-lg text-blue-50 mb-10 max-w-xl">Every student exits with more than just skills. We prepare you to be an elite professional in the OPSly marketplace.</p>
+                                    <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-white/20 border border-white/10 rounded text-[9px] font-bold tracking-widest uppercase mb-5">Marketplace Ready</div>
+                                    <h2 className="text-2xl md:text-4xl font-bold mb-4 tracking-tight">Your bridge to <span className="text-blue-100">global work.</span></h2>
+                                    <p className="text-sm text-blue-50 mb-8 max-w-xl">Every student exits with more than just skills. We prepare you to be an elite professional in the OPSly marketplace.</p>
                                     
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                         {(course.marketplace_readiness || []).map((item, i) => (
-                                            <div key={i} className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                                                <CheckCircle className="w-5 h-5 text-blue-200" />
-                                                <span className="text-sm font-bold">{item}</span>
+                                            <div key={i} className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3.5 border border-white/10">
+                                                <CheckCircle className="w-4 h-4 text-blue-200 shrink-0" />
+                                                <span className="text-xs font-bold">{item}</span>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
-                                <div className="w-full lg:w-80 h-80 bg-white/10 rounded-2xl border border-white/20 flex items-center justify-center backdrop-blur-md">
-                                    <div className="text-center p-8">
-                                        <Globe className="w-16 h-16 text-white/50 mx-auto mb-4" />
-                                        <div className="text-sm font-bold opacity-80 uppercase tracking-widest">Global Placement</div>
-                                        <div className="mt-4 text-xs font-medium opacity-60">Prioritized matching for program graduates</div>
+                                <div className="w-full lg:w-64 h-64 bg-white/10 rounded-xl border border-white/20 flex items-center justify-center backdrop-blur-md shrink-0">
+                                    <div className="text-center p-6">
+                                        <Globe className="w-12 h-12 text-white/50 mx-auto mb-3" />
+                                        <div className="text-xs font-bold opacity-80 uppercase tracking-widest">Global Placement</div>
+                                        <div className="mt-2 text-[11px] font-medium opacity-60">Prioritized matching for program graduates</div>
                                     </div>
                                 </div>
                             </div>
@@ -489,14 +491,14 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                         <p className="text-base md:text-lg text-slate-500 mt-4 max-w-2xl mx-auto font-normal">Our graduates achieve verifiable breakthroughs in their operational maturity.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {(course.learning_outcomes || []).map((outcome, i) => (
-                            <div key={i} className="bg-white p-8 rounded-2xl border border-slate-100 group hover:border-blue-200 transition-all flex flex-col h-full">
-                                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center mb-6">
-                                    <TrendingUp className="w-6 h-6" />
+                            <div key={i} className="bg-white p-5 rounded-xl border border-slate-200/60 group hover:border-blue-500/20 transition-all duration-300 flex flex-col h-full shadow-xs">
+                                <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center mb-4 border border-blue-100/30">
+                                    <TrendingUp className="w-5 h-5 text-blue-500" />
                                 </div>
-                                <p className="text-base font-bold text-slate-900 leading-snug mb-2">{outcome}</p>
-                                <div className="mt-auto text-[10px] font-bold text-slate-300 uppercase tracking-widest pt-4">Program Outcome</div>
+                                <p className="text-sm font-bold text-slate-800 leading-snug mb-2">{outcome}</p>
+                                <div className="mt-auto text-[9px] font-bold text-slate-400 uppercase tracking-widest pt-4 border-t border-slate-50">Program Outcome</div>
                             </div>
                         ))}
                     </div>

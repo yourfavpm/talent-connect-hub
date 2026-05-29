@@ -209,16 +209,18 @@ const StudentDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50/50 pt-32 pb-24 px-3 md:px-6 font-inter">
-      <div className="container max-w-[1600px] mx-auto">
+    <div className="min-h-screen bg-[#f8f9fc] pt-28 pb-20 px-4 md:px-6 font-inter">
+      <div className="container max-w-7xl mx-auto space-y-6">
         
         {/* Hub Navigation */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-2">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-[10px] font-semibold tracking-widest uppercase mb-4">
-              Student Hub
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400">
+              <span>Student Hub</span>
+              <span className="w-1 h-1 rounded-full bg-slate-300" />
+              <span className="text-blue-600">Academy</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-semibold text-slate-800 tracking-tight">
+            <h1 className="text-xl font-semibold text-slate-800 mt-1">
               {activeTab === 'learning' ? `Welcome, ${userName}` : 
                activeTab === 'catalog' ? 'Academy Catalog' :
                activeTab === 'profile' ? 'Your Profile' : 'Notifications'}
@@ -226,15 +228,15 @@ const StudentDashboard = () => {
           </div>
 
           {/* Cleaner Tab Navigation */}
-          <div className="flex border-b border-slate-200 overflow-x-auto no-scrollbar whitespace-nowrap">
+          <div className="flex overflow-x-auto no-scrollbar whitespace-nowrap">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative flex items-center gap-2 px-6 py-4 text-sm font-semibold transition-all ${
+                className={`relative flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold transition-all ${
                   activeTab === tab.id 
                     ? "text-slate-800 border-b-2 border-blue-600" 
-                    : "text-slate-500 hover:text-slate-700 border-b-2 border-transparent"
+                    : "text-slate-400 hover:text-slate-600 border-b-2 border-transparent"
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -248,50 +250,50 @@ const StudentDashboard = () => {
           {!selectedCourseSlug && activeTab === "learning" && (
             <motion.div
               key="learning"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-12"
+              exit={{ opacity: 0, y: -15 }}
+              className="space-y-6"
             >
               {hasActiveEnrollments ? (
                 <>
                   {/* Next Session Alert */}
                   {nextSession && (
                     <motion.div 
-                      initial={{ opacity: 0, scale: 0.95 }}
+                      initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="p-1 bg-slate-100 rounded-[32px]"
+                      className="bg-white rounded-xl border border-slate-200/60 p-5 shadow-sm"
                     >
-                      <div className="bg-white rounded-[31px] p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 border border-slate-100">
-                        <div className="flex items-center gap-6">
-                          <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center shrink-0">
-                            <Calendar className="w-8 h-8 text-blue-600" />
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-blue-50/70 rounded-lg flex items-center justify-center shrink-0">
+                            <Calendar className="w-6 h-6 text-blue-600" />
                           </div>
                           <div>
-                            <div className="inline-flex items-center gap-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[9px] font-bold uppercase tracking-wider mb-2">
+                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100/50 rounded text-[9px] font-bold uppercase tracking-wider mb-1.5">
                               Next Live Session
                             </div>
-                            <h3 className="text-2xl font-semibold text-slate-800 tracking-tight">{nextSession.title}</h3>
-                            <div className="flex items-center gap-4 mt-2">
-                              <span className="text-sm font-normal text-slate-500 flex items-center gap-1.5">
-                                <Calendar className="w-4 h-4" /> {new Date(nextSession.session_date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
+                            <h3 className="text-base font-semibold text-slate-800 tracking-tight">{nextSession.title}</h3>
+                            <div className="flex items-center gap-4 mt-1.5 text-xs text-slate-400">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3.5 h-3.5" /> {new Date(nextSession.session_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' })}
                               </span>
-                              <span className="text-sm font-normal text-slate-500 flex items-center gap-1.5">
-                                <Clock className="w-4 h-4" /> {nextSession.start_time}
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5" /> {nextSession.start_time}
                               </span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4 w-full md:w-auto">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
                           <Button 
                             onClick={() => window.open(nextSession.meeting_url, '_blank')}
-                            className="h-14 px-8 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold gap-2 flex-grow md:flex-grow-0"
+                            className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium gap-1.5 flex-grow sm:flex-grow-0 shadow-sm"
                           >
-                            <Play className="w-4 h-4 fill-current" /> Join Session
+                            <Play className="w-3.5 h-3.5 fill-current" /> Join Session
                           </Button>
                           <Link 
                             to={`/courses/${enrollments.find(e => e.cohort_id === nextSession.cohort_id)?.course_id}/learn`}
-                            className="h-14 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all"
+                            className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm"
                           >
                             Program Hub
                           </Link>
@@ -302,41 +304,41 @@ const StudentDashboard = () => {
 
                   {/* Active Programs */}
                   <div>
-                    <div className="flex items-center justify-between mb-8">
-                      <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">Active Programs</h2>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-sm font-semibold text-slate-800">Active Programs</h2>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {enrollments.map((enrollment) => {
                         const courseMeta = coursesMetadata[enrollment.course_id];
                         return (
                           <motion.div 
                             key={enrollment.id}
-                            whileHover={{ y: -5 }}
-                            className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group h-full"
+                            whileHover={{ y: -2 }}
+                            className="bg-white rounded-xl border border-slate-200/60 shadow-sm overflow-hidden flex flex-col group h-full"
                           >
                             <div className="aspect-[16/10] bg-slate-900 relative overflow-hidden">
                               <img 
                                 src={courseMeta?.image_url || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"} 
                                 alt={enrollment.course_name}
-                                className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
+                                className="w-full h-full object-cover opacity-80 group-hover:scale-102 transition-transform duration-500"
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                             </div>
                             
-                            <div className="p-8 flex flex-col flex-grow">
-                              <h3 className="text-xl font-semibold text-slate-800 mb-2 line-clamp-1 tracking-tight">
+                            <div className="p-5 flex flex-col flex-grow">
+                              <h3 className="text-sm font-semibold text-slate-800 mb-1 line-clamp-1 tracking-tight">
                                 {enrollment.course_name}
                               </h3>
-                              <p className="text-[10px] font-normal text-slate-500 uppercase tracking-[0.15em] mb-6">
+                              <p className="text-[10px] text-slate-400 font-normal uppercase tracking-wider mb-4">
                                 {enrollment.cohorts?.name || "Live Cohort"}
                               </p>
                               
                               <Link 
                                 to={`/courses/${courseMeta?.slug}/learn`}
-                                className="mt-auto w-full h-14 bg-slate-900 hover:bg-blue-600 text-white font-semibold rounded-2xl flex items-center justify-center gap-2 transition-all"
+                                className="mt-auto w-full h-9 bg-slate-900 hover:bg-blue-600 text-white text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm"
                               >
-                                Access Hub <ArrowRight className="w-4 h-4" />
+                                Access Hub <ArrowRight className="w-3.5 h-3.5" />
                               </Link>
                             </div>
                           </motion.div>
@@ -346,17 +348,17 @@ const StudentDashboard = () => {
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[40px] border border-dashed border-slate-200 text-center px-8">
-                  <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-8">
-                    <Layout className="w-12 h-12 text-blue-500" />
+                <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl border border-dashed border-slate-200 text-center px-6 shadow-sm">
+                  <div className="w-16 h-16 bg-blue-50/70 rounded-lg flex items-center justify-center mb-6">
+                    <Layout className="w-8 h-8 text-blue-500" />
                   </div>
-                  <h2 className="text-3xl font-semibold text-slate-800 mb-4 tracking-tight">Ready to start your journey?</h2>
-                  <p className="text-slate-500 font-normal max-w-2xl mb-12 leading-relaxed">
+                  <h2 className="text-base font-semibold text-slate-800 mb-2 tracking-tight">Ready to start your journey?</h2>
+                  <p className="text-xs text-slate-400 max-w-lg mb-6 leading-relaxed">
                     You haven't enrolled in any active cohorts yet. Browse our professional career tracks to start mastering high-demand operations and product skills.
                   </p>
                   <Button 
-                    size="lg" 
-                    className="h-16 px-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl shadow-xl shadow-blue-500/20"
+                    size="sm" 
+                    className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-xs shadow-sm"
                     onClick={() => setActiveTab("catalog")}
                   >
                     Explore Course Catalog
@@ -365,24 +367,24 @@ const StudentDashboard = () => {
               )}
               
               {/* Marketplace Banner */}
-              <div className="bg-slate-900 rounded-[40px] p-8 md:p-12 text-white relative overflow-hidden">
-                <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12">
+              <div className="bg-slate-900 rounded-xl p-6 md:p-8 text-white relative overflow-hidden shadow-sm">
+                <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
                   <div className="flex-grow">
-                    <h2 className="text-3xl font-semibold mb-4 tracking-tight">Global Talent Marketplace</h2>
-                    <p className="text-white/70 font-normal max-w-2xl mb-10 leading-relaxed">
+                    <h2 className="text-lg font-semibold mb-2 tracking-tight">Global Talent Marketplace</h2>
+                    <p className="text-white/70 text-xs max-w-xl mb-6 leading-relaxed">
                       As an OPSly student, you have priority access to the OPSly Global Talent Marketplace. Complete your profile to get noticed.
                     </p>
-                    <Button className="h-14 px-8 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold gap-2">
-                      Complete Talent Profile <ChevronRight className="w-5 h-5" />
+                    <Button className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium gap-1.5 shadow-sm">
+                      Complete Talent Profile <ChevronRight className="w-4 h-4" />
                     </Button>
                   </div>
-                  <div className="w-full lg:w-1/3 grid grid-cols-2 gap-4">
+                  <div className="w-full lg:w-1/3 grid grid-cols-2 gap-3">
                     {[
                       "Vetted Profile", "Priority Link"
                     ].map((benefit) => (
-                      <div key={benefit} className="bg-white/5 border border-white/10 p-4 rounded-2xl text-center">
-                        <CheckCircle2 className="w-6 h-6 text-blue-500 mx-auto mb-2" />
-                        <span className="text-xs font-semibold text-white/80">{benefit}</span>
+                      <div key={benefit} className="bg-white/5 border border-white/10 p-3 rounded-lg text-center">
+                        <CheckCircle2 className="w-4 h-4 text-blue-500 mx-auto mb-1.5" />
+                        <span className="text-[10px] font-semibold text-white/80">{benefit}</span>
                       </div>
                     ))}
                   </div>
@@ -449,46 +451,46 @@ const StudentDashboard = () => {
               exit={{ opacity: 0, scale: 1.05 }}
               className="max-w-4xl mx-auto"
             >
-              <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden p-8 md:p-12">
-                <div className="flex flex-col md:flex-row items-center gap-8 mb-12 border-b border-slate-50 pb-12">
-                  <div className="w-24 h-24 bg-slate-900 rounded-3xl flex items-center justify-center text-white text-4xl font-bold">
+              <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm overflow-hidden p-6 md:p-8">
+                <div className="flex flex-col sm:flex-row items-center gap-6 mb-8 border-b border-slate-50 pb-8">
+                  <div className="w-16 h-16 bg-slate-900 rounded-xl flex items-center justify-center text-white text-2xl font-bold">
                     {userName[0]}
                   </div>
-                  <div className="text-center md:text-left">
-                    <h2 className="text-3xl font-bold text-slate-900 mb-1">{userName}</h2>
-                    <p className="text-slate-500 font-normal">Verified Academy Student</p>
-                    <div className="flex items-center gap-4 mt-4">
-                      <div className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                  <div className="text-center sm:text-left">
+                    <h2 className="text-lg font-semibold text-slate-800 mb-0.5">{userName}</h2>
+                    <p className="text-xs text-slate-400 font-normal">Verified Academy Student</p>
+                    <div className="flex items-center gap-4 mt-2 justify-center sm:justify-start">
+                      <div className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-emerald-100/50">
                         Active Account
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                  <div className="space-y-6">
-                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Account Details</h4>
-                    <div className="space-y-4">
-                      <div className="flex justify-between py-3 border-b border-slate-50">
-                        <span className="text-slate-500 font-normal">Primary Email</span>
-                      <span className="text-slate-800 font-semibold">Authenticated</span>
-                    </div>
-                    <div className="flex justify-between py-3 border-b border-slate-50">
-                      <span className="text-slate-500 font-normal">Student ID</span>
-                      <span className="text-slate-800 font-semibold font-mono">#{userName.slice(0,3).toUpperCase()}-2026</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Account Details</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between py-2 border-b border-slate-50 text-xs">
+                        <span className="text-slate-400 font-normal">Primary Email</span>
+                        <span className="text-slate-700 font-medium">Authenticated</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-slate-50 text-xs">
+                        <span className="text-slate-400 font-normal">Student ID</span>
+                        <span className="text-slate-700 font-semibold font-mono">#{userName.slice(0,3).toUpperCase()}-2026</span>
                       </div>
                     </div>
                   </div>
-                  <div className="bg-slate-50 rounded-3xl p-8">
-                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6">Learning Analytics</h4>
-                    <div className="space-y-4">
+                  <div className="bg-slate-50/50 rounded-xl border border-slate-100 p-5">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Learning Analytics</h4>
+                    <div className="space-y-2.5 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-500 font-normal">Enrolled Programs</span>
+                        <span className="text-slate-400 font-normal">Enrolled Programs</span>
                         <span className="text-blue-600 font-semibold">{enrollments.length}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-500 font-normal">Courses Completed</span>
-                        <span className="text-slate-800 font-semibold">0</span>
+                        <span className="text-slate-400 font-normal">Courses Completed</span>
+                        <span className="text-slate-700 font-semibold">0</span>
                       </div>
                     </div>
                   </div>
@@ -505,14 +507,14 @@ const StudentDashboard = () => {
               exit={{ opacity: 0, y: -10 }}
               className="max-w-2xl mx-auto"
             >
-              <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden p-8">
-                <div className="flex items-center justify-between mb-8 pb-8 border-b border-slate-50">
-                  <h3 className="text-xl font-semibold text-slate-800">Recent Alerts</h3>
-                  <span className="bg-slate-100 text-slate-500 px-2 py-1 rounded-lg text-[10px] font-semibold">0 NEW</span>
+              <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm overflow-hidden p-6">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                  <h3 className="text-sm font-semibold text-slate-800">Recent Alerts</h3>
+                  <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[9px] font-semibold uppercase">0 NEW</span>
                 </div>
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Bell className="w-12 h-12 text-slate-200 mb-4" />
-                  <p className="text-slate-500 font-normal">You're all caught up! No new notifications.</p>
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                  <Bell className="w-8 h-8 text-slate-200 mb-3" />
+                  <p className="text-xs text-slate-400 font-normal">You're all caught up! No new notifications.</p>
                 </div>
               </div>
             </motion.div>

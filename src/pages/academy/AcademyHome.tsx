@@ -277,12 +277,12 @@ const AcademyHome = () => {
               { icon: Globe, title: "Marketplace Access", desc: "Get prioritized placement in the vetted OPSly talent marketplace.", color: "from-blue-100 to-blue-50", iconColor: "text-blue-600" },
               { icon: Rocket, title: "Interview Readiness", desc: "Master the communication and technical questions for global roles.", color: "from-emerald-100 to-emerald-50", iconColor: "text-emerald-600" }
             ].map((item, i) => (
-              <div key={i} className="flex flex-col items-center text-center p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 group">
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                  <item.icon className={`w-8 h-8 ${item.iconColor}`} />
+              <div key={i} className="flex flex-col items-center text-center p-5 bg-white rounded-xl border border-slate-200/60 shadow-sm hover:border-slate-300 transition-all duration-300 group">
+                <div className={`w-11 h-11 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center mb-4 group-hover:scale-105 transition-transform shrink-0`}>
+                  <item.icon className={`w-5 h-5 ${item.iconColor}`} />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">{item.title}</h3>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">{item.desc}</p>
+                <h3 className="text-xs font-semibold text-slate-800 mb-1.5">{item.title}</h3>
+                <p className="text-[11px] text-slate-400 font-normal leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
