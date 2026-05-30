@@ -89,19 +89,15 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                 if (!error && data) {
                     setCourse(data as any);
                     
-                    const now = new Date().toISOString();
-                    
-                    // Check for open cohorts based on dates and capacity
+                    // Admin cohort status is the source of truth for public enrollment availability.
                     const { data: cohortsData } = await supabase
                          .from("cohorts")
                          .select("*")
-                         .eq("course_id", data.id)
+                         .or(`course_id.eq.${data.id},course_id.eq.${data.slug},course_uuid.eq.${data.id}`)
                          .eq("status", "open")
-                         .lte("enrollment_start_date", now)
-                         .gte("enrollment_end_date", now);
+                         .order("start_date", { ascending: true });
                          
                     if (cohortsData) {
-                        // Filter by capacity manually if needed, or assume DB is updated
                         const availableCohorts = cohortsData.filter(c => (c.current_slots || 0) < (c.max_slots || 25));
                         setOpenCohorts(availableCohorts);
                     }

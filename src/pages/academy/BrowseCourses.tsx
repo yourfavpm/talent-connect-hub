@@ -75,6 +75,21 @@ const BrowseCourses = () => {
                     }
                 }
                 
+                // Fetch open cohorts and mark courses
+                const { data: openCohorts } = await supabase
+                    .from('cohorts')
+                    .select('course_id, course_uuid, current_slots, max_slots')
+                    .eq('status', 'open');
+
+                const availableCohorts = (openCohorts || []).filter((c: any) => (c.current_slots || 0) < (c.max_slots || 25));
+                const openCourseIds = new Set(availableCohorts.map((c: any) => c.course_id).filter(Boolean));
+                const openCourseUuids = new Set(availableCohorts.map((c: any) => c.course_uuid).filter(Boolean));
+
+                fetchedCourses = fetchedCourses.map(course => ({
+                    ...course,
+                    has_open_cohort: openCourseIds.has(course.id) || openCourseIds.has(course.slug) || openCourseUuids.has(course.id)
+                }));
+
                 // Set flagship for the "Current Trend" card
                 const flagship = fetchedCourses.find(c => c.is_flagship) || fetchedCourses[0];
                 setFlagshipCourse(flagship || null);
@@ -101,18 +116,6 @@ const BrowseCourses = () => {
                     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
                 });
 
-                setCourses(fetchedCourses);
-                
-                // Fetch open cohorts and mark courses
-                const { data: openCohorts } = await supabase
-                    .from('cohorts')
-                    .select('course_id')
-                    .eq('status', 'open');
-                const openCourseIds = new Set((openCohorts || []).map((c: any) => c.course_id));
-                fetchedCourses = fetchedCourses.map(course => ({
-                    ...course,
-                    has_open_cohort: openCourseIds.has(course.id)
-                }));
                 setCourses(fetchedCourses);
                 
                 // Extract dynamic categories

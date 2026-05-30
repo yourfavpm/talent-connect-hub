@@ -164,12 +164,16 @@ const Checkout = () => {
                     const { data: cohortsData } = await supabase
                          .from("cohorts")
                          .select("*")
-                         .eq("course_id", data.id)
+                         .or(`course_id.eq.${data.id},course_id.eq.${data.slug},course_uuid.eq.${data.id}`)
                          .eq("status", "open")
-                         .order("created_at", { ascending: false });
+                         .order("start_date", { ascending: true });
                     
-                    if (cohortsData && cohortsData.length > 0) {
-                        setAvailableCohorts(cohortsData);
+                    const cohortsWithCapacity = (cohortsData || []).filter((cohort: any) => (
+                        (cohort.current_slots || 0) < (cohort.max_slots || 25)
+                    ));
+
+                    if (cohortsWithCapacity.length > 0) {
+                        setAvailableCohorts(cohortsWithCapacity);
                         // START WITH COHORT SELECTION - DON'T AUTO-SELECT
                         setStep('cohort-selection');
                     } else {
