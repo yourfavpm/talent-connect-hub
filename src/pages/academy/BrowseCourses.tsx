@@ -78,7 +78,7 @@ const BrowseCourses = () => {
                 // Fetch open cohorts and mark courses
                 const { data: openCohorts } = await supabase
                     .from('cohorts')
-                    .select('course_id, course_uuid, current_slots, max_slots')
+                    .select('*')
                     .eq('status', 'open');
 
                 const availableCohorts = (openCohorts || []).filter((c: any) => (c.current_slots || 0) < (c.max_slots || 25));

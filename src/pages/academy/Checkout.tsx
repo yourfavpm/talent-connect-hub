@@ -164,11 +164,11 @@ const Checkout = () => {
                     const { data: cohortsData } = await supabase
                          .from("cohorts")
                          .select("*")
-                         .or(`course_id.eq.${data.id},course_id.eq.${data.slug},course_uuid.eq.${data.id}`)
                          .eq("status", "open")
                          .order("start_date", { ascending: true });
                     
                     const cohortsWithCapacity = (cohortsData || []).filter((cohort: any) => (
+                        (cohort.course_id === data.id || cohort.course_id === data.slug || cohort.course_uuid === data.id) &&
                         (cohort.current_slots || 0) < (cohort.max_slots || 25)
                     ));
 

@@ -93,12 +93,14 @@ const CourseDetail = ({ inlineSlug, onBack, onEnroll }: CourseDetailProps) => {
                     const { data: cohortsData } = await supabase
                          .from("cohorts")
                          .select("*")
-                         .or(`course_id.eq.${data.id},course_id.eq.${data.slug},course_uuid.eq.${data.id}`)
                          .eq("status", "open")
                          .order("start_date", { ascending: true });
                          
                     if (cohortsData) {
-                        const availableCohorts = cohortsData.filter(c => (c.current_slots || 0) < (c.max_slots || 25));
+                        const availableCohorts = cohortsData.filter((c: any) => (
+                            (c.course_id === data.id || c.course_id === data.slug || c.course_uuid === data.id) &&
+                            (c.current_slots || 0) < (c.max_slots || 25)
+                        ));
                         setOpenCohorts(availableCohorts);
                     }
 
