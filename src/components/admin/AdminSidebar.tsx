@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   ClipboardList,
   GraduationCap,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ const navigation = [
   { name: "Support", href: "/admin/support", icon: MessageSquare, badgeKey: "support", roles: ["super_admin", "support_admin", "operations_admin"] },
   { name: "Consultations", href: "/admin/consultations", icon: Calendar, roles: ["super_admin", "operations_admin"] },
   { name: "Academy", href: "/admin/academy", icon: GraduationCap, roles: ["super_admin", "operations_admin"] },
+  { name: "Scholarships", href: "/admin/academy/scholarships", icon: Award, roles: ["super_admin", "operations_admin"] },
   { name: "Team", href: "/admin/team", icon: Users, roles: ["super_admin"] },
   { name: "Settings", href: "/admin/settings", icon: Settings, roles: ["super_admin", "operations_admin"] },
 ];

@@ -23,6 +23,7 @@ const AcademyNavbar = () => {
     const NavLinks = [
         { name: "Home", path: "/" },
         { name: "Courses", path: "/courses" },
+        { name: "Scholarship", path: "/scholarship" },
     ];
 
     const handleSignOut = async () => {
@@ -61,6 +62,12 @@ const AcademyNavbar = () => {
 
                 {/* Right: CTAs */}
                 <div className="hidden lg:flex items-center gap-4">
+                    <Link
+                        to="/scholarship"
+                        className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-bold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-inter shadow-md shadow-blue-200"
+                    >
+                        Apply for Scholarship
+                    </Link>
                     <Link
                         to="/courses"
                         className="px-6 py-2.5 bg-slate-100 text-slate-900 border border-slate-200 text-sm font-bold rounded-xl hover:bg-slate-200 transition-all font-inter"
@@ -153,10 +160,10 @@ const AcademyNavbar = () => {
                                     </div>
                                 ) : (
                                     <Link 
-                                        to="/signup"
+                                        to="/scholarship"
                                         className="flex items-center justify-between w-full py-4 px-6 bg-slate-900 text-white font-bold text-base rounded-2xl group transition-all"
                                     >
-                                        <span>Get Started</span>
+                                        <span>Apply for Scholarship</span>
                                         <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                     </Link>
                                 )}

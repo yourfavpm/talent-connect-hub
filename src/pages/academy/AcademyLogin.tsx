@@ -153,9 +153,9 @@ const AcademyLogin = () => {
 
                     <div className="mt-10 pt-10 border-t border-slate-100">
                         <p className="text-slate-500 font-medium">
-                            First time here?{" "}
-                            <Link to="/signup" className="text-blue-600 font-bold hover:text-blue-700 inline-flex items-center gap-1 group">
-                                Create a student account <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            Interested in joining?{" "}
+                            <Link to="/scholarship" className="text-blue-600 font-bold hover:text-blue-700 inline-flex items-center gap-1 group">
+                                Apply for scholarship <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </Link>
                         </p>
                     </div>

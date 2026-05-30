@@ -121,6 +121,56 @@ serve(async (req: Request) => {
       const courseSlug = metadata?.course_id || metadata?.course_slug || metadata?.['course-id'];
       const cohortId = metadata?.cohort_id || metadata?.['cohort-id'];
 
+      if (courseSlug === "scholarship-application") {
+        const applicationId = checkoutSessionId || cohortId;
+        const email = customer?.email || metadata?.email;
+
+        if (!applicationId) {
+          console.error("Scholarship payment received without application id");
+          return new Response(JSON.stringify({ error: "application id required" }), { status: 400 });
+        }
+
+        const { data: application, error: appError } = await supabase
+          .from("scholarship_applications")
+          .update({
+            payment_reference: koraRef,
+            payment_provider: "kora",
+            payment_status: "success",
+            application_status: "submitted",
+            paid_at: new Date().toISOString(),
+          })
+          .eq("id", applicationId)
+          .select("id, full_name, email")
+          .maybeSingle();
+
+        if (appError) {
+          console.error("Failed to finalize scholarship application:", appError);
+          return new Response("Scholarship update failed", { status: 500 });
+        }
+
+        const recipientEmail = application?.email || email;
+        const recipientName = application?.full_name || metadata?.student_name || metadata?.['student-name'] || recipientEmail?.split("@")[0] || "there";
+
+        if (recipientEmail) {
+          await supabase.functions.invoke("send-email", {
+            body: {
+              templateKey: "scholarship_application_received",
+              to: recipientEmail,
+              variables: {
+                firstName: recipientName.split(" ")[0] || recipientName,
+                studentName: recipientName,
+                reference: koraRef,
+              },
+            },
+          });
+        }
+
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       // ENFORCE: cohort_id is REQUIRED for all academy enrollments
       if (!cohortId) {
         console.error("Payment received but cohort_id is missing in metadata");

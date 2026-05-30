@@ -53,6 +53,7 @@ const AcademyLogin = lazy(() => import("./pages/academy/AcademyLogin"));
 const AcademySignup = lazy(() => import("./pages/academy/AcademySignup"));
 const CertificateView = lazy(() => import("./pages/academy/CertificateView"));
 const VerifyCertificate = lazy(() => import("./pages/academy/VerifyCertificate"));
+const Scholarship = lazy(() => import("./pages/academy/Scholarship"));
 
 // Auth
 const Login = lazy(() => import("./pages/auth/Login"));
@@ -149,6 +150,7 @@ const CourseManagement = lazy(() => import("@/pages/admin/Academy/CourseManageme
 const CourseCohorts = lazy(() => import("@/pages/admin/Academy/CourseCohorts"));
 const CreateCohort = lazy(() => import("@/pages/admin/Academy/CreateCohort"));
 const CohortDetail = lazy(() => import("@/pages/admin/Academy/CohortDetail"));
+const ScholarshipApplications = lazy(() => import("@/pages/admin/Academy/ScholarshipApplications"));
 
 // Admin Settings Sections
 const OrganizationSettings = lazy(() => import("@/pages/admin/Settings/sections/Organization"));
@@ -338,6 +340,7 @@ const App = () => {
                     <Route path="/courses" element={<BrowseCourses />} />
                     <Route path="/courses/:slug" element={<CourseDetail />} />
                     <Route path="/marketplace" element={<TalentMarketplace />} />
+                    <Route path="/scholarship" element={<Scholarship />} />
                     <Route path="/404" element={<NotFound />} />
                     
                     {/* Public Protected Routes */}
@@ -484,6 +487,7 @@ const App = () => {
                             <Route path="courses/:slug/cohorts" element={<CourseCohorts />} />
                             <Route path="courses/:slug/cohorts/new" element={<CreateCohort />} />
                             <Route path="cohorts/:id" element={<CohortDetail />} />
+                            <Route path="scholarships" element={<ScholarshipApplications />} />
                           </Route>
 
                           <Route path="team">
