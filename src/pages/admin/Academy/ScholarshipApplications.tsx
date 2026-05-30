@@ -8,6 +8,8 @@ import {
   Search,
   Send,
   Users,
+  DollarSign,
+  Hourglass,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,11 +97,18 @@ const ScholarshipApplications = () => {
     [applications, selectedIds]
   );
 
+  // Fixed scholarship fee — no amount column stored in the table
+  const SCHOLARSHIP_FEE = 5000;
+
   const stats = {
     total: applications.length,
     submitted: applications.filter((app) => app.application_status === "submitted").length,
     pending: applications.filter((app) => app.application_status === "pending_payment").length,
     paid: applications.filter((app) => app.payment_status === "success").length,
+    revenueCollected:
+      applications.filter((app) => app.payment_status === "success").length * SCHOLARSHIP_FEE,
+    revenuePending:
+      applications.filter((app) => app.payment_status !== "success").length * SCHOLARSHIP_FEE,
   };
 
   const toggleAll = (checked: boolean) => {
@@ -190,19 +199,32 @@ const ScholarshipApplications = () => {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
         {[
-          { label: "Total", value: stats.total, icon: Users },
-          { label: "Submitted", value: stats.submitted, icon: CheckCircle2 },
-          { label: "Pending Payment", value: stats.pending, icon: Loader2 },
-          { label: "Paid", value: stats.paid, icon: Mail },
+          { label: "Total", value: stats.total, icon: Users, color: "text-blue-500" },
+          { label: "Submitted", value: stats.submitted, icon: CheckCircle2, color: "text-emerald-500" },
+          { label: "Pending Payment", value: stats.pending, icon: Loader2, color: "text-amber-500" },
+          { label: "Paid", value: stats.paid, icon: Mail, color: "text-blue-500" },
         ].map((stat) => (
           <div key={stat.label} className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
-            <stat.icon className="mb-3 h-4 w-4 text-blue-500" />
+            <stat.icon className={`mb-3 h-4 w-4 ${stat.color}`} />
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{stat.label}</p>
             <p className="mt-1 text-2xl font-bold text-slate-950">{stat.value}</p>
           </div>
         ))}
+        {/* Revenue collected */}
+        <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-900 to-slate-900 p-4 shadow-sm text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-full -mr-6 -mt-6" />
+          <DollarSign className="mb-3 h-4 w-4 text-emerald-400" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-300/70">Revenue Collected</p>
+          <p className="mt-1 text-2xl font-bold">₦{stats.revenueCollected.toLocaleString()}</p>
+        </div>
+        {/* Revenue pending */}
+        <div className="rounded-xl border border-amber-100 bg-amber-50 p-4 shadow-sm">
+          <Hourglass className="mb-3 h-4 w-4 text-amber-500" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Unsettled Revenue</p>
+          <p className="mt-1 text-2xl font-bold text-slate-950">₦{stats.revenuePending.toLocaleString()}</p>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 md:flex-row md:items-center md:justify-between">
