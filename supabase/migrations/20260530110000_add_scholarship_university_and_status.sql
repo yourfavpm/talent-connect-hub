@@ -12,3 +12,13 @@ CREATE POLICY "Anyone can read their own application by ID"
     TO public
     USING (true);
 
+-- Add secure public UPDATE policy to allow client-side checkout finalization on pending records
+DROP POLICY IF EXISTS "Anyone can update their own pending application" ON public.scholarship_applications;
+CREATE POLICY "Anyone can update their own pending application"
+    ON public.scholarship_applications
+    FOR UPDATE
+    TO public
+    USING (payment_status = 'pending')
+    WITH CHECK (true);
+
+
