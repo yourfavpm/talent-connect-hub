@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getInternalPath, getZoneUrl, Zone } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { sendInvitedToApplyEmail, sendTalentApplicationShortlistedEmail, triggerJobPublishedEmails } from "@/lib/email/triggers";
+import { sendInvitedToApplyEmail, sendTalentApplicationShortlistedEmail, triggerJobPublishedEmails, sendTalentInterviewInvitationEmail } from "@/lib/email/triggers";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -130,9 +130,10 @@ export default function AdminHireRequestDetail() {
 
   // Schedule dialog
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
-  const [scheduleTarget, setScheduleTarget] = useState<EnrichedRow | null>(null);
+  const [scheduleTarget, setScheduleTarget] = useState<any>(null);
   const [calendlyLink, setCalendlyLink] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
+  const [meetingNotes, setMeetingNotes] = useState("");
 
   // Edit Dialog State
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -557,17 +558,37 @@ export default function AdminHireRequestDetail() {
 
   const handleScheduleInterview = async () => {
     if (!scheduleTarget || !calendlyLink || !scheduledTime) return;
-    await callRpc("hr_v2_admin_schedule_interview", {
-      req_id: id,
-      t_user_id: scheduleTarget.talent_user_id,
-      c_user_id: request?.client_user_id,
-      c_link: calendlyLink,
-      s_time: new Date(scheduledTime).toISOString(),
-    }, "Interview scheduled");
-    setShowScheduleDialog(false);
-    setCalendlyLink("");
-    setScheduledTime("");
-    setScheduleTarget(null);
+    setActionLoading("schedule");
+    try {
+      await callRpc("hr_v2_admin_schedule_interview", {
+        req_id: id,
+        t_user_id: scheduleTarget.talent_user_id,
+        c_user_id: request?.client_user_id,
+        c_link: calendlyLink,
+        s_time: new Date(scheduledTime).toISOString(),
+        m_notes: meetingNotes,
+      }, "Interview scheduled");
+
+      // We can also trigger the email:
+      await sendTalentInterviewInvitationEmail({
+        talentUserId: scheduleTarget.talent_user_id,
+        hireRequestId: id as string,
+        interviewId: "new-id", // currently unused in email
+        meetingLink: calendlyLink,
+        scheduledTime: new Date(scheduledTime).toISOString(),
+        notes: meetingNotes,
+      });
+
+      setShowScheduleDialog(false);
+      setCalendlyLink("");
+      setScheduledTime("");
+      setMeetingNotes("");
+      setScheduleTarget(null);
+    } catch (err: any) {
+      toast({ title: "Failed to schedule", description: err.message, variant: "destructive" });
+    } finally {
+      setActionLoading("");
+    }
   };
 
   const handleFinalizeHire = (talentId: string) =>
@@ -912,7 +933,7 @@ export default function AdminHireRequestDetail() {
                         <a href={(intv as Record<string, unknown>).calendly_link as string} target="_blank" rel="noopener noreferrer">Open Meeting Link</a>
                       </Button>
                     )}
-                    {intv.status === "scheduled" && (
+                    {["scheduled", "accepted", "pending"].includes(intv.status as string) && (
                       <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => callRpc("hr_v2_admin_mark_interview_complete", { interview_id: intv.id, notes: "" }, "Interview marked complete")}>
                         <CheckCircle2 className="w-3 h-3 mr-1" /> Mark Complete
                       </Button>
@@ -1071,18 +1092,23 @@ export default function AdminHireRequestDetail() {
               Scheduling interview for <strong>{scheduleTarget?.profiles?.first_name} {scheduleTarget?.profiles?.last_name}</strong>.
             </p>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Meeting Link</label>
-              <Input placeholder="https://calendly.com/..." value={calendlyLink} onChange={(e) => setCalendlyLink(e.target.value)} />
+              <label className="text-sm font-medium text-slate-700">Meeting Link (Google Meet, Zoom, etc.)</label>
+              <Input placeholder="https://meet.google.com/..." value={calendlyLink} onChange={(e) => setCalendlyLink(e.target.value)} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">Date & Time</label>
               <Input type="datetime-local" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} />
             </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Meeting Notes / Agenda (Optional)</label>
+              <Textarea placeholder="Please be prepared to discuss your portfolio..." value={meetingNotes} onChange={(e) => setMeetingNotes(e.target.value)} className="h-20 resize-none" />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowScheduleDialog(false)}>Cancel</Button>
             <Button onClick={handleScheduleInterview} disabled={!calendlyLink || !scheduledTime || !!actionLoading} className="bg-blue-600 text-white hover:bg-blue-700">
-              <Calendar className="w-4 h-4 mr-1.5" /> Schedule
+              {actionLoading === "schedule" ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Calendar className="w-4 h-4 mr-1.5" />} 
+              {actionLoading === "schedule" ? "Scheduling..." : "Schedule"}
             </Button>
           </DialogFooter>
         </DialogContent>
