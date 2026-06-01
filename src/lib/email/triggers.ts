@@ -1001,7 +1001,7 @@ export async function sendTalentInterviewInvitationEmail(params: {
         if (client && client.company_name) companyName = client.company_name;
     }
 
-    const loginLink = "https://app.opslyhr.com/talent/interviews";
+    const loginLink = "https://app.opslyhr.com/talent/interviews?tab=pending";
     
     // Construct HTML template inline just like the others
     const htmlBody = `<!DOCTYPE html>
@@ -1023,20 +1023,23 @@ export async function sendTalentInterviewInvitationEmail(params: {
         <tr>
           <td style="padding:36px 40px 28px;">
             <h1 style="margin:0 0 20px;font-size:22px;font-weight:700;color:#0f172a;">Hi ${talentUser.first_name}, an interview has been scheduled!</h1>
-            <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.7;">
+            <p style="margin:0 0 16px;font-size:15px;color:#475569;line-height:1.7;">
               <strong>${companyName}</strong> has scheduled an interview with you for the <strong>${request.title}</strong> role.
+            </p>
+            <p style="margin:0 0 24px;font-size:15px;color:#0f172a;font-weight:600;background:#f8fafc;padding:12px 16px;border-left:4px solid #2563eb;border-radius:4px;">
+              Important: You must log in to your dashboard and navigate to the <strong style="color:#2563eb;">Requests</strong> tab on the Interviews page to formally Accept this interview invitation.
             </p>
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:24px;">
               <tr><td style="padding:22px 26px;">
                 <p style="margin:0 0 10px;"><strong>Date & Time:</strong> ${new Date(params.scheduledTime).toLocaleString()}</p>
-                <p style="margin:0 0 10px;"><strong>Meeting Link:</strong> <a href="${params.meetingLink}">${params.meetingLink}</a></p>
+                <p style="margin:0 0 10px;"><strong>Meeting Link:</strong> <a href="${params.meetingLink}" style="color:#2563eb;">${params.meetingLink}</a></p>
                 ${params.notes ? `<p style="margin:0;"><strong>Notes:</strong><br/>${params.notes.replace(/\\n/g, '<br/>')}</p>` : ''}
               </td></tr>
             </table>
             <table role="presentation" cellspacing="0" cellpadding="0" border="0">
               <tr>
                 <td style="border-radius:10px;background:#0f172a;">
-                  <a href="${loginLink}" style="display:inline-block;padding:13px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">View in Dashboard</a>
+                  <a href="${loginLink}" style="display:inline-block;padding:13px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">Go to Requests Tab</a>
                 </td>
               </tr>
             </table>

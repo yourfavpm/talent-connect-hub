@@ -165,6 +165,31 @@ serve(async (req) => {
       )
     }
 
+    // ── Global Footer Injection ──────────────────────────────────────
+    const footerHtml = `
+      <div style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 1px solid #e2e8f0; font-family: 'Helvetica Neue', Arial, sans-serif;">
+        <p style="color: #64748b; font-size: 14px; margin-bottom: 16px; font-weight: 500;">Follow us on social media</p>
+        <div style="margin-bottom: 24px;">
+          <a href="${BRAND_DEFAULTS.social_linkedin}" style="display: inline-block; margin: 0 12px; text-decoration: none; color: ${BRAND_DEFAULTS.brand_color}; font-weight: 700; font-size: 14px;">LinkedIn</a>
+          <a href="${BRAND_DEFAULTS.social_instagram}" style="display: inline-block; margin: 0 12px; text-decoration: none; color: ${BRAND_DEFAULTS.brand_color}; font-weight: 700; font-size: 14px;">Instagram</a>
+          <a href="${BRAND_DEFAULTS.social_tiktok}" style="display: inline-block; margin: 0 12px; text-decoration: none; color: ${BRAND_DEFAULTS.brand_color}; font-weight: 700; font-size: 14px;">TikTok</a>
+          <a href="${BRAND_DEFAULTS.social_facebook}" style="display: inline-block; margin: 0 12px; text-decoration: none; color: ${BRAND_DEFAULTS.brand_color}; font-weight: 700; font-size: 14px;">Facebook</a>
+        </div>
+        <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.6;">
+          &copy; ${new Date().getFullYear()} ${BRAND_DEFAULTS.brand_name}. All rights reserved.<br/>
+          <a href="${BRAND_DEFAULTS.brand_website}" style="color: #94a3b8; text-decoration: none;">${BRAND_DEFAULTS.brand_website}</a>
+        </p>
+      </div>
+    `;
+
+    if (bodyHtml) {
+      if (bodyHtml.includes('</body>')) {
+        bodyHtml = bodyHtml.replace('</body>', `${footerHtml}\n</body>`);
+      } else {
+        bodyHtml += footerHtml;
+      }
+    }
+
     // ── 4. Send via Resend API ──────────────────────────────────────
     if (!RESEND_API_KEY) {
       console.error('RESEND_API_KEY is not configured')

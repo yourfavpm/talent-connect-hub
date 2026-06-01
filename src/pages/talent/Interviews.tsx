@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import clsx from "clsx";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -49,6 +49,7 @@ const STATUS_MAP: Record<string, { label: string; color: string; accent: string;
 const TalentInterviews = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [interviews, setInterviews] = useState<V2Interview[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -251,20 +252,28 @@ const TalentInterviews = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between md:justify-end gap-4 shrink-0 border-t md:border-t-0 pt-4 md:pt-0">
+                <div className="flex flex-wrap items-center justify-end gap-3 shrink-0 border-t md:border-t-0 pt-4 md:pt-0">
                    {interview.status === "pending" && (
-                     <Button variant="outline" className="h-10 px-6 border-blue-600 text-blue-600 hover:bg-blue-50 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all" onClick={(e) => { e.stopPropagation(); handleAccept(interview.id); }}>
-                       Accept
-                     </Button>
+                     <>
+                       <Button className="h-9 px-5 bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all" onClick={(e) => { e.stopPropagation(); handleAccept(interview.id); }}>
+                         Accept
+                       </Button>
+                       <Button variant="outline" className="h-9 px-5 border-slate-200 text-slate-600 hover:text-slate-900 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all" onClick={(e) => { e.stopPropagation(); setSelectedInterview(interview); setIsRescheduleOpen(true); }}>
+                         Request New Time
+                       </Button>
+                       <Button variant="ghost" className="h-9 px-4 text-red-500 hover:bg-red-50 hover:text-red-600 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all" onClick={(e) => { e.stopPropagation(); handleDecline(interview.id); }}>
+                         Decline
+                       </Button>
+                     </>
                    )}
-                   {["scheduled", "accepted"].includes(interview.status) && isFuture(interview.scheduled_time) && interview.calendly_link && (
-                     <Button className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all" onClick={(e) => { e.stopPropagation(); window.open(interview.calendly_link!, '_blank'); }}>
+                   {["pending", "scheduled", "accepted"].includes(interview.status) && isFuture(interview.scheduled_time) && interview.calendly_link && (
+                     <Button className="h-9 px-5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all" onClick={(e) => { e.stopPropagation(); window.open(interview.calendly_link!, '_blank'); }}>
                        Join Call
                      </Button>
                    )}
-                   <button className="h-10 w-10 bg-slate-50 group-hover:bg-slate-900 border border-slate-100 group-hover:border-slate-900 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-white transition-all shadow-sm">
-                     <ChevronRight className="h-5 w-5" />
-                   </button>
+                   <Button variant="outline" className="h-9 px-5 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm" onClick={(e) => { e.stopPropagation(); openInterviewDetails(interview); }}>
+                     View Details
+                   </Button>
                 </div>
               </div>
             );
@@ -296,7 +305,7 @@ const TalentInterviews = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="upcoming" className="space-y-8">
+      <Tabs defaultValue={searchParams.get("tab") === "pending" ? "pending" : "upcoming"} className="space-y-8">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2">
           <TabsList className="bg-transparent border-none p-0 h-auto gap-8">
             <TabsTrigger value="upcoming" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none px-0 pb-2 text-[12px] font-bold uppercase tracking-widest text-slate-400">Upcoming</TabsTrigger>
@@ -368,7 +377,7 @@ const TalentInterviews = () => {
                       </div>
                    </div>
 
-                   {["scheduled", "accepted"].includes(selectedInterview.status) && selectedInterview.calendly_link && (
+                   {["pending", "scheduled", "accepted"].includes(selectedInterview.status) && selectedInterview.calendly_link && (
                      <div className="p-6 rounded-2xl bg-blue-50/30 border border-blue-100 space-y-4">
                         <div className="flex items-center gap-3">
                           <Video className="h-5 w-5 text-blue-600" />
