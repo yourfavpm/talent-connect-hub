@@ -79,36 +79,58 @@ serve(async (req) => {
             throw new Error('Missing required fields')
         }
 
+        let targetUser = null;
+        let createdNew = false;
+
         const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
             email,
             password,
             email_confirm: true,
             user_metadata: { first_name: firstName, last_name: lastName }
-        })
+        });
 
-        if (createError) throw createError
+        if (createError) {
+            console.warn("Auth user creation failed or user already exists. Attempting recovery. Error:", createError.message);
+            // Try to lookup user by email
+            const { data: getByEmailData, error: getByEmailError } = await supabaseAdmin.auth.admin.getUserByEmail(email);
+            if (getByEmailError || !getByEmailData || !getByEmailData.user) {
+                // If lookup fails too, throw the original creation error
+                throw createError;
+            }
+            targetUser = getByEmailData.user;
+        } else {
+            targetUser = newUser?.user;
+            createdNew = true;
+        }
 
-        // Assign Role
+        if (!targetUser) {
+            throw new Error("Failed to resolve user ID during creation or recovery");
+        }
+
+        // Assign Role (upsert or insert on conflict do nothing)
         const { error: assignRoleError } = await supabaseAdmin
             .from('user_roles')
-            .insert({ user_id: newUser.user.id, role })
+            .upsert({ user_id: targetUser.id, role }, { onConflict: 'user_id,role' });
 
-        if (assignRoleError) throw assignRoleError
+        if (assignRoleError) {
+            console.error("Assign role error:", assignRoleError);
+            throw assignRoleError;
+        }
 
-        // Create Profile
+        // Create or repair Profile (idempotent upsert, removing the invalid 'role' field)
         const { error: profileError } = await supabaseAdmin
             .from('profiles')
-            .insert({
-                user_id: newUser.user.id,
-                first_name: firstName || 'Admin',
-                last_name: lastName || 'User',
-                email: email,
-                role: 'admin' // Generic profile role
-            })
+            .upsert({
+                user_id: targetUser.id,
+                first_name: firstName || 'Client',
+                last_name: lastName || 'Representative',
+                email: email
+            }, {
+                onConflict: 'user_id'
+            });
 
         if (profileError) {
-            console.error("Profile creation error", profileError)
-            // Don't fail the request if profile fails, but log it
+            console.error("Profile creation/upsert error:", profileError);
         }
 
         return new Response(
