@@ -13,6 +13,26 @@ export interface EmailTemplateData {
 export const emailTemplates: EmailTemplateData[] = [
     // TALENT PORTAL TEMPLATES (16)
     {
+        key: 'talent_job_published',
+        name: 'Talent Job Published Alert',
+        subject: 'New Hiring Opportunity: {{job_title}}',
+        bodyHtml: `
+      <h1>New Hiring Opportunity!</h1>
+      <p>A new hiring opportunity has been published: <strong>{{job_title}}</strong>.</p>
+      <p><a href="{{job_link}}" style="background:#059669;color:white;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;">View Opportunity</a></p>
+      <p>Best regards,<br>The OPSlyHR Team</p>
+    `,
+        bodyText: `New Hiring Opportunity!
+        
+A new hiring opportunity has been published: {{job_title}}.
+
+View Opportunity: {{job_link}}
+
+Best regards,
+The OPSlyHR Team`,
+        variables: ['job_title', 'job_link']
+    },
+    {
         key: 'talent_welcome',
         name: 'Talent Welcome Email',
         subject: 'Welcome to OPSlyHR - Your Talent ID: {{talent_id}}',

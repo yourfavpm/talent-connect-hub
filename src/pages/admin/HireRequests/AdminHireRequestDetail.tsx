@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getInternalPath, getZoneUrl, Zone } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { sendInvitedToApplyEmail, sendTalentApplicationShortlistedEmail } from "@/lib/email/triggers";
+import { sendInvitedToApplyEmail, sendTalentApplicationShortlistedEmail, triggerJobPublishedEmails } from "@/lib/email/triggers";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -503,7 +503,27 @@ export default function AdminHireRequestDetail() {
   };
 
   const handleApprove = () => callRpc("hr_v2_admin_approve_request", { req_id: id }, "Request approved");
-  const handlePublish = () => callRpc("hr_v2_admin_publish_request", { req_id: id }, "Request published — talents can now apply");
+  
+  const handlePublish = async () => {
+    setActionLoading("hr_v2_admin_publish_request");
+    try {
+      const { error } = await (supabase.rpc as any)("hr_v2_admin_publish_request", { req_id: id });
+      if (error) throw error;
+      toast({ title: "Request published — talents can now apply" });
+      fetchData();
+      
+      // Trigger bulk emails to all talents
+      if (request) {
+        triggerJobPublishedEmails(request).catch(err => 
+          console.error("Error triggering job published emails:", err)
+        );
+      }
+    } catch (error: unknown) {
+      toast({ title: "Action failed", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setActionLoading("");
+    }
+  };
 
   const handleShortlist = async () => {
     if (!selectedTalentForShortlist) return;

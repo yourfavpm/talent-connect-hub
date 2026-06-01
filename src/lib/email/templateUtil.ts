@@ -43,6 +43,7 @@ export enum EmailTemplate {
   TALENT_ONBOARDING_WELCOME = 'talent-onboarding-welcome.html',
   TALENT_JOB_OFFER = 'talent-job-offer.html',
   TALENT_CONTRACT_REVIEW = 'talent-contract-review.html',
+  TALENT_JOB_PUBLISHED = 'talent-job-published.html',
   
   // Client emails
   CLIENT_ONBOARDING_WELCOME = 'client-onboarding-welcome.html',
@@ -74,6 +75,18 @@ export interface TalentJobOfferVariables {
   DURATION: string;
   EXPIRATION_DATE: string;
   APPLY_LINK: string;
+}
+
+/**
+ * Talent job published email variables
+ */
+export interface TalentJobPublishedVariables {
+  FIRST_NAME: string;
+  ROLE_TITLE: string;
+  BUDGET: string;
+  EMPLOYMENT_TYPE: string;
+  LOCATION: string;
+  JOB_LINK: string;
 }
 
 /**
@@ -262,6 +275,12 @@ export function getTalentContractReviewTemplate(
   variables: TalentContractReviewVariables
 ): string {
   return loadAndRender(EmailTemplate.TALENT_CONTRACT_REVIEW, variables);
+}
+
+export function getTalentJobPublishedTemplate(
+  variables: TalentJobPublishedVariables
+): string {
+  return loadAndRender(EmailTemplate.TALENT_JOB_PUBLISHED, variables);
 }
 
 export function getClientOnboardingTemplate(

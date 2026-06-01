@@ -2,6 +2,8 @@
 // Centralized functions to trigger emails for various events
 
 import { queueEmail, requestVerificationEmail } from './emailService';
+import { supabase } from '@/integrations/supabase/client';
+import { getTalentJobPublishedTemplate } from './templateUtil';
 
 const AUTH_URL = import.meta.env.VITE_APP_URL || 'https://app.opslyhr.com';
 const TALENT_URL = 'https://talent.opslyhr.com';
@@ -340,6 +342,83 @@ export const sendJobPublishedEmail = async (talent: {
             job_link: `${TALENT_URL}/jobs/${talent.jobId}`,
         },
     });
+};
+
+/**
+ * Send job published notification to all talents
+ */
+export const triggerJobPublishedEmails = async (job: {
+    id: string;
+    title: string;
+    preferred_currency?: string | null;
+    salary_type?: string | null;
+    budget_type?: string | null;
+    fixed_budget?: number | null;
+    budget_min?: number | null;
+    budget_max?: number | null;
+    engagement_type?: string | null;
+    location_preference?: string | null;
+}) => {
+    try {
+        console.log(`Triggering bulk job publication email notifications for job ID: ${job.id}`);
+        // 1. Fetch all registered talents
+        const { data: talents, error } = await supabase
+            .from("talents")
+            .select("first_name, email");
+
+        if (error) {
+            console.error("Error fetching talents for bulk email trigger:", error);
+            return;
+        }
+
+        if (!talents || talents.length === 0) {
+            console.log("No talents found to notify.");
+            return;
+        }
+
+        // 2. Format job details
+        const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", NGN: "₦", KES: "KSh ", ZAR: "R " };
+        const sym = symbols[job.preferred_currency || "USD"] || "$";
+        const freq = job.salary_type === "monthly" ? "/mo" : (job.salary_type === "hourly" ? "/hr" : "");
+        let budget = "TBD";
+        if (job.budget_type === "fixed" && job.fixed_budget) {
+            budget = `${sym}${Number(job.fixed_budget).toLocaleString()}${freq}`;
+        } else if (job.budget_min && job.budget_max) {
+            budget = `${sym}${Number(job.budget_min).toLocaleString()} – ${sym}${Number(job.budget_max).toLocaleString()}${freq}`;
+        } else if (job.budget_min) {
+            budget = `From ${sym}${Number(job.budget_min).toLocaleString()}${freq}`;
+        }
+
+        const employmentType = job.engagement_type?.replace(/_/g, " ") || "—";
+        const location = job.location_preference || "Any";
+        
+        // 3. For each talent, generate and send branded email
+        const emailPromises = talents.map((t) => {
+            if (!t.email) return Promise.resolve();
+            
+            // Build the html template
+            const html = getTalentJobPublishedTemplate({
+                FIRST_NAME: t.first_name || "Talent",
+                ROLE_TITLE: job.title,
+                BUDGET: budget,
+                EMPLOYMENT_TYPE: employmentType,
+                LOCATION: location,
+                JOB_LINK: `${TALENT_URL}/jobs/${job.id}`,
+            });
+
+            return queueEmail({
+                to: t.email,
+                toName: t.first_name,
+                subject: `New Hiring Opportunity: ${job.title}`,
+                htmlTemplate: html,
+            });
+        });
+
+        await Promise.all(emailPromises);
+        console.log(`Successfully queued job publishing notification emails for ${talents.length} talents.`);
+    } catch (err) {
+        console.error("Failed to trigger job published emails:", err);
+    }
 };
 
 /**

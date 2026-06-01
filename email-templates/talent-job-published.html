@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Opportunity on OpslyHR</title>
+    <style type="text/css">
+        * { margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: #111827;
+            background-color: #f3f4f6;
+            line-height: 1.6;
+            padding: 20px 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .header {
+            background-color: #0f2147; /* Deep OPSly Blue */
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 4px solid #059669; /* Emerald accent */
+        }
+        .logo {
+            height: 40px;
+        }
+        .content {
+            padding: 35px 30px;
+        }
+        .greeting {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f2147;
+            margin-bottom: 16px;
+        }
+        .intro {
+            font-size: 15px;
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .details-card {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        .details-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f2147;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        .details-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .details-value {
+            color: #111827;
+            font-weight: 600;
+        }
+        .cta-container {
+            text-align: center;
+            margin: 28px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #059669;
+            color: #ffffff;
+            padding: 14px 28px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+            transition: background-color 0.2s;
+        }
+        .cta-button:hover {
+            background-color: #047857;
+        }
+        .whatsapp-container {
+            text-align: center;
+            margin: 24px 0;
+            padding: 20px;
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+        }
+        .whatsapp-text {
+            font-size: 14px;
+            color: #166534;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+        .whatsapp-button {
+            display: inline-block;
+            background-color: #25d366; /* WhatsApp Green */
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 2px 4px rgba(37, 211, 102, 0.2);
+        }
+        .whatsapp-button:hover {
+            background-color: #20ba5a;
+        }
+        .notice-card {
+            background-color: #fffbeb;
+            border: 1px solid #fef3c7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        .notice-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .notice-text {
+            font-size: 13px;
+            color: #78350f;
+            line-height: 1.5;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin: 32px 0;
+            height: 0;
+        }
+        .footer {
+            background-color: #f9fafb;
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        .social-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #9ca3af;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .social-links {
+            margin-bottom: 20px;
+        }
+        .social-link {
+            display: inline-block;
+            margin: 0 10px;
+            color: #059669;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .social-link:hover {
+            color: #047857;
+            text-decoration: underline;
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #9ca3af;
+            line-height: 1.5;
+        }
+        .footer-link {
+            color: #059669;
+            text-decoration: none;
+        }
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 0;
+            }
+            .content {
+                padding: 25px 20px;
+            }
+            .details-row {
+                flex-direction: column;
+                margin: 12px 0;
+            }
+            .details-label {
+                margin-bottom: 2px;
+            }
+            .cta-button, .whatsapp-button {
+                display: block;
+                width: 100%;
+                text-align: center;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <img src="https://opslyhr.com/images/logocolored.svg" alt="OPSlyHR" class="logo">
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <p class="greeting">New Hiring Opportunity Posted</p>
+        
+        <p class="intro">Hi {{FIRST_NAME}},</p>
+        
+        <p class="intro">A new hiring opportunity has just been posted on OpslyHR, and we think it might be a great fit for your skills and experience.</p>
+        
+        <!-- Position Details Card -->
+        <div class="details-card">
+            <div class="details-title">Position Details</div>
+            
+            <div class="details-row">
+                <span class="details-label">Role:</span>
+                <span class="details-value">{{ROLE_TITLE}}</span>
+            </div>
+            
+            <div class="details-row">
+                <span class="details-label">Budget:</span>
+                <span class="details-value">{{BUDGET}}</span>
+            </div>
+            
+            <div class="details-row">
+                <span class="details-label">Employment Type:</span>
+                <span class="details-value">{{EMPLOYMENT_TYPE}}</span>
+            </div>
+            
+            <div class="details-row">
+                <span class="details-label">Location:</span>
+                <span class="details-value">{{LOCATION}}</span>
+            </div>
+        </div>
+        
+        <p class="intro">If you're interested in this opportunity, click the button below to review the full details and submit your application. Candidates can also browse other roles tailored to their experience on our jobs board.</p>
+        
+        <!-- Apply CTA Button -->
+        <div class="cta-container">
+            <a href="{{JOB_LINK}}" class="cta-button">Apply for this Role</a>
+        </div>
+        
+        <!-- Important Notice Card -->
+        <div class="notice-card">
+            <div class="notice-title">Important Notice</div>
+            <p class="notice-text">To maintain the quality of our talent network, all applicants must complete the OpslyHR vetting process before they can be considered for client opportunities.</p>
+            <p class="notice-text" style="margin-top: 8px;">If you have not yet completed your vetting, you will be prompted to do so before submitting your application.</p>
+            <p class="notice-text" style="margin-top: 8px;">We encourage you to apply early, as applications may close once suitable candidates have been identified.</p>
+        </div>
+
+        <!-- WhatsApp Community Card -->
+        <div class="whatsapp-container">
+            <div class="whatsapp-text">Want to connect with other top-tier professionals? Join our community.</div>
+            <a href="https://chat.whatsapp.com/GytlZGon23Y1y3BNbkXwRl?mode=gi_t" target="_blank" class="whatsapp-button">Join Our Talent Community</a>
+        </div>
+        
+        <hr class="divider">
+        
+        <p class="intro" style="font-size: 14px; color: #4b5563;">
+            Best regards,<br><br>
+            <strong>The OpslyHR Team</strong><br>
+            <span style="font-size: 12px; color: #9ca3af;">Connecting exceptional operations talent with growing businesses.</span>
+        </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="social-title">Follow Us</div>
+        <div class="social-links">
+            <a href="https://www.linkedin.com/company/opslyhr/" target="_blank" class="social-link">LinkedIn</a>
+            <a href="https://www.instagram.com/opslyhr?igsh=Y3UzeGxnYmp4MGdr&utm_source=qr" target="_blank" class="social-link">Instagram</a>
+            <a href="https://www.tiktok.com/@opslyhr?_r=1&_t=ZS-96qUCpKD8h6" target="_blank" class="social-link">TikTok</a>
+            <a href="https://www.facebook.com/share/1GNFHGMqB2/?mibextid=wwXIfr" target="_blank" class="social-link">Facebook</a>
+        </div>
+        
+        <p class="footer-text">
+            OPSlyHR | Trusted Operations Professionals<br>
+            Questions? Contact <a href="mailto:support@opslyhr.com" class="footer-link">support@opslyhr.com</a><br><br>
+            © 2026 OPSlyHR. All rights reserved.
+        </p>
+    </div>
+</div>
+</body>
+</html>

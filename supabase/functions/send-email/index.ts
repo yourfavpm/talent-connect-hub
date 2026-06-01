@@ -104,10 +104,10 @@ serve(async (req) => {
       brand_logo: 'https://opslyhr.com/images/logocolored.svg',
       brand_name: 'OPSlyHR',
       brand_website: 'https://opslyhr.com',
-      social_linkedin: 'https://linkedin.com/company/opslyhr',
-      social_twitter: 'https://twitter.com/opslyhr',
-      social_instagram: 'https://instagram.com/opslyhr',
-      social_facebook: 'https://facebook.com/opslyhr',
+      social_linkedin: 'https://www.linkedin.com/company/opslyhr/',
+      social_tiktok: 'https://www.tiktok.com/@opslyhr?_r=1&_t=ZS-96qUCpKD8h6',
+      social_instagram: 'https://www.instagram.com/opslyhr?igsh=Y3UzeGxnYmp4MGdr&utm_source=qr',
+      social_facebook: 'https://www.facebook.com/share/1GNFHGMqB2/?mibextid=wwXIfr',
     };
 
     let finalVariables = { ...BRAND_DEFAULTS, ...(variables || {}) }
