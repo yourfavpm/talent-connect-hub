@@ -29,7 +29,7 @@ export const OverviewTab = ({ job, getCurrencySymbol }: OverviewTabProps) => {
         <div className="bg-white p-4 rounded-xl border border-gray-100">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Budget</span>
           <span className="text-sm font-medium text-gray-900 block mt-1">
-            {getCurrencySymbol(job.preferred_currency)}{job.budget_min || 0} - {getCurrencySymbol(job.preferred_currency)}{job.budget_max || 0} <span className="text-gray-500 font-normal">/{job.salary_type || "hr"}</span>
+            {getCurrencySymbol(job.preferred_currency)}{job.budget_min || 0} - {getCurrencySymbol(job.preferred_currency)}{job.budget_max || 0} <span className="text-gray-500 font-normal">{job.salary_type ? `/${job.salary_type === "monthly" ? "mo" : job.salary_type === "hourly" ? "hr" : job.salary_type}` : ""}</span>
           </span>
         </div>
         <div className="bg-white p-4 rounded-xl border border-gray-100">

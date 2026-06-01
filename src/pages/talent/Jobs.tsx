@@ -823,7 +823,7 @@ const TalentJobs = () => {
                             <div className="flex items-center gap-1.5">
                               <DollarSign className="h-3 w-3 text-slate-455" />
                               <span className="text-slate-900">{getCurrencySymbol(job.preferred_currency)}{job.budget_min}-{job.budget_max}</span>
-                              <span className="opacity-60">/{job.salary_type || "hr"}</span>
+                              <span className="opacity-60">{job.salary_type ? `/${job.salary_type === "monthly" ? "mo" : job.salary_type === "hourly" ? "hr" : job.salary_type}` : ""}</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                               <Timer className="h-3 w-3 text-slate-455" /><span className="text-slate-900">{job.weekly_hours || "40"} hrs/week</span>
@@ -1012,7 +1012,7 @@ const TalentJobs = () => {
                 {/* Key Benefits Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                    {[
-                     { label: "Compensation", val: `${getCurrencySymbol(selectedJob.preferred_currency)}${selectedJob.budget_min}-${selectedJob.budget_max}/${selectedJob.salary_type || "hr"}`, icon: DollarSign },
+                     { label: "Compensation", val: `${getCurrencySymbol(selectedJob.preferred_currency)}${selectedJob.budget_min}-${selectedJob.budget_max}${selectedJob.salary_type ? `/${selectedJob.salary_type === "monthly" ? "mo" : selectedJob.salary_type === "hourly" ? "hr" : selectedJob.salary_type}` : ""}`, icon: DollarSign },
                      { label: "Commitment", val: `${selectedJob.weekly_hours} hrs/week`, icon: Timer },
                      { label: "Work Mode", val: selectedJob.work_mode || "Remote", icon: Globe }
                    ].map((item, i) => (

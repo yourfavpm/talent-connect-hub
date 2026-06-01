@@ -134,6 +134,104 @@ export default function AdminHireRequestDetail() {
   const [calendlyLink, setCalendlyLink] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
 
+  // Edit Dialog State
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    service_model: "",
+    engagement_type: "",
+    location_preference: "",
+    timezone_overlap: "",
+    budget_type: "",
+    preferred_currency: "USD",
+    salary_type: "hourly",
+    budget_min: "",
+    budget_max: "",
+    fixed_budget: "",
+    role_summary: "",
+    responsibilities: "",
+    requirements: ""
+  });
+
+  const openEditDialog = () => {
+    if (!request) return;
+    setEditForm({
+      title: request.title || "",
+      service_model: request.service_model || "",
+      engagement_type: request.engagement_type || "",
+      location_preference: request.location_preference || "",
+      timezone_overlap: request.timezone_overlap || "",
+      budget_type: request.budget_type || "",
+      preferred_currency: request.preferred_currency || "USD",
+      salary_type: request.salary_type || "hourly",
+      budget_min: request.budget_min?.toString() || "",
+      budget_max: request.budget_max?.toString() || "",
+      fixed_budget: request.fixed_budget?.toString() || "",
+      role_summary: request.role_summary || "",
+      responsibilities: request.responsibilities || "",
+      requirements: request.requirements || ""
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!id) return;
+    setSavingEdit(true);
+    try {
+      const updates = {
+        title: editForm.title,
+        service_model: editForm.service_model || null,
+        engagement_type: editForm.engagement_type || null,
+        location_preference: editForm.location_preference || null,
+        timezone_overlap: editForm.timezone_overlap || null,
+        budget_type: editForm.budget_type || null,
+        preferred_currency: editForm.preferred_currency || "USD",
+        salary_type: editForm.salary_type || null,
+        budget_min: editForm.budget_min ? parseFloat(editForm.budget_min) : null,
+        budget_max: editForm.budget_max ? parseFloat(editForm.budget_max) : null,
+        fixed_budget: editForm.fixed_budget ? parseFloat(editForm.fixed_budget) : null,
+        role_summary: editForm.role_summary || null,
+        responsibilities: editForm.responsibilities || null,
+        requirements: editForm.requirements || null,
+      };
+
+      const { error } = await supabase
+        .from("hr_v2_hire_requests")
+        .update(updates)
+        .eq("id", id);
+
+      if (error) throw error;
+
+      // Log event to the activity log
+      if (user) {
+        await supabase
+          .from("hr_v2_request_events")
+          .insert({
+            hire_request_id: id,
+            actor_type: "admin",
+            actor_user_id: user.id,
+            event_type: "UPDATED"
+          });
+      }
+
+      toast({
+        title: "Success! 🎉",
+        description: "Job posting details updated successfully.",
+      });
+      setShowEditDialog(false);
+      fetchData();
+    } catch (err: any) {
+      toast({
+        title: "Update failed",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const resolveTalentProfileByUserId = useCallback(async (userId: string) => {
     const { data: profile } = await supabase
       .from("profiles")
@@ -554,6 +652,11 @@ export default function AdminHireRequestDetail() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          {!isTalentManager && (
+            <Button variant="outline" onClick={openEditDialog} className="h-9 text-sm border-slate-200 gap-1.5 bg-white text-slate-700 hover:bg-slate-50">
+              <FileText className="w-4 h-4 text-slate-500" /> Edit Job
+            </Button>
+          )}
           {!isTalentManager && request.status === "submitted" && (
             <Button onClick={handleApprove} disabled={!!actionLoading} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-9 text-sm">
               <CheckCircle2 className="w-4 h-4 mr-1.5" /> Approve
@@ -1031,6 +1134,242 @@ export default function AdminHireRequestDetail() {
           
           <DialogFooter className="p-4 bg-slate-50 border-t border-slate-100">
             <Button variant="ghost" onClick={() => setShowInviteDialog(false)} className="text-slate-500 font-bold text-sm">Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Published Job Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-6 font-sans">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-slate-900">Edit Published Job</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6 my-4">
+            {/* Section 1: General details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5 md:col-span-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Job Title</label>
+                <Input
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  placeholder="e.g. Senior Fullstack Engineer"
+                  className="h-10 border-slate-200 focus-visible:ring-blue-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Service Model</label>
+                <select
+                  value={editForm.service_model}
+                  onChange={(e) => setEditForm({ ...editForm, service_model: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-white text-slate-800"
+                >
+                  <option value="">Select Service Model</option>
+                  <option value="full_time">Full-time Hire</option>
+                  <option value="trial_to_hire">Trial-to-Hire</option>
+                  <option value="one_time_project">One-Time Project</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Engagement Type</label>
+                <select
+                  value={editForm.engagement_type}
+                  onChange={(e) => setEditForm({ ...editForm, engagement_type: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-white text-slate-800"
+                >
+                  <option value="">Select Engagement Type</option>
+                  <option value="full_time">Full-time (40 hrs/wk)</option>
+                  <option value="part_time">Part-time (&lt; 30 hrs/wk)</option>
+                  <option value="project_based">Project-based</option>
+                  <option value="as_needed">As Needed (Retainer)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Section 2: Location & Timezone */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Location Preference</label>
+                <Input
+                  value={editForm.location_preference}
+                  onChange={(e) => setEditForm({ ...editForm, location_preference: e.target.value })}
+                  placeholder="e.g. Remote US, LATAM, or Africa"
+                  className="h-10 border-slate-200 focus-visible:ring-blue-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Timezone Overlap</label>
+                <select
+                  value={editForm.timezone_overlap}
+                  onChange={(e) => setEditForm({ ...editForm, timezone_overlap: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-white text-slate-800"
+                >
+                  <option value="">Flexible</option>
+                  <option value="utc">UTC / GMT</option>
+                  <option value="est">EST (Eastern Standard Time - UTC-5)</option>
+                  <option value="cst">CST (Central Standard Time - UTC-6)</option>
+                  <option value="mst">MST (Mountain Standard Time - UTC-7)</option>
+                  <option value="pst">PST (Pacific Standard Time - UTC-8)</option>
+                  <option value="cet">CET (Central European Time - UTC+1)</option>
+                  <option value="eet">EET (Eastern European Time - UTC+2)</option>
+                  <option value="wat">WAT (West Africa Time - UTC+1)</option>
+                  <option value="cat">CAT (Central Africa Time - UTC+2)</option>
+                  <option value="eat">EAT (East Africa Time - UTC+3)</option>
+                  <option value="ist">IST (Indian Standard Time - UTC+5:30)</option>
+                  <option value="sgt">SGT (Singapore Time - UTC+8)</option>
+                  <option value="aest">AEST (Australian Eastern Standard Time - UTC+10)</option>
+                  <option value="nzst">NZST (New Zealand Standard Time - UTC+12)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Section 3: Compensation */}
+            <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100 space-y-4">
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Compensation details</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Currency</label>
+                  <select
+                    value={editForm.preferred_currency}
+                    onChange={(e) => setEditForm({ ...editForm, preferred_currency: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-white text-slate-800"
+                  >
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="NGN">NGN (₦)</option>
+                    <option value="KES">KES (KSh)</option>
+                    <option value="ZAR">ZAR (R)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Salary Type</label>
+                  <select
+                    value={editForm.salary_type || "hourly"}
+                    onChange={(e) => setEditForm({ ...editForm, salary_type: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-white text-slate-800"
+                  >
+                    <option value="hourly">Hourly Rate</option>
+                    <option value="monthly">Monthly Salary</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Budget Type</label>
+                  <select
+                    value={editForm.budget_type}
+                    onChange={(e) => setEditForm({ ...editForm, budget_type: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-white text-slate-800"
+                  >
+                    <option value="range">Salary Range</option>
+                    <option value="fixed">Fixed Salary</option>
+                  </select>
+                </div>
+              </div>
+
+              {editForm.budget_type === "fixed" ? (
+                <div className="space-y-1.5 max-w-xs animate-fade-in">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Fixed Amount</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-semibold text-sm">
+                      {editForm.preferred_currency === "USD" ? "$" : editForm.preferred_currency === "EUR" ? "€" : editForm.preferred_currency === "GBP" ? "£" : editForm.preferred_currency === "NGN" ? "₦" : editForm.preferred_currency === "KES" ? "KSh" : editForm.preferred_currency === "ZAR" ? "R" : "$"}
+                    </div>
+                    <Input
+                      type="number"
+                      value={editForm.fixed_budget}
+                      onChange={(e) => setEditForm({ ...editForm, fixed_budget: e.target.value })}
+                      placeholder="e.g. 5000"
+                      className="pl-9 h-10 border-slate-200 focus-visible:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Minimum Budget</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-semibold text-sm">
+                        {editForm.preferred_currency === "USD" ? "$" : editForm.preferred_currency === "EUR" ? "€" : editForm.preferred_currency === "GBP" ? "£" : editForm.preferred_currency === "NGN" ? "₦" : editForm.preferred_currency === "KES" ? "KSh" : editForm.preferred_currency === "ZAR" ? "R" : "$"}
+                      </div>
+                      <Input
+                        type="number"
+                        value={editForm.budget_min}
+                        onChange={(e) => setEditForm({ ...editForm, budget_min: e.target.value })}
+                        placeholder="e.g. 3000"
+                        className="pl-9 h-10 border-slate-200 focus-visible:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Maximum Budget</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-semibold text-sm">
+                        {editForm.preferred_currency === "USD" ? "$" : editForm.preferred_currency === "EUR" ? "€" : editForm.preferred_currency === "GBP" ? "£" : editForm.preferred_currency === "NGN" ? "₦" : editForm.preferred_currency === "KES" ? "KSh" : editForm.preferred_currency === "ZAR" ? "R" : "$"}
+                      </div>
+                      <Input
+                        type="number"
+                        value={editForm.budget_max}
+                        onChange={(e) => setEditForm({ ...editForm, budget_max: e.target.value })}
+                        placeholder="e.g. 6000"
+                        className="pl-9 h-10 border-slate-200 focus-visible:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Section 4: Text Content */}
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Role Summary</label>
+                <Textarea
+                  value={editForm.role_summary}
+                  onChange={(e) => setEditForm({ ...editForm, role_summary: e.target.value })}
+                  placeholder="Provide a detailed summary of the position..."
+                  className="min-h-[100px] border-slate-200 focus-visible:ring-blue-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Responsibilities</label>
+                <Textarea
+                  value={editForm.responsibilities}
+                  onChange={(e) => setEditForm({ ...editForm, responsibilities: e.target.value })}
+                  placeholder="List the key responsibilities (one per line)..."
+                  className="min-h-[120px] border-slate-200 focus-visible:ring-blue-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Requirements & Skills</label>
+                <Textarea
+                  value={editForm.requirements}
+                  onChange={(e) => setEditForm({ ...editForm, requirements: e.target.value })}
+                  placeholder="List the technical requirements, qualifications, or skills..."
+                  className="min-h-[120px] border-slate-200 focus-visible:ring-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="border-t border-slate-100 pt-4 mt-6">
+            <Button variant="ghost" onClick={() => setShowEditDialog(false)} disabled={savingEdit} className="text-slate-500 hover:text-slate-900">
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={savingEdit} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm font-semibold">
+              {savingEdit ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...
+                </>
+              ) : "Save Changes"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
