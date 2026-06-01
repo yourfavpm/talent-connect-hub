@@ -43,14 +43,14 @@ FOREIGN KEY (admin_id) REFERENCES public.admin_users(id) ON DELETE SET NULL;
 ALTER TABLE public.support_tickets DROP CONSTRAINT IF EXISTS support_tickets_user_id_profiles_fkey;
 ALTER TABLE public.support_tickets DROP CONSTRAINT IF EXISTS support_tickets_user_id_fkey;
 ALTER TABLE public.support_tickets ADD CONSTRAINT support_tickets_user_id_profiles_fkey 
-FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+FOREIGN KEY (user_id) REFERENCES public.profiles(user_id) ON DELETE CASCADE;
 
 -- Clients -> Profiles
 -- Essential for retrieving contact emails in the clients view
 ALTER TABLE public.clients DROP CONSTRAINT IF EXISTS clients_user_id_profiles_fkey;
 ALTER TABLE public.clients DROP CONSTRAINT IF EXISTS clients_user_id_fkey;
 ALTER TABLE public.clients ADD CONSTRAINT clients_user_id_profiles_fkey 
-FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+FOREIGN KEY (user_id) REFERENCES public.profiles(user_id) ON DELETE CASCADE;
 
 -- Payouts -> Talents & Contracts
 -- Restores functionality to the Payments dashboard

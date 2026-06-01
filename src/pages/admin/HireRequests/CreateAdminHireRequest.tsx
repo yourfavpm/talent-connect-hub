@@ -79,6 +79,8 @@ export default function CreateAdminHireRequest() {
 
     setCreatingClient(true);
     try {
+      let userId: string | null = null;
+
       const { data: authData, error: createError } = await supabase.functions.invoke('create-user', {
         body: {
           email: newClientData.email,
@@ -89,25 +91,52 @@ export default function CreateAdminHireRequest() {
         }
       });
 
-      if (createError) throw createError;
+      if (createError) {
+        console.warn("Auth user creation error, checking if user already exists in profiles:", createError);
+        // Look up by email in profiles table to see if user was previously provisioned
+        const { data: existingProfile, error: profileLookupError } = await supabase
+          .from("profiles")
+          .select("user_id")
+          .eq("email", newClientData.email)
+          .maybeSingle();
 
-      const userId = authData?.user?.id;
+        if (profileLookupError || !existingProfile) {
+          // If no existing profile, throw the original creation error
+          throw createError;
+        }
+        
+        userId = existingProfile.user_id;
+      } else {
+        userId = authData?.user?.id;
+      }
+
       if (!userId) throw new Error("No user ID returned from creation");
 
-      const { error: clientInsertError } = await supabase
+      // Check if client record already exists for this user_id
+      const { data: existingClient } = await supabase
         .from("clients")
-        .insert({
-          user_id: userId,
-          client_id: `CLI-${Date.now()}`,
-          company_name: newClientData.company_name,
-          primary_contact_name: `${newClientData.first_name} ${newClientData.last_name}`.trim() || newClientData.company_name,
-          primary_contact_email: newClientData.email,
-          status: "approved"
-        });
+        .select("id, user_id")
+        .eq("user_id", userId)
+        .maybeSingle();
 
-      if (clientInsertError) throw clientInsertError;
+      if (!existingClient) {
+        const { error: clientInsertError } = await supabase
+          .from("clients")
+          .insert({
+            user_id: userId,
+            client_id: `CLI-${Date.now()}`,
+            company_name: newClientData.company_name,
+            primary_contact_name: `${newClientData.first_name} ${newClientData.last_name}`.trim() || newClientData.company_name,
+            primary_contact_email: newClientData.email,
+            status: "approved"
+          });
 
-      toast({ title: "Client Created Successfully 🎉", description: `${newClientData.company_name} account is active.` });
+        if (clientInsertError) throw clientInsertError;
+      } else {
+        console.log("Client record already exists, linking to existing client:", existingClient);
+      }
+
+      toast({ title: "Client Account Configured 🎉", description: `${newClientData.company_name} is active.` });
 
       const { data: allClients, error: fetchErr } = await supabase
         .from("clients")
@@ -116,9 +145,9 @@ export default function CreateAdminHireRequest() {
 
       if (!fetchErr && allClients) {
         setClients(allClients as ClientOption[]);
-        const createdClient = allClients.find((c) => c.user_id === userId);
-        if (createdClient) {
-          setSelectedClientId(createdClient.id);
+        const activeClient = allClients.find((c) => c.user_id === userId);
+        if (activeClient) {
+          setSelectedClientId(activeClient.id);
           setSelectedClientUserId(userId);
         }
       }
@@ -133,7 +162,7 @@ export default function CreateAdminHireRequest() {
       });
     } catch (err: any) {
       console.error("Create client error:", err);
-      toast({ title: "Failed to create client", description: err.message, variant: "destructive" });
+      toast({ title: "Failed to configure client", description: err.message, variant: "destructive" });
     } finally {
       setCreatingClient(false);
     }

@@ -309,26 +309,28 @@ const App = () => {
                 <Routes>
               {/* Marketing Zone (opslyhr.com) */}
               {zone === Zone.MARKETING && (
-                <Route element={<WebsiteLayout />}>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/for-companies" element={<ForCompanies />} />
-                  <Route path="/for-professionals" element={<ForProfessionals />} />
-                  <Route path="/service-models" element={<ServiceModels />} />
-                  <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/book-consultation" element={<BookConsultation />} />
-                  <Route path="/insights" element={<Insights />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/careers" element={<Careers />} />
-                  <Route path="/direct-hire" element={<DirectHire />} />
-                  <Route path="/trial-to-hire" element={<TrialToHire />} />
-                  <Route path="/project-engagement" element={<ProjectEngagement />} />
-                  <Route path="/offshore-hiring" element={<OffshoreHiring />} />
-                  <Route path="/vetting-process" element={<VettingProcess />} />
+                <>
                   <Route path="/jobs" element={<PublicJobs />} />
                   <Route path="/jobs/:id" element={<PublicJobDetail />} />
-                  <Route path="/404" element={<NotFound />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
+                  <Route element={<WebsiteLayout />}>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/for-companies" element={<ForCompanies />} />
+                    <Route path="/for-professionals" element={<ForProfessionals />} />
+                    <Route path="/service-models" element={<ServiceModels />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/book-consultation" element={<BookConsultation />} />
+                    <Route path="/insights" element={<Insights />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/careers" element={<Careers />} />
+                    <Route path="/direct-hire" element={<DirectHire />} />
+                    <Route path="/trial-to-hire" element={<TrialToHire />} />
+                    <Route path="/project-engagement" element={<ProjectEngagement />} />
+                    <Route path="/offshore-hiring" element={<OffshoreHiring />} />
+                    <Route path="/vetting-process" element={<VettingProcess />} />
+                    <Route path="/404" element={<NotFound />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Route>
+                </>
               )}
 
               {/* Academy Zone (academy.opslyhr.com) */}
