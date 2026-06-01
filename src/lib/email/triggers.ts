@@ -1048,11 +1048,11 @@ export async function sendTalentInterviewInvitationEmail(params: {
 </body>
 </html>`;
 
-    await queueEmail(
-      talentUser.email,
-      `Interview Scheduled: ${request.title}`,
-      htmlBody
-    );
+    await queueEmail({
+      to: talentUser.email,
+      subject: `Interview Scheduled: ${request.title}`,
+      htmlTemplate: htmlBody
+    });
   } catch (err) {
     console.error("Error triggering interview invitation email:", err);
   }

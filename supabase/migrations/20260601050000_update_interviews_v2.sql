@@ -17,6 +17,9 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 NOTIFY pgrst, 'reload schema';
 
+-- Drop the old version to avoid PostgREST ambiguity
+DROP FUNCTION IF EXISTS public.hr_v2_admin_schedule_interview(UUID, UUID, UUID, TEXT, TIMESTAMPTZ);
+
 -- Update hr_v2_admin_schedule_interview to support meeting_notes
 CREATE OR REPLACE FUNCTION public.hr_v2_admin_schedule_interview(req_id UUID, t_user_id UUID, c_user_id UUID, c_link TEXT, s_time TIMESTAMPTZ, m_notes TEXT DEFAULT NULL)
 RETURNS void
