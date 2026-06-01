@@ -15,7 +15,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Check, ArrowLeft, Briefcase, Clock, Globe, Building2, ChevronRight } from "lucide-react";
+import { Check, ArrowLeft, Briefcase, Clock, Globe, Building2, ChevronRight, Plus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const STEPS = ["Client", "Basics", "Details", "Review"];
 
@@ -49,7 +57,87 @@ export default function CreateAdminHireRequest() {
     budget_max: "",
     fixed_budget: "",
     hours_per_week: "",
+    preferred_currency: "USD",
+    salary_type: "hourly",
   });
+
+  const [isCreateClientOpen, setIsCreateClientOpen] = useState(false);
+  const [newClientData, setNewClientData] = useState({
+    company_name: "",
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+  });
+  const [creatingClient, setCreatingClient] = useState(false);
+
+  const handleCreateClient = async () => {
+    if (!newClientData.company_name || !newClientData.email || !newClientData.password) {
+      toast({ title: "Please fill in all required client fields", variant: "destructive" });
+      return;
+    }
+
+    setCreatingClient(true);
+    try {
+      const { data: authData, error: createError } = await supabase.functions.invoke('create-user', {
+        body: {
+          email: newClientData.email,
+          password: newClientData.password,
+          role: "client",
+          firstName: newClientData.first_name || newClientData.company_name,
+          lastName: newClientData.last_name || "Representative"
+        }
+      });
+
+      if (createError) throw createError;
+
+      const userId = authData?.user?.id;
+      if (!userId) throw new Error("No user ID returned from creation");
+
+      const { error: clientInsertError } = await supabase
+        .from("clients")
+        .insert({
+          user_id: userId,
+          client_id: `CLI-${Date.now()}`,
+          company_name: newClientData.company_name,
+          primary_contact_name: `${newClientData.first_name} ${newClientData.last_name}`.trim() || newClientData.company_name,
+          primary_contact_email: newClientData.email,
+          status: "approved"
+        });
+
+      if (clientInsertError) throw clientInsertError;
+
+      toast({ title: "Client Created Successfully 🎉", description: `${newClientData.company_name} account is active.` });
+
+      const { data: allClients, error: fetchErr } = await supabase
+        .from("clients")
+        .select("id, company_name, user_id")
+        .order("company_name", { ascending: true });
+
+      if (!fetchErr && allClients) {
+        setClients(allClients as ClientOption[]);
+        const createdClient = allClients.find((c) => c.user_id === userId);
+        if (createdClient) {
+          setSelectedClientId(createdClient.id);
+          setSelectedClientUserId(userId);
+        }
+      }
+
+      setIsCreateClientOpen(false);
+      setNewClientData({
+        company_name: "",
+        first_name: "",
+        last_name: "",
+        email: "",
+        password: "",
+      });
+    } catch (err: any) {
+      console.error("Create client error:", err);
+      toast({ title: "Failed to create client", description: err.message, variant: "destructive" });
+    } finally {
+      setCreatingClient(false);
+    }
+  };
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -143,6 +231,8 @@ export default function CreateAdminHireRequest() {
         fixed_budget: formData.fixed_budget ? parseFloat(formData.fixed_budget) : null,
         hours_per_week: formData.hours_per_week ? parseInt(formData.hours_per_week, 10) : null,
         requires_timesheets: formData.budget_type === "hourly",
+        preferred_currency: formData.preferred_currency,
+        salary_type: formData.salary_type,
       };
 
       const { data: newId, error } = await (supabase as any).rpc("hr_v2_admin_create_request", { payload });
@@ -227,7 +317,89 @@ export default function CreateAdminHireRequest() {
 
               <div className="space-y-4">
                 <div className="space-y-2 w-full max-w-md">
-                  <Label className="text-slate-700 font-semibold">Client</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-slate-700 font-semibold">Client</Label>
+                    <Dialog open={isCreateClientOpen} onOpenChange={setIsCreateClientOpen}>
+                      <Button
+                        type="button"
+                        variant="link"
+                        onClick={() => setIsCreateClientOpen(true)}
+                        className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 p-0 h-auto"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Create New Client
+                      </Button>
+                      <DialogContent className="sm:max-w-md bg-white">
+                        <DialogHeader>
+                          <DialogTitle>Create New Client Profile</DialogTitle>
+                          <DialogDescription>
+                            Provision a secure client account on-the-fly to assign this hire request.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500 uppercase">Company Name *</Label>
+                            <Input
+                              placeholder="e.g. Acme Corporation"
+                              value={newClientData.company_name}
+                              onChange={(e) => setNewClientData({ ...newClientData, company_name: e.target.value })}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-semibold text-slate-500 uppercase">Contact First Name</Label>
+                              <Input
+                                placeholder="John"
+                                value={newClientData.first_name}
+                                onChange={(e) => setNewClientData({ ...newClientData, first_name: e.target.value })}
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-semibold text-slate-500 uppercase">Contact Last Name</Label>
+                              <Input
+                                placeholder="Doe"
+                                value={newClientData.last_name}
+                                onChange={(e) => setNewClientData({ ...newClientData, last_name: e.target.value })}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500 uppercase">Email Address *</Label>
+                            <Input
+                              type="email"
+                              placeholder="john@acme.com"
+                              value={newClientData.email}
+                              onChange={(e) => setNewClientData({ ...newClientData, email: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-500 uppercase">Password *</Label>
+                            <Input
+                              placeholder="Temporary password"
+                              value={newClientData.password}
+                              onChange={(e) => setNewClientData({ ...newClientData, password: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            variant="ghost"
+                            onClick={() => setIsCreateClientOpen(false)}
+                            disabled={creatingClient}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleCreateClient}
+                            disabled={creatingClient}
+                            className="bg-slate-900 text-white hover:bg-slate-800"
+                          >
+                            {creatingClient ? "Creating..." : "Create Client"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                   <Select value={selectedClientId} onValueChange={handleClientChange}>
                     <SelectTrigger className="h-11 shadow-sm">
                       <SelectValue placeholder={loadingClients ? "Loading clients..." : "Select Client"} />
@@ -371,13 +543,24 @@ export default function CreateAdminHireRequest() {
                   <Label className="text-slate-700 font-semibold">Timezone Overlap</Label>
                   <Select value={formData.timezone_overlap} onValueChange={(val) => updateForm("timezone_overlap", val)}>
                     <SelectTrigger className="h-11 shadow-sm">
-                      <SelectValue placeholder="e.g. EST overlap required" />
+                      <SelectValue placeholder="Select timezone" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="strict_est">Strict EST Hours</SelectItem>
-                      <SelectItem value="partial_est">Partial EST Overlap (4 hours)</SelectItem>
-                      <SelectItem value="strict_pst">Strict PST Hours</SelectItem>
-                      <SelectItem value="asynchronous">Fully Asynchronous</SelectItem>
+                      <SelectItem value="flexible">Flexible</SelectItem>
+                      <SelectItem value="utc">UTC / GMT</SelectItem>
+                      <SelectItem value="est">EST (Eastern Standard Time - UTC-5)</SelectItem>
+                      <SelectItem value="cst">CST (Central Standard Time - UTC-6)</SelectItem>
+                      <SelectItem value="mst">MST (Mountain Standard Time - UTC-7)</SelectItem>
+                      <SelectItem value="pst">PST (Pacific Standard Time - UTC-8)</SelectItem>
+                      <SelectItem value="cet">CET (Central European Time - UTC+1)</SelectItem>
+                      <SelectItem value="eet">EET (Eastern European Time - UTC+2)</SelectItem>
+                      <SelectItem value="wat">WAT (West Africa Time - UTC+1)</SelectItem>
+                      <SelectItem value="cat">CAT (Central Africa Time - UTC+2)</SelectItem>
+                      <SelectItem value="eat">EAT (East Africa Time - UTC+3)</SelectItem>
+                      <SelectItem value="ist">IST (Indian Standard Time - UTC+5:30)</SelectItem>
+                      <SelectItem value="sgt">SGT (Singapore Time - UTC+8)</SelectItem>
+                      <SelectItem value="aest">AEST (Australian Eastern Standard Time - UTC+10)</SelectItem>
+                      <SelectItem value="nzst">NZST (New Zealand Standard Time - UTC+12)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -399,7 +582,12 @@ export default function CreateAdminHireRequest() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div className="space-y-2">
                     <Label className="text-slate-700 font-semibold">Budget Type</Label>
-                    <Select value={formData.budget_type} onValueChange={(val) => updateForm("budget_type", val)}>
+                    <Select value={formData.budget_type} onValueChange={(val) => {
+                      updateForm("budget_type", val);
+                      if (val === "hourly" || val === "monthly") {
+                        updateForm("salary_type", val);
+                      }
+                    }}>
                       <SelectTrigger className="h-11 shadow-sm">
                         <SelectValue />
                       </SelectTrigger>
@@ -410,7 +598,41 @@ export default function CreateAdminHireRequest() {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 font-semibold">Salary Currency</Label>
+                    <Select value={formData.preferred_currency} onValueChange={(val) => updateForm("preferred_currency", val)}>
+                      <SelectTrigger className="h-11 shadow-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD ($)</SelectItem>
+                        <SelectItem value="EUR">EUR (€)</SelectItem>
+                        <SelectItem value="GBP">GBP (£)</SelectItem>
+                        <SelectItem value="NGN">NGN (₦)</SelectItem>
+                        <SelectItem value="KES">KES (KSh)</SelectItem>
+                        <SelectItem value="ZAR">ZAR (R)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+
+                {formData.budget_type !== 'fixed' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 font-semibold">Salary Frequency</Label>
+                      <Select value={formData.salary_type} onValueChange={(val) => updateForm("salary_type", val)}>
+                        <SelectTrigger className="h-11 shadow-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="hourly">Hourly</SelectItem>
+                          <SelectItem value="monthly">Monthly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
 
                 {formData.budget_type === "fixed" ? (
                   <div className="space-y-2 max-w-xs">
@@ -476,9 +698,13 @@ export default function CreateAdminHireRequest() {
                   <div>
                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Budget Range</h4>
                     <div className="text-sm font-semibold text-slate-900">
-                      {formData.budget_type === 'fixed'
-                        ? (formData.fixed_budget ? `$${formData.fixed_budget}` : "TBD")
-                        : (formData.budget_min && formData.budget_max ? `$${formData.budget_min} - $${formData.budget_max}` : "TBD")}
+                      {(() => {
+                        const sym = formData.preferred_currency === "EUR" ? "€" : formData.preferred_currency === "GBP" ? "£" : formData.preferred_currency === "NGN" ? "₦" : formData.preferred_currency === "KES" ? "KSh " : formData.preferred_currency === "ZAR" ? "R " : "$";
+                        const freq = formData.budget_type === 'fixed' ? '' : (formData.salary_type === 'monthly' ? '/mo' : '/hr');
+                        return formData.budget_type === 'fixed'
+                          ? (formData.fixed_budget ? `${sym}${formData.fixed_budget}` : "TBD")
+                          : (formData.budget_min && formData.budget_max ? `${sym}${formData.budget_min} - ${sym}${formData.budget_max}${freq}` : "TBD");
+                      })()}
                     </div>
                   </div>
                   <div>

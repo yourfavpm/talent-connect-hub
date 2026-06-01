@@ -184,8 +184,10 @@ const TalentJobDetail = () => {
 
     const budgetDisplay = () => {
         const sym = getCurrencySymbol(job?.preferred_currency || "USD");
-        if (job?.budget_type === "fixed") return job?.fixed_budget ? `${sym}${job.fixed_budget}` : "TBD";
-        if (job?.budget_min && job?.budget_max) return `${sym}${job.budget_min} – ${sym}${job.budget_max}`;
+        const freq = job?.salary_type === "monthly" ? "/mo" : (job?.salary_type === "hourly" ? "/hr" : "");
+        if (job?.budget_type === "fixed") return job?.fixed_budget ? `${sym}${job.fixed_budget.toLocaleString()}${freq}` : "TBD";
+        if (job?.budget_min && job?.budget_max) return `${sym}${job.budget_min.toLocaleString()} – ${sym}${job.budget_max.toLocaleString()}${freq}`;
+        if (job?.budget_min) return `From ${sym}${job.budget_min.toLocaleString()}${freq}`;
         return "TBD";
     };
 

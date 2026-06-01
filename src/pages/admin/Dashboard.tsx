@@ -73,7 +73,7 @@ const AdminDashboard = () => {
         .select("value")
         .eq("key", "vetting_system_version")
         .maybeSingle();
-      const currentVersion = (versionRow?.value as "v1" | "v2") ?? "v2";
+      const currentVersion = ((versionRow as any)?.value as "v1" | "v2") ?? "v2";
 
       const isPersonal = isTalentManager || viewMode === "personal";
 
@@ -300,7 +300,7 @@ const AdminDashboard = () => {
 
   const handleApproveJob = async (jobId: string) => {
     try {
-      await supabase.from("jobs").update({ status: "published", published_at: new Date().toISOString() } as any).eq("id", jobId);
+      await (supabase.from("jobs") as any).update({ status: "published", published_at: new Date().toISOString() }).eq("id", jobId);
       refetch();
     } catch (error) {
       console.error("Error approving job:", error);

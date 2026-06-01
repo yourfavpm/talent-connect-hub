@@ -128,8 +128,7 @@ const Scholarship = () => {
   };
 
   const createPendingApplication = async () => {
-    const { data, error } = await supabase
-      .from("scholarship_applications")
+    const { data, error } = await (supabase.from("scholarship_applications") as any)
       .insert({
         full_name: form.fullName.trim(),
         email: form.email.trim().toLowerCase(),
@@ -147,11 +146,12 @@ const Scholarship = () => {
         payment_provider: "kora",
         payment_status: "pending",
         application_status: "pending_payment",
-      } as any)
+      })
       .select("id")
       .single();
 
     if (error) throw error;
+    if (!data) throw new Error("No data returned from insert");
     return data.id as string;
   };
 
@@ -173,15 +173,14 @@ const Scholarship = () => {
   const finalizeApplication = async (applicationId: string, reference: string) => {
     setProcessing(true);
     try {
-      const { data, error } = await supabase
-        .from("scholarship_applications")
+      const { data, error } = await (supabase.from("scholarship_applications") as any)
         .update({
           payment_reference: reference,
           payment_provider: "kora",
           payment_status: "success",
           application_status: "submitted",
           paid_at: new Date().toISOString(),
-        } as any)
+        })
         .eq("id", applicationId)
         .select("full_name, email")
         .maybeSingle();

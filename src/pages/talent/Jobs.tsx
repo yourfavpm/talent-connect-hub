@@ -699,9 +699,20 @@ const TalentJobs = () => {
                                   <MapPin className="h-3 w-3" /><span className="text-slate-900">{req.location_preference}</span>
                                 </div>
                               )}
-                              {req.budget_min && req.budget_max && (
+                              {(req.budget_min || req.fixed_budget) && (
                                 <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-slate-400 uppercase tracking-wider">
-                                  <DollarSign className="h-3 w-3" /><span className="text-slate-900">${req.budget_min} - ${req.budget_max}</span>
+                                  <DollarSign className="h-3 w-3" />
+                                  <span className="text-slate-900">
+                                    {getCurrencySymbol(req.preferred_currency as string)}
+                                    {req.budget_type === "fixed" && req.fixed_budget
+                                      ? (req.fixed_budget as number).toLocaleString()
+                                      : req.budget_min && req.budget_max
+                                        ? `${(req.budget_min as number).toLocaleString()} - ${getCurrencySymbol(req.preferred_currency as string)}${(req.budget_max as number).toLocaleString()}`
+                                        : req.budget_min
+                                          ? `From ${(req.budget_min as number).toLocaleString()}`
+                                          : ""}
+                                    {req.salary_type === "monthly" ? "/mo" : (req.salary_type === "hourly" ? "/hr" : "")}
+                                  </span>
                                 </div>
                               )}
                               {req.published_at && (
@@ -1165,7 +1176,24 @@ const TalentJobs = () => {
                   {/* Key Details Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {[
-                      { label: "Budget", val: selectedV2Request.budget_min && selectedV2Request.budget_max ? `$${selectedV2Request.budget_min} - $${selectedV2Request.budget_max}` : selectedV2Request.fixed_budget ? `$${selectedV2Request.fixed_budget}` : "TBD", icon: DollarSign },
+                      { 
+                        label: "Budget", 
+                        val: (() => {
+                          const sym = getCurrencySymbol(selectedV2Request.preferred_currency as string);
+                          const freq = selectedV2Request.salary_type === "monthly" ? "/mo" : (selectedV2Request.salary_type === "hourly" ? "/hr" : "");
+                          if (selectedV2Request.budget_type === "fixed" && selectedV2Request.fixed_budget) {
+                            return `${sym}${(selectedV2Request.fixed_budget as number).toLocaleString()}${freq}`;
+                          }
+                          if (selectedV2Request.budget_min && selectedV2Request.budget_max) {
+                            return `${sym}${(selectedV2Request.budget_min as number).toLocaleString()} - ${sym}${(selectedV2Request.budget_max as number).toLocaleString()}${freq}`;
+                          }
+                          if (selectedV2Request.budget_min) {
+                            return `From ${sym}${(selectedV2Request.budget_min as number).toLocaleString()}${freq}`;
+                          }
+                          return "TBD";
+                        })(), 
+                        icon: DollarSign 
+                      },
                       { label: "Timezone", val: selectedV2Request.timezone_overlap?.replace(/_/g, ' ') || "Flexible", icon: Globe },
                       { label: "Published", val: selectedV2Request.published_at ? format(new Date(selectedV2Request.published_at), "MMM d, yyyy") : "—", icon: Calendar },
                     ].map((item, i) => (

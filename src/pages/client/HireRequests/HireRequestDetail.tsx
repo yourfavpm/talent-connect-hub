@@ -149,7 +149,23 @@ export default function HireRequestDetail() {
               { label: "Format", value: request.engagement_type?.replace(/_/g, " ") || "—", icon: Clock },
               { label: "Location", value: request.location_preference || "Any", icon: MapPin },
               { label: "Timezone", value: request.timezone_overlap?.replace(/_/g, " ") || "Flexible", icon: Globe },
-              { label: `Budget (${request.budget_type || "—"})`, value: request.budget_type === "fixed" ? (request.fixed_budget ? `$${request.fixed_budget}` : "TBD") : (request.budget_min && request.budget_max ? `$${request.budget_min}-$${request.budget_max}` : "TBD"), icon: DollarSign },
+              { 
+                label: `Budget (${request.budget_type || "—"})`, 
+                value: (() => {
+                  const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", NGN: "₦", KES: "KSh ", ZAR: "R " };
+                  const sym = symbols[request.preferred_currency || "USD"] || "$";
+                  const freq = request.salary_type === "monthly" ? "/mo" : (request.salary_type === "hourly" ? "/hr" : "");
+                  if (request.budget_type === "fixed" && request.fixed_budget) {
+                    return `${sym}${request.fixed_budget.toLocaleString()}${freq}`;
+                  }
+                  if (request.budget_min && request.budget_max) {
+                    return `${sym}${request.budget_min.toLocaleString()} – ${sym}${request.budget_max.toLocaleString()}${freq}`;
+                  }
+                  if (request.budget_min) return `From ${sym}${request.budget_min.toLocaleString()}${freq}`;
+                  return "TBD";
+                })(), 
+                icon: DollarSign 
+              },
             ].map((item) => (
               <div key={item.label} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center"><item.icon className="w-3 h-3 mr-1.5" />{item.label}</p>

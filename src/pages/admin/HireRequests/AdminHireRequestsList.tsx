@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Briefcase, Calendar, Building2, ArrowRight, Share2 } from "lucide-react";
+import { Search, Briefcase, Calendar, Building2, ArrowRight, Share2, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -23,6 +23,12 @@ interface HireRequest {
   app_count?: number;
   shortlist_count?: number;
   interview_count?: number;
+  preferred_currency?: string | null;
+  salary_type?: string | null;
+  fixed_budget?: number | null;
+  budget_min?: number | null;
+  budget_max?: number | null;
+  budget_type?: string | null;
 }
 
 export default function AdminHireRequestsList() {
@@ -205,6 +211,7 @@ export default function AdminHireRequestsList() {
                   <th className="px-5 py-3.5 font-bold text-[10px] uppercase tracking-widest">Request</th>
                   <th className="px-5 py-3.5 font-bold text-[10px] uppercase tracking-widest">Client</th>
                   <th className="px-5 py-3.5 font-bold text-[10px] uppercase tracking-widest">Model</th>
+                  <th className="px-5 py-3.5 font-bold text-[10px] uppercase tracking-widest">Budget</th>
                   <th className="px-5 py-3.5 font-bold text-[10px] uppercase tracking-widest">Status</th>
                   <th className="px-5 py-3.5 font-bold text-[10px] uppercase tracking-widest text-center">Apps</th>
                   <th className="px-5 py-3.5 font-bold text-[10px] uppercase tracking-widest text-center">Shortlist</th>
@@ -218,6 +225,17 @@ export default function AdminHireRequestsList() {
                     <td className="px-5 py-4"><div className="font-semibold text-slate-900">{req.title}</div></td>
                     <td className="px-5 py-4 text-slate-600 text-xs">{req.client_name}</td>
                     <td className="px-5 py-4 text-slate-500 capitalize text-xs">{req.service_model?.replace(/_/g, " ")}</td>
+                    <td className="px-5 py-4 text-slate-900 font-semibold text-xs">
+                      {(() => {
+                        const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", NGN: "₦", KES: "KSh ", ZAR: "R " };
+                        const sym = symbols[req.preferred_currency || "USD"] || "$";
+                        const freq = req.salary_type === "monthly" ? "/mo" : (req.salary_type === "hourly" ? "/hr" : "");
+                        if (req.budget_type === "fixed" && req.fixed_budget) return `${sym}${req.fixed_budget.toLocaleString()}${freq}`;
+                        if (req.budget_min && req.budget_max) return `${sym}${req.budget_min.toLocaleString()}-${req.budget_max.toLocaleString()}${freq}`;
+                        if (req.budget_min) return `From ${sym}${req.budget_min.toLocaleString()}${freq}`;
+                        return "—";
+                      })()}
+                    </td>
                     <td className="px-5 py-4">{getStatusBadge(req.status)}</td>
                     <td className="px-5 py-4 text-center text-slate-600 font-medium">{req.app_count}</td>
                     <td className="px-5 py-4 text-center text-slate-600 font-medium">{req.shortlist_count}</td>
@@ -266,6 +284,15 @@ export default function AdminHireRequestsList() {
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 mb-3">
                   <span className="flex items-center"><Building2 className="w-3 h-3 mr-1" /> {req.client_name}</span>
+                  <span className="flex items-center"><DollarSign className="w-3.5 h-3.5 mr-0.5 text-slate-400" /> {(() => {
+                    const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", NGN: "₦", KES: "KSh ", ZAR: "R " };
+                    const sym = symbols[req.preferred_currency || "USD"] || "$";
+                    const freq = req.salary_type === "monthly" ? "/mo" : (req.salary_type === "hourly" ? "/hr" : "");
+                    if (req.budget_type === "fixed" && req.fixed_budget) return `${sym}${req.fixed_budget.toLocaleString()}${freq}`;
+                    if (req.budget_min && req.budget_max) return `${sym}${req.budget_min.toLocaleString()}-${req.budget_max.toLocaleString()}${freq}`;
+                    if (req.budget_min) return `From ${sym}${req.budget_min.toLocaleString()}${freq}`;
+                    return "—";
+                  })()}</span>
                   <span className="flex items-center"><Calendar className="w-3 h-3 mr-1" /> {format(new Date(req.created_at), "MMM d, yyyy")}</span>
                 </div>
                 <div className="flex bg-slate-50 rounded-lg p-2 divide-x divide-slate-200 text-center">

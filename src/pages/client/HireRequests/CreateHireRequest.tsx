@@ -34,6 +34,8 @@ interface HireRequest {
   budget_max: number | null;
   fixed_budget: number | null;
   hours_per_week: number | null;
+  preferred_currency?: string | null;
+  salary_type?: string | null;
 }
 
 export default function CreateHireRequest() {
@@ -61,6 +63,8 @@ export default function CreateHireRequest() {
     budget_max: "",
     fixed_budget: "",
     hours_per_week: "",
+    preferred_currency: "USD",
+    salary_type: "hourly",
   });
 
   useEffect(() => {
@@ -94,6 +98,8 @@ export default function CreateHireRequest() {
           budget_max: d.budget_max?.toString() || "",
           fixed_budget: d.fixed_budget?.toString() || "",
           hours_per_week: d.hours_per_week?.toString() || "",
+          preferred_currency: d.preferred_currency || "USD",
+          salary_type: d.salary_type || "hourly",
         });
       }
     } catch (error: any) {
@@ -159,7 +165,9 @@ export default function CreateHireRequest() {
         budget_max: formData.budget_max ? parseFloat(formData.budget_max) : null,
         fixed_budget: formData.fixed_budget ? parseFloat(formData.fixed_budget) : null,
         hours_per_week: formData.hours_per_week ? parseInt(formData.hours_per_week) : null,
-        requires_timesheets: formData.budget_type === 'hourly'
+        requires_timesheets: formData.budget_type === 'hourly',
+        preferred_currency: formData.preferred_currency,
+        salary_type: formData.salary_type
       };
 
       if (requestId) {
@@ -410,15 +418,26 @@ export default function CreateHireRequest() {
 
                 <div className="space-y-2">
                   <Label className="text-slate-700 font-semibold">Timezone Overlap</Label>
-                   <Select value={formData.timezone_overlap} onValueChange={(val) => updateForm("timezone_overlap", val)}>
+                  <Select value={formData.timezone_overlap} onValueChange={(val) => updateForm("timezone_overlap", val)}>
                     <SelectTrigger className="h-11 shadow-sm">
-                      <SelectValue placeholder="e.g. EST overlap required" />
+                      <SelectValue placeholder="Select timezone" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="strict_est">Strict EST Hours</SelectItem>
-                      <SelectItem value="partial_est">Partial EST Overlap (4 hours)</SelectItem>
-                      <SelectItem value="strict_pst">Strict PST Hours</SelectItem>
-                      <SelectItem value="asynchronous">Fully Asynchronous</SelectItem>
+                      <SelectItem value="flexible">Flexible</SelectItem>
+                      <SelectItem value="utc">UTC / GMT</SelectItem>
+                      <SelectItem value="est">EST (Eastern Standard Time - UTC-5)</SelectItem>
+                      <SelectItem value="cst">CST (Central Standard Time - UTC-6)</SelectItem>
+                      <SelectItem value="mst">MST (Mountain Standard Time - UTC-7)</SelectItem>
+                      <SelectItem value="pst">PST (Pacific Standard Time - UTC-8)</SelectItem>
+                      <SelectItem value="cet">CET (Central European Time - UTC+1)</SelectItem>
+                      <SelectItem value="eet">EET (Eastern European Time - UTC+2)</SelectItem>
+                      <SelectItem value="wat">WAT (West Africa Time - UTC+1)</SelectItem>
+                      <SelectItem value="cat">CAT (Central Africa Time - UTC+2)</SelectItem>
+                      <SelectItem value="eat">EAT (East Africa Time - UTC+3)</SelectItem>
+                      <SelectItem value="ist">IST (Indian Standard Time - UTC+5:30)</SelectItem>
+                      <SelectItem value="sgt">SGT (Singapore Time - UTC+8)</SelectItem>
+                      <SelectItem value="aest">AEST (Australian Eastern Standard Time - UTC+10)</SelectItem>
+                      <SelectItem value="nzst">NZST (New Zealand Standard Time - UTC+12)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -440,7 +459,12 @@ export default function CreateHireRequest() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div className="space-y-2">
                     <Label className="text-slate-700 font-semibold">Budget Type</Label>
-                    <Select value={formData.budget_type} onValueChange={(val) => updateForm("budget_type", val)}>
+                    <Select value={formData.budget_type} onValueChange={(val) => {
+                      updateForm("budget_type", val);
+                      if (val === "hourly" || val === "monthly") {
+                        updateForm("salary_type", val);
+                      }
+                    }}>
                       <SelectTrigger className="h-11 shadow-sm">
                         <SelectValue />
                       </SelectTrigger>
@@ -451,7 +475,41 @@ export default function CreateHireRequest() {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 font-semibold">Salary Currency</Label>
+                    <Select value={formData.preferred_currency} onValueChange={(val) => updateForm("preferred_currency", val)}>
+                      <SelectTrigger className="h-11 shadow-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD ($)</SelectItem>
+                        <SelectItem value="EUR">EUR (€)</SelectItem>
+                        <SelectItem value="GBP">GBP (£)</SelectItem>
+                        <SelectItem value="NGN">NGN (₦)</SelectItem>
+                        <SelectItem value="KES">KES (KSh)</SelectItem>
+                        <SelectItem value="ZAR">ZAR (R)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+
+                {formData.budget_type !== 'fixed' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 font-semibold">Salary Frequency</Label>
+                      <Select value={formData.salary_type} onValueChange={(val) => updateForm("salary_type", val)}>
+                        <SelectTrigger className="h-11 shadow-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="hourly">Hourly</SelectItem>
+                          <SelectItem value="monthly">Monthly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
 
                 {formData.budget_type === 'fixed' ? (
                   <div className="space-y-2 max-w-xs">
@@ -518,10 +576,13 @@ export default function CreateHireRequest() {
                   <div>
                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Budget Range</h4>
                     <div className="text-sm font-semibold text-slate-900">
-                      {formData.budget_type === 'fixed' 
-                        ? (formData.fixed_budget ? `$${formData.fixed_budget}` : "TBD")
-                        : (formData.budget_min && formData.budget_max ? `$${formData.budget_min} - $${formData.budget_max}` : "TBD")
-                      }
+                      {(() => {
+                        const sym = formData.preferred_currency === "EUR" ? "€" : formData.preferred_currency === "GBP" ? "£" : formData.preferred_currency === "NGN" ? "₦" : formData.preferred_currency === "KES" ? "KSh " : formData.preferred_currency === "ZAR" ? "R " : "$";
+                        const freq = formData.budget_type === 'fixed' ? '' : (formData.salary_type === 'monthly' ? '/mo' : '/hr');
+                        return formData.budget_type === 'fixed' 
+                          ? (formData.fixed_budget ? `${sym}${formData.fixed_budget}` : "TBD")
+                          : (formData.budget_min && formData.budget_max ? `${sym}${formData.budget_min} - ${sym}${formData.budget_max}${freq}` : "TBD");
+                      })()}
                     </div>
                   </div>
                   <div>

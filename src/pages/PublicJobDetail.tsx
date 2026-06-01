@@ -41,6 +41,8 @@ interface HireRequest {
   requirements: string | null;
   created_at: string;
   published_at: string | null;
+  preferred_currency?: string | null;
+  salary_type?: string | null;
 }
 
 const SERVICE_MODEL_LABELS: Record<string, string> = {
@@ -66,14 +68,21 @@ const ENGAGEMENT_LABELS: Record<string, string> = {
   freelance: "Freelance",
 };
 
+const getCurrencySymbol = (code: string | null | undefined) => {
+  const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", NGN: "₦", KES: "KSh ", ZAR: "R " };
+  return symbols[code || "USD"] || "$";
+};
+
 const budgetLabel = (job: HireRequest) => {
+  const sym = getCurrencySymbol(job.preferred_currency);
+  const freq = job.salary_type === "monthly" ? "/mo" : (job.salary_type === "hourly" ? "/hr" : "");
   if (job.budget_type === "fixed" && job.fixed_budget) {
-    return `$${job.fixed_budget.toLocaleString()}`;
+    return `${sym}${job.fixed_budget.toLocaleString()}`;
   }
   if (job.budget_min && job.budget_max) {
-    return `$${job.budget_min.toLocaleString()} – $${job.budget_max.toLocaleString()}`;
+    return `${sym}${job.budget_min.toLocaleString()} – ${sym}${job.budget_max.toLocaleString()}${freq}`;
   }
-  if (job.budget_min) return `From $${job.budget_min.toLocaleString()}`;
+  if (job.budget_min) return `From ${sym}${job.budget_min.toLocaleString()}${freq}`;
   return null;
 };
 
@@ -208,52 +217,15 @@ export default function PublicJobDetail() {
         keywords={`${job.title}, ${modelLabel}, remote job, Opsly HR opportunities`}
       />
 
-      {/* ── Nav ─────────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200/80 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate("/jobs")}
-                className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 font-semibold transition-colors group"
-              >
-                <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
-                All Jobs
-              </button>
-              <div className="hidden sm:flex items-center gap-2 text-slate-300">
-                <span>/</span>
-                <span className="text-sm text-slate-600 font-medium truncate max-w-xs">{job.title}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleShare}
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg px-3 py-2 transition-all"
-              >
-                {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Share2 className="h-3.5 w-3.5" />}
-                {copied ? "Copied!" : "Share"}
-              </button>
-              {user ? (
-                <Button
-                  onClick={() => window.location.href = getZoneUrl(Zone.TALENT, "/dashboard")}
-                  className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-lg"
-                >
-                  My Dashboard
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => window.location.href = getZoneUrl(Zone.AUTH, "/auth/login")}
-                  className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg"
-                >
-                  Sign In to Apply
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Back navigation */}
+        <button
+          onClick={() => navigate("/jobs")}
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 font-semibold mb-6 transition-colors group"
+        >
+          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+          Back to all jobs
+        </button>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* ── Left / Main ─────────────────────────────────────────────────── */}
@@ -479,23 +451,6 @@ export default function PublicJobDetail() {
           </div>
         </div>
       </div>
-
-      {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-slate-200 bg-white mt-10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <img src="/images/logocolored.svg" alt="Opsly HR" className="h-7 w-auto opacity-80" />
-            <span className="text-xs text-slate-400">© 2026 Opsly HR. All rights reserved.</span>
-          </div>
-          <a
-            href="/jobs"
-            className="text-xs text-slate-400 hover:text-slate-700 font-semibold transition-colors flex items-center gap-1"
-          >
-            <ArrowLeft className="h-3 w-3" />
-            Back to all jobs
-          </a>
-        </div>
-      </footer>
     </div>
   );
 }

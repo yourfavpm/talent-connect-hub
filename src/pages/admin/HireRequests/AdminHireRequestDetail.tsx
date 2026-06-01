@@ -21,7 +21,7 @@ import {
 import {
   ArrowLeft, CheckCircle2, Eye, FileText, Users, UserPlus, Search,
   Calendar, Clock, Globe, MapPin, DollarSign, Play,
-  Video, Award, Building2, AlertCircle, Share2
+  Video, Award, Building2, AlertCircle, Share2, Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -145,8 +145,7 @@ export default function AdminHireRequestDetail() {
       return profile as ProfileSnippet;
     }
 
-    const { data: talent } = await supabase
-      .from("talents")
+    const { data: talent } = await (supabase.from("talents") as any)
       .select("first_name, last_name, email, primary_role")
       .eq("user_id", userId)
       .maybeSingle();
@@ -154,10 +153,10 @@ export default function AdminHireRequestDetail() {
     if (!talent) return null;
 
     return {
-      first_name: talent.first_name || null,
-      last_name: talent.last_name || null,
-      email: talent.email || null,
-      title: talent.primary_role || null,
+      first_name: (talent as any).first_name || null,
+      last_name: (talent as any).last_name || null,
+      email: (talent as any).email || null,
+      title: (talent as any).primary_role || null,
       skills: [],
       avatar_url: null,
     } as ProfileSnippet;
@@ -172,18 +171,16 @@ export default function AdminHireRequestDetail() {
 
     if (profile?.email) return profile.email;
 
-    const { data: talent } = await supabase
-      .from("talents")
+    const { data: talent } = await (supabase.from("talents") as any)
       .select("email")
       .eq("user_id", userId)
       .maybeSingle();
 
-    return talent?.email || null;
+    return (talent as any)?.email || null;
   }, []);
 
   const resolveAdminTalentProfileId = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from("v2_talent_profiles")
+    const { data } = await (supabase.from("v2_talent_profiles") as any)
       .select("id")
       .eq("user_id", userId)
       .maybeSingle();
@@ -312,13 +309,12 @@ export default function AdminHireRequestDetail() {
       if (profile && (profile.first_name || profile.last_name)) {
         setClientProfile(profile as ProfileSnippet);
       } else {
-        const { data: client } = await supabase
-          .from("clients")
+        const { data: client } = await (supabase.from("clients") as any)
           .select("company_name")
           .eq("user_id", typedReq.client_user_id)
           .maybeSingle();
 
-        setClientProfile(client ? { first_name: client.company_name, last_name: "", email: profile?.email || null } : null);
+        setClientProfile(client ? { first_name: (client as any).company_name, last_name: "", email: profile?.email || null } : null);
       }
 
       // 3. Applications
@@ -335,7 +331,7 @@ export default function AdminHireRequestDetail() {
             resolveTalentProfileByUserId(talentUserId),
             resolveAdminTalentProfileId(talentUserId),
           ]);
-          return { ...(app as Record<string, unknown>), profiles, v2_profile_id: v2ProfileId } as EnrichedRow;
+          return { ...(app as Record<string, unknown>), profiles, v2_profile_id: v2ProfileId } as any as EnrichedRow;
         })
       );
       setApplications(enrichedApps);
@@ -354,7 +350,7 @@ export default function AdminHireRequestDetail() {
             resolveTalentProfileByUserId(talentUserId),
             resolveAdminTalentProfileId(talentUserId),
           ]);
-          return { ...(item as Record<string, unknown>), profiles, v2_profile_id: v2ProfileId } as EnrichedRow;
+          return { ...(item as Record<string, unknown>), profiles, v2_profile_id: v2ProfileId } as any as EnrichedRow;
         })
       );
       setShortlist(enrichedShort);
@@ -397,7 +393,7 @@ export default function AdminHireRequestDetail() {
   const callRpc = async (name: string, params: Record<string, unknown>, successMsg: string) => {
     setActionLoading(name);
     try {
-      const { error } = await supabase.rpc(name as any, params);
+      const { error } = await (supabase.rpc as any)(name, params);
       if (error) throw error;
       toast({ title: successMsg });
       fetchData();
@@ -462,7 +458,7 @@ export default function AdminHireRequestDetail() {
   const handleInviteToApply = async (talent: any) => {
     setActionLoading("invite");
     try {
-      const { error } = await supabase.rpc("hr_v2_admin_invite_talent_to_apply", {
+      const { error } = await (supabase.rpc as any)("hr_v2_admin_invite_talent_to_apply", {
         req_id: id,
         t_user_id: talent.user_id
       });
@@ -627,7 +623,23 @@ export default function AdminHireRequestDetail() {
               { label: "Format", value: request.engagement_type?.replace(/_/g, " ") || "—", icon: Clock },
               { label: "Location", value: request.location_preference || "Any", icon: MapPin },
               { label: "Timezone", value: request.timezone_overlap?.replace(/_/g, " ") || "Flexible", icon: Globe },
-              { label: `Budget (${request.budget_type || "—"})`, value: request.budget_type === "fixed" ? (request.fixed_budget ? `$${request.fixed_budget}` : "TBD") : (request.budget_min && request.budget_max ? `$${request.budget_min}-$${request.budget_max}` : "TBD"), icon: DollarSign },
+              { 
+                label: `Budget (${request.budget_type || "—"})`, 
+                value: (() => {
+                  const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", NGN: "₦", KES: "KSh ", ZAR: "R " };
+                  const sym = symbols[(request.preferred_currency as string) || "USD"] || "$";
+                  const freq = request.salary_type === "monthly" ? "/mo" : (request.salary_type === "hourly" ? "/hr" : "");
+                  if (request.budget_type === "fixed" && request.fixed_budget) {
+                    return `${sym}${(request.fixed_budget as number).toLocaleString()}${freq}`;
+                  }
+                  if (request.budget_min && request.budget_max) {
+                    return `${sym}${(request.budget_min as number).toLocaleString()} – ${sym}${(request.budget_max as number).toLocaleString()}${freq}`;
+                  }
+                  if (request.budget_min) return `From ${sym}${(request.budget_min as number).toLocaleString()}${freq}`;
+                  return "TBD";
+                })(), 
+                icon: DollarSign 
+              },
             ].map((item) => (
               <div key={item.label} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 flex items-center"><item.icon className="w-3 h-3 mr-1" />{item.label}</p>
@@ -891,7 +903,7 @@ export default function AdminHireRequestDetail() {
                               <Badge className="bg-emerald-100 text-emerald-700 border-none text-[10px]">Already Added</Badge>
                             ) : (
                               <>
-                                <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-400" onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/admin/talents/${talent.profile_id || talent.id}`)); }}>
+                                <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-400" onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/admin/talents/${(talent as any).profile_id || talent.id}`)); }}>
                                   <Eye className="w-3 h-3 mr-1" /> Profile
                                 </Button>
                                 <UserPlus className="w-4 h-4 text-emerald-500" />

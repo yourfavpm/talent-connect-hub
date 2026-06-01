@@ -42,6 +42,8 @@ interface HireRequest {
   created_at: string;
   published_at: string | null;
   skills_required?: string[] | null;
+  preferred_currency?: string | null;
+  salary_type?: string | null;
 }
 
 const SERVICE_MODEL_LABELS: Record<string, string> = {
@@ -78,14 +80,21 @@ const timeAgo = (dateStr: string) => {
   return `${Math.floor(days / 30)}mo ago`;
 };
 
+const getCurrencySymbol = (code: string | null | undefined) => {
+  const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", NGN: "₦", KES: "KSh ", ZAR: "R " };
+  return symbols[code || "USD"] || "$";
+};
+
 const budgetLabel = (job: HireRequest) => {
+  const sym = getCurrencySymbol(job.preferred_currency);
+  const freq = job.salary_type === "monthly" ? "/mo" : (job.salary_type === "hourly" ? "/hr" : "");
   if (job.budget_type === "fixed" && job.fixed_budget) {
-    return `$${job.fixed_budget.toLocaleString()}`;
+    return `${sym}${job.fixed_budget.toLocaleString()}`;
   }
   if (job.budget_min && job.budget_max) {
-    return `$${job.budget_min.toLocaleString()} – $${job.budget_max.toLocaleString()}`;
+    return `${sym}${job.budget_min.toLocaleString()} – ${sym}${job.budget_max.toLocaleString()}${freq}`;
   }
-  if (job.budget_min) return `From $${job.budget_min.toLocaleString()}`;
+  if (job.budget_min) return `From ${sym}${job.budget_min.toLocaleString()}${freq}`;
   return null;
 };
 
@@ -147,50 +156,6 @@ export default function PublicJobs() {
         keywords="Opsly HR jobs, remote operations roles, vetted talent opportunities, operations jobs Africa"
       />
 
-      {/* ── Sticky Nav ───────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200/80 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <a href="https://opslyhr.com" className="flex items-center gap-3 group">
-                <img src="/images/logocolored.svg" alt="Opsly HR" className="h-9 w-auto" />
-              </a>
-              <div className="hidden sm:flex items-center gap-1.5 pl-4 border-l border-slate-200">
-                <Briefcase className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-sm font-semibold text-slate-700">Job Board</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {user ? (
-                <Button
-                  onClick={() => window.location.href = getZoneUrl(Zone.TALENT, "/dashboard")}
-                  className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-lg"
-                >
-                  My Dashboard
-                  <ChevronRight className="h-3.5 w-3.5 ml-1" />
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="ghost"
-                    onClick={() => window.location.href = getZoneUrl(Zone.AUTH, "/auth/login")}
-                    className="h-9 px-4 text-sm font-semibold text-slate-600 hover:text-slate-900 rounded-lg"
-                  >
-                    Sign In
-                  </Button>
-                  <Button
-                    onClick={() => window.location.href = getZoneUrl(Zone.AUTH, "/auth/signup/talent")}
-                    className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm"
-                  >
-                    Join as Talent
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <section className="bg-[#0f1f47] relative overflow-hidden">
         {/* Background decoration */}
@@ -202,7 +167,7 @@ export default function PublicJobs() {
             style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "32px 32px" }}
           />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+        <div className="relative w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 py-16 md:py-24">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm text-blue-200 font-semibold mb-6 backdrop-blur-sm">
               <Zap className="h-3.5 w-3.5 text-blue-300" />
@@ -251,7 +216,7 @@ export default function PublicJobs() {
       {/* ── Filter strip ─────────────────────────────────────────────────────── */}
       {showFilters && (
         <div className="bg-white border-b border-slate-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 py-4">
             <div className="flex flex-wrap gap-3 items-center">
               <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Filter by:</span>
 
@@ -297,7 +262,7 @@ export default function PublicJobs() {
       )}
 
       {/* ── Main Content ──────────────────────────────────────────────────────── */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 py-10">
         {/* Results header */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm text-slate-500 font-medium">
@@ -351,7 +316,7 @@ export default function PublicJobs() {
 
         {/* Job Cards Grid */}
         {!loading && filtered.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filtered.map((job) => {
               const budget = budgetLabel(job);
               const modelKey = job.service_model || "";
@@ -474,20 +439,6 @@ export default function PublicJobs() {
         )}
       </main>
 
-      {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-slate-200 bg-white mt-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <img src="/images/logocolored.svg" alt="Opsly HR" className="h-7 w-auto opacity-80" />
-            <span className="text-xs text-slate-400">© 2026 Opsly HR. All rights reserved.</span>
-          </div>
-          <div className="flex items-center gap-6">
-            <a href="https://opslyhr.com" className="text-xs text-slate-400 hover:text-slate-700 font-medium transition-colors">opslyhr.com</a>
-            <a href="https://opslyhr.com/for-professionals" className="text-xs text-slate-400 hover:text-slate-700 font-medium transition-colors">For Professionals</a>
-            <a href="https://opslyhr.com/for-companies" className="text-xs text-slate-400 hover:text-slate-700 font-medium transition-colors">For Companies</a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
