@@ -271,7 +271,7 @@ const Login = () => {
         <div className="relative z-10 p-8 lg:p-16 flex flex-col justify-between h-full">
           <div>
             <Link to="/" className="inline-block mb-16 lg:mb-24">
-              <Logo showText={false} imgHeight="h-16" variant="light" />
+              <Logo showText={false} imgHeight="h-8" variant="light" />
             </Link>
 
             <div className="max-w-md">
@@ -321,7 +321,7 @@ const Login = () => {
         {/* Mobile Header (Refined) */}
         <div className="lg:hidden flex flex-col items-center mb-10 text-center">
           <Link to="/" className="mb-6">
-            <Logo showText={false} imgHeight="h-12" />
+            <Logo showText={false} imgHeight="h-8" />
           </Link>
           <h1 className="text-2xl font-semibold text-slate-900 tracking-tight leading-tight mb-3">
             Welcome back.
