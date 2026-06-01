@@ -25,13 +25,13 @@ import {
   ExternalLink, FileText, CheckCircle, Timer,
   AlertCircle, ChevronRight, LayoutDashboard,
   Filter, UserCircle, Settings, HelpCircle,
-  XCircle, ClipboardList, Zap,
+  XCircle, ClipboardList, Zap, Share2, Copy
 } from "lucide-react";
 import { format } from "date-fns";
 import { useSearchParams } from "react-router-dom";
 import clsx from "clsx";
 import { FEATURES } from "@/config/features";
-import { getInternalPath } from "@/utils/subdomain";
+import { getInternalPath, getZoneUrl, Zone } from "@/utils/subdomain";
 
 
 interface Job {
@@ -160,6 +160,25 @@ const TalentJobs = () => {
 
   const setTab = (tab: string) => {
     setSearchParams({ tab });
+  };
+
+  const copyPublicJobLink = async (e: React.MouseEvent, jobId: string) => {
+    e.stopPropagation();
+    const url = getZoneUrl(Zone.MARKETING, `/jobs/${jobId}`);
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Link Copied! 🔗",
+        description: "Public job link copied to clipboard.",
+      });
+    } catch (err) {
+      console.error("Failed to copy link:", err);
+      toast({
+        title: "Copy Failed",
+        description: "Could not copy link to clipboard.",
+        variant: "destructive",
+      });
+    }
   };
 
 
@@ -693,6 +712,15 @@ const TalentJobs = () => {
                             </div>
                           </div>
                           <div className="flex items-center justify-between md:justify-end gap-2.5 shrink-0 border-t md:border-t-0 pt-3 md:pt-0">
+                            <button
+                              type="button"
+                              onClick={(e) => copyPublicJobLink(e, req.id as string)}
+                              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white border border-slate-200 text-slate-500 hover:text-slate-900 rounded-lg text-[11px] font-bold uppercase tracking-widest transition-all shadow-xs"
+                              title="Copy Public Job Link"
+                            >
+                              <Share2 className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">Share Link</span>
+                            </button>
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); navigate(getInternalPath(`/talent/jobs/${req.id}`)); }}

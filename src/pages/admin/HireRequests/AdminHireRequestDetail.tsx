@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getInternalPath } from "@/utils/subdomain";
+import { getInternalPath, getZoneUrl, Zone } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { sendInvitedToApplyEmail, sendTalentApplicationShortlistedEmail } from "@/lib/email/triggers";
@@ -21,7 +21,7 @@ import {
 import {
   ArrowLeft, CheckCircle2, Eye, FileText, Users, UserPlus, Search,
   Calendar, Clock, Globe, MapPin, DollarSign, Play,
-  Video, Award, Building2, AlertCircle
+  Video, Award, Building2, AlertCircle, Share2
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -87,6 +87,26 @@ export default function AdminHireRequestDetail() {
 
   const [request, setRequest] = useState<HireRequest | null>(null);
   const [clientProfile, setClientProfile] = useState<ProfileSnippet | null>(null);
+
+  const handleShare = async () => {
+    if (!id) return;
+    const url = getZoneUrl(Zone.MARKETING, `/jobs/${id}`);
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Link Copied! 🔗",
+        description: "Public job link copied to clipboard.",
+      });
+    } catch (err) {
+      console.error("Failed to copy link:", err);
+      toast({
+        title: "Copy Failed",
+        description: "Could not copy link to clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const [applications, setApplications] = useState<EnrichedRow[]>([]);
   const [shortlist, setShortlist] = useState<EnrichedRow[]>([]);
   const [interviews, setInterviews] = useState<EnrichedRow[]>([]);
@@ -546,6 +566,11 @@ export default function AdminHireRequestDetail() {
           {!isTalentManager && request.status === "approved" && (
             <Button onClick={handlePublish} disabled={!!actionLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm h-9 text-sm">
               <Play className="w-4 h-4 mr-1.5" /> Publish
+            </Button>
+          )}
+          {request.status === "published" && (
+            <Button variant="outline" onClick={handleShare} className="h-9 text-sm border-slate-200 gap-1.5">
+              <Share2 className="w-4 h-4" /> Share Public Link
             </Button>
           )}
           {!isTalentManager && request.status === "published" && (

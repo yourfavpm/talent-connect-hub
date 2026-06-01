@@ -39,6 +39,7 @@ const ProjectEngagement = lazy(() => import("./pages/ProjectEngagement"));
 const OffshoreHiring = lazy(() => import("./pages/OffshoreHiring"));
 const VettingProcess = lazy(() => import("./pages/VettingProcess"));
 const PublicJobs = lazy(() => import("./pages/PublicJobs"));
+const PublicJobDetail = lazy(() => import("./pages/PublicJobDetail"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Academy
@@ -324,6 +325,7 @@ const App = () => {
                   <Route path="/offshore-hiring" element={<OffshoreHiring />} />
                   <Route path="/vetting-process" element={<VettingProcess />} />
                   <Route path="/jobs" element={<PublicJobs />} />
+                  <Route path="/jobs/:id" element={<PublicJobDetail />} />
                   <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>

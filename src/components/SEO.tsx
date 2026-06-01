@@ -11,13 +11,13 @@ interface SEOProps {
 
 const SEO = ({
   title,
-  description = "Hire vetted African operations professionals and remote experts. OPSlyHR connects global teams with top-tier product and operations talent across EMEA.",
+  description = "Hire vetted African operations professionals and remote experts. Opsly HR connects global teams with top-tier product and operations talent across EMEA.",
   canonical = "https://opslyhr.com",
   ogImage = "https://opslyhr.com/og-image.png",
   ogType = "website",
   keywords = "African Operations Professionals, Remote Hiring, Vetted Talent, EMEA Operations, Product Management Africa, Remote Work EMEA"
 }: SEOProps) => {
-  const siteTitle = "OPSlyHR | Remote Operations Experts";
+  const siteTitle = "Opsly HR | Remote Operations Experts";
   const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
 
   return (
@@ -29,7 +29,7 @@ const SEO = ({
       <link rel="canonical" href={canonical} />
 
       {/* OpenGraph / Facebook */}
-      <meta property="og:site_name" content="OPSlyHR" />
+      <meta property="og:site_name" content="Opsly HR" />
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={canonical} />
       <meta property="og:title" content={fullTitle} />
@@ -44,8 +44,8 @@ const SEO = ({
       <meta name="twitter:image" content={ogImage} />
       
       {/* Additional SEO Best Practices */}
-      <meta name="application-name" content="OPSlyHR" />
-      <meta name="apple-mobile-web-app-title" content="OPSlyHR" />
+      <meta name="application-name" content="Opsly HR" />
+      <meta name="apple-mobile-web-app-title" content="Opsly HR" />
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       <meta name="robots" content="index, follow" />
       <meta name="googlebot" content="index, follow" />

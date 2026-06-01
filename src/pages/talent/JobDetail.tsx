@@ -23,7 +23,9 @@ import {
     Globe,
     Loader2,
     ExternalLink,
+    Share2,
 } from "lucide-react";
+import { getZoneUrl, Zone } from "@/utils/subdomain";
 import {
     Dialog,
     DialogContent,
@@ -51,6 +53,25 @@ const TalentJobDetail = () => {
     const queryClient = useQueryClient();
     const [applyDialogOpen, setApplyDialogOpen] = useState(false);
     const [coverLetter, setCoverLetter] = useState("");
+
+    const handleShare = async () => {
+        if (!id) return;
+        const url = getZoneUrl(Zone.MARKETING, `/jobs/${id}`);
+        try {
+            await navigator.clipboard.writeText(url);
+            toast({
+                title: "Link Copied! 🔗",
+                description: "Public job link copied to clipboard.",
+            });
+        } catch (err) {
+            console.error("Failed to copy link:", err);
+            toast({
+                title: "Copy Failed",
+                description: "Could not copy link to clipboard.",
+                variant: "destructive",
+            });
+        }
+    };
 
     const { data: job, isLoading: jobLoading } = useQuery({
         queryKey: ["talent_job_detail", id],
@@ -240,12 +261,23 @@ const TalentJobDetail = () => {
                             </div>
                         </div>
 
-                        {application && (
-                            <div className="flex items-center gap-2.5 px-4 py-2.5 bg-emerald-50 border border-emerald-100 rounded-xl shrink-0">
-                                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                                <span className="text-sm font-medium text-emerald-700">{getApplicationStatusLabel(application.status)}</span>
-                            </div>
-                        )}
+                        <div className="flex items-center gap-2.5 flex-wrap shrink-0">
+                            <Button
+                                variant="outline"
+                                onClick={handleShare}
+                                className="h-10 px-3.5 border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-all flex items-center gap-1.5"
+                            >
+                                <Share2 className="w-4 h-4" />
+                                <span className="text-xs font-semibold">Share Job Link</span>
+                            </Button>
+
+                            {application && (
+                                <div className="flex items-center gap-2.5 px-4 py-2.5 bg-emerald-50 border border-emerald-100 rounded-xl">
+                                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                    <span className="text-sm font-medium text-emerald-700">{getApplicationStatusLabel(application.status)}</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Meta pills */}

@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { getInternalPath } from "@/utils/subdomain";
+import { getInternalPath, getZoneUrl, Zone } from "@/utils/subdomain";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Briefcase, Calendar, Building2, ArrowRight } from "lucide-react";
+import { Search, Briefcase, Calendar, Building2, ArrowRight, Share2 } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface HireRequest {
   id: string;
@@ -30,6 +31,18 @@ export default function AdminHireRequestsList() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+
+  const copyPublicJobLink = async (e: React.MouseEvent, jobId: string) => {
+    e.stopPropagation();
+    const url = getZoneUrl(Zone.MARKETING, `/jobs/${jobId}`);
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Public job link copied to clipboard! 🔗");
+    } catch (err) {
+      console.error("Failed to copy link:", err);
+      toast.error("Could not copy link to clipboard.");
+    }
+  };
 
   useEffect(() => {
     fetchRequests();
@@ -210,7 +223,20 @@ export default function AdminHireRequestsList() {
                     <td className="px-5 py-4 text-center text-slate-600 font-medium">{req.shortlist_count}</td>
                     <td className="px-5 py-4 text-slate-500 text-xs">{format(new Date(req.created_at), "MMM d, yyyy")}</td>
                     <td className="px-5 py-4 text-right">
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 h-8"><ArrowRight className="h-4 w-4" /></Button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        {req.status === "published" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Copy Public Link"
+                            onClick={(e) => copyPublicJobLink(e, req.id)}
+                            className="text-slate-500 hover:text-slate-800 hover:bg-slate-100 h-8 w-8 p-0"
+                          >
+                            <Share2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 h-8 w-8 p-0"><ArrowRight className="h-4 w-4" /></Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -222,9 +248,21 @@ export default function AdminHireRequestsList() {
           <div className="md:hidden space-y-3">
             {filteredRequests.map((req) => (
               <div key={req.id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm active:scale-[0.98] transition-all" onClick={() => navigate(getInternalPath(`/admin/hire-requests/${req.id}`))}>
-                <div className="flex justify-between items-start mb-2">
+                <div className="flex justify-between items-start mb-2 gap-2">
                   <h3 className="font-semibold text-slate-900 text-sm leading-tight">{req.title}</h3>
-                  {getStatusBadge(req.status)}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {req.status === "published" && (
+                      <button
+                        type="button"
+                        onClick={(e) => copyPublicJobLink(e, req.id)}
+                        className="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 p-1.5 rounded-lg border border-slate-200"
+                        title="Copy Public Link"
+                      >
+                        <Share2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    {getStatusBadge(req.status)}
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 mb-3">
                   <span className="flex items-center"><Building2 className="w-3 h-3 mr-1" /> {req.client_name}</span>
