@@ -110,7 +110,7 @@ serve(async (req) => {
       social_facebook: 'https://www.facebook.com/share/1GNFHGMqB2/?mibextid=wwXIfr',
     };
 
-    let finalVariables = { ...BRAND_DEFAULTS, ...(variables || {}) }
+    let finalVariables: Record<string, any> = { ...BRAND_DEFAULTS, ...(variables || {}) }
 
     if (htmlTemplate && subject) {
       // ── New path: Use provided branded HTML template ────────────
@@ -191,7 +191,7 @@ serve(async (req) => {
       body: JSON.stringify(resendPayload),
     })
 
-    const resendData = await resendResponse.json()
+    const resendData = (await resendResponse.json()) as any
 
     if (!resendResponse.ok) {
       console.error('Resend API error:', resendData)

@@ -140,10 +140,10 @@ export const updateEmailStatus = async (
         }
 
 
-        await (supabase
+        await ((supabase as any)
             .from('email_logs')
-            .update(updates as any)
-            .eq('provider_message_id', messageId) as any);
+            .update(updates)
+            .eq('provider_message_id', messageId));
 
         console.log(`Email status updated: ${messageId} -> ${status}`);
     } catch (error) {

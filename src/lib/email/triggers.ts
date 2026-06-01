@@ -3,7 +3,114 @@
 
 import { queueEmail, requestVerificationEmail } from './emailService';
 import { supabase } from '@/integrations/supabase/client';
-import { getTalentJobPublishedTemplate } from './templateUtil';
+
+/**
+ * Build a branded HTML email for the "new job published" notification.
+ * Runs entirely in the browser — no filesystem access.
+ */
+function buildJobPublishedEmail(vars: {
+    firstName: string;
+    roleTitle: string;
+    budget: string;
+    employmentType: string;
+    location: string;
+    jobLink: string;
+}): string {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>New Opportunity: ${vars.roleTitle}</title>
+</head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f1f5f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"
+        style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+        <!-- Header -->
+        <tr>
+          <td style="background:#0f172a;padding:28px 40px;text-align:center;">
+            <img src="https://app.opslyhr.com/images/logoplain.png" alt="OPSlyHR" style="height:36px;" />
+          </td>
+        </tr>
+        <!-- Body -->
+        <tr>
+          <td style="padding:36px 40px 28px;">
+            <p style="margin:0 0 6px;font-size:13px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">New Opportunity</p>
+            <h1 style="margin:0 0 20px;font-size:22px;font-weight:700;color:#0f172a;line-height:1.35;">Hi ${vars.firstName}, a new role just went live!</h1>
+            <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.7;">A new hiring opportunity has just been posted on OPSlyHR and we think it might be a great fit for your skills and experience.</p>
+
+            <!-- Job card -->
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+              style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:24px;">
+              <tr><td style="padding:22px 26px;">
+                <h2 style="margin:0 0 18px;font-size:17px;font-weight:700;color:#0f172a;">${vars.roleTitle}</h2>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="padding:8px 0;border-bottom:1px solid #e2e8f0;">
+                      <span style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Budget</span>
+                      <span style="font-size:15px;font-weight:700;color:#0f172a;">${vars.budget}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0;border-bottom:1px solid #e2e8f0;">
+                      <span style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Employment Type</span>
+                      <span style="font-size:15px;font-weight:600;color:#334155;">${vars.employmentType}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0;">
+                      <span style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Location</span>
+                      <span style="font-size:15px;font-weight:600;color:#334155;">${vars.location}</span>
+                    </td>
+                  </tr>
+                </table>
+              </td></tr>
+            </table>
+
+            <!-- Notice -->
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+              style="background:#fef9c3;border:1px solid #fde68a;border-radius:10px;margin-bottom:28px;">
+              <tr><td style="padding:14px 18px;">
+                <p style="margin:0;font-size:13px;color:#78350f;line-height:1.6;">
+                  <strong>Important Notice:</strong> To maintain the quality of our talent network, all applicants must complete the OPSlyHR vetting process before they can be considered for client opportunities. If you have not yet completed your vetting, you will be prompted to do so when you apply.
+                </p>
+              </td></tr>
+            </table>
+
+            <!-- CTA -->
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="border-radius:10px;background:#0f172a;">
+                  <a href="${vars.jobLink}" style="display:inline-block;padding:13px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">Apply for this Role &rarr;</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td style="background:#f8fafc;padding:22px 40px;border-top:1px solid #e2e8f0;">
+            <p style="margin:0 0 10px;font-size:13px;color:#94a3b8;text-align:center;">Follow us</p>
+            <table role="presentation" align="center" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="padding:0 10px;"><a href="https://linkedin.com/company/opslyhr" style="font-size:13px;color:#475569;text-decoration:none;font-weight:600;">LinkedIn</a></td>
+                <td style="padding:0 10px;"><a href="https://twitter.com/opslyhr" style="font-size:13px;color:#475569;text-decoration:none;font-weight:600;">Twitter / X</a></td>
+                <td style="padding:0 10px;"><a href="https://instagram.com/opslyhr" style="font-size:13px;color:#475569;text-decoration:none;font-weight:600;">Instagram</a></td>
+              </tr>
+            </table>
+            <p style="margin:14px 0 0;font-size:12px;color:#cbd5e1;text-align:center;">
+              &copy; 2025 OPSlyHR &middot; <a href="mailto:hire@opslyhr.com" style="color:#94a3b8;">hire@opslyhr.com</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
 
 const AUTH_URL = import.meta.env.VITE_APP_URL || 'https://app.opslyhr.com';
 const TALENT_URL = 'https://talent.opslyhr.com';
@@ -362,7 +469,7 @@ export const triggerJobPublishedEmails = async (job: {
     try {
         console.log(`Triggering bulk job publication email notifications for job ID: ${job.id}`);
         // 1. Fetch all registered talents
-        const { data: talents, error } = await supabase
+        const { data: talents, error } = await (supabase as any)
             .from("talents")
             .select("first_name, email");
 
@@ -395,15 +502,15 @@ export const triggerJobPublishedEmails = async (job: {
         // 3. For each talent, generate and send branded email
         const emailPromises = talents.map((t) => {
             if (!t.email) return Promise.resolve();
-            
-            // Build the html template
-            const html = getTalentJobPublishedTemplate({
-                FIRST_NAME: t.first_name || "Talent",
-                ROLE_TITLE: job.title,
-                BUDGET: budget,
-                EMPLOYMENT_TYPE: employmentType,
-                LOCATION: location,
-                JOB_LINK: `${TALENT_URL}/jobs/${job.id}`,
+
+            // Build the HTML inline (no filesystem access required)
+            const html = buildJobPublishedEmail({
+                firstName: t.first_name || 'Talent',
+                roleTitle: job.title,
+                budget,
+                employmentType,
+                location,
+                jobLink: `${TALENT_URL}/jobs/${job.id}`,
             });
 
             return queueEmail({

@@ -14,21 +14,21 @@ serve(async (req) => {
     try {
         const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
         const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-        
+
         const supabaseClient = createClient(
             SUPABASE_URL,
             SUPABASE_ANON_KEY,
-            { 
-                global: { 
-                    headers: { 
+            {
+                global: {
+                    headers: {
                         Authorization: req.headers.get('Authorization')!,
                         apikey: SUPABASE_ANON_KEY
-                    } 
-                } 
+                    }
+                }
             }
         )
 
-        // Verify user is super_admin
+        // Verify caller is a super_admin
         const {
             data: { user },
             error: authError
@@ -37,10 +37,9 @@ serve(async (req) => {
         if (authError || !user) {
             console.error("Auth verification failed:", authError);
             return new Response(
-                JSON.stringify({ 
-                    error: 'Unauthorized: Invalid JWT', 
+                JSON.stringify({
+                    error: 'Unauthorized: Invalid JWT',
                     details: authError?.message || 'No user session found',
-                    debug: { hasUrl: !!SUPABASE_URL, hasKey: !!SUPABASE_ANON_KEY }
                 }),
                 { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
             )
@@ -52,37 +51,36 @@ serve(async (req) => {
             .eq('user_id', user.id)
             .single()
 
-        // Accept both new ('Super Admin') and legacy ('super_admin') role names
         const userHasRequiredRole = roles?.role === 'Super Admin' || roles?.role === 'super_admin';
 
         if (roleError || !roles || !userHasRequiredRole) {
             console.error("Role check failed for user:", user.id, "Role found:", roles?.role || 'none');
             return new Response(
-                JSON.stringify({ 
-                    error: 'Unauthorized: Super Admin access required', 
+                JSON.stringify({
+                    error: 'Unauthorized: Super Admin access required',
                     message: `Required: Super Admin. Found: ${roles?.role || 'None'}.`,
-                    details: roleError?.message 
+                    details: roleError?.message
                 }),
                 { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
             )
         }
 
-        // Now use Service Role to create user
+        // Use Service Role for privileged operations
         const supabaseAdmin = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        const { email, password, role, firstName, lastName } = await req.json()
+        const { email, password, role: targetRole, firstName, lastName, company_name } = await req.json()
 
-        if (!email || !password || !role) {
-            throw new Error('Missing required fields')
+        if (!email || !password || !targetRole) {
+            throw new Error('Missing required fields: email, password, role')
         }
 
+        // ── Step 1: Create or recover the auth user ──────────────────────────
         let targetUser = null;
-        let createdNew = false;
 
-        const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        const { data: newUserData, error: createError } = await supabaseAdmin.auth.admin.createUser({
             email,
             password,
             email_confirm: true,
@@ -90,57 +88,98 @@ serve(async (req) => {
         });
 
         if (createError) {
-            console.warn("Auth user creation failed or user already exists. Attempting recovery. Error:", createError.message);
-            // Try to lookup user by email
-            const { data: getByEmailData, error: getByEmailError } = await supabaseAdmin.auth.admin.getUserByEmail(email);
-            if (getByEmailError || !getByEmailData || !getByEmailData.user) {
-                // If lookup fails too, throw the original creation error
-                throw createError;
+            console.warn("Auth user creation failed, attempting to recover existing user. Error:", createError.message);
+            // User might already exist — look them up by email
+            const { data: existingUserData, error: lookupError } = await supabaseAdmin.auth.admin.getUserByEmail(email);
+            if (lookupError || !existingUserData?.user) {
+                throw createError; // Can't recover — re-throw original error
             }
-            targetUser = getByEmailData.user;
+            targetUser = existingUserData.user;
         } else {
-            targetUser = newUser?.user;
-            createdNew = true;
+            targetUser = newUserData?.user ?? null;
         }
 
-        if (!targetUser) {
-            throw new Error("Failed to resolve user ID during creation or recovery");
+        if (!targetUser?.id) {
+            throw new Error("Failed to resolve a valid user ID during creation or recovery");
         }
 
-        // Assign Role (upsert or insert on conflict do nothing)
+        // ── Step 2: Assign role ───────────────────────────────────────────────
         const { error: assignRoleError } = await supabaseAdmin
             .from('user_roles')
-            .upsert({ user_id: targetUser.id, role }, { onConflict: 'user_id,role' });
+            .upsert({ user_id: targetUser.id, role: targetRole }, { onConflict: 'user_id,role' });
 
         if (assignRoleError) {
             console.error("Assign role error:", assignRoleError);
             throw assignRoleError;
         }
 
-        // Create or repair Profile (idempotent upsert, removing the invalid 'role' field)
+        // ── Step 3: Ensure profile exists (upsert with Service Role) ──────────
         const { error: profileError } = await supabaseAdmin
             .from('profiles')
             .upsert({
                 user_id: targetUser.id,
                 first_name: firstName || 'Client',
                 last_name: lastName || 'Representative',
-                email: email
-            }, {
-                onConflict: 'user_id'
-            });
+                email: email,
+            }, { onConflict: 'user_id' });
 
         if (profileError) {
-            console.error("Profile creation/upsert error:", profileError);
+            // Profile creation failed. Log the full error and throw so the caller knows.
+            console.error("Profile upsert error:", profileError);
+            throw new Error(`Profile creation failed: ${profileError.message} (code: ${profileError.code})`);
         }
 
+        // ── Step 4: Optionally create client record ───────────────────────────
+        // Done here with Service Role so the FK constraint is satisfied immediately.
+        let clientRecord = null;
+
+        if (company_name && targetRole === 'client') {
+            // Check whether a client record already exists for this user
+            const { data: existingClient } = await supabaseAdmin
+                .from('clients')
+                .select('id, user_id, company_name')
+                .eq('user_id', targetUser.id)
+                .maybeSingle();
+
+            if (existingClient) {
+                console.log("Client record already exists for user, reusing:", existingClient.id);
+                clientRecord = existingClient;
+            } else {
+                const { data: insertedClient, error: clientInsertError } = await supabaseAdmin
+                    .from('clients')
+                    .insert({
+                        user_id: targetUser.id,
+                        client_id: `CLI-${Date.now()}`,
+                        company_name: company_name,
+                        primary_contact_name: `${firstName || ''} ${lastName || ''}`.trim() || company_name,
+                        primary_contact_email: email,
+                        status: 'approved',
+                    })
+                    .select('id, user_id, company_name')
+                    .single();
+
+                if (clientInsertError) {
+                    console.error("Client insert error:", clientInsertError);
+                    throw new Error(`Client record creation failed: ${clientInsertError.message}`);
+                }
+                clientRecord = insertedClient;
+            }
+        }
+
+        // ── Step 5: Return resolved user + optional client ────────────────────
         return new Response(
-            JSON.stringify({ user: newUser.user, message: 'User created successfully' }),
+            JSON.stringify({
+                user: targetUser,
+                client: clientRecord,
+                message: 'User configured successfully',
+            }),
             {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 status: 200,
             }
         )
     } catch (error) {
+        console.error("create-user edge function error:", error);
         return new Response(
             JSON.stringify({ error: error.message }),
             {
