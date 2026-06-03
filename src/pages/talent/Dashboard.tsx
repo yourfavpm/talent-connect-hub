@@ -60,8 +60,11 @@ interface DashboardStats {
   applications: number;
   activeAssignments: number;
   pendingTimesheets: number;
+  pendingTimesheets: number;
   activeShortlists: number;
   openTickets: number;
+  upcomingInterviews: number;
+  pendingInterviews: number;
 }
 
 
@@ -151,7 +154,7 @@ const TalentDashboard = () => {
         }
       }
 
-      const [v2AppsRes, v2ShortlistsRes, contractsRes, timesheetsRes, ticketsRes, openRequestsRes, profileRes, profileV2Res, sectionsRes] = await Promise.all([
+      const [v2AppsRes, v2ShortlistsRes, contractsRes, timesheetsRes, ticketsRes, openRequestsRes, profileRes, profileV2Res, sectionsRes, interviewsRes] = await Promise.all([
         supabase.from("hr_v2_applications").select("hire_request_id").eq("talent_user_id", user.id),
         supabase.from("hr_v2_shortlists").select("hire_request_id, status").eq("talent_user_id", user.id),
         (supabase.from("contracts" as any).select("*", { count: "exact", head: true }).eq("talent_id", (talentData as any).id).eq("status", "active") as any),
@@ -160,7 +163,8 @@ const TalentDashboard = () => {
         supabase.from("hr_v2_hire_requests").select("id, title, role_summary, created_at").eq("status", "published").order("created_at", { ascending: false }).limit(3),
         (supabase.from("profiles" as any).select("*").eq("user_id", user.id).maybeSingle() as any),
         (supabase.from("v2_talent_profiles" as any).select("*").eq("user_id", user.id).maybeSingle() as any),
-        (supabase.from("v2_profile_sections" as any).select("*").eq("user_id", user.id) as any)
+        (supabase.from("v2_profile_sections" as any).select("*").eq("user_id", user.id) as any),
+        supabase.from("hr_v2_interviews").select("id, status, scheduled_time").eq("talent_user_id", user.id)
       ]);
 
       const uniqueAppIds = new Set([
@@ -182,7 +186,16 @@ const TalentDashboard = () => {
           managerEmail = managerData.email || "";
         }
       }
- 
+
+      const allInterviews = interviewsRes?.data || [];
+      const upcomingInterviews = allInterviews.filter(i => 
+        (i.status === "scheduled" || i.status === "accepted") && 
+        i.scheduled_time && new Date(i.scheduled_time) >= new Date()
+      ).length;
+      const pendingInterviews = allInterviews.filter(i => 
+        i.status === "pending" || i.status === "reschedule_requested"
+      ).length;
+
       return {
         talent: talentData ? {
           ...(talentData as any),
@@ -199,6 +212,8 @@ const TalentDashboard = () => {
           pendingTimesheets: (timesheetsRes as any).count || 0,
           activeShortlists: activeShortlistCount || 0,
           openTickets: (ticketsRes as any).count || 0,
+          upcomingInterviews,
+          pendingInterviews,
         } as DashboardStats,
         opportunities: openRequestsRes.data || [],
         profile: profile,
@@ -212,7 +227,7 @@ const TalentDashboard = () => {
  
   const { talent, stats, opportunities, profile, baseProfile, sections } = (dashboardData as any) || {
     talent: null,
-    stats: { applications: 0, activeAssignments: 0, pendingTimesheets: 0, activeShortlists: 0, openTickets: 0 },
+    stats: { applications: 0, activeAssignments: 0, pendingTimesheets: 0, activeShortlists: 0, openTickets: 0, upcomingInterviews: 0, pendingInterviews: 0 },
     opportunities: [],
     profile: null,
     baseProfile: null,
@@ -411,17 +426,36 @@ const TalentDashboard = () => {
             <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-widest leading-none">Interviews</h3>
             <Link to={getInternalPath("/talent/interviews")} className="h-7 px-3 bg-white hover:bg-slate-900 border border-slate-200 hover:border-slate-900 rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-white transition-all">Schedule</Link>
           </div>
-          <div className="flex-1 flex flex-col justify-center">
-            <div className="px-6 py-12 text-center space-y-3">
-              <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300 border border-slate-100">
-                <Video className="h-6 w-6" />
+          <div className="flex-1 flex flex-col justify-center p-4">
+            {(stats.upcomingInterviews > 0 || stats.pendingInterviews > 0) ? (
+               <Link to={getInternalPath("/talent/interviews")} className="group block border border-slate-100 bg-slate-50/50 rounded-xl p-5 hover:bg-slate-50 hover:border-blue-200 transition-all cursor-pointer">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm border border-slate-100">
+                      <Video className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center justify-between">
+                         <span className="text-[13px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Upcoming Interviews</span>
+                         <span className="text-[13px] font-bold bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full">{stats.upcomingInterviews}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                         <span className="text-[13px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Pending Requests</span>
+                         <span className="text-[13px] font-bold bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full">{stats.pendingInterviews}</span>
+                      </div>
+                    </div>
+                  </div>
+               </Link>
+            ) : (
+              <div className="px-6 py-12 text-center space-y-3">
+                <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300 border border-slate-100">
+                  <Video className="h-6 w-6" />
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Ready for Calls</p>
+                  <p className="text-[12px] text-slate-500 font-medium">No screenings or technical rounds on the horizon.</p>
+                </div>
               </div>
-              <div className="space-y-0.5">
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Ready for Calls</p>
-                <p className="text-[12px] text-slate-500 font-medium">No screenings or technical rounds on the horizon.</p>
-              </div>
-            </div>
-
+            )}
           </div>
         </div>
       </div>
