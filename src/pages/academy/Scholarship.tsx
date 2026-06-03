@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { KoraService } from "@/lib/kora";
+import { PaystackService } from "@/lib/paystack";
 
 const SCHOLARSHIP_FEE_NAIRA = 5000;
 const SCHOLARSHIP_FEE_KOBO = SCHOLARSHIP_FEE_NAIRA * 100;
@@ -41,9 +41,7 @@ type FormData = {
   educationStatus: string;
   currentOccupation: string;
   program: string;
-  whyScholarship: string;
   careerGoal: string;
-  commitment: string;
 };
 
 const EMPTY_FORM: FormData = {
@@ -57,9 +55,7 @@ const EMPTY_FORM: FormData = {
   educationStatus: "",
   currentOccupation: "",
   program: "",
-  whyScholarship: "",
   careerGoal: "",
-  commitment: "",
 };
 
 const Scholarship = () => {
@@ -71,14 +67,7 @@ const Scholarship = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const koraPublicKey = import.meta.env.VITE_KORA_PUBLIC_KEY;
-    if (koraPublicKey) {
-      try {
-        new KoraService({ publicKey: koraPublicKey });
-      } catch (err) {
-        console.warn("Kora preload deferred:", err);
-      }
-    }
+    // Paystack handles its own loading
   }, []);
 
   useEffect(() => {
@@ -119,9 +108,7 @@ const Scholarship = () => {
     if (!form.universityName.trim()) nextErrors.universityName = "University name is required";
     if (!form.educationStatus) nextErrors.educationStatus = "Select your education status";
     if (!form.program) nextErrors.program = "Select a training track";
-    if (form.whyScholarship.trim().length < 40) nextErrors.whyScholarship = "Write at least 40 characters";
     if (form.careerGoal.trim().length < 30) nextErrors.careerGoal = "Write at least 30 characters";
-    if (form.commitment.trim().length < 20) nextErrors.commitment = "Write at least 20 characters";
 
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
@@ -140,10 +127,10 @@ const Scholarship = () => {
         education_status: form.educationStatus,
         current_occupation: form.currentOccupation.trim(),
         program_of_interest: form.program,
-        why_scholarship: form.whyScholarship.trim(),
+        why_scholarship: "N/A",
         career_goal: form.careerGoal.trim(),
-        commitment_statement: form.commitment.trim(),
-        payment_provider: "kora",
+        commitment_statement: "N/A",
+        payment_provider: "paystack",
         payment_status: "pending",
         application_status: "pending_payment",
       })
@@ -176,7 +163,7 @@ const Scholarship = () => {
       const { data, error } = await (supabase.from("scholarship_applications") as any)
         .update({
           payment_reference: reference,
-          payment_provider: "kora",
+          payment_provider: "paystack",
           payment_status: "success",
           application_status: "submitted",
           paid_at: new Date().toISOString(),
@@ -222,19 +209,26 @@ const Scholarship = () => {
 
     setProcessing(true);
     try {
-      const koraPublicKey = import.meta.env.VITE_KORA_PUBLIC_KEY;
-      if (!koraPublicKey) throw new Error("Kora public key is not configured.");
+      const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+      if (!paystackPublicKey) throw new Error("Paystack public key is not configured.");
 
       const applicationId = await createPendingApplication();
       const reference = `SCH-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
       localStorage.setItem("scholarship_pending", JSON.stringify({ applicationId, reference, form }));
 
-      const kora = new KoraService({ publicKey: koraPublicKey });
-      await kora.initializePayment({
+      const paystack = new PaystackService({ publicKey: paystackPublicKey });
+      await paystack.initializePayment({
         amount: SCHOLARSHIP_FEE_KOBO,
         email: form.email.trim().toLowerCase(),
         reference,
         metadata: {
+          custom_fields: [
+            {
+              display_name: "Application",
+              variable_name: "application",
+              value: "Scholarship"
+            }
+          ],
           course_id: "scholarship-application",
           cohort_id: applicationId,
           checkout_session_id: applicationId,
@@ -318,7 +312,7 @@ const Scholarship = () => {
           <div className="rounded-[24px] border border-slate-200 bg-white/80 p-5 text-sm text-slate-500">
             <p className="font-bold text-slate-900">What happens next?</p>
             <p className="mt-2 leading-6">
-              To ensure we only process dedicated candidates, a non-refundable commitment fee of ₦{SCHOLARSHIP_FEE_NAIRA.toLocaleString()} is required upon submission. Once paid, our admissions team will verify your details and review your application.
+              To ensure we only process dedicated candidates, a non-refundable commitment fee of ₦{SCHOLARSHIP_FEE_NAIRA.toLocaleString()} is required upon submission. Once paid, the admission team will review the application and send admission and class schedule.
             </p>
           </div>
         </aside>
@@ -378,9 +372,7 @@ const Scholarship = () => {
           </FormSection>
 
           <FormSection title="Application Notes" icon={FileText}>
-            <TextField label="Why do you want this scholarship?" error={errors.whyScholarship} value={form.whyScholarship} onChange={(v) => update("whyScholarship", v)} />
             <TextField label="What career outcome are you working toward?" error={errors.careerGoal} value={form.careerGoal} onChange={(v) => update("careerGoal", v)} />
-            <TextField label="How will you commit to the training?" error={errors.commitment} value={form.commitment} onChange={(v) => update("commitment", v)} />
           </FormSection>
 
           <button
@@ -427,7 +419,7 @@ const FormSection = ({ title, icon: Icon, children }: { title: string; icon: any
 );
 
 const Field = ({ label, error, icon: Icon, children }: { label: string; error?: string; icon?: any; children: ReactNode }) => (
-  <label className="block rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+  <label className="block rounded-2xl border-2 border-slate-200 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 bg-white p-4 transition-all">
     <span className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
       {Icon && <Icon className="h-3.5 w-3.5 text-blue-500" />}
       {label}
@@ -438,7 +430,7 @@ const Field = ({ label, error, icon: Icon, children }: { label: string; error?: 
 );
 
 const TextField = ({ label, error, value, onChange }: { label: string; error?: string; value: string; onChange: (value: string) => void }) => (
-  <label className="block rounded-2xl border border-slate-100 bg-slate-50/70 p-4 md:col-span-2">
+  <label className="block rounded-2xl border-2 border-slate-200 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 bg-white p-4 md:col-span-2 transition-all">
     <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{label}</span>
     <textarea
       value={value}

@@ -73,7 +73,7 @@ const Checkout = () => {
     const [receiptUploading, setReceiptUploading] = useState(false);
     const [copiedField, setCopiedField] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>('kora');
+    const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>('paystack');
     const [showBankTransfer, setShowBankTransfer] = useState(false);
     
     // Proactively preload Kora Script on mount
