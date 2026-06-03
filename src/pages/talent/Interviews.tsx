@@ -4,13 +4,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Calendar, Clock, Video, Building2,
-  CalendarCheck, CalendarClock, AlertCircle,
-  ChevronRight, MessageSquare, ArrowRight,
-  ChevronLeft, Info
-} from "lucide-react";
+import { Video, Calendar, Clock, MapPin, X, FileText, CheckCircle2, ChevronRight, Ban, RefreshCw, CalendarCheck, CalendarClock, AlertCircle, MessageSquare, ArrowRight, ChevronLeft, Info, Building2 } from "lucide-react";
 import { format } from "date-fns";
+import { sendAdminInterviewActionEmail } from "@/lib/email/triggers";
 import clsx from "clsx";
 import { Link, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -107,7 +103,22 @@ const TalentInterviews = () => {
       if (error) throw error;
 
       toast({ title: "Interview Accepted", description: "The interview has been scheduled." });
-      if (selectedInterview) setSelectedInterview({ ...selectedInterview, status: "accepted" });
+      
+      const updatedInterview = { ...selectedInterview, status: "accepted" } as V2Interview;
+      if (selectedInterview) setSelectedInterview(updatedInterview);
+
+      // Notify Admin
+      const interviewToUse = selectedInterview || interviews.find(i => i.id === interviewId);
+      if (interviewToUse) {
+        sendAdminInterviewActionEmail({
+          adminEmail: "info@opslyhr.com",
+          talentName: `${user?.user_metadata?.first_name || "Talent"} ${user?.user_metadata?.last_name || ""}`,
+          action: "accepted",
+          jobTitle: interviewToUse.hr_v2_hire_requests?.title || "Role",
+          hireRequestId: interviewToUse.hire_request_id,
+        }).catch(err => console.error("Failed to send admin email:", err));
+      }
+
       fetchInterviews();
     } catch (error) {
       const message = error instanceof Error ? error.message : "An unknown error occurred";
@@ -129,8 +140,23 @@ const TalentInterviews = () => {
       if (error) throw error;
 
       toast({ title: "Interview Declined", description: "The request has been declined." });
-      if (selectedInterview) setSelectedInterview({ ...selectedInterview, status: "declined" });
+      
+      const updatedInterview = { ...selectedInterview, status: "declined" } as V2Interview;
+      if (selectedInterview) setSelectedInterview(updatedInterview);
       setIsDrawerOpen(false);
+
+      // Notify Admin
+      const interviewToUse = selectedInterview || interviews.find(i => i.id === interviewId);
+      if (interviewToUse) {
+        sendAdminInterviewActionEmail({
+          adminEmail: "info@opslyhr.com",
+          talentName: `${user?.user_metadata?.first_name || "Talent"} ${user?.user_metadata?.last_name || ""}`,
+          action: "declined",
+          jobTitle: interviewToUse.hr_v2_hire_requests?.title || "Role",
+          hireRequestId: interviewToUse.hire_request_id,
+        }).catch(err => console.error("Failed to send admin email:", err));
+      }
+
       fetchInterviews();
     } catch (error) {
       const message = error instanceof Error ? error.message : "An unknown error occurred";
@@ -160,9 +186,24 @@ const TalentInterviews = () => {
 
       toast({ title: "Reschedule Requested", description: "Your request has been sent to the client." });
       setIsRescheduleOpen(false);
+      
+      const updatedInterview = { ...selectedInterview, status: "reschedule_requested" } as V2Interview;
+      if (selectedInterview) setSelectedInterview(updatedInterview);
+
+      // Notify Admin
+      if (selectedInterview) {
+        sendAdminInterviewActionEmail({
+          adminEmail: "info@opslyhr.com",
+          talentName: `${user?.user_metadata?.first_name || "Talent"} ${user?.user_metadata?.last_name || ""}`,
+          action: "requested a reschedule for",
+          jobTitle: selectedInterview.hr_v2_hire_requests?.title || "Role",
+          hireRequestId: selectedInterview.hire_request_id,
+          details: `Reason: ${rescheduleReason}\nProposed Time: ${rescheduleTime}`
+        }).catch(err => console.error("Failed to send admin email:", err));
+      }
+
       setRescheduleReason("");
       setRescheduleTime("");
-      if (selectedInterview) setSelectedInterview({ ...selectedInterview, status: "reschedule_requested" });
       fetchInterviews();
     } catch (error) {
       const message = error instanceof Error ? error.message : "An unknown error occurred";

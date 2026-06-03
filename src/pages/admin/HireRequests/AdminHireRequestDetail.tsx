@@ -130,7 +130,8 @@ export default function AdminHireRequestDetail() {
 
   // Schedule dialog
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
-  const [scheduleTarget, setScheduleTarget] = useState<any>(null);
+  const [scheduleTarget, setScheduleTarget] = useState<any | null>(null);
+  const [rescheduleInterviewId, setRescheduleInterviewId] = useState<string | null>(null);
   const [calendlyLink, setCalendlyLink] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
   const [meetingNotes, setMeetingNotes] = useState("");
@@ -557,33 +558,60 @@ export default function AdminHireRequestDetail() {
   };
 
   const handleScheduleInterview = async () => {
-    if (!scheduleTarget || !calendlyLink || !scheduledTime) return;
+    if (!calendlyLink || !scheduledTime) return;
+    if (!scheduleTarget && !rescheduleInterviewId) return;
+
     setActionLoading("schedule");
     try {
-      await callRpc("hr_v2_admin_schedule_interview", {
-        req_id: id,
-        t_user_id: scheduleTarget.talent_user_id,
-        c_user_id: request?.client_user_id,
-        c_link: calendlyLink,
-        s_time: new Date(scheduledTime).toISOString(),
-        m_notes: meetingNotes,
-      }, "Interview scheduled");
+      if (rescheduleInterviewId) {
+        const { error: invokeErr } = await supabase.functions.invoke("admin-reschedule-interview", {
+          body: {
+            interview_id: rescheduleInterviewId,
+            c_link: calendlyLink,
+            s_time: new Date(scheduledTime).toISOString(),
+            m_notes: meetingNotes,
+          }
+        });
+        if (invokeErr) throw invokeErr;
+        toast({ title: "Interview rescheduled" });
+        fetchData();
 
-      // We can also trigger the email:
-      await sendTalentInterviewInvitationEmail({
-        talentUserId: scheduleTarget.talent_user_id,
-        hireRequestId: id as string,
-        interviewId: "new-id", // currently unused in email
-        meetingLink: calendlyLink,
-        scheduledTime: new Date(scheduledTime).toISOString(),
-        notes: meetingNotes,
-      });
+        if (scheduleTarget) {
+            await sendTalentInterviewInvitationEmail({
+              talentUserId: scheduleTarget.talent_user_id,
+              hireRequestId: id as string,
+              interviewId: rescheduleInterviewId,
+              meetingLink: calendlyLink,
+              scheduledTime: new Date(scheduledTime).toISOString(),
+              notes: meetingNotes,
+            });
+        }
+      } else {
+        await callRpc("hr_v2_admin_schedule_interview", {
+          req_id: id,
+          t_user_id: scheduleTarget.talent_user_id,
+          c_user_id: request?.client_user_id,
+          c_link: calendlyLink,
+          s_time: new Date(scheduledTime).toISOString(),
+          m_notes: meetingNotes,
+        }, "Interview scheduled");
+
+        await sendTalentInterviewInvitationEmail({
+          talentUserId: scheduleTarget.talent_user_id,
+          hireRequestId: id as string,
+          interviewId: "new-id",
+          meetingLink: calendlyLink,
+          scheduledTime: new Date(scheduledTime).toISOString(),
+          notes: meetingNotes,
+        });
+      }
 
       setShowScheduleDialog(false);
       setCalendlyLink("");
       setScheduledTime("");
       setMeetingNotes("");
       setScheduleTarget(null);
+      setRescheduleInterviewId(null);
     } catch (err: any) {
       toast({ title: "Failed to schedule", description: err.message, variant: "destructive" });
     } finally {
@@ -916,29 +944,46 @@ export default function AdminHireRequestDetail() {
           ) : (
             <div className="space-y-3">
               {interviews.map((intv) => (
-                <div key={intv.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-700 shrink-0 border border-blue-200">
-                      <Video className="w-4 h-4" />
+                <div key={intv.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-700 shrink-0 border border-blue-200">
+                        <Video className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-900 text-sm">{intv.profiles?.first_name} {intv.profiles?.last_name}</h4>
+                        <p className="text-xs text-slate-500">{(intv as Record<string, unknown>).scheduled_time ? format(new Date((intv as Record<string, unknown>).scheduled_time as string), "MMM d, yyyy 'at' h:mm a") : "Time TBD"}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-slate-900 text-sm">{intv.profiles?.first_name} {intv.profiles?.last_name}</h4>
-                      <p className="text-xs text-slate-500">{(intv as Record<string, unknown>).scheduled_time ? format(new Date((intv as Record<string, unknown>).scheduled_time as string), "MMM d, yyyy 'at' h:mm a") : "Time TBD"}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className="text-xs capitalize">{intv.status}</Badge>
+                      {(intv as Record<string, unknown>).calendly_link && (
+                        <Button variant="outline" size="sm" className="h-8 text-xs" asChild>
+                          <a href={(intv as Record<string, unknown>).calendly_link as string} target="_blank" rel="noopener noreferrer">Open Meeting Link</a>
+                        </Button>
+                      )}
+                      {["scheduled", "accepted", "pending"].includes(intv.status as string) && (
+                        <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => callRpc("hr_v2_admin_mark_interview_complete", { interview_id: intv.id, notes: "" }, "Interview marked complete")}>
+                          <CheckCircle2 className="w-3 h-3 mr-1" /> Mark Complete
+                        </Button>
+                      )}
+                      {intv.status === "reschedule_requested" && (
+                        <Button size="sm" className="h-8 text-xs bg-amber-500 hover:bg-amber-600 text-white" onClick={() => {
+                          setRescheduleInterviewId(intv.id as string);
+                          setScheduleTarget({ talent_user_id: intv.talent_user_id, first_name: intv.profiles?.first_name, last_name: intv.profiles?.last_name } as any);
+                          setShowScheduleDialog(true);
+                        }}>
+                          Set New Time
+                        </Button>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="text-xs capitalize">{intv.status}</Badge>
-                    {(intv as Record<string, unknown>).calendly_link && (
-                      <Button variant="outline" size="sm" className="h-8 text-xs" asChild>
-                        <a href={(intv as Record<string, unknown>).calendly_link as string} target="_blank" rel="noopener noreferrer">Open Meeting Link</a>
-                      </Button>
-                    )}
-                    {["scheduled", "accepted", "pending"].includes(intv.status as string) && (
-                      <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => callRpc("hr_v2_admin_mark_interview_complete", { interview_id: intv.id, notes: "" }, "Interview marked complete")}>
-                        <CheckCircle2 className="w-3 h-3 mr-1" /> Mark Complete
-                      </Button>
-                    )}
-                  </div>
+                  {intv.status === "reschedule_requested" && (intv as any).meeting_notes && (
+                    <div className="w-full p-3 bg-amber-50 border border-amber-100 rounded-lg">
+                      <p className="text-xs text-amber-800 font-semibold mb-1">Reschedule Details provided by talent:</p>
+                      <p className="text-xs text-amber-700 whitespace-pre-wrap">{(intv as any).meeting_notes}</p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -1089,7 +1134,7 @@ export default function AdminHireRequestDetail() {
           <DialogHeader><DialogTitle>Schedule Interview</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-slate-500">
-              Scheduling interview for <strong>{scheduleTarget?.profiles?.first_name} {scheduleTarget?.profiles?.last_name}</strong>.
+              Scheduling interview for <strong>{scheduleTarget?.profiles?.first_name || scheduleTarget?.first_name} {scheduleTarget?.profiles?.last_name || scheduleTarget?.last_name}</strong>.
             </p>
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">Meeting Link (Google Meet, Zoom, etc.)</label>

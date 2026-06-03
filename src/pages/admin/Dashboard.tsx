@@ -181,7 +181,7 @@ const AdminDashboard = () => {
         supabase.from("support_tickets").select("*").order("created_at", { ascending: false }).limit(5),
         supabase.from("v2_talent_profiles").select("id", { count: "exact", head: true }).eq("talent_manager_admin_id", user.id),
         // New queries
-        supabase.from("v2_talent_profiles").select("id", { count: "exact", head: true }).eq("status", "approved"),
+        supabase.from("v2_talent_profiles").select("id", { count: "exact", head: true }).eq("status", "vetted"),
         supabase.from("v2_talent_profiles").select("id", { count: "exact", head: true }),
         supabase.from("jobs").select("id", { count: "exact", head: true }).in("status", ["submitted", "under_review", "published"]),
         supabase.from("clients").select("id", { count: "exact", head: true }),
@@ -212,7 +212,7 @@ const AdminDashboard = () => {
         { name: "Draft", value: statusCounts["draft"] || 0, fill: "#94a3b8" },
         { name: "Submitted", value: statusCounts["submitted"] || 0, fill: "#60a5fa" },
         { name: "In Review", value: statusCounts["in_review"] || 0, fill: "#f59e0b" },
-        { name: "Approved", value: statusCounts["approved"] || 0, fill: "#10b981" },
+        { name: "Vetted", value: statusCounts["vetted"] || 0, fill: "#10b981" },
         { name: "Rejected", value: statusCounts["rejected"] || 0, fill: "#f43f5e" },
         { name: "Changes", value: statusCounts["changes_requested"] || 0, fill: "#a78bfa" },
       ].filter(d => d.value > 0);
