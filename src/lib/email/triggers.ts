@@ -865,6 +865,35 @@ export const sendAdminContractFullySignedEmail = async (contract: {
         },
     });
 };
+
+/**
+ * Send interview action notification to admin
+ */
+export const sendAdminInterviewActionEmail = async (data: {
+    adminEmail: string;
+    talentName: string;
+    action: string;
+    jobTitle: string;
+    details?: string;
+    hireRequestId: string;
+}) => {
+    const htmlTemplate = `
+      <div style="font-family: sans-serif; color: #333;">
+        <h2 style="color: #0f172a;">Interview Update</h2>
+        <p><strong>Talent:</strong> ${data.talentName}</p>
+        <p><strong>Role:</strong> ${data.jobTitle}</p>
+        <p><strong>Status:</strong> The talent has <strong>${data.action}</strong> the interview.</p>
+        ${data.details ? `<div style="margin: 20px 0; padding: 15px; background-color: #f8fafc; border-left: 4px solid #f59e0b; border-radius: 4px;"><p style="margin:0; font-size: 14px; color: #475569;"><strong>Details provided by talent:</strong><br/>${data.details.replace(/\n/g, '<br/>')}</p></div>` : ''}
+        <p><a href="${ADMIN_URL}/hire-requests/${data.hireRequestId}" style="display:inline-block;padding:10px 20px;background-color:#2563eb;color:white;text-decoration:none;border-radius:5px;margin-top:20px;font-weight:600;">View in Admin Dashboard</a></p>
+      </div>
+    `;
+
+    await queueEmail({
+        to: data.adminEmail,
+        subject: `Interview Update: ${data.talentName} ${data.action}`,
+        htmlTemplate,
+    });
+};
 /**
  * Send talent offer email
  */
