@@ -43,7 +43,7 @@ const Pricing = () => {
         <div className="bg-white min-h-screen text-slate-900 font-inter selection:bg-slate-900 selection:text-white pb-0">
             <SEO 
                 title="Structured Pricing & Engagement Models"
-                description="OPSly HR offers four structured workforce models to help growing businesses hire, test, and manage operational talent."
+                description="OpslyHR offers four structured workforce models to help growing businesses hire, test, and manage operational talent."
                 keywords="Workforce Solutions Pricing, Operational Capacity Costs, Managed Teams Fees, Operations Hiring, Hire Operational Experts Cost"
             />
 
@@ -60,17 +60,17 @@ const Pricing = () => {
                             <span className="text-blue-600">Your Way.</span>
                         </h1>
                         <p className="text-lg md:text-xl text-slate-600 font-medium leading-relaxed max-w-3xl mx-auto mb-6">
-                            OPSly HR helps growing businesses hire, test, and manage operational talent through structured workforce solutions.
+                            OpslyHR helps growing businesses hire, test, and manage operational talent through structured workforce solutions.
                         </p>
                         <p className="text-base text-slate-500 max-w-2xl mx-auto mb-12">
-                            Whether you need a single hire, a tested trial period, a fully managed team, or offshore operational capacity — OPSly gives you flexible ways to build reliable execution.
+                            Whether you need a single hire, a tested trial period, a fully managed team, or offshore operational capacity — Opsly gives you flexible ways to build reliable execution.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Link to="/book-consultation" className="px-8 py-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all w-full sm:w-auto text-center">
                                 Build Your Team
                             </Link>
                             <Link to="/book-consultation" className="px-8 py-4 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:border-slate-900 hover:text-slate-900 transition-all w-full sm:w-auto text-center hover:bg-slate-50">
-                                Speak to OPSly
+                                Speak to Opsly
                             </Link>
                         </div>
                     </motion.div>
@@ -86,8 +86,8 @@ const Pricing = () => {
                     <div className="space-y-6 text-lg text-slate-600 font-medium max-w-2xl mx-auto">
                         <p>Not because talent is unavailable.</p>
                         <p>But because execution becomes inconsistent, hiring becomes risky, and teams become difficult to manage.</p>
-                        <p className="text-blue-600 font-bold">OPSly HR solves this by giving businesses structured ways to build operational capacity, depending on their stage, risk tolerance, and scale.</p>
-                        <p className="pt-8 text-2xl font-bold text-slate-900">You don’t just hire through OPSly.<br className="md:hidden" /> You choose how you want to build.</p>
+                        <p className="text-blue-600 font-bold">OpslyHR solves this by giving businesses structured ways to build operational capacity, depending on their stage, risk tolerance, and scale.</p>
+                        <p className="pt-8 text-2xl font-bold text-slate-900">You don’t just hire through Opsly.<br className="md:hidden" /> You choose how you want to build.</p>
                     </div>
                 </div>
             </section>
@@ -98,7 +98,7 @@ const Pricing = () => {
                     <div className="text-center mb-20">
                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">How It Works</div>
                         <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">Four Structured Workforce Models</h2>
-                        <p className="text-lg text-slate-600 font-medium">OPSly HR offers four structured workforce models:</p>
+                        <p className="text-lg text-slate-600 font-medium">OpslyHR offers four structured workforce models:</p>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8">
@@ -171,7 +171,7 @@ const Pricing = () => {
                             <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-bl-2xl rounded-tr-[14px]">Core Opsly Model</div>
                             <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">3. Managed Team</div>
                             <h3 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight">Build and run operational teams without internal hiring burden</h3>
-                            <p className="text-slate-600 mb-8 leading-relaxed">This is OPSly’s core offering. We don’t just help you hire. We build and manage your operational workforce.</p>
+                            <p className="text-slate-600 mb-8 leading-relaxed">This is Opsly’s core offering. We don’t just help you hire. We build and manage your operational workforce.</p>
                             
                             <h4 className="font-bold text-slate-900 mb-4">We handle:</h4>
                             <ul className="space-y-3 mb-8">
@@ -204,7 +204,7 @@ const Pricing = () => {
                         <div className="p-8 md:p-10 border border-slate-200 rounded-2xl hover:shadow-lg transition-all flex flex-col bg-white group md:col-span-2 lg:col-span-1">
                             <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">4. Offshore Hiring</div>
                             <h3 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight group-hover:text-blue-600 transition-colors">Build cost-efficient operational teams across global talent markets</h3>
-                            <p className="text-slate-600 mb-8 leading-relaxed">OPSly enables companies to hire operational talent from offshore markets while maintaining structure, oversight, and reliability.</p>
+                            <p className="text-slate-600 mb-8 leading-relaxed">Opsly enables companies to hire operational talent from offshore markets while maintaining structure, oversight, and reliability.</p>
                             
                             <h4 className="font-bold text-slate-900 mb-4">We manage:</h4>
                             <ul className="space-y-3 mb-8">
@@ -248,7 +248,7 @@ const Pricing = () => {
                         {[
                             { title: "Direct Hire", desc: "You want fast permanent hires" },
                             { title: "Trial-to-Hire", desc: "You want reduced hiring risk" },
-                            { title: "Managed Team", desc: "You want OPSly to run execution with you" },
+                            { title: "Managed Team", desc: "You want Opsly to run execution with you" },
                             { title: "Offshore Hiring", desc: "You want scalable global talent access" }
                         ].map((model, i) => (
                             <div key={i} className="flex items-center p-6 border border-slate-200 rounded-xl bg-white shadow-sm hover:border-blue-600 hover:shadow-md transition-all group">
@@ -268,10 +268,10 @@ const Pricing = () => {
             {/* 5. WHAT MAKES OPSLY DIFFERENT */}
             <section className="py-24 px-6 bg-[#0B0F19] text-white">
                 <div className="container max-w-[1000px] mx-auto text-center">
-                    <h2 className="text-3xl md:text-5xl font-semibold mb-8 tracking-tight">What Makes OPSly Different</h2>
+                    <h2 className="text-3xl md:text-5xl font-semibold mb-8 tracking-tight">What Makes Opsly Different</h2>
                     <p className="text-xl text-slate-400 font-medium mb-16 leading-relaxed">
                         Most hiring platforms stop at placement. <br className="hidden md:block" />
-                        <span className="text-white">OPSly continues through execution.</span>
+                        <span className="text-white">Opsly continues through execution.</span>
                     </p>
 
                     <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-12 text-left grid md:grid-cols-2 gap-10 mb-16">
@@ -392,7 +392,7 @@ const Pricing = () => {
             <section className="py-32 px-6 bg-white text-center border-t border-slate-100">
                 <div className="container max-w-4xl mx-auto">
                     <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-slate-900 mb-8 tracking-tight">
-                        OPSly HR is built for businesses that are <br className="hidden md:block" /> serious about execution.
+                        OpslyHR is built for businesses that are <br className="hidden md:block" /> serious about execution.
                     </h2>
                     <p className="text-xl text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto mb-10">
                         Whether you are hiring one person or building an entire operational function — we give you structured ways to scale.
@@ -413,7 +413,7 @@ const Pricing = () => {
                                 Build Your Team
                             </Link>
                             <Link to="/book-consultation" className="px-8 py-4 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:border-slate-900 hover:text-slate-900 transition-all w-full sm:w-auto text-center hover:bg-white">
-                                Speak to OPSly
+                                Speak to Opsly
                             </Link>
                         </div>
                     </div>
