@@ -175,14 +175,15 @@ const Index = () => {
 
       {/* 2. ENTERPRISE HERO SECTION (REDESIGNED) */}
       <section className="relative pt-44 pb-16 md:pt-52 md:pb-32 overflow-hidden bg-slate-950 font-inter">
-        {/* Abstract Network Background */}
+        {/* World Map Background */}
         <div 
-          className="absolute inset-0 w-full h-full opacity-40 pointer-events-none mix-blend-screen"
+          className="absolute inset-0 w-full h-full opacity-[0.15] pointer-events-none mix-blend-screen"
           style={{
-            backgroundImage: 'url("/images/abstract_network.png")',
+            backgroundImage: 'url("https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
+            filter: 'invert(1) grayscale(100%) contrast(2)',
             WebkitMaskImage: 'radial-gradient(circle at 70% 50%, black 20%, transparent 80%)',
             maskImage: 'radial-gradient(circle at 70% 50%, black 20%, transparent 80%)'
           }}
