@@ -97,7 +97,7 @@ export const TalentProfileDrawer = ({ talentId, userId, isOpen, onClose }: Talen
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-[400px] sm:w-[540px] md:w-[600px] border-l-gray-200 p-0 overflow-y-auto bg-[#f8f9fc]">
+      <SheetContent className="w-[90vw] sm:w-[80vw] md:w-[70vw] lg:w-[60vw] xl:max-w-[1000px] border-l-gray-200 p-0 overflow-y-auto bg-[#f8f9fc] sm:max-w-none">
         {loading ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh]">
             <Loader2 className="h-8 w-8 animate-spin text-gray-400 mb-4" />
