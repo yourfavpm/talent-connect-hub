@@ -40,11 +40,13 @@ const TalentOnboardingRedirect = () => {
           // Onboarding complete → go to dashboard
           navigate("/dashboard");
         } else if (status.requiresChanges) {
-          // Vetting team requested changes → go back to onboarding
-          navigate("/onboarding");
+          // Vetting team requested changes → go back to onboarding at current step
+          const step = status.currentStep || 1;
+          navigate(`/onboarding?step=${step}`);
         } else {
-          // Onboarding not started or incomplete → go to onboarding
-          navigate("/onboarding");
+          // Onboarding not started or incomplete → resume from last saved step
+          const step = status.currentStep || 1;
+          navigate(`/onboarding?step=${step}`);
         }
       } catch (err) {
         console.error("Error checking onboarding status:", err);

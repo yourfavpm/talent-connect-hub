@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { getZoneUrl } from "@/utils/subdomain";
 import { Loader2 } from "lucide-react";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { supabase } from "@/integrations/supabase/client";
 
 // Layouts and Core Components
 import WebsiteLayout from "./components/website/WebsiteLayout";
@@ -267,6 +268,14 @@ const ZoneGuard = ({
     }
   }
 
+  // 4. Email verification gate: sign out and redirect unverified users for all protected portal zones
+  if (isProtected && user && !(user as any).email_confirmed_at) {
+    supabase.auth.signOut();
+    const checkEmailUrl = getZoneUrl(Zone.AUTH, "/auth/check-email");
+    window.location.href = checkEmailUrl;
+    return null;
+  }
+
   return <>{children}</>;
 };
 
@@ -426,10 +435,10 @@ const App = () => {
                     {zone === Zone.TALENT && (
                       <>
                         <Route index element={<Navigate to="/dashboard" replace />} />
-                        {/* Onboarding redirect route (used after email verification during signup) */}
+                        {/* Standalone routes — no TalentLayout sidebar/topbar */}
                         <Route path="onboarding-redirect" element={<OnboardingRedirect />} />
+                        <Route path="onboarding" element={<OnboardingRouter />} />
                         <Route element={<TalentLayout />}>
-                          <Route path="onboarding" element={<OnboardingRouter />} />
                           <Route path="dashboard" element={<TalentDashboard />} />
                           <Route path="profile" element={<ProfileRouter />} />
                           <Route path="jobs" element={<TalentJobs />} />

@@ -92,7 +92,34 @@ const Login = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle unverified email with a friendly redirect instead of a generic error
+        if (
+          error.message?.toLowerCase().includes("email not confirmed") ||
+          error.message?.toLowerCase().includes("email not verified")
+        ) {
+          toast({
+            title: "Verify your email first",
+            description: "Please check your inbox and click the verification link before signing in.",
+          });
+          navigate("/auth/check-email");
+          setLoading(false);
+          return;
+        }
+        throw error;
+      }
+
+      // Secondary guard: sign out and redirect if email is not confirmed
+      if (data.user && !data.user.email_confirmed_at) {
+        await supabase.auth.signOut();
+        toast({
+          title: "Verify your email first",
+          description: "A verification link was sent to your inbox when you signed up. Please confirm it to continue.",
+        });
+        navigate("/auth/check-email");
+        setLoading(false);
+        return;
+      }
 
       // 1. Check for returnTo redirect (e.g., from a course enrollment)
       const returnTo = searchParams.get("returnTo");

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -215,7 +215,12 @@ const TalentOnboarding = () => {
   }
 
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [searchParams] = useSearchParams();
+  const resumeStep = Math.min(
+    Math.max(parseInt(searchParams.get("step") || "1", 10), 1),
+    STEPS.length
+  );
+  const [currentStep, setCurrentStep] = useState(resumeStep);
   const [loading, setLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [talentId, setTalentId] = useState<string | null>(null);
@@ -272,28 +277,28 @@ const TalentOnboarding = () => {
     const loadProfileData = async () => {
       if (!user) return;
       try {
-        let { data: profile } = await supabase.from("talent_profiles").select("*").eq("user_id", user.id).maybeSingle();
-        
+        let { data: profile } = await (supabase.from("talent_profiles" as any).select("*").eq("user_id", user.id).maybeSingle() as any);
+
         if (!profile) {
-          const { data: newProfile } = await supabase.from("talent_profiles").insert({ user_id: user.id }).select().single();
+          const { data: newProfile } = await (supabase.from("talent_profiles" as any).insert({ user_id: user.id }).select().single() as any);
           profile = newProfile;
         }
 
         if (profile) {
-          setTalentId(profile.id);
-          const submitted = profile.status !== "DRAFT";
+          setTalentId((profile as any).id);
+          const submitted = (profile as any).status !== "DRAFT";
           setIsSubmitted(submitted);
-          
-          if (profile.locked_onboarding && currentStep < 8) { 
-            navigate("/talent/profile"); 
-            return; 
+
+          if ((profile as any).locked_onboarding && currentStep < 8) {
+            navigate("/profile");
+            return;
           }
-          if (profile.current_step) setCurrentStep(profile.current_step);
+          if ((profile as any).current_step) setCurrentStep((profile as any).current_step);
         }
-        const { data: sections } = await supabase.from("talent_profile_sections").select("*").eq("user_id", user.id);
-        if (sections && sections.length > 0) {
+        const { data: sections } = await (supabase.from("talent_profile_sections" as any).select("*").eq("user_id", user.id) as any);
+        if (sections && (sections as any[]).length > 0) {
           const mergedData: any = {};
-          sections.forEach(s => Object.assign(mergedData, s.data));
+          (sections as any[]).forEach((s: any) => Object.assign(mergedData, s.data));
           reset(prev => ({ ...prev, ...mergedData }));
         }
       } catch (error) { console.error("Error loading data:", error); }
@@ -375,7 +380,7 @@ const TalentOnboarding = () => {
 
   const persistStep = useCallback(async (step: number) => {
     if (!user) return;
-    await supabase.from("talent_profiles").update({ current_step: step } as any).eq("user_id", user.id);
+    await (supabase.from("talent_profiles" as any).update({ current_step: step } as any).eq("user_id", user.id) as any);
   }, [user]);
 
   const nextStep = async () => {
@@ -404,7 +409,10 @@ const TalentOnboarding = () => {
     setLoading(true);
     await syncAllToDB();
     setLoading(false);
-    navigate("/talent/dashboard");
+    toast({
+      title: "Progress saved",
+      description: "Your progress has been saved. Complete all steps to access your dashboard.",
+    });
   };
 
   const onSubmit = async () => {
@@ -845,7 +853,7 @@ const TalentOnboarding = () => {
           <div className="flex items-center gap-3">
             <SaveIndicator />
             <Button variant="ghost" size="sm" onClick={handleSaveAndExit} className="gap-1.5 text-slate-500 hover:text-slate-900 text-xs hidden sm:flex">
-              <LogOut className="h-3.5 w-3.5" /> Save & Exit
+              <Save className="h-3.5 w-3.5" /> Save Progress
             </Button>
             {/* Mobile menu toggle */}
             <button className="sm:hidden p-1.5" onClick={() => setMobileNavOpen(!mobileNavOpen)}>
@@ -966,7 +974,7 @@ const TalentOnboarding = () => {
                 {/* Desktop action bar */}
                 <div className="hidden sm:flex items-center justify-between mt-6">
                   <Button variant="ghost" onClick={handleSaveAndExit} className="text-slate-400 hover:text-slate-700 text-sm gap-1.5">
-                    <Save className="h-3.5 w-3.5" /> Save & Exit
+                    <Save className="h-3.5 w-3.5" /> Save Progress
                   </Button>
                   <div className="flex items-center gap-3">
                     {currentStep > 1 && (
@@ -995,7 +1003,7 @@ const TalentOnboarding = () => {
                     </Button>
                   ) : (
                     <Button variant="outline" onClick={handleSaveAndExit} className="h-12 flex-1 rounded-xl border-slate-200 text-slate-500">
-                      <Save className="h-4 w-4 mr-1" /> Save
+                      <Save className="h-4 w-4 mr-1" /> Save Progress
                     </Button>
                   )}
                   <Button variant="ghost" onClick={handleSaveAndExit} className="h-12 w-12 shrink-0 rounded-xl border border-slate-100 text-slate-400 p-0">

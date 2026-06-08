@@ -84,6 +84,7 @@ export const getOnboardingStatus = async (userId: string) => {
       requiresChanges: profileData.status === "changes_requested",
       status: profileData.status,
       locked: profileData.locked_onboarding,
+      currentStep: profileData.current_step || 1,
     };
   } catch (err) {
     console.error("Error getting onboarding status:", err);

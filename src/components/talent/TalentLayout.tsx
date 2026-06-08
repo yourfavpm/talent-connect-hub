@@ -1,42 +1,58 @@
 import { useState, useEffect, Suspense } from "react";
-import { Outlet, useLocation, Link } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import TalentSidebar from "./TalentSidebar";
 import TalentTopbar from "./TalentTopbar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { AlertCircle, ArrowRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { getOnboardingStatus } from "@/lib/onboarding-helpers";
+
+// Accounts created on or after this date are subject to the mandatory onboarding gate.
+// Set this to today's deploy date. Accounts before this date are grandfathered in.
+const ONBOARDING_GATE_CUTOFF = new Date("2026-06-08T00:00:00Z");
 
 const TalentLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { signOut, user } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
-  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   useEffect(() => {
-    const checkOnboarding = async () => {
+    const enforceOnboarding = async () => {
       if (!user?.id) return;
-      const { data } = await supabase.from("talents").select("onboarding_completed").eq("user_id", user.id).maybeSingle() as { data: { onboarding_completed: boolean } | null };
-      setNeedsOnboarding(!data || !data.onboarding_completed);
-    };
-    checkOnboarding();
-  }, [user?.id]); // Only re-check when user changes, NOT on every navigation
 
-  const isOnboardingPage = location.pathname.includes('/talent/onboarding');
+      // Only enforce for accounts created on or after the cutoff date
+      const accountCreatedAt = user.created_at ? new Date(user.created_at) : null;
+      if (accountCreatedAt && accountCreatedAt < ONBOARDING_GATE_CUTOFF) return;
+
+      try {
+        const status = await getOnboardingStatus(user.id);
+        if (!status.isComplete) {
+          const step = status.currentStep || 1;
+          navigate(`/onboarding?step=${step}`, { replace: true });
+        }
+      } catch (err) {
+        console.error("Onboarding gate check failed:", err);
+        // On error, allow access — don't block users due to a network issue
+      }
+    };
+
+    enforceOnboarding();
+  }, [user?.id, navigate]); // Only re-run when user changes
 
   return (
     <ProtectedRoute portalType="talent" allowedRoles={["talent"]}>
       <div className="flex h-screen w-full bg-[#FAFAFA] overflow-hidden font-sans">
-        <TalentSidebar 
+        <TalentSidebar
           onLogout={() => signOut()}
-          mobileOpen={sidebarOpen} 
+          mobileOpen={sidebarOpen}
           setMobileOpen={setSidebarOpen}
           collapsed={sidebarCollapsed}
           setCollapsed={setSidebarCollapsed}
         />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <TalentTopbar 
+          <TalentTopbar
             onMenuClick={() => setSidebarOpen(true)}
             onLogout={() => signOut()}
           />
@@ -58,3 +74,4 @@ const TalentLayout = () => {
 };
 
 export default TalentLayout;
+

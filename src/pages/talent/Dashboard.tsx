@@ -60,7 +60,6 @@ interface DashboardStats {
   applications: number;
   activeAssignments: number;
   pendingTimesheets: number;
-  pendingTimesheets: number;
   activeShortlists: number;
   openTickets: number;
   upcomingInterviews: number;
@@ -155,8 +154,8 @@ const TalentDashboard = () => {
       }
 
       const [v2AppsRes, v2ShortlistsRes, contractsRes, timesheetsRes, ticketsRes, openRequestsRes, profileRes, profileV2Res, sectionsRes, interviewsRes] = await Promise.all([
-        supabase.from("hr_v2_applications").select("hire_request_id").eq("talent_user_id", user.id),
-        supabase.from("hr_v2_shortlists").select("hire_request_id, status").eq("talent_user_id", user.id),
+        (supabase.from("hr_v2_applications" as any).select("hire_request_id").eq("talent_user_id", user.id) as any),
+        (supabase.from("hr_v2_shortlists" as any).select("hire_request_id, status").eq("talent_user_id", user.id) as any),
         (supabase.from("contracts" as any).select("*", { count: "exact", head: true }).eq("talent_id", (talentData as any).id).eq("status", "active") as any),
         (supabase.from("timesheets" as any).select("*", { count: "exact", head: true }).eq("talent_id", (talentData as any).id).eq("status", "draft") as any),
         (supabase.from("support_tickets" as any).select("*", { count: "exact", head: true }).eq("user_id", user.id).in("status", ["open", "in_progress"]) as any),
@@ -164,7 +163,7 @@ const TalentDashboard = () => {
         (supabase.from("profiles" as any).select("*").eq("user_id", user.id).maybeSingle() as any),
         (supabase.from("v2_talent_profiles" as any).select("*").eq("user_id", user.id).maybeSingle() as any),
         (supabase.from("v2_profile_sections" as any).select("*").eq("user_id", user.id) as any),
-        supabase.from("hr_v2_interviews").select("id, status, scheduled_time").eq("talent_user_id", user.id)
+        (supabase.from("hr_v2_interviews" as any).select("id, status, scheduled_time").eq("talent_user_id", user.id) as any),
       ]);
 
       const uniqueAppIds = new Set([
@@ -187,12 +186,12 @@ const TalentDashboard = () => {
         }
       }
 
-      const allInterviews = interviewsRes?.data || [];
-      const upcomingInterviews = allInterviews.filter(i => 
-        (i.status === "scheduled" || i.status === "accepted") && 
+      const allInterviews: any[] = (interviewsRes as any)?.data || [];
+      const upcomingInterviews = allInterviews.filter((i: any) =>
+        (i.status === "scheduled" || i.status === "accepted") &&
         i.scheduled_time && new Date(i.scheduled_time) >= new Date()
       ).length;
-      const pendingInterviews = allInterviews.filter(i => 
+      const pendingInterviews = allInterviews.filter((i: any) =>
         i.status === "pending" || i.status === "reschedule_requested"
       ).length;
 
@@ -271,15 +270,6 @@ const TalentDashboard = () => {
             <p className="text-xs text-slate-400 font-light flex items-center gap-2">
               <span>You have <span className="text-slate-900 font-medium">{stats.activeShortlists || 0} active shortlists</span> and <span className="text-slate-900 font-medium">{stats.openTickets || 0} active support tickets</span>.</span>
             </p>
-            {profile?.status === "draft" && (
-              <Link 
-                to={getInternalPath("/talent/onboarding")} 
-                className="flex items-center gap-1.5 text-[12px] font-semibold text-blue-600 hover:text-blue-700 transition-colors group w-fit mt-1"
-              >
-                <span className="underline decoration-blue-200 underline-offset-4 group-hover:decoration-blue-400">Complete your profile to get vetted</span>
-                <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
