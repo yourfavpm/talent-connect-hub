@@ -128,9 +128,6 @@ const TalentSignup = () => {
         
           // Emails are now handled natively by Supabase Auth (via Custom SMTP and email templates).
           // We removed manual edge-function triggers to prevent duplicate verification emails.
-        } catch (error) {
-          console.error('Post-signup setup error:', error);
-        }
       }
 
       if (data.user) {
