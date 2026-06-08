@@ -204,8 +204,9 @@ const TrialToHire = () => {
                             </div>
                         </div>
                         
-                        <div className="order-1 lg:order-2 bg-[#0B0F19] p-12 rounded-[16px] text-white">
-                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Engagement Dynamics</h4>
+                        <div className="w-full lg:w-1/2 px-4 order-1 lg:order-2">
+                            <div className="bg-[#0B0F19] p-12 rounded-[16px] text-white w-full">
+                                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Engagement Dynamics</h4>
                             <div className="space-y-8">
                                 <div className="pb-8 border-b border-white/10">
                                     <div className="text-sm text-slate-400 mb-2">Starting Retainer</div>
@@ -219,6 +220,7 @@ const TrialToHire = () => {
                                     <div className="text-sm text-slate-400 mb-2">Billing Cycle</div>
                                     <div className="text-4xl font-bold">Monthly <span className="text-sm text-slate-500 font-medium">consolidated</span></div>
                                 </div>
+                            </div>
                             </div>
                         </div>
                     </div>

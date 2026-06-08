@@ -167,7 +167,7 @@ const ManagedTeams = () => {
       <section className="py-24 md:py-32 px-6 border-t border-slate-100">
         <div className="container max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center -mx-4">
-            <div>
+            <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
               <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Managed Team Pricing</h2>
               <div className="space-y-8">
                 {[
@@ -187,8 +187,9 @@ const ManagedTeams = () => {
               </div>
             </div>
             
-            <div className="bg-[#0B0F19] p-12 rounded-[24px] text-white">
-              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-12">Pricing Model</h4>
+            <div className="w-full lg:w-1/2 px-4">
+              <div className="bg-[#0B0F19] p-12 rounded-[24px] text-white w-full">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-12">Pricing Model</h4>
               <div className="space-y-10">
                 <div className="flex justify-between items-baseline border-b border-white/10 pb-6">
                   <span className="text-sm text-slate-400">Monthly Retainer</span>
@@ -201,6 +202,8 @@ const ManagedTeams = () => {
                 <div className="pt-4">
                   <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Cost Predictability</div>
                   <div className="text-xl font-medium text-blue-400">Flat Fee Per Member</div>
+                </div>
+              </div>
                 </div>
               </div>
             </div>
