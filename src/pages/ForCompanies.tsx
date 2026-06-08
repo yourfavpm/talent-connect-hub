@@ -36,7 +36,7 @@ const ForCompanies = () => {
             />
             {/* 1. PAGE HERO (REDESIGNED FOR OPERATIONS) */}
             <section className="relative pt-40 pb-16 md:pt-40 md:pb-16 px-2 sm:px-6 bg-[#F8F9FA] font-inter overflow-hidden">
-                <div className="container max-w-[1200px] mx-auto relative z-10 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+                <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto relative z-10 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
                     <div className="flex-1">
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }}
@@ -150,7 +150,7 @@ const ForCompanies = () => {
 
             {/* 2. OPERATIONAL GAP SECTION (REDESIGNED) */}
             <section className="py-24 px-2 sm:px-6 relative bg-blue-50 border-y border-slate-100 font-inter">
-                <div className="container max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-20 items-start lg:items-center">
+                <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto flex flex-col lg:flex-row gap-20 items-start lg:items-center">
                     <motion.div {...fadeIn} className="w-full lg:w-1/2">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">The Operational Gap</div>
                         <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold mb-8 text-slate-900 leading-[1.15] tracking-tight">Hiring Without Structure <br/>Slows Growth.</h2>
@@ -213,7 +213,7 @@ const ForCompanies = () => {
 
             {/* 3. OUR OPERATIONAL MODEL (REDESIGNED) */}
             <section className="py-24 px-2 sm:px-6 bg-white font-inter relative overflow-hidden">
-                <div className="container max-w-[1200px] mx-auto">
+                <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
                     <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-20 gap-8">
                         <div className="max-w-2xl">
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Our Operational Model</div>
@@ -290,55 +290,71 @@ const ForCompanies = () => {
 
             {/* 4. ENGAGEMENT STRUCTURE (REDESIGNED) */}
             <section className="py-24 px-2 sm:px-6 bg-slate-50/50 border-t border-slate-100 font-inter">
-                <div className="container max-w-[1200px] mx-auto">
+                <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
                     <div className="text-left md:text-center max-w-3xl mx-auto mb-20">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Engagement Structure</div>
                         <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-slate-900 mb-6 leading-[1.15] tracking-tight">
-                            Three Structured Models. <br/>Clear Operational Tradeoffs.
+                            Four Structured Models. <br/>Clear Operational Tradeoffs.
                         </h2>
                         <p className="text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto font-medium">
                             Each model aligns risk, control, and cost with your team’s growth stage.
                         </p>
                     </div>
 
-                    <div className="grid lg:grid-cols-3 gap-8 mb-16 px-4">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 px-4">
                         {[
                             {
                                 title: "Direct Hire",
                                 desc: "Permanent placement with structured employment transfer.",
                                 attributes: [
-                                    "15% annual salary buyout",
+                                    "15–20% placement fee",
                                     "Direct employment relationship",
-                                    "One-time fee",
-                                    "No ongoing platform margin"
+                                    "Client owns talent relationship",
+                                    "90-day replacement guarantee"
                                 ],
                                 ideal: "Long-term leadership roles.",
-                                cta: "Explore Direct Hire"
+                                cta: "Explore Direct Hire",
+                                link: "/service-models"
                             },
                             {
                                 title: "Trial-to-Hire",
                                 desc: "Start managed. Convert when ready.",
                                 attributes: [
-                                    "20% platform margin",
+                                    "30-90 day trial period",
+                                    "20–30% platform margin",
                                     "Talent paid via OpslyHR",
-                                    "Monthly or hourly billing",
                                     "Conversion flexibility"
                                 ],
                                 ideal: "Reducing hiring risk.",
                                 cta: "Start a Trial",
+                                link: "/service-models",
                                 recommended: true
                             },
                             {
-                                title: "One-Time Project",
-                                desc: "Defined scope engagement.",
+                                title: "Managed Teams",
+                                desc: "Dedicated operations team built and managed by us.",
                                 attributes: [
-                                    "30% margin built into pricing",
-                                    "Milestone-based billing",
-                                    "No long-term obligation",
-                                    "Rapid deployment"
+                                    "Monthly retainer structure",
+                                    "Team lead oversight included",
+                                    "Zero HR or payroll burden",
+                                    "Predictable scaling"
                                 ],
-                                ideal: "High-impact defined initiatives.",
-                                cta: "Launch a Project"
+                                ideal: "High-volume operational workflows.",
+                                cta: "Build a Team",
+                                link: "/service-models"
+                            },
+                            {
+                                title: "Offshore Hiring",
+                                desc: "Compliant EOR and payroll for direct hires.",
+                                attributes: [
+                                    "Fixed platform margin",
+                                    "Local tax & compliance handled",
+                                    "Benefits administration",
+                                    "No foreign entity required"
+                                ],
+                                ideal: "Scaling without legal overhead.",
+                                cta: "Hire Offshore",
+                                link: "/service-models"
                             }
                         ].map((model, i) => (
                             <motion.div 
@@ -441,7 +457,7 @@ const ForCompanies = () => {
 
             {/* 5. OUR PROCESS (REDESIGNED) */}
             <section className="py-24 px-2 sm:px-6 bg-white font-inter relative overflow-hidden">
-                <div className="container max-w-[1200px] mx-auto">
+                <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
                     <div className="text-left md:text-center max-w-3xl mx-auto mb-24">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Our Process</div>
                         <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-slate-900 mb-6 leading-[1.15] tracking-tight">
@@ -536,7 +552,7 @@ const ForCompanies = () => {
 
             {/* 7. CLIENT RESULTS (REDESIGNED) */}
             <section className="py-24 px-2 sm:px-6 bg-white font-inter">
-                <div className="container max-w-[1200px] mx-auto">
+                <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
                     <div className="text-left md:text-center mb-20">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Client Results</div>
                         <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 tracking-tight">
@@ -632,7 +648,7 @@ const ForCompanies = () => {
 
             {/* 8. WHY OPSLYHR (REDESIGNED) */}
             <section className="py-24 px-2 sm:px-6 bg-slate-50/50 font-inter">
-                <div className="container max-w-[1200px] mx-auto">
+                <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
                     <div className="grid lg:grid-cols-2 gap-20 items-start">
                         {/* Left Column: Differentiators */}
                         <div>
@@ -689,7 +705,14 @@ const ForCompanies = () => {
                                 className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden"
                             >
                                 <div className="p-8 border-b border-slate-100 bg-slate-50/50">
-                                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Enterprise Performance Metrics</h3>
+                                    <div className="absolute inset-0 bg-slate-100 rounded-3xl overflow-hidden">
+                                        <img 
+                                            src="/images/professional_team.png"
+                                            alt="Professional Operations Team"
+                                            className="w-full h-full object-cover opacity-90 transition-transform duration-700 hover:scale-105"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/30 to-transparent" />
+                                    </div>
                                 </div>
                                 <div className="divide-y divide-slate-100">
                                     {[

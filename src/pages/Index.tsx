@@ -174,40 +174,42 @@ const Index = () => {
     <div className="bg-white min-h-screen text-foreground overflow-x-hidden selection:bg-primary selection:text-white font-sans">
 
       {/* 2. ENTERPRISE HERO SECTION (REDESIGNED) */}
-      <section className="relative pt-44 pb-16 md:pt-52 md:pb-32 px-2 sm:px-6 overflow-hidden bg-white font-inter">
-        {/* World Map Background (Subtle) */}
+      <section className="relative pt-44 pb-16 md:pt-52 md:pb-32 overflow-hidden bg-slate-950 font-inter">
+        {/* Abstract Network Background */}
         <div 
-          className="absolute inset-0 w-full h-full opacity-[0.2] pointer-events-none mix-blend-multiply"
+          className="absolute inset-0 w-full h-full opacity-40 pointer-events-none mix-blend-screen"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80")',
+            backgroundImage: 'url("/images/abstract_network.png")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
-            filter: 'grayscale(100%) contrast(2) brightness(1.1)',
-            WebkitMaskImage: 'radial-gradient(circle at 60% 50%, black 10%, transparent 80%)',
-            maskImage: 'radial-gradient(circle at 60% 50%, black 10%, transparent 80%)'
+            WebkitMaskImage: 'radial-gradient(circle at 70% 50%, black 20%, transparent 80%)',
+            maskImage: 'radial-gradient(circle at 70% 50%, black 20%, transparent 80%)'
           }}
         />
         
-        <div className="container max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-12 lg:gap-20 items-center relative z-10">
+        {/* Subtle Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent pointer-events-none" />
+
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto flex flex-col lg:flex-row gap-12 lg:gap-20 items-center relative z-10">
           {/* Left Side: Content & Trust Indicators */}
           <div className="animate-slide-up flex flex-col items-start text-left flex-1 min-w-0">
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
+            <h1 className="text-3xl md:text-5xl lg:text-7xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.1] md:leading-[1.05] text-white">
               Build Reliable Operational Teams Without the Hiring Complexity.
             </h1>
 
-            <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium mx-auto lg:mx-0">
+            <p className="text-base md:text-xl text-slate-300 mb-8 md:mb-10 max-w-xl leading-relaxed font-medium mx-auto lg:mx-0">
               Opsly HR helps growing businesses hire, manage, and scale operational talent through structured workforce solutions and ongoing support.
             </p>
 
             <div className="flex flex-col sm:flex-row justify-start gap-4 mb-14 w-full">
               <Link to="/book-consultation" className="w-full sm:w-auto">
-                <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/10 transition-all font-semibold w-full">
+                <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-[0_0_40px_rgba(37,99,235,0.4)] transition-all font-semibold w-full">
                   Book a Consultation
                 </Button>
               </Link>
               <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")} className="w-full sm:w-auto">
-                <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-700 hover:bg-slate-100/80 rounded-full font-semibold flex items-center justify-center lg:justify-start gap-2 w-full">
+                <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-300 hover:bg-white/10 hover:text-white rounded-full font-semibold flex items-center justify-center lg:justify-start gap-2 w-full transition-colors">
                   Build Your Team <ArrowRight className="w-4 h-4" />
                 </Button>
               </a>
@@ -248,14 +250,14 @@ const Index = () => {
             </motion.div>
 
             {/* Trust Indicators */}
-            <div className="flex flex-wrap items-center justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-200">
+            <div className="flex flex-wrap items-center justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-800">
               {[
                 "48h Average Shortlist",
                 "98% Placement Rate",
                 "EMEA Coverage"
               ].map((indicator, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <div className="w-1 h-1 rounded-full bg-blue-500" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
                   <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{indicator}</span>
                 </div>
               ))}
@@ -272,7 +274,7 @@ const Index = () => {
                 tags: ["Inbox Zero", "CRM Management", "Scheduling"],
                 metrics: "Zero Backlog",
                 time: "Asynchronous",
-                offset: "translate-y-12 z-10 opacity-40 scale-95"
+                offset: "translate-y-12 z-10 opacity-70 scale-95"
               },
               {
                 title: "Customer Support Teams",
@@ -281,7 +283,7 @@ const Index = () => {
                 tags: ["24/7 Coverage", "SLA Adherence", "Omnichannel"],
                 metrics: "98% CSAT",
                 time: "GMT Alignment",
-                offset: "translate-x-12 -translate-y-2 z-20 opacity-70 scale-[0.98]"
+                offset: "translate-x-12 -translate-y-2 z-20 opacity-90 scale-[0.98]"
               },
               {
                 title: "Team Leadership & HR",
@@ -290,7 +292,7 @@ const Index = () => {
                 tags: ["Payroll", "Compliance", "Performance"],
                 metrics: "100% Retained",
                 time: "Centralized",
-                offset: "-translate-x-4 translate-y-32 z-30 shadow-xl"
+                offset: "-translate-x-4 translate-y-32 z-30 shadow-[0_30px_60px_rgba(0,0,0,0.4)]"
               }
             ].map((feature, i) => (
               <motion.div 
@@ -349,7 +351,7 @@ const Index = () => {
 
       {/* 3. TRUST & CREDIBILITY (REPOSITIONED) */}
       <section className="py-12 md:py-16 border-b border-slate-200 bg-white">
-        <div className="container max-w-7xl mx-auto text-left md:text-center">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto text-left md:text-center">
           <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-2">Trusted by Global Teams and Growing Enterprises</p>
           <p className="text-slate-500 mb-8 max-w-lg mx-auto md:mx-auto">Streamlining hiring and operations across industries</p>
 
@@ -378,7 +380,7 @@ const Index = () => {
         {/* Subtle Background Grid */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px]"></div>
 
-        <div className="container max-w-[1200px] mx-auto relative z-10">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-16 lg:gap-24">
             {[
               {
@@ -452,7 +454,7 @@ const Index = () => {
 
       {/* NEW TRUST-BUILDING SECTION (STRATEGIC POSITIONING) */}
       <section className="py-24 px-2 sm:px-6 bg-slate-50 font-inter border-b border-slate-200">
-        <div className="container max-w-[1200px] mx-auto">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
           {/* Header */}
           <div className="mb-16 md:mb-20 animate-slide-up">
             <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-4 leading-tight tracking-tight">
@@ -556,7 +558,7 @@ const Index = () => {
 
       {/* ── OPSly Academy Section (NEW) ────────────────────────────────── */}
       <section className="py-24 md:py-32 bg-slate-50 relative overflow-hidden font-inter border-t border-slate-200 px-2 sm:px-6">
-        <div className="container max-w-[1200px] mx-auto relative z-10">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
@@ -643,7 +645,7 @@ const Index = () => {
 
       {/* VETTING ENGINE SECTION (ENTERPRISE GRADE) */}
       <section className="py-24 px-2 sm:px-6 bg-white font-inter border-b border-slate-200 overflow-hidden">
-        <div className="container max-w-[1200px] mx-auto">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
           {/* Header */}
           <div className="mb-16 animate-slide-up">
             <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-4 tracking-tight">
@@ -730,7 +732,7 @@ const Index = () => {
 
       {/* 4. SERVICE MODELS — REDESIGNED COMPARISON SECTION */}
       <section className="py-24 px-2 sm:px-6 bg-white font-inter">
-        <div className="container max-w-[1200px] mx-auto">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
           {/* Header */}
           <div className="text-left md:text-center max-w-2xl mx-auto mb-20 animate-slide-up">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Service Models</div>
@@ -839,7 +841,7 @@ const Index = () => {
 
       {/* 4.5. OPERATIONAL PERFORMANCE — REDESIGNED DATA-DRIVEN SECTION */}
       <section className="py-24 px-2 sm:px-6 bg-white font-inter">
-        <div className="container max-w-[1200px] mx-auto">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             {/* Left Column: Metrics Grid */}
             <div className="animate-slide-up">
@@ -899,28 +901,14 @@ const Index = () => {
             {/* Right Column: Enterprise Dashboard Visual */}
             <div className="relative">
               <div className="aspect-[4/3] relative">
-                {/* Layered Content Cards */}
-                <div className="absolute inset-0 bg-slate-50/50 rounded-[24px] border border-slate-100 flex items-center justify-center">
-                  <div className="w-4/5 h-3/5 bg-white rounded-[16px] shadow-sm border border-slate-200 p-6 relative overflow-hidden">
-                    <div className="flex justify-between items-center mb-6">
-                      <div className="flex gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full bg-slate-100" />
-                        <div className="w-8 h-2.5 rounded-full bg-slate-100" />
-                      </div>
-                      <div className="w-10 h-4 rounded-full bg-blue-50 border border-blue-100" />
-                    </div>
-                    <div className="space-y-4">
-                      <div className="h-3 w-3/4 bg-slate-50 rounded-full" />
-                      <div className="h-3 w-1/2 bg-slate-50 rounded-full" />
-                      <div className="grid grid-cols-3 gap-2 pt-2">
-                        {[1,2,3].map(i => <div key={i} className="h-12 bg-slate-50 rounded-lg" />)}
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600/0 via-blue-600/40 to-blue-600/0" />
-                  </div>
-                </div>
-
-                {/* Floating Labels */}
+                {/* Dashboard Image */}
+                <div className="absolute inset-0 flex items-center justify-center p-4">
+                  <img 
+                    src="/images/operations_dashboard.png" 
+                    alt="Operations Dashboard" 
+                    className="w-full h-auto object-cover rounded-[16px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-800"
+                  />
+                </div>                {/* Floating Labels */}
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -968,7 +956,7 @@ const Index = () => {
 
       {/* 5. HOW IT WORKS — REDESIGNED VERTICAL TIMELINE */}
       <section className="py-24 px-2 sm:px-6 bg-slate-50 font-inter">
-        <div className="container max-w-[1200px] mx-auto">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
           {/* Header */}
           <div className="max-w-3xl mb-24 animate-slide-up text-left">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">How It Works</div>
@@ -1058,7 +1046,7 @@ const Index = () => {
 
       {/* 7. OPERATIONS PROFESSIONALS SHOWCASE */}
       <section className="py-24 px-2 sm:px-6 bg-blue-50/50 font-inter overflow-hidden">
-        <div className="container max-w-7xl mx-auto">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
           {false && (
             <>
           <motion.div 
@@ -1179,7 +1167,7 @@ const Index = () => {
 
       {/* 9. CLIENT RESULTS — REDESIGNED TESTIMONIAL SECTION */}
       <section className="py-24 px-2 sm:px-6 bg-white font-inter">
-        <div className="container max-w-[1200px] mx-auto">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
           {/* Header */}
           <div className="text-left md:text-center max-w-2xl mx-auto mb-20 animate-slide-up">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Client Results</div>
