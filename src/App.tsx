@@ -218,11 +218,7 @@ const ZoneGuard = ({
   const currentZone = getCurrentZone();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
-      </div>
-    );
+    return null;
   }
 
   // 1. If not in the allowed zone for this route set, don't render it
@@ -310,11 +306,7 @@ const App = () => {
               <BrowserRouter>
                 <ScrollToTop />
                 <DevZoneIndicator zone={zone} />
-                <Suspense fallback={
-                  <div className="min-h-screen flex items-center justify-center bg-white">
-                    <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
-                  </div>
-                }>
+                <Suspense fallback={null}>
                 <Routes>
               {/* Marketing Zone (opslyhr.com) */}
               {zone === Zone.MARKETING && (
