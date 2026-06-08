@@ -14,7 +14,7 @@ const TrialToHire = () => {
                 keywords="Trial to Hire Operations, Remote Talent Evaluation, Hire Ops Professionals Trial, Risk-Managed Remote Hiring, Operations Capacity Vetting"
             />
             <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
-                <div className="container max-w-[1200px] mx-auto relative z-20">
+                <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto relative z-20">
                     <div className="flex flex-wrap items-center -mx-4">
                         <div className="w-full lg:w-1/2 px-4 mb-16 lg:mb-0">
                             {/* Left Content */}
@@ -123,7 +123,7 @@ const TrialToHire = () => {
 
             {/* SECTION 1 — HOW TRIAL ENGAGEMENT WORKS */}
             <section className="py-24 md:py-32 px-6 bg-slate-50 border-t border-slate-100">
-                <div className="container max-w-[1200px] mx-auto">
+                <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
                     <div className="text-center mb-20">
                         <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">A Managed 90-Day Evaluation Model</h2>
                         <p className="text-slate-500 font-medium max-w-2xl mx-auto">
@@ -180,7 +180,7 @@ const TrialToHire = () => {
 
             {/* SECTION 2 — PRICING STRUCTURE */}
             <section className="py-24 md:py-32 px-6 border-t border-slate-100">
-                <div className="container max-w-7xl mx-auto">
+                <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
                     <div className="flex flex-wrap items-center -mx-4">
                         <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
                             <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Managed Engagement Pricing</h2>
@@ -229,7 +229,7 @@ const TrialToHire = () => {
 
             {/* SECTION 3 & 4 — IDEAL FOR & WHAT'S INCLUDED */}
             <section className="py-24 md:py-32 px-6 bg-slate-900 text-white">
-                <div className="container max-w-[1200px] mx-auto">
+                <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
                     <div className="grid md:grid-cols-2 gap-24">
                         {/* IDEAL FOR */}
                         <div>

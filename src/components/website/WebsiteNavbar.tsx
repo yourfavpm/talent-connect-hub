@@ -60,15 +60,14 @@ const WebsiteNavbar = () => {
             document.body.style.overflow = 'unset';
         }
         return () => { document.body.style.overflow = 'unset'; };
-    }, [isOpen]);
-
-    return (
-        <nav className="fixed top-0 z-[100] w-full bg-white border-b border-slate-100 font-inter">
-            <div className="max-w-[1440px] mx-auto px-6 md:px-10 h-24 flex items-center justify-between">
+        <>
+            <div className="fixed top-4 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none font-inter transition-all duration-300">
+                <nav className="pointer-events-auto w-full max-w-6xl bg-white/80 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-full">
+                    <div className="px-6 md:px-8 h-16 flex items-center justify-between">
                 
                 {/* Left: Logo */}
-                <Link to="/" className="flex items-center shrink-0 -ml-4 lg:-ml-6 py-2 transition-transform hover:scale-[1.05]">
-                    <Logo showText={false} imgHeight="h-8" />
+                <Link to="/" className="flex items-center shrink-0 py-2 transition-transform hover:scale-[1.05]">
+                    <Logo showText={false} imgHeight="h-7" />
                 </Link>
 
                 {/* Center: Desktop Nav */}
@@ -159,9 +158,12 @@ const WebsiteNavbar = () => {
                 >
                     <Menu className="h-6 w-6" />
                 </button>
-            </div>
+                </div>
+            </nav>
+        </div>
 
-            {/* Mobile Drawer */}
+        {/* Mobile Drawer - Moved outside the nav to prevent backdrop-blur stacking context issues */}
+        <div className="font-inter">
             <AnimatePresence>
                 {isOpen && (
                     <>
@@ -263,7 +265,8 @@ const WebsiteNavbar = () => {
                     </>
                 )}
             </AnimatePresence>
-        </nav>
+        </div>
+        </>
     );
 };
 

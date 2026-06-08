@@ -14,7 +14,7 @@ const ManagedTeams = () => {
                 keywords="Managed Operations Teams, Outsource Support Team, Managed Data Entry Team, Fully Managed Operations"
             />
       <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
-        <div className="container max-w-[1200px] mx-auto relative z-20 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto relative z-20 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
             <div className="flex-1">
               {/* Left Content */}
               <motion.div
@@ -113,7 +113,7 @@ const ManagedTeams = () => {
 
       {/* SECTION 1 — ENGAGEMENT STRUCTURE */}
       <section className="py-24 md:py-32 px-6 bg-slate-50 border-t border-slate-100">
-        <div className="container max-w-[1200px] mx-auto">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
           <div className="mb-20">
             <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">Fully Managed Functional Delivery</h2>
             <p className="text-slate-500 font-medium max-w-2xl">
@@ -165,7 +165,7 @@ const ManagedTeams = () => {
 
       {/* SECTION 2 — PRICING MODEL */}
       <section className="py-24 md:py-32 px-6 border-t border-slate-100">
-        <div className="container max-w-7xl mx-auto">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
           <div className="flex flex-wrap items-center -mx-4">
             <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
               <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Managed Team Pricing</h2>
@@ -212,7 +212,7 @@ const ManagedTeams = () => {
 
       {/* SECTION 3 — IDEAL PROJECT TYPES */}
       <section className="py-24 md:py-32 px-6 bg-slate-900 text-white">
-        <div className="container max-w-[1200px] mx-auto">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
           <div className="mb-20 text-center">
             <h2 className="text-3xl md:text-5xl font-semibold mb-6 tracking-tight">Ideal Functions to Manage</h2>
             <p className="text-slate-400 font-medium max-w-2xl mx-auto">
@@ -239,7 +239,7 @@ const ManagedTeams = () => {
 
       {/* SECTION 4 — WHY NOT TRADITIONAL CONSULTING? */}
       <section className="py-24 md:py-32 px-6 border-t border-slate-100 bg-white">
-        <div className="container max-w-[1200px] mx-auto">
+        <div className="w-full px-6 md:px-12 lg:px-24 2xl:px-32 mx-auto">
           <div className="max-w-3xl mx-auto text-center mb-20">
             <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">Not Just Consulting. Execution.</h2>
             <p className="text-slate-500 font-medium">
