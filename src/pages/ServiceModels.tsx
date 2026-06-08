@@ -78,11 +78,11 @@ const ServiceModels = () => {
                                 Engagement Structure
                             </div>
                             <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold mb-6 md:mb-8 text-slate-900 leading-[1.2] md:leading-[1.1] tracking-tight">
-                                Structured Engagement <br className="hidden md:block" />
-                                Models. <span className="text-slate-900/40">Clear Tradeoffs.</span>
+                                Four Distinct <br className="hidden md:block" />
+                                Engagement Models. <span className="text-slate-900/40">Clear Tradeoffs.</span>
                             </h1>
                             <p className="text-base md:text-lg text-slate-600 mb-10 md:mb-12 leading-relaxed font-medium">
-                                From permanent leadership placements to managed trial engagements and milestone-based projects — each model aligns risk, cost, and control to your stage of growth.
+                                From permanent direct hires to managed teams and offshore payroll — each model solves a different operational need with transparent economics.
                             </p>
                             
                             <div className="flex flex-col sm:flex-row items-start justify-start gap-8 mb-12 w-full sm:w-auto">
@@ -97,9 +97,10 @@ const ServiceModels = () => {
                             {/* Financial Clarity Row */}
                             <div className="flex flex-col sm:flex-row flex-wrap items-start justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-100 w-full">
                                 {[
-                                    { label: "Direct Hire", value: "15%" },
-                                    { label: "Trial", value: "20%" },
-                                    { label: "Project", value: "30%" }
+                                    { label: "Direct Hire", value: "15-20%" },
+                                    { label: "Trial", value: "$800+" },
+                                    { label: "Managed Teams", value: "$1.2k+" },
+                                    { label: "Offshore", value: "$200+" }
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-center gap-3">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
@@ -115,21 +116,27 @@ const ServiceModels = () => {
                             {[
                                 { 
                                     title: "Direct Hire", 
-                                    desc: "One-time placement fee. Permanent employment transfer.", 
+                                    desc: "One-time placement fee. Client owns relationship.", 
                                     icon: Building2, 
-                                    color: "bg-blue-50 text-blue-600 border-blue-100" 
+                                    color: "bg-slate-50 text-slate-600 border-slate-200" 
                                 },
                                 { 
                                     title: "Trial-to-Hire", 
                                     desc: "Managed engagement with conversion flexibility.", 
                                     icon: Clock, 
-                                    color: "bg-slate-50 text-slate-600 border-slate-200" 
+                                    color: "bg-blue-50 text-blue-600 border-blue-100" 
                                 },
                                 { 
-                                    title: "Project Engagement", 
-                                    desc: "Milestone-based structured delivery.", 
-                                    icon: Zap, 
-                                    color: "bg-slate-50 text-slate-600 border-slate-200" 
+                                    title: "Managed Teams", 
+                                    desc: "Dedicated operations team built and managed by us.", 
+                                    icon: Users, 
+                                    color: "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                                },
+                                { 
+                                    title: "Offshore Hiring", 
+                                    desc: "Compliant EOR and payroll for direct hires.", 
+                                    icon: Globe, 
+                                    color: "bg-amber-50 text-amber-600 border-amber-100" 
                                 }
                             ].map((model, i) => (
                                 <motion.div 
@@ -188,37 +195,33 @@ const ServiceModels = () => {
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
                             Engagement Framework
                         </div>
-                        <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">Three Structured Ways to Work With OpslyHR</h2>
+                        <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">Four Structured Ways to Work With OpslyHR</h2>
                         <p className="text-base md:text-lg text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
                             Each model is designed around risk allocation, speed, and long-term value.
                         </p>
                     </div>
 
-                    <div className="grid lg:grid-cols-3 border-y border-slate-100 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
-                        {/* Column 1: Direct Placement */}
-                        <div className="py-12 lg:px-10 flex flex-col items-start bg-white hover:bg-slate-50/30 transition-colors group">
-                            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] mb-4">Permanent</div>
-                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Direct Placement</h3>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 border-y border-slate-100 divide-y md:divide-y-0 lg:divide-x divide-slate-100">
+                        {/* Column 1: Direct Hire */}
+                        <div className="py-12 lg:px-8 flex flex-col items-start bg-white hover:bg-slate-50/30 transition-colors group">
+                            <div className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-4">Permanent</div>
+                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Direct Hire</h3>
                             <p className="text-sm text-slate-500 mb-12 font-medium leading-relaxed">
-                                Build long-term internal leadership capacity.
+                                Client hires the talent permanently from day one.
                             </p>
 
                             <div className="space-y-10 w-full mb-16">
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Structure</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Full-time employment transfer. OpslyHR performs the search and vetting; you hire onto your payroll.</p>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">We source, screen, and place. Client owns the talent relationship. Includes 90-day replacement guarantee.</p>
                                 </div>
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Best For</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Foundational leadership roles, product scaling, and core operations teams requiring deep long-term alignment.</p>
-                                </div>
-                                <div>
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Risk Profile</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Long-term alignment. 120-day replacement guarantee provided by OpslyHR for every placement.</p>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">C-level operations roles and companies with internal HR who need sourcing support.</p>
                                 </div>
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Cost Model</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">One-time placement fee based on first-year base salary. No recurring platform costs.</p>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">One-time placement fee of 15–20% of annual salary. No ongoing platform margin.</p>
                                 </div>
                             </div>
 
@@ -227,33 +230,29 @@ const ServiceModels = () => {
                             </a>
                         </div>
 
-                        {/* Column 2: Structured Trial-to-Hire */}
-                        <div className="py-12 lg:px-10 flex flex-col items-start bg-white lg:bg-slate-50/10 hover:bg-slate-50/50 transition-colors group relative">
-                            <div className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                                <div className="w-1 h-1 rounded-full bg-indigo-600 animate-pulse" />
-                                Most Flexible
+                        {/* Column 2: Trial-to-Hire */}
+                        <div className="py-12 lg:px-8 flex flex-col items-start bg-white lg:bg-slate-50/10 hover:bg-slate-50/50 transition-colors group relative md:border-l border-slate-100">
+                            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                                <div className="w-1 h-1 rounded-full bg-blue-600 animate-pulse" />
+                                Low Risk Entry
                             </div>
-                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Structured Trial-to-Hire</h3>
+                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Trial-to-Hire</h3>
                             <p className="text-sm text-slate-500 mb-12 font-medium leading-relaxed">
-                                Evaluate performance before committing long-term.
+                                Client engages talent for 30–90 days on a managed contract.
                             </p>
 
                             <div className="space-y-10 w-full mb-16">
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Structure</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">90-day managed engagement with full support. Option to convert to full-time at any milestone.</p>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">We employ talent during the trial. If it works, convert to permanent. If not, walk away with no penalty.</p>
                                 </div>
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Best For</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Rapidly evolving teams, new market entries, and roles where cultural/operational fit is paramount.</p>
-                                </div>
-                                <div>
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Risk Profile</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Managed evaluation. Ability to end or extend the engagement based on measurable outcomes.</p>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">New clients, startups with budget uncertainty, and roles where cultural fit matters most.</p>
                                 </div>
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Cost Model</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Fixed weekly or monthly fee. Transparent conversion fee structure upon successful placement.</p>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">$800–$2,500/month during trial + flat conversion fee if hired permanently.</p>
                                 </div>
                             </div>
 
@@ -262,30 +261,54 @@ const ServiceModels = () => {
                             </a>
                         </div>
 
-                        {/* Column 3: Project & Operational Support */}
-                        <div className="py-12 lg:px-10 flex flex-col items-start bg-white hover:bg-slate-50/30 transition-colors group">
-                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">On-Demand</div>
-                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Project & Operational Support</h3>
+                        {/* Column 3: Managed Teams */}
+                        <div className="py-12 lg:px-8 flex flex-col items-start bg-white hover:bg-slate-50/30 transition-colors group border-t md:border-t-0 lg:border-t-0 md:border-l lg:border-l border-slate-100">
+                            <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] mb-4">Highest Value</div>
+                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Managed Teams</h3>
                             <p className="text-sm text-slate-500 mb-12 font-medium leading-relaxed">
-                                Specialized execution without long-term hiring.
+                                We build, manage, and support a dedicated operations team.
                             </p>
 
                             <div className="space-y-10 w-full mb-16">
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Structure</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Milestone-based delivery. Focused on specific operational gaps, automation, or audit projects.</p>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Dedicated members assigned exclusively to you. We handle HR, reporting, KPIs, and replacements.</p>
                                 </div>
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Best For</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Process documentation, ERP/CRM implementations, data cleanup, and critical one-time operational audits.</p>
-                                </div>
-                                <div>
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Risk Profile</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Outcome-focused. Risk is centered on defined deliverables and technical scope rather than headcount.</p>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Customer support, EAs, VAs, and back-office roles where you want the output without HR overhead.</p>
                                 </div>
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Cost Model</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Fixed project fee or hourly rate card depending on technical complexity and estimated completion.</p>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">$1,200–$6,000 per team member / month. Predictable scaling costs.</p>
+                                </div>
+                            </div>
+
+                            <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")} className="mt-auto inline-flex items-center text-sm font-bold text-blue-600 hover:text-blue-700 transition-all group-hover:translate-x-1">
+                                Get Started <ArrowRight className="ml-2 w-4 h-4" />
+                            </a>
+                        </div>
+                        
+                        {/* Column 4: Offshore Hiring Support */}
+                        <div className="py-12 lg:px-8 flex flex-col items-start bg-white hover:bg-slate-50/30 transition-colors group border-t md:border-t-0 lg:border-t-0 md:border-l border-slate-100">
+                            <div className="text-[10px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-4">Employer of Record</div>
+                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Offshore Hiring</h3>
+                            <p className="text-sm text-slate-500 mb-12 font-medium leading-relaxed">
+                                For clients hiring directly who need compliant infrastructure.
+                            </p>
+
+                            <div className="space-y-10 w-full mb-16">
+                                <div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Structure</div>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Locally compliant contracts, payroll, tax withholding, and HR admin across African jurisdictions.</p>
+                                </div>
+                                <div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Best For</div>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Tech companies scaling beyond 10 members who found talent locally but can't hire directly.</p>
+                                </div>
+                                <div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Cost Model</div>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">$200–$600 EOR fee per employee per month, plus the employee's salary.</p>
                                 </div>
                             </div>
 
@@ -302,16 +325,18 @@ const ServiceModels = () => {
                             <span>Operational Speed</span>
                         </div>
                         <div className="h-1 w-full bg-slate-100 rounded-full relative overflow-hidden">
-                            <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-blue-600 via-indigo-500 to-slate-400 opacity-20"></div>
+                            <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-slate-400 via-blue-500 to-amber-400 opacity-20"></div>
                             {/* Marker dots */}
-                            <div className="absolute top-0 left-[0%] w-1 h-full bg-blue-600"></div>
-                            <div className="absolute top-0 left-[50%] w-1 h-full bg-indigo-500"></div>
-                            <div className="absolute top-0 left-[100%] ml-[-4px] w-1 h-full bg-slate-400"></div>
+                            <div className="absolute top-0 left-[0%] w-1 h-full bg-slate-400"></div>
+                            <div className="absolute top-0 left-[33%] w-1 h-full bg-blue-500"></div>
+                            <div className="absolute top-0 left-[66%] w-1 h-full bg-emerald-500"></div>
+                            <div className="absolute top-0 left-[100%] ml-[-4px] w-1 h-full bg-amber-400"></div>
                         </div>
                         <div className="flex items-center justify-between text-[11px] font-bold text-slate-900 uppercase tracking-widest mt-6">
-                            <span>Low Churn / High Control</span>
-                            <span>Managed Flexibility</span>
-                            <span>On-Demand Execution</span>
+                            <span>Direct Ownership</span>
+                            <span>Trial Evaluation</span>
+                            <span>Managed Output</span>
+                            <span>Compliance Support</span>
                         </div>
                     </div>
                 </div>

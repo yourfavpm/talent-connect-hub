@@ -36,7 +36,7 @@ const About = lazy(() => import("./pages/About"));
 const Careers = lazy(() => import("./pages/Careers"));
 const DirectHire = lazy(() => import("./pages/DirectHire"));
 const TrialToHire = lazy(() => import("./pages/TrialToHire"));
-const ProjectEngagement = lazy(() => import("./pages/ProjectEngagement"));
+const ManagedTeams = lazy(() => import("./pages/ManagedTeams"));
 const OffshoreHiring = lazy(() => import("./pages/OffshoreHiring"));
 const VettingProcess = lazy(() => import("./pages/VettingProcess"));
 const PublicJobs = lazy(() => import("./pages/PublicJobs"));
@@ -333,7 +333,7 @@ const App = () => {
                     <Route path="/careers" element={<Careers />} />
                     <Route path="/direct-hire" element={<DirectHire />} />
                     <Route path="/trial-to-hire" element={<TrialToHire />} />
-                    <Route path="/project-engagement" element={<ProjectEngagement />} />
+                    <Route path="/managed-teams" element={<ManagedTeams />} />
                     <Route path="/offshore-hiring" element={<OffshoreHiring />} />
                     <Route path="/vetting-process" element={<VettingProcess />} />
                     <Route path="/404" element={<NotFound />} />

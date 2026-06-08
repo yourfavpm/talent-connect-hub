@@ -113,23 +113,23 @@ const DirectHire = () => {
             {[
               { 
                 id: "01", 
-                title: "Define Role Scope", 
-                desc: "Align on impact expectations and operational outcomes." 
+                title: "Role Briefing", 
+                desc: "Client briefs OpslyHR on the specific role requirements and expectations." 
               },
               { 
                 id: "02", 
                 title: "Curated Shortlist", 
-                desc: "Receive 2–3 vetted candidates within 48 hours." 
+                desc: "We source, screen, and deliver 3 shortlisted profiles within 5–7 business days." 
               },
               { 
                 id: "03", 
-                title: "Structured Interviews", 
-                desc: "Evaluate execution depth and leadership maturity." 
+                title: "Client Interviews", 
+                desc: "You interview the candidates and select your preferred fit for the team." 
               },
               { 
                 id: "04", 
-                title: "Offer & Transfer", 
-                desc: "Permanent employment transfer under agreed terms." 
+                title: "Offer & Onboarding", 
+                desc: "Offer negotiation and structured onboarding managed by OpslyHR." 
               }
             ].map((step, i) => (
               <motion.div 
@@ -165,9 +165,9 @@ const DirectHire = () => {
               <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Transparent Placement Fee</h2>
               <div className="space-y-6 mb-12">
                 {[
-                  "One-time fee",
+                  "One-time placement fee",
                   "Percentage of annual base compensation",
-                  "4-month replacement guarantee"
+                  "90-day replacement guarantee included"
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 text-blue-600" />
@@ -194,7 +194,7 @@ const DirectHire = () => {
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-500">Guarantee Period</span>
-                  <span className="font-bold text-slate-900">120 Days</span>
+                  <span className="font-bold text-slate-900">90 Days</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-500">Search Fee</span>
@@ -217,10 +217,10 @@ const DirectHire = () => {
                 <h2 className="text-3xl md:text-4xl font-semibold mb-8 tracking-tight">When Direct Hire Is the <br />Right Choice</h2>
                 <div className="space-y-6">
                   {[
-                    "Building core leadership",
-                    "Scaling internal product teams",
-                    "Replacing key operational roles",
-                    "Executive-level hiring"
+                    "C-level operations roles (COO, Ops Manager)",
+                    "Companies with internal HR who need sourcing support",
+                    "Clients who want direct ownership of the talent relationship",
+                    "Roles requiring long-term, deep integration"
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-4">
                       <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />

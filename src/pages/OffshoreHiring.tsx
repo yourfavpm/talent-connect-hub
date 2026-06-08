@@ -10,7 +10,7 @@ const OffshoreHiring = () => {
         <div className="bg-white font-inter">
             <SEO 
                 title="Offshore Hiring | Scalable African Operations Infrastructure"
-                description="Build distributed operations teams in Africa and EMEA without the complexity. OpslyHR handles international compliance, payroll, and vetting for high-impact remote operators."
+                description="You find the talent, we employ them legally in Africa. We handle local compliance, payroll, and benefits so you don't need a foreign entity."
                 keywords="Offshore Operations Hiring, Remote Teams Africa, EMEA Operations Talent, Global Hiring Infrastructure, African Operations Outsourcing"
             />
             {/* HERO SECTION */}
@@ -32,10 +32,10 @@ const OffshoreHiring = () => {
                                 Global Operations
                             </div>
                             <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1]">
-                                Build Distributed Teams <br className="hidden md:block" /> Without Operational Friction.
+                                You Find Them. <br className="hidden md:block" /> We Employ Them Legally.
                             </h1>
                             <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-xl">
-                                Access vetted EMEA-based operators with centralized compliance, billing, and coordination. SCALE your workforce without international entity complexity.
+                                Found the perfect talent but lack a legal entity in Africa? OpslyHR acts as your Employer of Record (EOR), handling all local compliance, payroll, and benefits.
                             </p>
                             
                             <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}>
@@ -71,10 +71,10 @@ const OffshoreHiring = () => {
 
                                     {/* Talent Nodes */}
                                     {[
-                                        { top: "10%", left: "10%", label: "EMEA-1", status: "Active" },
-                                        { top: "10%", left: "80%", label: "EMEA-2", status: "Active" },
-                                        { top: "80%", left: "15%", label: "Ops Lead", status: "Vetted" },
-                                        { top: "85%", left: "75%", label: "Product", status: "Matched" }
+                                        { top: "10%", left: "10%", label: "Your Talent", status: "Active" },
+                                        { top: "10%", left: "80%", label: "Your Talent", status: "Active" },
+                                        { top: "80%", left: "15%", label: "EOR Ops", status: "Managed" },
+                                        { top: "85%", left: "75%", label: "Payroll", status: "Compliant" }
                                     ].map((node, idx) => (
                                         <div key={idx} className="absolute z-10" style={{ top: node.top, left: node.left }}>
                                             {/* Connection Line */}
@@ -124,12 +124,12 @@ const OffshoreHiring = () => {
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="flex flex-wrap items-center -mx-4">
                         <div>
-                            <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Cost Optimization <br /> Without Compromise</h2>
+                            <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Flat-Fee <br /> Employer of Record</h2>
                             <div className="space-y-6 mb-12">
                                 {[
-                                    { t: "40–60% cost efficiency potential", icon: Banknote },
-                                    { t: "Currency-neutral billing", icon: ShieldCheck },
-                                    { t: "No international entity setup", icon: Globe }
+                                    { t: "Flat $200/month per employee", icon: Banknote },
+                                    { t: "We handle local taxes and benefits", icon: ShieldCheck },
+                                    { t: "No international entity setup required", icon: Globe }
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
@@ -142,19 +142,19 @@ const OffshoreHiring = () => {
                         </div>
                         
                         <div className="bg-white p-12 rounded-[24px] border border-slate-200 shadow-sm">
-                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Efficiency Impact</div>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Simple Pricing</div>
                             <div className="space-y-8">
                                 <div>
                                     <div className="flex justify-between items-end mb-2">
-                                        <span className="text-sm font-bold text-slate-900">EMEA Talent Pool</span>
-                                        <span className="text-2xl font-bold text-blue-600">60% Saving</span>
+                                        <span className="text-sm font-bold text-slate-900">EOR Management Fee</span>
+                                        <span className="text-2xl font-bold text-blue-600">$200<span className="text-sm font-medium text-slate-500">/mo</span></span>
                                     </div>
-                                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                                        <div className="w-[60%] h-full bg-blue-600"></div>
+                                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden mt-4">
+                                        <div className="w-full h-full bg-blue-600"></div>
                                     </div>
                                 </div>
                                 <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                                    Leverage high-grade talent in emerging markets to significantly reduce operational overhead while maintaining institutional quality standards.
+                                    A single, predictable flat fee per employee covers all HR, compliance, local benefits, and payroll management. No hidden percentages.
                                 </p>
                             </div>
                         </div>
@@ -174,10 +174,10 @@ const OffshoreHiring = () => {
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {[
-                            { t: "Payroll management", d: "Automated monthly disbursements across borders." },
-                            { t: "Contract generation", d: "Localized legal agreements for EMEA compliance." },
-                            { t: "Cross-border compliance", d: "Rigorously managed regulatory and tax handling." },
-                            { t: "Tax handling", d: "Simplified consolidated reporting and withholdings." }
+                            { t: "Talent Introduction", d: "Client introduces their chosen candidate to OpslyHR." },
+                            { t: "Legal Onboarding", d: "OpslyHR onboards the candidate legally under our local entity." },
+                            { t: "Payroll & Taxes", d: "We handle monthly payroll, local taxes, and withholdings." },
+                            { t: "Localized Benefits", d: "Your talent receives required local benefits and compliance." }
                         ].map((item, i) => (
                             <motion.div 
                                 key={i}
@@ -244,10 +244,10 @@ const OffshoreHiring = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[
-                            "Scaling SaaS companies",
-                            "Global product teams",
-                            "Cost-conscious scaling",
-                            "24/7 operational coverage"
+                            "Companies who source their own talent",
+                            "Clients lacking a legal entity in Africa",
+                            "Teams needing compliant global payroll",
+                            "Contractor-to-employee conversions"
                         ].map((item, i) => (
                             <div key={i} className="flex items-center gap-4 p-6 bg-slate-50 border border-slate-100 rounded-xl">
                                 <div className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />

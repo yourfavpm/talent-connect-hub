@@ -5,13 +5,13 @@ import { ArrowRight, CheckCircle2, Target, Clock, Users, Shield, Zap, Layout, Te
 import { Zone, getZoneUrl } from "@/utils/subdomain";
 import SEO from "@/components/SEO";
 
-const ProjectEngagement = () => {
+const ManagedTeams = () => {
     return (
         <div className="bg-white font-inter">
             <SEO 
-                title="Project Engagement | Vetted African Operations Specialists"
-                description="Deploy vetted African operations professionals for specialized milestone-based projects. Get high-impact execution in CRM implementation, automation, and core systems without long-term overhead."
-                keywords="Project Based Operations, Hire African Ops Specialists, Remote Operations Projects, Vetted Managed Projects, Operational Infrastructure Setup"
+                title="Managed Teams | Fully Managed Operational Pods"
+                description="Outsource entire operational functions with dedicated, fully-managed teams. We handle HR, payroll, and performance management so you can focus on growth."
+                keywords="Managed Operations Teams, Outsource Support Team, African Data Entry Team, Fully Managed Operations"
             />
       <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
         <div className="container max-w-[1200px] mx-auto relative z-20 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
@@ -24,13 +24,13 @@ const ProjectEngagement = () => {
                 className="flex flex-col items-start text-left"
               >
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
-                  Project Engagement
+                  Managed Operations Teams
                 </div>
                 <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1]">
-                  Specialized Execution Without <br className="hidden md:block" /> Long-Term Commitment.
+                  Scale Functions Without <br className="hidden md:block" /> Scaling Management.
                 </h1>
                 <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-2xl">
-                  Deploy vetted operators for defined initiatives — milestone-based and outcome-driven. Infrastructure-grade execution for high-impact projects.
+                  Outsource entire operational functions. We build, manage, and scale a dedicated team for you — complete with team leadership, HR, and performance tracking.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row items-start justify-start gap-8">
@@ -39,7 +39,7 @@ const ProjectEngagement = () => {
                           size="lg" 
                           className="h-16 px-12 text-lg rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-xl shadow-blue-100 w-full" 
                       >
-                        Request Project Scope <ArrowRight className="ml-2 h-5 w-5" />
+                        Discuss Managed Teams <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>
                     </Link>
                 </div>
@@ -58,13 +58,13 @@ const ProjectEngagement = () => {
                   <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-blue-100/50 transition-colors duration-700"></div>
                   
                   <div className="relative space-y-0">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-10">Project Lifecycle Tracking</div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-10">Team Deployment Lifecycle</div>
                     
                     {[
-                      { label: "Project Scope", status: "defined", icon: Target },
-                      { label: "Talent Match", status: "assembled", icon: Users },
-                      { label: "Delivery Phase", status: "milestones", icon: Zap },
-                      { label: "Closeout", status: "transition", icon: CheckCircle2 }
+                      { label: "Functional Need", status: "defined", icon: Target },
+                      { label: "Team Assembly", status: "recruited", icon: Users },
+                      { label: "Managed Execution", status: "ongoing", icon: Zap },
+                      { label: "Scale & Optimize", status: "continuous", icon: CheckCircle2 }
                     ].map((step, idx) => (
                       <div key={idx} className="relative flex items-start gap-6 pb-12 last:pb-0">
                         {/* Vertical Line */}
@@ -115,9 +115,9 @@ const ProjectEngagement = () => {
       <section className="py-24 md:py-32 px-6 bg-slate-50 border-t border-slate-100">
         <div className="container max-w-[1200px] mx-auto">
           <div className="mb-20">
-            <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">Milestone-Based Operational Delivery</h2>
+            <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">Fully Managed Functional Delivery</h2>
             <p className="text-slate-500 font-medium max-w-2xl">
-              We replace open-ended consulting with structured project delivery focused on clear operational outcomes.
+              We replace management overhead with a fully integrated, dedicated operational team.
             </p>
           </div>
 
@@ -125,23 +125,23 @@ const ProjectEngagement = () => {
             {[
               { 
                 icon: Target, 
-                title: "Defined Scope", 
-                desc: "Every project starts with an airtight definition of deliverables and success metrics." 
-              },
-              { 
-                icon: Clock, 
-                title: "Structured Timeline", 
-                desc: "Rigorous milestone tracking ensures projects remain on course and within budget." 
+                title: "Define the Function", 
+                desc: "Client outlines the functional need (e.g., 'We need 24/7 customer support')." 
               },
               { 
                 icon: Users, 
-                title: "Dedicated Team", 
-                desc: "Deploy a single specialist or a managed pod of operators aligned to your stack." 
+                title: "Dedicated Team & Lead", 
+                desc: "OpslyHR recruits a dedicated team and assigns an operational Team Lead." 
               },
               { 
                 icon: Shield, 
-                title: "Centralized Coordination", 
-                desc: "An OpslyHR Ops Lead manages the reporting and delivery layer for you." 
+                title: "Total HR Management", 
+                desc: "OpslyHR handles all HR, payroll, performance management, and replacements." 
+              },
+              { 
+                icon: Clock, 
+                title: "Flat Fee Scaling", 
+                desc: "Client pays a predictable, flat monthly fee per team member as you scale." 
               }
             ].map((item, i) => (
               <motion.div 
@@ -168,13 +168,13 @@ const ProjectEngagement = () => {
         <div className="container max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center -mx-4">
             <div>
-              <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Transparent Project Pricing</h2>
+              <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Managed Team Pricing</h2>
               <div className="space-y-8">
                 {[
-                  { t: "Milestone-based", d: "Payments triggered by validated project phases." },
-                  { t: "Hourly or Fixed-scope", d: "Pricing models that align with project complexity." },
-                  { t: "20% platform margin", d: "Covers vetting, sourcing, and operational oversight." },
-                  { t: "Clear deliverables", d: "Zero ambiguity on what you are paying for." }
+                  { t: "Flat monthly fee", d: "Starting at $1,200/month per team member." },
+                  { t: "Team Lead included", d: "Operational oversight is built into the structure." },
+                  { t: "All HR handled", d: "Zero payroll, benefits, or compliance headaches." },
+                  { t: "Predictable scaling", d: "Costs scale linearly with headcount, no surprises." }
                 ].map((item, i) => (
                   <div key={i} className="flex gap-4">
                     <CheckCircle2 className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
@@ -188,19 +188,19 @@ const ProjectEngagement = () => {
             </div>
             
             <div className="bg-[#0B0F19] p-12 rounded-[24px] text-white">
-              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-12">Cost Allocation</h4>
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-12">Pricing Model</h4>
               <div className="space-y-10">
                 <div className="flex justify-between items-baseline border-b border-white/10 pb-6">
-                  <span className="text-sm text-slate-400">Execution Layer</span>
-                  <span className="text-2xl font-bold">70%</span>
+                  <span className="text-sm text-slate-400">Monthly Retainer</span>
+                  <span className="text-2xl font-bold">$1,200<span className="text-sm text-slate-500 font-medium">/mo starting</span></span>
                 </div>
                 <div className="flex justify-between items-baseline border-b border-white/10 pb-6">
-                  <span className="text-sm text-slate-400">Platform & Oversight</span>
-                  <span className="text-2xl font-bold">30%</span>
+                  <span className="text-sm text-slate-400">Team Lead Oversight</span>
+                  <span className="text-2xl font-bold">Included</span>
                 </div>
                 <div className="pt-4">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Result</div>
-                  <div className="text-xl font-medium text-blue-400">Fixed-Cost Predictability</div>
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Cost Predictability</div>
+                  <div className="text-xl font-medium text-blue-400">Flat Fee Per Member</div>
                 </div>
               </div>
             </div>
@@ -212,18 +212,18 @@ const ProjectEngagement = () => {
       <section className="py-24 md:py-32 px-6 bg-slate-900 text-white">
         <div className="container max-w-[1200px] mx-auto">
           <div className="mb-20 text-center">
-            <h2 className="text-3xl md:text-5xl font-semibold mb-6 tracking-tight">Ideal Project Types</h2>
+            <h2 className="text-3xl md:text-5xl font-semibold mb-6 tracking-tight">Ideal Functions to Manage</h2>
             <p className="text-slate-400 font-medium max-w-2xl mx-auto">
-              Our project model is optimized for high-impact technical and operational initiatives requiring specialized depth.
+              Our managed team model is optimized for functions requiring multiple people, reducing your management burden entirely.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Layout, t: "Systems Implementation", d: "CRM, ERP, and operational tool deployments." },
-              { icon: Zap, t: "Growth Infrastructure", d: "Go-to-market tooling and pipeline automation." },
-              { icon: Terminal, t: "Automation & Tooling", d: "Custom internal tools and workflow integrations." },
-              { icon: Users, t: "Interim Leadership", d: "Critical coverage during executive searches." }
+              { icon: Layout, t: "Customer Support", d: "24/7 coverage, high-volume ticket resolution." },
+              { icon: Terminal, t: "Data Operations", d: "Data entry, enrichment, and CRM maintenance." },
+              { icon: Users, t: "Back-Office Ops", d: "Document processing and administrative teams." },
+              { icon: Zap, t: "Sales Development", d: "Lead generation, outreach, and appointment setting." }
             ].map((item, i) => (
               <div key={i} className="p-8 bg-white/5 border border-white/10 rounded-xl">
                 <item.icon className="h-6 w-6 text-blue-500 mb-6" />
@@ -256,10 +256,10 @@ const ProjectEngagement = () => {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {[
-                  { dim: "Overhead", trad: "High Partner Fees", task: "Lower Overhead" },
-                  { dim: "Focus", trad: "Slide Decks & Strategy", task: "Execution-Focused" },
-                  { dim: "Engagement", trad: "External Advisors", task: "Embedded Operators" },
-                  { dim: "Pricing", trad: "Opaque Retainers", task: "Fixed Milestone Costs" }
+                  { dim: "Overhead", trad: "High Management Time", task: "Zero Client Management" },
+                  { dim: "Focus", trad: "Individual Performers", task: "Functional Output" },
+                  { dim: "Structure", trad: "Siloed Freelancers", task: "Cohesive Pod w/ Team Lead" },
+                  { dim: "Pricing", trad: "Unpredictable Hourly", task: "Flat Monthly Fee" }
                 ].map((row, i) => (
                   <tr key={i} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-8 py-6 text-sm font-bold text-slate-900">{row.dim}</td>
@@ -282,13 +282,13 @@ const ProjectEngagement = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
           >
-            <h2 className="text-4xl md:text-6xl font-semibold text-slate-900 mb-12 tracking-tight">Execute High-Impact <br /> Initiatives with Precision.</h2>
+            <h2 className="text-4xl md:text-6xl font-semibold text-slate-900 mb-12 tracking-tight">Outsource the Function, <br /> Not Just the Task.</h2>
             <Link to="/book-consultation">
               <Button 
                   size="lg" 
                   className="h-16 px-12 text-lg rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-xl shadow-blue-100" 
               >
-                Request Project Scope <ArrowRight className="ml-2 h-5 w-5" />
+                Discuss Managed Teams <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
           </motion.div>
@@ -298,4 +298,4 @@ const ProjectEngagement = () => {
   );
 };
 
-export default ProjectEngagement;
+export default ManagedTeams;

@@ -35,7 +35,7 @@ const WebsiteNavbar = () => {
     const SolutionLinks = [
         { name: "Direct Hire", path: "/direct-hire" },
         { name: "Trial-to-Hire", path: "/trial-to-hire" },
-        { name: "Project Engagement", path: "/project-engagement" },
+        { name: "Managed Operations Teams", path: "/managed-teams" },
         { name: "Offshore Hiring", path: "/offshore-hiring" },
     ];
 
@@ -144,10 +144,10 @@ const WebsiteNavbar = () => {
                         Login
                     </a>
                     <a 
-                        href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}
+                        href={getZoneUrl(Zone.AUTH, "/auth/signup/talent")}
                         className="px-6 py-2.5 bg-blue-600 text-white text-[13px] font-bold rounded-full hover:bg-blue-700 transition-all shadow-md shadow-blue-100 font-inter flex items-center gap-2"
                     >
-                        Hire Vetted Talent <ArrowRight className="w-3.5 h-3.5" />
+                        Apply as Talent <ArrowRight className="w-3.5 h-3.5" />
                     </a>
                 </div>
 
@@ -237,10 +237,10 @@ const WebsiteNavbar = () => {
                             <div className="mt-auto px-6 py-8 border-t border-slate-100 bg-white">
                                 <div className="space-y-4">
                                     <a 
-                                        href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}
+                                        href={getZoneUrl(Zone.AUTH, "/auth/signup/talent")}
                                         className="flex items-center justify-center w-full py-4 bg-blue-600 text-white font-bold text-[13px] rounded-full shadow-lg shadow-blue-100 group"
                                     >
-                                        <span>Hire Vetted Talent</span>
+                                        <span>Apply as Talent</span>
                                         <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                                     </a>
                                     <div className="grid grid-cols-2 gap-4">

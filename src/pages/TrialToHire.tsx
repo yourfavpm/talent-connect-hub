@@ -138,23 +138,23 @@ const TrialToHire = () => {
                         {[
                             { 
                                 id: "01", 
-                                title: "Structured Launch", 
-                                desc: "Role defined with measurable outcomes. We align on specific deliverables for the trial period." 
+                                title: "Candidate Selection", 
+                                desc: "Client selects a rigorously vetted candidate directly from Opsly HR's specialized pool." 
                             },
                             { 
                                 id: "02", 
-                                title: "Managed Execution", 
-                                desc: "Talent operates under OpslyHR oversight, ensuring operational continuity from day one." 
+                                title: "Contract Trial Period", 
+                                desc: "Talent works on a flexible contract basis for 1 to 3 months to evaluate execution fit." 
                             },
                             { 
                                 id: "03", 
-                                title: "Performance Evaluation", 
-                                desc: "Track delivery against defined metrics. Regular check-ins to evaluate leadership and technical depth." 
+                                title: "Monthly Retainer", 
+                                desc: "Client pays a simple monthly retainer while OpslyHR handles payroll and compliance." 
                             },
                             { 
                                 id: "04", 
-                                title: "Conversion or Completion", 
-                                desc: "Transition to permanent employment or conclude the engagement with no long-term strings." 
+                                title: "Full-Time Conversion", 
+                                desc: "After the trial, convert the talent to full-time employment for a reduced placement fee." 
                             }
                         ].map((step, i) => (
                             <motion.div 
@@ -186,10 +186,10 @@ const TrialToHire = () => {
                             <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-8 tracking-tight">Managed Engagement Pricing</h2>
                             <div className="space-y-6">
                                 {[
-                                    { icon: BarChart3, t: "Monthly engagement model", d: "No massive upfront costs. Pay as you scale." },
-                                    { icon: Zap, t: "20%–30% platform margin", d: "Transparent operational costs built-in." },
-                                    { icon: ShieldCheck, t: "Centralized payroll & compliance", d: "We handle the administrative burden." },
-                                    { icon: Users, t: "Seamless conversion option", d: "Clear path to full-time hiring." }
+                                    { icon: BarChart3, t: "Monthly retainer model", d: "Starts at $800/month. No massive upfront placement costs." },
+                                    { icon: ShieldCheck, t: "Payroll & compliance", d: "We handle the administrative burden during the trial." },
+                                    { icon: Zap, t: "1-3 month flexibility", d: "Evaluate performance before a long-term commitment." },
+                                    { icon: Users, t: "Reduced placement fee", d: "Discounted fee upon full-time conversion." }
                                 ].map((item, i) => (
                                     <div key={i} className="flex gap-4">
                                         <div className="mt-1">
@@ -208,12 +208,12 @@ const TrialToHire = () => {
                             <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Engagement Dynamics</h4>
                             <div className="space-y-8">
                                 <div className="pb-8 border-b border-white/10">
-                                    <div className="text-sm text-slate-400 mb-2">Platform Margin</div>
-                                    <div className="text-4xl font-bold">20% – 30%</div>
+                                    <div className="text-sm text-slate-400 mb-2">Starting Retainer</div>
+                                    <div className="text-4xl font-bold">$800<span className="text-sm text-slate-500 font-medium">/month</span></div>
                                 </div>
                                 <div className="pb-8 border-b border-white/10">
-                                    <div className="text-sm text-slate-400 mb-2">Engagement Term</div>
-                                    <div className="text-4xl font-bold">90 Days <span className="text-sm text-slate-500 font-medium">minimum</span></div>
+                                    <div className="text-sm text-slate-400 mb-2">Trial Duration</div>
+                                    <div className="text-4xl font-bold">1–3 Months</div>
                                 </div>
                                 <div>
                                     <div className="text-sm text-slate-400 mb-2">Billing Cycle</div>
@@ -234,10 +234,9 @@ const TrialToHire = () => {
                             <h2 className="text-3xl md:text-4xl font-semibold mb-10 tracking-tight">Ideal For</h2>
                             <div className="grid gap-4">
                                 {[
-                                    "High-growth startups",
-                                    "Risk-conscious hiring",
-                                    "Leadership evaluation",
-                                    "Scaling product & ops teams"
+                                    "Mid-level operations roles (Project Managers, EAs)",
+                                    "Clients who want to mitigate hiring risks",
+                                    "Startups needing immediate help with future full-time intent"
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-lg">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
