@@ -35,7 +35,7 @@ const WebsiteFooter = () => {
           </div>
  
           {/* Navigation Links Grid */}
-          <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-12 gap-y-12">
+          <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-x-12 gap-y-12">
             {/* For Companies */}
             <div className="space-y-6">
               <h4 className="text-xs font-bold text-slate-950 uppercase tracking-widest">For Companies</h4>
@@ -107,31 +107,7 @@ const WebsiteFooter = () => {
               </ul>
             </div>
 
-            {/* Programs */}
-            <div className="space-y-6">
-              <h4 className="text-xs font-bold text-slate-950 uppercase tracking-widest">Programs</h4>
-              <ul className="space-y-3">
-                {[
-                  { label: "Operations Bootcamp", href: getZoneUrl(Zone.ACADEMY, "/browse") },
-                  { label: "Leadership Accelerator", href: getZoneUrl(Zone.ACADEMY, "/browse") },
-                  { label: "Vetted Talent Program", to: "/vetting-process" },
-                  { label: "Specialized Projects", to: "/project-engagement" }
-                ].map((link, i) => (
-                  <li key={i}>
-                    {link.href ? (
-                      <a href={link.href} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
-                        {link.label}
-                      </a>
-                    ) : (
-                      <Link to={link.to!} className="text-sm text-slate-500 hover:text-blue-600 font-medium transition-colors">
-                        {link.label}
-                      </Link>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
- 
+
             {/* Company */}
             <div className="space-y-6">
               <h4 className="text-xs font-bold text-slate-950 uppercase tracking-widest">Company</h4>
@@ -154,19 +130,19 @@ const WebsiteFooter = () => {
  
         {/* Contact Strip */}
         <div className="pt-8 border-t border-slate-200 grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="flex items-center gap-2">
-            <Mail className="h-3 w-3 text-blue-600" />
-            <span className="text-xs font-semibold text-slate-700">hire@opslyhr.com</span>
+          <div className="flex items-center gap-3">
+            <Mail className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-semibold text-slate-700">hire@opslyhr.com</span>
           </div>
-          <div className="flex items-start gap-2">
-            <MapPin className="h-3 w-3 text-blue-600 shrink-0 mt-0.5" />
-            <span className="text-[10px] font-semibold text-slate-500 leading-relaxed">
+          <div className="flex items-start gap-3">
+            <MapPin className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+            <span className="text-sm font-semibold text-slate-700 leading-relaxed">
               167 Lombard Ave, Winnipeg, Canada
             </span>
           </div>
-          <div className="flex items-start gap-2">
-            <MapPin className="h-3 w-3 text-blue-600 shrink-0 mt-0.5" />
-            <span className="text-[10px] font-semibold text-slate-500 leading-relaxed">
+          <div className="flex items-start gap-3">
+            <MapPin className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+            <span className="text-sm font-semibold text-slate-700 leading-relaxed">
               44, Commercial Avenue, Yaba, Lagos
             </span>
           </div>
