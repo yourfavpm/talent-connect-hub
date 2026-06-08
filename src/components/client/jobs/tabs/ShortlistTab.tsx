@@ -1,7 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar as CalendarIcon, FilePenLine, UserCheck, SearchX } from "lucide-react";
+import { Calendar as CalendarIcon, FilePenLine, UserCheck, SearchX, Eye } from "lucide-react";
+import { TalentProfileDrawer } from "@/components/client/talents/TalentProfileDrawer";
+import { useState } from "react";
 
 interface ShortlistTabProps {
   applications: any[];
@@ -11,6 +13,8 @@ interface ShortlistTabProps {
 }
 
 export const ShortlistTab = ({ applications, onRequestInterview, onInitiateOffer, isOfferPending }: ShortlistTabProps) => {
+  const [selectedTalentId, setSelectedTalentId] = useState<string | null>(null);
+
   // Shortlist includes candidates moved to shortlist, or already in interview/offer phases.
   const shortlisted = applications?.filter(app => 
     ['shortlisted', 'interview_requested', 'interview_scheduled', 'offer_initiated', 'offer_sent', 'offer_accepted', 'hired'].includes(app.status)
@@ -76,6 +80,15 @@ export const ShortlistTab = ({ applications, onRequestInterview, onInitiateOffer
               </td>
               <td className="px-6 py-4 text-right">
                 <div className="flex justify-end gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="bg-white shadow-sm"
+                    onClick={() => setSelectedTalentId(app.talent_id)}
+                  >
+                    <Eye className="w-4 h-4 mr-2" /> View Profile
+                  </Button>
+                  
                   {/* Interview Request Action */}
                   {['shortlisted'].includes(app.status) && (
                     <Button 
@@ -112,6 +125,14 @@ export const ShortlistTab = ({ applications, onRequestInterview, onInitiateOffer
           ))}
         </tbody>
       </table>
+
+      {selectedTalentId && (
+        <TalentProfileDrawer
+          talentId={selectedTalentId}
+          isOpen={!!selectedTalentId}
+          onClose={() => setSelectedTalentId(null)}
+        />
+      )}
     </div>
   );
 };

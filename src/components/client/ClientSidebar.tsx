@@ -26,7 +26,7 @@ import Logo from "@/components/Logo";
 
 const navigation = [
   { name: "Dashboard", href: "/client/dashboard", icon: LayoutDashboard, iconColor: "text-blue-600", bgColor: "bg-blue-50" },
-  { name: "Browse Talents", href: "/client/browse-talents", icon: Users, iconColor: "text-indigo-600", bgColor: "bg-indigo-50" },
+  // { name: "Browse Talents", href: "/client/browse-talents", icon: Users, iconColor: "text-indigo-600", bgColor: "bg-indigo-50" },
   FEATURES.hire_request_v2_enabled 
     ? { name: "Hire Requests", href: "/client/hire-requests", icon: Briefcase, iconColor: "text-emerald-600", bgColor: "bg-emerald-50" }
     : { name: "Jobs", href: "/client/jobs", icon: Briefcase, iconColor: "text-emerald-600", bgColor: "bg-emerald-50" },
