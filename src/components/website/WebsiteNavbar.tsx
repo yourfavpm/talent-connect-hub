@@ -75,25 +75,29 @@ const WebsiteNavbar = () => {
 
                 {/* Center: Desktop Nav */}
                 <div className="hidden lg:flex items-center gap-8">
-                    {NavLinks.map((link) => (
-                        <Link
-                            key={link.name}
-                            to={link.path}
-                            className="text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900 relative group py-2"
-                        >
-                            {link.name}
-                            <span className="absolute bottom-0 left-0 w-full h-[1.5px] bg-blue-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-                        </Link>
-                    ))}
+                    {NavLinks.map((link) => {
+                        const isActive = location.pathname === link.path;
+                        return (
+                            <Link
+                                key={link.name}
+                                to={link.path}
+                                className={`text-[13px] font-medium transition-colors relative group py-2 ${isActive ? 'text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
+                            >
+                                {link.name}
+                                <span className={`absolute bottom-0 left-0 w-full h-[1.5px] bg-blue-600 transition-transform duration-300 origin-left ${isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`} />
+                            </Link>
+                        );
+                    })}
 
                     {/* Solutions Dropdown */}
                     <div className="relative group/menu">
                         <button 
                             onMouseEnter={() => setIsSolutionsOpen(true)}
                             onMouseLeave={() => setIsSolutionsOpen(false)}
-                            className="flex items-center gap-1 text-[13px] font-medium text-slate-600 hover:text-slate-900 transition-colors py-2"
+                            className={`flex items-center gap-1 text-[13px] font-medium transition-colors relative group py-2 ${SolutionLinks.some(link => location.pathname === link.path) ? 'text-blue-600' : 'text-slate-600 hover:text-slate-900'}`}
                         >
                             Solutions <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isSolutionsOpen ? 'rotate-180' : ''}`} />
+                            <span className={`absolute bottom-0 left-0 w-full h-[1.5px] bg-blue-600 transition-transform duration-300 origin-left ${SolutionLinks.some(link => location.pathname === link.path) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`} />
                         </button>
                         
                         <AnimatePresence>
