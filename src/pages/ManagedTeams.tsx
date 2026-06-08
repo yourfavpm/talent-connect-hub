@@ -208,7 +208,6 @@ const ManagedTeams = () => {
               </div>
             </div>
           </div>
-        </div>
       </section>
 
       {/* SECTION 3 — IDEAL PROJECT TYPES */}
