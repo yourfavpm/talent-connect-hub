@@ -128,7 +128,7 @@ const BookConsultation = () => {
             <div className="absolute inset-0 pointer-events-none z-0 opacity-[0.02]" 
                  style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-            <div className="relative z-10 container max-w-[1200px] mx-auto py-12 md:py-20 px-6 flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
+            <div className="relative z-10 container max-w-[1200px] mx-auto pt-28 pb-12 md:pt-32 md:pb-20 px-6 flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
                 <div className="flex-1 lg:sticky lg:top-24">
                         <div className="max-w-xl">
                             <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200 uppercase tracking-[0.15em] mb-6">
