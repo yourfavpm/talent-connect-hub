@@ -182,6 +182,17 @@ serve(async (req) => {
 
       if (profileError) throw profileError
 
+      // 5.b. Update auth.users to actually confirm the email in Supabase
+      const { error: confirmError } = await supabaseAdmin.auth.admin.updateUserById(
+        record.user_id,
+        { email_confirm: true }
+      )
+      
+      if (confirmError) {
+        console.error('Failed to confirm email in auth.users:', confirmError)
+        // We log but don't throw, so the user still gets redirected to success
+      }
+
       // 6. Send Notifications (Success & Welcome)
       if (profile && !profile.email_verified_sent && email) {
         const isTalent = role === 'talent'

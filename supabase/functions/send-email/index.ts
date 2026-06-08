@@ -177,6 +177,7 @@ serve(async (req) => {
         </div>
         <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.6;">
           &copy; ${new Date().getFullYear()} ${BRAND_DEFAULTS.brand_name}. All rights reserved.<br/>
+          <span style="display: block; margin-top: 4px; margin-bottom: 4px;">167 Lombard Ave, Winnipeg, Canada</span>
           <a href="${BRAND_DEFAULTS.brand_website}" style="color: #94a3b8; text-decoration: none;">${BRAND_DEFAULTS.brand_website}</a>
         </p>
       </div>

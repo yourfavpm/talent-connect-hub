@@ -143,11 +143,9 @@ const TalentSignup = () => {
             );
           }
           
-          // 3. Welcome Email
-          await sendTalentWelcomeEmail({
-            email: formData.email,
-            firstName: formData.firstName,
-          });
+          // 3. Welcome Email is now handled by the auth-verification edge function
+          // upon successful verification. It has been removed from here to prevent
+          // sending it before the user verifies their email.
         } catch (emailError) {
           console.error('Failed to send notifications:', emailError);
         }
