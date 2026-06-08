@@ -4,13 +4,14 @@ import { Check, DollarSign, ShieldCheck, Briefcase, Zap, Globe, Lock, ArrowRight
 import { motion } from "framer-motion";
 import { Zone, getZoneUrl } from "@/utils/subdomain";
 import SEO from "@/components/SEO";
+import CommunityCTA from "@/components/website/CommunityCTA";
 
 const ForProfessionals = () => {
     return (
         <div className="bg-white min-h-screen text-slate-900 selection:bg-blue-600 selection:text-white font-inter">
             <SEO 
-                title="Join our Network | High-Impact African Operations Professionals"
-                description="Apply to join a curated network of vetted African operations professionals. Work with global companies through structured engagements, with compliance and payments handled for you."
+                title="Deliver Operational Capacity | High-Impact African Operations Professionals"
+                description="Deliver reliable operational capacity to growing businesses through structured engagements, with compliance and payments handled for you."
                 keywords="African Operations Professionals, Remote Work for Africans, Vetted Talent Network, Operations Jobs EMEA, Hire African Operators"
             />
 
@@ -23,11 +24,11 @@ const ForProfessionals = () => {
                                 For Operations Professionals
                             </div>
                             <h1 className="text-3xl md:text-7xl font-semibold mb-6 md:mb-8 text-slate-900 leading-[1.2] md:leading-[1.1] tracking-tight">
-                                Join a Curated <br className="hidden md:block" />
-                                Network of <span className="text-blue-600">High-Impact</span> Operators
+                                Deliver Reliable <br className="hidden md:block" />
+                                <span className="text-blue-600">Operational Capacity</span>
                             </h1>
                             <p className="text-base md:text-xl text-slate-600 mb-10 md:mb-12 leading-relaxed font-medium">
-                                Work with ambitious companies through structured, vetted engagements — with contracts, compliance, and payments handled centrally.
+                                Join the global infrastructure for operations talent. Work with growing businesses through structured engagements—executing at a high level without the administrative burden.
                             </p>
                             <div className="flex flex-col sm:flex-row items-start justify-start gap-8 w-full sm:w-auto">
                                 <a href={getZoneUrl(Zone.AUTH, "/auth/signup/talent")} className="w-full sm:w-auto">
@@ -248,6 +249,7 @@ const ForProfessionals = () => {
                 </div>
             </section>
 
+            <CommunityCTA />
         </div>
     );
 };

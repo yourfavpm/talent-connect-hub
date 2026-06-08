@@ -45,10 +45,10 @@ const ForCompanies = () => {
                             className="flex flex-col items-start text-left"
                         >
                                 <h1 className="text-3xl md:text-5xl lg:text-[52px] font-semibold mb-6 md:mb-6 tracking-tight text-slate-900 leading-[1.2] md:leading-[1.1]">
-                                    Operations Talent, <span className="text-slate-900/40 block">Structured for Scale</span>
+                                    Build Reliable <span className="text-slate-900/40 block">Operational Capacity</span>
                                 </h1>
                                 <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium">
-                                    Access rigorously vetted operations professionals — matched, contracted, and managed through a structured platform designed for scale.
+                                    We provide the people, systems, support, and management required to create functions that work. Designed for Startups, SMBs, Agencies, and Growth-stage companies.
                                 </p>
                                 <div className="flex flex-col sm:flex-row items-start justify-start gap-4 mb-12 w-full">
                                     <Button size="lg" className="h-14 px-8 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold shadow-none w-full sm:w-auto" asChild>
@@ -155,10 +155,10 @@ const ForCompanies = () => {
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">The Operational Gap</div>
                         <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold mb-8 text-slate-900 leading-[1.15] tracking-tight">Hiring Without Structure <br/>Slows Growth.</h2>
                         <p className="text-lg text-slate-600 leading-relaxed mb-6 max-w-lg">
-                            When hiring lacks structure, leadership time shifts from strategy to screening, compliance, and coordination.
+                            When operations lack structure, founders get overloaded, customer support becomes inconsistent, and administrative bottlenecks pile up.
                         </p>
                         <p className="text-base text-slate-500 leading-relaxed max-w-lg">
-                            OpslyHR replaces fragmented workflows with a unified operational model designed for scale.
+                            Opsly HR provides the dedicated operational teams and infrastructure needed to break through growth ceilings.
                         </p>
                     </motion.div>
 
@@ -218,10 +218,10 @@ const ForCompanies = () => {
                         <div className="max-w-2xl">
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-6">Our Operational Model</div>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-slate-900 mb-6 leading-[1.1] tracking-tight">
-                                Operational Infrastructure, <br/>Not Just Hiring.
+                                Workforce Solutions, <br/>Not Just Placements.
                             </h2>
                             <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
-                                OpslyHR centralizes vetting, contracting, billing, and engagement management — reducing leadership overhead and operational risk.
+                                We help businesses build, manage, and scale operational teams. We don't just connect you with talent—we deliver operational execution.
                             </p>
                         </div>
                     </div>

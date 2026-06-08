@@ -9,9 +9,9 @@ const OffshoreHiring = () => {
     return (
         <div className="bg-white font-inter">
             <SEO 
-                title="Offshore Hiring | Scalable African Operations Infrastructure"
-                description="You find the talent, we employ them legally in Africa. We handle local compliance, payroll, and benefits so you don't need a foreign entity."
-                keywords="Offshore Operations Hiring, Remote Teams Africa, EMEA Operations Talent, Global Hiring Infrastructure, African Operations Outsourcing"
+                title="Offshore Hiring | Scalable Operational Infrastructure"
+                description="You find the talent, we employ them legally. We handle local compliance, payroll, and benefits so you don't need a foreign entity."
+                keywords="Offshore Operations Hiring, Remote Teams, Global Hiring Infrastructure, Operations Outsourcing"
             />
             {/* HERO SECTION */}
             <section className="relative pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
@@ -237,29 +237,36 @@ const OffshoreHiring = () => {
             </section>
 
             {/* SECTION 4 — IDEAL FOR */}
-            <section className="py-24 md:py-32 px-6 bg-white">
+            <section className="py-24 px-6 bg-white">
                 <div className="container max-w-[1200px] mx-auto">
-                    <div className="max-w-3xl mb-16">
-                        <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">Ideal For</h2>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {[
-                            "Companies who source their own talent",
-                            "Clients lacking a legal entity in Africa",
-                            "Teams needing compliant global payroll",
-                            "Contractor-to-employee conversions"
-                        ].map((item, i) => (
-                            <div key={i} className="flex items-center gap-4 p-6 bg-slate-50 border border-slate-100 rounded-xl">
-                                <div className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
-                                <span className="text-lg font-bold text-slate-900">{item}</span>
+                    <div className="flex flex-col lg:flex-row gap-12 lg:gap-24 items-start">
+                        <div className="lg:w-1/3">
+                            <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight mb-4">Ideal For</h2>
+                            <p className="text-slate-500 font-medium leading-relaxed">
+                                Our EOR service is built specifically for these use cases, streamlining your international expansion.
+                            </p>
+                        </div>
+                        <div className="lg:w-2/3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {[
+                                    "Companies who source their own talent",
+                                    "Clients lacking a legal entity in Africa",
+                                    "Teams needing compliant global payroll",
+                                    "Contractor-to-employee conversions"
+                                ].map((item, i) => (
+                                    <div key={i} className="flex items-start gap-4 p-6 bg-slate-50 border border-slate-100 rounded-xl hover:border-blue-200 transition-colors">
+                                        <div className="w-2 h-2 rounded-full bg-blue-600 shrink-0 mt-2" />
+                                        <span className="text-base font-bold text-slate-900 leading-tight">{item}</span>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        </div>
                     </div>
                 </div>
             </section>
 
             {/* FINAL CTA */}
-            <section className="py-32 px-6 bg-white text-center border-t border-slate-100">
+            <section className="py-24 px-6 bg-slate-900 text-center">
                 <div className="container max-w-4xl mx-auto">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.98 }}
@@ -267,12 +274,12 @@ const OffshoreHiring = () => {
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                     >
-                        <h2 className="text-4xl md:text-6xl font-semibold text-slate-900 mb-12 tracking-tight">Scale Globally. <br /> Operate Seamlessly.</h2>
+                        <h2 className="text-4xl md:text-6xl font-semibold text-white mb-8 tracking-tight">Scale Globally. <br /> Operate Seamlessly.</h2>
+                        <p className="text-lg text-slate-400 mb-12 font-medium max-w-2xl mx-auto">Ready to onboard your talent? Let us handle the compliance, payroll, and local benefits.</p>
                         <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}>
                             <Button 
                                 size="lg" 
-                                variant="outline"
-                                className="h-16 px-12 text-lg rounded-xl border-[1.5px] border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white font-bold transition-all duration-300 shadow-none" 
+                                className="h-16 px-12 text-lg rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-lg" 
                             >
                                 Start Global Engagement <ArrowRight className="ml-2 h-5 w-5" />
                             </Button>

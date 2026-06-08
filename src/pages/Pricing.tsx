@@ -42,9 +42,9 @@ const Pricing = () => {
     return (
         <div className="bg-white min-h-screen text-slate-900 font-inter selection:bg-slate-900 selection:text-white pb-0">
             <SEO 
-                title="Transparent Pricing for African Operations Talent"
-                description="Explore flexible engagement models for hiring vetted African operations professionals. Transparent pricing for direct hire, structured trials, and project-based support."
-                keywords="African Operations Talent Pricing, Remote Hiring Costs, Vetted Talent Fees, EMEA Operations Hiring, Hire African Experts Cost"
+                title="Transparent Pricing for Workforce Solutions"
+                description="Explore flexible engagement models for building reliable operational capacity. Transparent pricing for direct hire, managed teams, and project-based support."
+                keywords="Workforce Solutions Pricing, Operational Capacity Costs, Managed Teams Fees, Operations Hiring, Hire Operational Experts Cost"
             />
 
             {/* 1. HERO SECTION */}
@@ -61,11 +61,11 @@ const Pricing = () => {
                                 Pricing Structure
                             </div>
                             <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold mb-8 tracking-tight leading-[1.1] text-slate-900">
-                                Transparent Engagement Pricing. <br className="hidden md:block" />
-                                <span className="text-slate-400">Built for Scale.</span>
+                                Transparent Pricing for <br className="hidden md:block" />
+                                <span className="text-slate-400">Operational Capacity.</span>
                             </h1>
                             <p className="text-lg md:text-xl text-slate-600 font-medium leading-relaxed max-w-xl mb-12">
-                                Our pricing aligns with your engagement model — whether you’re building long-term leadership capacity, testing talent before committing, or executing high-impact projects.
+                                Our pricing aligns with your engagement model — whether you’re building long-term leadership capacity, testing managed teams before committing, or executing high-impact projects.
                             </p>
                             
                             <div className="flex flex-col items-start gap-6 w-full">
@@ -104,7 +104,7 @@ const Pricing = () => {
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-10">Operational Cost Architecture</div>
                                     
                                     {[
-                                        { label: "Talent Matching", status: "vetted" },
+                                        { label: "Capacity Matching", status: "vetted" },
                                         { label: "Platform Compliance", status: "centralized" },
                                         { label: "Managed Success", status: "active" },
                                         { label: "Scalable Growth", status: "unlimited" }
@@ -279,7 +279,7 @@ const Pricing = () => {
                             <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">On-Demand</div>
                             <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Project Support</h3>
                             <p className="text-sm text-slate-600 font-medium leading-relaxed mb-10">
-                                Specialized execution without long-term hiring.
+                                Specialized execution without long-term commitment.
                             </p>
                             
                             <div className="w-full space-y-6 mb-12">
@@ -476,7 +476,7 @@ const Pricing = () => {
                         <div className="space-y-4">
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-2">Engagement & Hiring</div>
                             {[
-                                { q: "Are there any upfront activation fees?", answer: "No. OpslyHR does not charge setup or search fees. You only pay for talent once an engagement begins or a hire is finalized." },
+                                { q: "Are there any upfront activation fees?", answer: "No. OpslyHR does not charge setup or search fees. You only pay for capacity once an engagement begins or a hire is finalized." },
                                 { q: "Do you require exclusivity?", answer: "Exclusivity is not required for contingent direct hire placements. However, for managed trials and projects, we focus on dedicated delivery." },
                                 { q: "What is your replacement guarantee?", answer: "Full-time placements include a 120-day replacement guarantee. Managed trials can be terminated or changed at any point with 30 days notice." }
                             ].map((faq, i) => (
@@ -487,7 +487,7 @@ const Pricing = () => {
                         <div className="space-y-4">
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-2">Compliance & Billing</div>
                             {[
-                                { q: "How is global payroll managed?", answer: "OpslyHR acts as the Employer of Record for offshore talent, handling all local taxes, benefits, and labor laws. You pay one invoice." },
+                                { q: "How is global payroll managed?", answer: "OpslyHR acts as the Employer of Record for offshore professionals, handling all local taxes, benefits, and labor laws. You pay one invoice." },
                                 { q: "Can we convert a trial professional to full-time?", answer: "Yes. Our Trial-to-Hire model includes a pre-defined conversion schedule based on the duration of the trial period." },
                                 { q: "Which currencies do you support for billing?", answer: "We primarily bill in USD, EUR, and GBP, but we can accommodate local currency billing for qualified enterprise accounts." }
                             ].map((faq, i) => (

@@ -11,7 +11,7 @@ const ManagedTeams = () => {
             <SEO 
                 title="Managed Teams | Fully Managed Operational Pods"
                 description="Outsource entire operational functions with dedicated, fully-managed teams. We handle HR, payroll, and performance management so you can focus on growth."
-                keywords="Managed Operations Teams, Outsource Support Team, African Data Entry Team, Fully Managed Operations"
+                keywords="Managed Operations Teams, Outsource Support Team, Managed Data Entry Team, Fully Managed Operations"
             />
       <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6 overflow-hidden">
         <div className="container max-w-[1200px] mx-auto relative z-20 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">

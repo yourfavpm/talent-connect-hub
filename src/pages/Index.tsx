@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle, Clock, Globe, Shield, Users, Zap, Briefcase, Layout, CreditCard, Search, UserCheck, ChevronRight, TrendingUp, Loader2 } from "lucide-react";
+import CommunityCTA from "@/components/website/CommunityCTA";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -192,27 +193,27 @@ const Index = () => {
           {/* Left Side: Content & Trust Indicators */}
           <div className="animate-slide-up flex flex-col items-start text-left flex-1 min-w-0">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 md:mb-8 leading-[1.2] md:leading-[1.15] text-slate-900">
-              The Global Infrastructure for Exceptional Operations Talent.
+              Build Reliable Operational Teams Without the Hiring Complexity.
             </h1>
 
             <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 max-w-lg leading-relaxed font-medium mx-auto lg:mx-0">
-              We connect global businesses with high-impact professionals through strategic placements, end-to-end workforce management, and professional education.
+              Opsly HR helps growing businesses hire, manage, and scale operational talent through structured workforce solutions and ongoing support.
             </p>
 
             <div className="flex flex-col sm:flex-row justify-start gap-4 mb-14 w-full">
               <Link to="/book-consultation" className="w-full sm:w-auto">
                 <Button size="lg" className="h-14 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md shadow-blue-900/10 transition-all font-semibold w-full">
-                  Schedule a call
+                  Book a Consultation
                 </Button>
               </Link>
               <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")} className="w-full sm:w-auto">
                 <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-700 hover:bg-slate-100/80 rounded-full font-semibold flex items-center justify-center lg:justify-start gap-2 w-full">
-                  Hire Vetted Talent <ArrowRight className="w-4 h-4" />
+                  Build Your Team <ArrowRight className="w-4 h-4" />
                 </Button>
               </a>
             </div>
             
-            {/* MOBILE ONLY: FEATURED TALENT CARD */}
+            {/* MOBILE ONLY: FEATURED CAPACITY CARD */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -220,28 +221,28 @@ const Index = () => {
               className="lg:hidden w-full max-w-sm bg-white rounded-2xl p-5 shadow-xl shadow-slate-200/60 border border-slate-100 mb-12"
             >
               <div className="flex items-center gap-4 mb-4">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-sm font-bold border border-slate-100 shadow-sm ${getAvatarColor("Oluwatosin Adelaja")}`}>
-                  {getInitials("Oluwatosin Adelaja")}
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white bg-blue-600 shadow-sm`}>
+                  <Shield className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 text-sm">Oluwatosin A.</span>
+                    <span className="font-bold text-slate-900 text-sm">Customer Support</span>
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   </div>
-                  <p className="text-xs text-slate-500 font-medium">Virtual Assistant</p>
+                  <p className="text-xs text-slate-500 font-medium">Fully Managed Team</p>
                 </div>
                 <div className="ml-auto flex flex-col items-end">
-                  <span className="text-[9px] font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded tracking-tighter">VETTED L5</span>
+                  <span className="text-[9px] font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded tracking-tighter">OPERATIONAL</span>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-50">
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Relavent EXP</span>
-                  <span className="text-xs font-bold text-slate-700">14 Years</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Metric</span>
+                  <span className="text-xs font-bold text-slate-700">98% CSAT</span>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Active Region</span>
-                  <span className="text-xs font-bold text-slate-700">EMEA / GMT+2</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Coverage</span>
+                  <span className="text-xs font-bold text-slate-700">24/7 Global</span>
                 </div>
               </div>
             </motion.div>
@@ -265,65 +266,65 @@ const Index = () => {
           <div className="relative animate-fade-in hidden lg:flex h-[540px] flex-1 items-center justify-center min-w-0">
             {[
               {
-                name: "Omo Izuafa",
-                role: "Operations Manager",
-                level: 5,
-                tags: ["Strategy", "Process", "Scaling"],
-                tz: "GMT-4",
-                exp: "3 Yrs",
+                title: "Administrative Workflows",
+                status: "Executed",
+                icon: Briefcase,
+                tags: ["Inbox Zero", "CRM Management", "Scheduling"],
+                metrics: "Zero Backlog",
+                time: "Asynchronous",
                 offset: "translate-y-12 z-10 opacity-40 scale-95"
               },
               {
-                name: "Kate Ogbuka",
-                role: "HR Business Partner",
-                level: 5,
-                tags: ["HR Strategy", "Culture", "Talent"],
-                tz: "GMT+1",
-                exp: "8 Yrs",
+                title: "Customer Support Teams",
+                status: "Fully Managed",
+                icon: MessageSquare,
+                tags: ["24/7 Coverage", "SLA Adherence", "Omnichannel"],
+                metrics: "98% CSAT",
+                time: "GMT Alignment",
                 offset: "translate-x-12 -translate-y-2 z-20 opacity-70 scale-[0.98]"
               },
               {
-                name: "SYLVIA AGALA",
-                role: "Customer Support Specialist",
-                level: 5,
-                tags: ["Email Marketing", "Data Analysis", "Support"],
-                tz: "GMT",
-                exp: "3 Yrs",
+                title: "Team Leadership & HR",
+                status: "Handled",
+                icon: ShieldCheck,
+                tags: ["Payroll", "Compliance", "Performance"],
+                metrics: "100% Retained",
+                time: "Centralized",
                 offset: "-translate-x-4 translate-y-32 z-30 shadow-xl"
               }
-            ].map((talent, i) => (
+            ].map((feature, i) => (
               <motion.div 
                 key={i}
                 whileHover={{ y: -8, scale: 1.02 }}
-                className={`absolute top-0 right-0 w-[360px] aspect-square bg-white rounded-2xl p-8 shadow-2xl shadow-slate-950/5 border border-slate-100 transition-all duration-500 flex flex-col justify-center ${talent.offset}`}
+                className={`absolute top-0 right-0 w-[360px] aspect-square bg-white rounded-2xl p-8 shadow-2xl shadow-slate-950/5 border border-slate-100 transition-all duration-500 flex flex-col justify-center ${feature.offset}`}
               >
                 <div className="flex items-center gap-4 mb-6">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold border border-slate-50 shadow-sm ${getAvatarColor(talent.name)}`}>
-                    {getInitials(talent.name)}
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center text-white bg-blue-600 border border-slate-50 shadow-sm">
+                    <feature.icon className="w-7 h-7" />
                   </div>
                   <div className="flex-grow">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <div className="font-bold text-slate-900 text-lg">{talent.name}</div>
-                      <div className="w-2 h-2 rounded-full bg-green-500" title="Available" />
+                      <div className="font-bold text-slate-900 text-lg">{feature.title}</div>
+                      <div className="w-2 h-2 rounded-full bg-green-500" title="Active" />
                     </div>
-                    <div className="text-slate-500 text-sm font-semibold">{talent.role}</div>
+                    <div className="text-slate-500 text-sm font-semibold">{feature.status}</div>
                   </div>
                 </div>
 
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between items-center text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                    <span>Vetted Skill Level</span>
-                    <span className="text-blue-600">Level {talent.level}/5</span>
+                    <span>Operational Reliability</span>
+                    <span className="text-blue-600">Level 5/5</span>
                   </div>
                   <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map(star => (
-                      <div key={star} className={`h-1 flex-grow rounded-full ${star <= talent.level ? 'bg-blue-600' : 'bg-slate-100'}`} />
+                      <div key={star} className={`h-1 flex-grow rounded-full bg-blue-600`} />
                     ))}
                   </div>
                 </div>
 
                 <div className="flex gap-2 flex-wrap mb-6">
-                  {talent.tags.map(tag => (
+                  {feature.tags.map(tag => (
                     <span key={tag} className="bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg text-[11px] font-bold border border-slate-100">
                       {tag}
                     </span>
@@ -332,12 +333,12 @@ const Index = () => {
 
                 <div className="flex justify-between items-center pt-5 border-t border-slate-50">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Timezone</span>
-                    <span className="text-xs font-bold text-slate-700">{talent.tz}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Time</span>
+                    <span className="text-xs font-bold text-slate-700">{feature.time}</span>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Experience</span>
-                    <span className="text-xs font-bold text-slate-700">{talent.exp}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Metrics</span>
+                    <span className="text-xs font-bold text-slate-700">{feature.metrics}</span>
                   </div>
                 </div>
               </motion.div>
@@ -455,10 +456,10 @@ const Index = () => {
           {/* Header */}
           <div className="mb-16 md:mb-20 animate-slide-up">
             <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-4 leading-tight tracking-tight">
-              No Search. No Guesswork. No Hiring Headaches.
+              Growth Uncovers Operational Cracks.
             </h2>
             <p className="text-base md:text-lg text-slate-500 font-light max-w-2xl">
-              We handle sourcing, vetting, compliance, and ongoing support — so you don’t have to.
+              Businesses don't struggle from a lack of ambition—they struggle because operations become increasingly difficult to manage as they grow.
             </p>
           </div>
 
@@ -471,24 +472,24 @@ const Index = () => {
               <div className="space-y-10 md:space-y-12">
                 {[
                   {
-                    title: "Verified Skills & Performance Testing",
-                    desc: "Every professional goes through structured vetting and capability validation."
+                    title: "Founder Overload",
+                    desc: "Leadership gets pulled into day-to-day administrative firefighting instead of strategic growth."
                   },
                   {
-                    title: "Replacement Guarantee",
-                    desc: "If a match isn’t right, we replace at no additional cost."
+                    title: "Inconsistent Customer Support",
+                    desc: "Response times drop, service quality varies, and customer satisfaction suffers."
                   },
                   {
-                    title: "Managed HR & Compliance Included",
-                    desc: "Contracts, payments, and engagement compliance handled for you."
+                    title: "Administrative Bottlenecks",
+                    desc: "Back-office tasks pile up, leading to slow processing and disorganized operations."
                   },
                   {
-                    title: "English Fluency & Timezone Matching",
-                    desc: "Professionals aligned to your communication and working hours."
+                    title: "Fragmented Processes",
+                    desc: "No clear systems or accountability, resulting in inconsistent task completion."
                   },
                   {
-                    title: "Flexible Engagement Models",
-                    desc: "Direct hire, trial-to-hire, and project-based engagements."
+                    title: "Hiring Complexity",
+                    desc: "Finding, vetting, and managing reliable support staff is slow and expensive."
                   }
                 ].map((benefit, i) => (
                   <div key={i} className="relative">
@@ -510,15 +511,15 @@ const Index = () => {
             <div className="lg:col-span-5 w-full">
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 md:p-10 sticky top-32">
                 <h4 className="text-base font-semibold text-slate-900 mb-8 uppercase tracking-wider">
-                  Enterprise-Level Operational Support
+                  The Opsly HR Solution
                 </h4>
                 
                 <div className="space-y-6">
                   {[
-                    "Dedicated talent manager",
-                    "Structured onboarding",
-                    "Ongoing performance oversight",
-                    "Transparent billing"
+                    "Targeted Talent Acquisition",
+                    "End-to-end Workforce Management",
+                    "Dedicated Team Building",
+                    "Operational Support Systems"
                   ].map((item, i) => (
                     <div key={i} className={`pb-6 ${i !== 3 ? 'border-b border-slate-100' : ''}`}>
                       <div className="flex items-center gap-3">
@@ -543,7 +544,7 @@ const Index = () => {
                       ))}
                     </div>
                     <p className="text-xs text-slate-400 font-medium leading-tight">
-                      Standard in every <br />engagement model.
+                      We don't just provide people. <br />We deliver operational capacity.
                     </p>
                   </div>
                 </div>
@@ -1245,6 +1246,7 @@ const Index = () => {
         </div>
       </section>
 
+      <CommunityCTA />
     </div>
   );
 };

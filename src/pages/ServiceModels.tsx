@@ -47,9 +47,9 @@ const ServiceModels = () => {
     return (
         <div className="bg-background min-h-screen text-foreground selection:bg-primary selection:text-white pb-0">
             <SEO 
-                title="Service Models | Flexible Hiring for African Operations Talent"
-                description="Choose the engagement model that fits your growth. From Direct Hire to Managed Trials and Project-Based execution, explore how to scale with vetted African operations professionals."
-                keywords="Service Models, Hiring African Talent, Remote Operations Engagement, Directed Placement, Project Based Talent Africa"
+                title="Service Models | Flexible Engagement for Workforce Solutions"
+                description="Choose the engagement model that fits your growth. From Direct Hire to Managed Teams and Project-Based execution, explore how to scale with operational capacity."
+                keywords="Service Models, Workforce Solutions, Remote Operations Engagement, Directed Placement, Project Based Capacity"
             />
 
             <section className="relative pt-32 md:pt-40 pb-12 md:pb-24 px-2 sm:px-6 bg-white border-b border-slate-100 font-inter overflow-hidden">
