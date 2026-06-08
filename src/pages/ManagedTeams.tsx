@@ -179,7 +179,7 @@ const ManagedTeams = () => {
                   <div key={i} className="flex gap-4">
                     <CheckCircle2 className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-bold text-slate-900">{item.t}</h4>
+                      <div className="text-base font-bold text-slate-900 mb-1">{item.t}</div>
                       <p className="text-sm text-slate-500 font-medium">{item.d}</p>
                     </div>
                   </div>
@@ -247,13 +247,13 @@ const ManagedTeams = () => {
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto overflow-hidden border border-slate-100 rounded-2xl shadow-sm">
-            <table className="w-full text-left">
+          <div className="w-full overflow-x-auto border border-slate-100 rounded-2xl shadow-sm">
+            <table className="w-full text-left min-w-[600px]">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="px-8 py-6 text-sm font-bold text-slate-500 uppercase tracking-widest">Dimension</th>
-                  <th className="px-8 py-6 text-sm font-bold text-slate-900 uppercase tracking-widest">Traditional Model</th>
-                  <th className="px-8 py-6 text-sm font-bold text-blue-600 uppercase tracking-widest bg-blue-50/30">OpslyHR Project</th>
+                  <th className="px-6 md:px-8 py-6 text-sm font-bold text-slate-500 uppercase tracking-widest">Dimension</th>
+                  <th className="px-6 md:px-8 py-6 text-sm font-bold text-slate-900 uppercase tracking-widest">Traditional Model</th>
+                  <th className="px-6 md:px-8 py-6 text-sm font-bold text-blue-600 uppercase tracking-widest bg-blue-50/30">OpslyHR Project</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -264,9 +264,9 @@ const ManagedTeams = () => {
                   { dim: "Pricing", trad: "Unpredictable Hourly", task: "Flat Monthly Fee" }
                 ].map((row, i) => (
                   <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-8 py-6 text-sm font-bold text-slate-900">{row.dim}</td>
-                    <td className="px-8 py-6 text-sm text-slate-400 font-medium">{row.trad}</td>
-                    <td className="px-8 py-6 text-sm text-slate-900 font-bold bg-blue-50/10">{row.task}</td>
+                    <td className="px-6 md:px-8 py-6 text-sm font-bold text-slate-900">{row.dim}</td>
+                    <td className="px-6 md:px-8 py-6 text-sm text-slate-400 font-medium">{row.trad}</td>
+                    <td className="px-6 md:px-8 py-6 text-sm text-slate-900 font-bold bg-blue-50/10">{row.task}</td>
                   </tr>
                 ))}
               </tbody>
