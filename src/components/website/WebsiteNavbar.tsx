@@ -64,9 +64,9 @@ const WebsiteNavbar = () => {
 
     return (
         <>
-            <div className="fixed top-4 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none font-inter transition-all duration-300">
-                <nav className="pointer-events-auto w-full max-w-6xl bg-white/80 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-full">
-                    <div className="px-6 md:px-8 h-16 flex items-center justify-between">
+            <div className="fixed top-4 left-0 right-0 z-[100] flex justify-center px-4 md:px-6 lg:px-8 pointer-events-none font-inter transition-all duration-300">
+                <nav className="pointer-events-auto w-full max-w-[1440px] bg-white/80 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-full">
+                    <div className="px-6 md:px-10 h-16 flex items-center justify-between">
                 
                 {/* Left: Logo */}
                 <Link to="/" className="flex items-center shrink-0 py-2 transition-transform hover:scale-[1.05]">
