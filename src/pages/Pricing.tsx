@@ -195,11 +195,11 @@ const Pricing = () => {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8">
-                        {/* Direct Hire */}
+                        {/* Full Time Hire */}
                         <div className="p-8 md:p-10 border border-slate-200 rounded-2xl hover:shadow-lg transition-all flex flex-col bg-white group">
-                            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">1. Direct Hire</div>
+                            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">1. Full Time Hire</div>
                             <h3 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight group-hover:text-blue-600 transition-colors">Build your team with permanent operational talent</h3>
-                            <p className="text-slate-600 mb-8 leading-relaxed">Direct Hire is for companies that want to hire full-time operational staff quickly and reliably.</p>
+                            <p className="text-slate-600 mb-8 leading-relaxed">Full Time Hire is for companies that want to hire full-time operational staff quickly and reliably.</p>
                             
                             <h4 className="font-bold text-slate-900 mb-4">We handle:</h4>
                             <ul className="space-y-3 mb-8">
@@ -339,7 +339,7 @@ const Pricing = () => {
 
                     <div className="grid sm:grid-cols-2 gap-6">
                         {[
-                            { title: "Direct Hire", desc: "You want fast permanent hires" },
+                            { title: "Full Time Hire", desc: "You want fast permanent hires" },
                             { title: "Trial-to-Hire", desc: "You want reduced hiring risk" },
                             { title: "Managed Team", desc: "You want Opsly to run execution with you" },
                             { title: "Offshore Hiring", desc: "You want scalable global talent access" }
@@ -429,23 +429,7 @@ const Pricing = () => {
                 <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80')] bg-cover bg-center grayscale invert"></div>
             </section>
 
-            {/* 7. DECISION SUPPORT SECTION (Retained from original) */}
-            <section className="py-24 px-6 bg-white border-b border-slate-100">
-                <div className="container max-w-[800px] mx-auto text-left md:text-center">
-                    <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 tracking-tight">Not Sure Which Model Fits?</h2>
-                    <p className="text-base text-slate-600 font-medium leading-relaxed mb-10 max-w-2xl mx-auto">
-                        Every organization has unique operational requirements. Speak with our engagement experts to determine the most cost-effective and risk-aligned model for your team.
-                    </p>
-                    <Link 
-                        to="/book-consultation"
-                        className="inline-flex items-center px-10 py-5 border-1.5 border-slate-900 text-slate-900 font-bold rounded-lg hover:bg-slate-900 hover:text-white transition-all duration-300"
-                    >
-                        Book a Structured Consultation →
-                    </Link>
-                </div>
-            </section>
-
-            {/* 8. FAQ SECTION (Retained from original) */}
+            {/* 7. FAQ SECTION (Retained from original) */}
             <section className="py-24 px-6 bg-slate-50">
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="text-center mb-20">
@@ -481,34 +465,103 @@ const Pricing = () => {
                 </div>
             </section>
 
-            {/* 9. FINAL MESSAGE / CTA SECTION */}
-            <section className="py-32 px-6 bg-white text-center border-t border-slate-100">
-                <div className="container max-w-4xl mx-auto">
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-slate-900 mb-8 tracking-tight">
-                        OpslyHR is built for businesses that are <br className="hidden md:block" /> serious about execution.
-                    </h2>
-                    <p className="text-xl text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto mb-10">
-                        Whether you are hiring one person or building an entire operational function — we give you structured ways to scale.
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-3 sm:gap-6 text-xs sm:text-sm font-bold uppercase tracking-widest text-slate-400 mb-16">
-                        <span>Not guesswork.</span>
-                        <span className="hidden sm:inline">•</span>
-                        <span>Not random hiring.</span>
-                        <span className="hidden sm:inline">•</span>
-                        <span className="text-blue-600">Structured workforce building.</span>
-                    </div>
-
-                    <div className="p-8 sm:p-12 md:p-16 bg-slate-50 border border-slate-100 rounded-3xl shadow-sm">
-                        <h3 className="text-2xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">Build your operational team with structure and confidence.</h3>
-                        <p className="text-lg text-slate-600 font-medium mb-10">Choose the model that fits your growth stage.</p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Link to="/book-consultation" className="px-8 py-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all w-full sm:w-auto text-center">
-                                Build Your Team
-                            </Link>
-                            <Link to="/book-consultation" className="px-8 py-4 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:border-slate-900 hover:text-slate-900 transition-all w-full sm:w-auto text-center hover:bg-white">
-                                Speak to Opsly
-                            </Link>
+            {/* 8. EXECUTION SECTION */}
+            <section className="py-24 px-6 bg-white border-t border-slate-100 overflow-hidden relative">
+                <div className="container max-w-[1200px] mx-auto relative z-10">
+                    <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
+                        {/* Left Content */}
+                        <div className="flex-1 w-full text-left">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6 }}
+                            >
+                                <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-8 tracking-tight leading-[1.1] text-slate-900">
+                                    OpslyHR is built for businesses that are <br className="hidden lg:block" /> serious about <span className="text-blue-600">execution.</span>
+                                </h2>
+                                <p className="text-lg md:text-xl text-slate-600 font-medium leading-relaxed mb-10 max-w-2xl">
+                                    Whether you are hiring one person or building an entire operational function — we give you structured ways to scale.
+                                </p>
+                                <div className="flex flex-col gap-5 text-sm font-bold uppercase tracking-widest text-slate-400">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                                            <Check className="w-4 h-4 text-slate-300" />
+                                        </div>
+                                        <span>Not guesswork.</span>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                                            <Check className="w-4 h-4 text-slate-300" />
+                                        </div>
+                                        <span>Not random hiring.</span>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                                            <Check className="w-4 h-4 text-blue-600" />
+                                        </div>
+                                        <span className="text-blue-600">Structured workforce building.</span>
+                                    </div>
+                                </div>
+                            </motion.div>
                         </div>
+
+                        {/* Right Content - Illustration */}
+                        <div className="flex-1 w-full flex justify-end">
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.8, delay: 0.2 }}
+                                className="relative w-full max-w-md"
+                            >
+                                <div className="bg-white border border-slate-200 rounded-[24px] p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-blue-100/50 transition-colors duration-700"></div>
+                                    
+                                    <div className="relative space-y-5 z-10">
+                                        {[
+                                            { title: "Define Requirements", complete: true },
+                                            { title: "Source & Vet Talent", complete: true },
+                                            { title: "Onboard & Structure", complete: true },
+                                            { title: "Manage Execution", complete: true }
+                                        ].map((step, i) => (
+                                            <div key={i} className="h-16 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center px-4 gap-4 transition-transform hover:-translate-y-1 duration-300">
+                                                <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                                                    <span className="text-slate-400 font-bold text-xs">0{i + 1}</span>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="text-sm font-bold text-slate-700">{step.title}</div>
+                                                </div>
+                                                <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0">
+                                                    <Check className="w-3.5 h-3.5 text-blue-500" />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Decorative background element */}
+                                <div className="absolute -z-10 -bottom-6 -right-6 w-24 h-24 bg-slate-50 rounded-2xl rotate-12"></div>
+                            </motion.div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* 9. PREFOOTER (Not sure which model fits) */}
+            <section className="py-24 px-6 bg-slate-50 border-t border-slate-100">
+                <div className="container max-w-[800px] mx-auto text-center">
+                    <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 tracking-tight">Not Sure Which Model Fits?</h2>
+                    <p className="text-base text-slate-600 font-medium leading-relaxed mb-10 max-w-2xl mx-auto">
+                        Every organization has unique operational requirements. Speak with our engagement experts to determine the most cost-effective and risk-aligned model for your team.
+                    </p>
+                    <div className="flex justify-center">
+                        <Link 
+                            to="/book-consultation"
+                            className="inline-flex items-center justify-center px-10 py-5 border-2 border-slate-900 text-slate-900 font-bold rounded-lg hover:bg-slate-900 hover:text-white transition-all duration-300 sm:w-auto w-full"
+                        >
+                            Book a Structured Consultation →
+                        </Link>
                     </div>
                 </div>
             </section>
