@@ -205,9 +205,9 @@ const Index = () => {
                   Schedule a call
                 </Button>
               </Link>
-              <a href={getZoneUrl(Zone.AUTH, "/auth/signup/talent")} className="w-full sm:w-auto">
+              <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")} className="w-full sm:w-auto">
                 <Button variant="ghost" size="lg" className="h-14 px-8 text-base text-slate-700 hover:bg-slate-100/80 rounded-full font-semibold flex items-center justify-center lg:justify-start gap-2 w-full">
-                  Apply as talent <ArrowRight className="w-4 h-4" />
+                  Hire Vetted Talent <ArrowRight className="w-4 h-4" />
                 </Button>
               </a>
             </div>
@@ -356,9 +356,9 @@ const Index = () => {
             <div className="flex animate-marquee gap-16 items-center opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
               {/* Actual Companies - Duplicated for infinite scroll */}
               {[
-                "Kemuko", "Xanotech", "Spectrum Microfinance", "Squared Space",
-                "Kemuko", "Xanotech", "Spectrum Microfinance", "Squared Space",
-                "Kemuko", "Xanotech", "Spectrum Microfinance", "Squared Space"
+                "Kemuko", "Xanotech", "Spectrum Microfinance", "Squared Space", "Skeduley", "Meerge", "Megadel",
+                "Kemuko", "Xanotech", "Spectrum Microfinance", "Squared Space", "Skeduley", "Meerge", "Megadel",
+                "Kemuko", "Xanotech", "Spectrum Microfinance", "Squared Space", "Skeduley", "Meerge", "Megadel"
               ].map((name, i) => (
                 <div key={i} className="flex-shrink-0 flex items-center justify-center">
                   <span className="text-xl md:text-2xl font-bold font-display text-slate-400 whitespace-nowrap">{name}</span>
@@ -741,40 +741,52 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
                 title: "Direct Hire",
-                desc: "Permanent placement with a one-time 15% annual salary buyout.",
+                desc: "One-Time Fee. The client hires the talent permanently. OpslyHR handles sourcing, screening, and placement.",
                 traits: [
-                  "Direct employment relationship",
-                  "No ongoing platform margin",
-                  "Structured contract transfer",
-                  "Best for long-term hires"
+                  "15–20% of annual salary",
+                  "3 shortlisted profiles in 5–7 days",
+                  "90-day replacement guarantee",
+                  "Best for C-level & internal HR teams"
                 ],
                 recommended: false,
                 accent: "border-t-slate-400"
               },
               {
                 title: "Trial-to-Hire",
-                desc: "Start managed, convert anytime. The most flexible path to permanent scale.",
+                desc: "Low Risk Entry. Engage talent for 30–90 days. If it works out, convert to permanent or ongoing managed contract.",
                 traits: [
-                  "20% platform margin",
-                  "Payroll managed by OpslyHR",
-                  "Monthly or hourly billing",
-                  "Conversion flexibility"
+                  "$800–$2,500/mo + conversion fee",
+                  "30-day minimum trial",
+                  "OpslyHR employs talent during trial",
+                  "No obligation if not converted"
                 ],
                 recommended: true,
                 accent: "border-t-blue-600"
               },
               {
-                title: "One-Time Project",
-                desc: "Defined scope, fast deployment. Surgical strikes for specific needs.",
+                title: "Managed Teams",
+                desc: "Highest Lifetime Value. We build, manage, and support a dedicated operational team. We handle HR and performance.",
                 traits: [
-                  "30% margin built into project pricing",
-                  "No long-term commitment",
-                  "Clear deliverables",
-                  "Rapid start"
+                  "$1,200–$6,000 per member/mo",
+                  "Dedicated team members assigned exclusively",
+                  "Monthly performance reporting & KPIs",
+                  "Quarterly business reviews for large teams"
+                ],
+                recommended: false,
+                accent: "border-t-emerald-500"
+              },
+              {
+                title: "Offshore Hiring Support",
+                desc: "Employer of Record. For clients who want to hire African talent directly but need compliant employment infrastructure.",
+                traits: [
+                  "$200–$600 per employee/mo (EOR fee)",
+                  "Locally compliant employment contracts",
+                  "Monthly payroll, tax & pension processing",
+                  "IP and data protection clauses"
                 ],
                 recommended: false,
                 accent: "border-t-amber-400"
@@ -785,7 +797,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className={`relative bg-white rounded-[12px] border-l border-r border-b border-slate-200 border-t-2 ${model.accent} p-8 flex flex-col h-full hover:shadow-md transition-shadow duration-300`}
+                className={`relative bg-white rounded-[12px] border-l border-r border-b border-slate-200 border-t-2 ${model.accent} p-6 lg:p-8 flex flex-col h-full hover:shadow-md transition-shadow duration-300`}
               >
                 {model.recommended && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
@@ -793,18 +805,18 @@ const Index = () => {
                   </div>
                 )}
                 
-                <div className="mb-8">
-                  <h3 className="text-xl font-bold text-slate-900 mb-4">{model.title}</h3>
+                <div className="mb-6">
+                  <h3 className="text-lg lg:text-xl font-bold text-slate-900 mb-3">{model.title}</h3>
                   <p className="text-sm text-slate-500 leading-relaxed font-medium">
                     {model.desc}
                   </p>
                 </div>
 
-                <div className="space-y-4 mb-10 flex-grow">
+                <div className="space-y-4 mb-8 flex-grow">
                   {model.traits.map((trait, j) => (
                     <div key={j} className="flex items-start gap-3">
                       <div className="w-1 h-1 rounded-full bg-slate-300 mt-2 flex-shrink-0" />
-                      <span className="text-sm text-slate-600 font-medium">{trait}</span>
+                      <span className="text-xs lg:text-sm text-slate-600 font-medium">{trait}</span>
                     </div>
                   ))}
                 </div>
@@ -814,7 +826,7 @@ const Index = () => {
                     to="/book-consultation"
                     className="group inline-flex items-center gap-2 text-sm font-bold text-slate-950 hover:text-blue-600 transition-colors"
                   >
-                    Learn more and get started
+                    Learn more
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </div>
@@ -1046,6 +1058,8 @@ const Index = () => {
       {/* 7. OPERATIONS PROFESSIONALS SHOWCASE */}
       <section className="py-24 px-2 sm:px-6 bg-blue-50/50 font-inter overflow-hidden">
         <div className="container max-w-7xl mx-auto">
+          {false && (
+            <>
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1141,6 +1155,8 @@ const Index = () => {
               )}
             </motion.div>
           </div>
+            </>
+          )}
 
           {/* Hire CTA Button */}
           <motion.div 
@@ -1149,11 +1165,11 @@ const Index = () => {
             transition={{ delay: 0.4 }}
             className="flex justify-center mt-16"
           >
-            <Link to="/book-consultation">
+            <a href={getZoneUrl(Zone.AUTH, "/auth/signup/talent")}>
               <Button size="lg" className="h-14 px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg shadow-blue-200 transition-all font-bold text-base flex items-center gap-3">
-                Hire Vetted Talent <ArrowRight className="w-5 h-5" />
+                Apply as Talent <ArrowRight className="w-5 h-5" />
               </Button>
-            </Link>
+            </a>
           </motion.div>
         </div>
       </section>
@@ -1177,25 +1193,25 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                quote: "“We reduced hiring cycles by 60% and onboarded two senior operators within three weeks.”",
-                badge: "48h Shortlist Average",
-                name: "Jason R.",
-                role: "Director of Ops",
-                company: "Scaleup Inc."
+                quote: "“OpslyHR completely transformed our hiring process. We scaled operations seamlessly with the exact right fit, avoiding the usual recruitment headaches.”",
+                badge: "Operations Scaling",
+                name: "Daniel Aniakor",
+                role: "Founder",
+                company: "Skeduley (Ontario Canada)"
               },
               {
-                quote: "“The trial-to-hire model gave us flexibility without long-term risk. Exceptional talent quality.”",
-                badge: "98% Conversion Rate",
-                name: "Elena M.",
-                role: "VP Product",
-                company: "Fintech Grid"
+                quote: "“The quality of talent we got through OpslyHR was exceptional. They didn't just understand the brief; they brought an operational rigor that elevated our internal processes.”",
+                badge: "Top-Tier Talent Quality",
+                name: "Nelson",
+                role: "Operations Lead",
+                company: "Meerge (Africa)"
               },
               {
-                quote: "“Contracts and payroll were handled seamlessly — no compliance headaches. A true partner.”",
-                badge: "20+ EMEA Markets",
-                name: "Marcus L.",
-                role: "Head of Talent",
-                company: "NexGen Labs"
+                quote: "“Partnering with OpslyHR felt like an extension of our own team. They handled the heavy lifting of sourcing and vetting, delivering candidates who hit the ground running from day one.”",
+                badge: "Frictionless Integration",
+                name: "Ushingio",
+                role: "Leadership",
+                company: "Megadel (Nigeria)"
               }
             ].map((item, i) => (
               <motion.div
