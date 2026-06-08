@@ -60,6 +60,9 @@ const WebsiteNavbar = () => {
             document.body.style.overflow = 'unset';
         }
         return () => { document.body.style.overflow = 'unset'; };
+    }, [isOpen]);
+
+    return (
         <>
             <div className="fixed top-4 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none font-inter transition-all duration-300">
                 <nav className="pointer-events-auto w-full max-w-6xl bg-white/80 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-full">
