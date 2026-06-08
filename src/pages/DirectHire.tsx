@@ -263,12 +263,13 @@ const DirectHire = () => {
               transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-6xl font-semibold text-slate-900 mb-12 tracking-tight">Build Your Core Team <br /> Structurally.</h2>
-            <Link to="/book-consultation">
+            <Link to="/book-consultation" className="w-full sm:w-auto inline-block">
               <Button 
                   size="lg" 
-                  className="h-16 px-12 text-lg rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-xl shadow-blue-100" 
+                  variant="outline"
+                  className="h-14 md:h-16 px-6 md:px-10 text-base md:text-lg rounded-xl border-2 border-slate-200 text-slate-700 hover:border-blue-600 hover:text-blue-700 hover:bg-blue-50 font-bold transition-all duration-300 w-full sm:w-auto flex items-center justify-center gap-2" 
               >
-                Discuss Direct Placement <ArrowRight className="ml-2 h-5 w-5" />
+                Discuss Full Time Hire <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
           </motion.div>
