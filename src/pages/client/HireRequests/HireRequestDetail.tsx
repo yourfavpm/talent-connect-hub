@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Clock, CheckCircle2, AlertCircle, FileText, Users, Building, Globe, MapPin, DollarSign, UserCheck, Video } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TalentProfileDrawer } from "@/components/client/talents/TalentProfileDrawer";
 
 export default function HireRequestDetail() {
   const { id } = useParams();
@@ -18,6 +19,7 @@ export default function HireRequestDetail() {
   const [shortlist, setShortlist] = useState<any[]>([]);
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTalentUserId, setSelectedTalentUserId] = useState<string | null>(null);
 
   const fetchRequestDetails = useCallback(async () => {
     try {
@@ -44,7 +46,7 @@ export default function HireRequestDetail() {
         const { data: profile } = await supabase
           .from('profiles')
           .select('first_name, last_name, email, avatar_url')
-          .eq('id', item.talent_user_id)
+          .eq('user_id', item.talent_user_id)
           .maybeSingle();
         enrichedShortlist.push({ ...item, profiles: profile });
       }
@@ -229,7 +231,7 @@ export default function HireRequestDetail() {
                 if (!profile) return null;
                 const hasInterview = interviews.some((i) => i.talent_user_id === candidate.talent_user_id);
                 return (
-                  <div key={candidate.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col group cursor-pointer" onClick={() => navigate(getInternalPath(`/client/talents/${candidate.talent_user_id}`))}>
+                  <div key={candidate.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col group cursor-pointer" onClick={() => setSelectedTalentUserId(candidate.talent_user_id)}>
                     <div className="p-6 flex-grow">
                       <div className="flex items-center gap-3 mb-4">
                         <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-semibold text-lg shrink-0">
@@ -253,7 +255,7 @@ export default function HireRequestDetail() {
                       {hasInterview ? (
                         <Badge className="bg-emerald-100 text-emerald-700 border-none"><Video className="w-3 h-3 mr-1" /> Interviewing</Badge>
                       ) : (
-                        <Button variant="outline" size="sm" className="h-8 text-xs" onClick={(e) => { e.stopPropagation(); }}>View Profile</Button>
+                        <Button variant="outline" size="sm" className="h-8 text-xs" onClick={(e) => { e.stopPropagation(); setSelectedTalentUserId(candidate.talent_user_id); }}>View Profile</Button>
                       )}
                     </div>
                   </div>
@@ -263,6 +265,14 @@ export default function HireRequestDetail() {
           )}
         </TabsContent>
       </Tabs>
+
+      {selectedTalentUserId && (
+        <TalentProfileDrawer
+          userId={selectedTalentUserId}
+          isOpen={!!selectedTalentUserId}
+          onClose={() => setSelectedTalentUserId(null)}
+        />
+      )}
     </div>
   );
 }

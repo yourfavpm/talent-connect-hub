@@ -8,23 +8,41 @@ import { Loader2, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface TalentProfileDrawerProps {
-  talentId: string;
+  talentId?: string;
+  userId?: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const TalentProfileDrawer = ({ talentId, isOpen, onClose }: TalentProfileDrawerProps) => {
+export const TalentProfileDrawer = ({ talentId, userId, isOpen, onClose }: TalentProfileDrawerProps) => {
   const [talent, setTalent] = useState<ClientTalentProfileData | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isOpen || !talentId) return;
+    if (!isOpen || (!talentId && !userId)) return;
 
     const fetchTalentProfile = async () => {
       try {
         setLoading(true);
+        let idToUse = talentId;
+
+        if (!idToUse && userId) {
+           // Find the talentId using the userId
+           const { data: tData } = await supabase
+             .from('talents')
+             .select('id')
+             .eq('user_id', userId)
+             .maybeSingle();
+           
+           if (tData) {
+             idToUse = tData.id;
+           }
+        }
+
+        if (!idToUse) throw new Error("Talent not found");
+
         const { data, error } = await supabase.rpc('get_client_talent_profile', {
-          p_talent_id: talentId
+          p_talent_id: idToUse
         });
           
         if (error) throw error;
@@ -32,7 +50,7 @@ export const TalentProfileDrawer = ({ talentId, isOpen, onClose }: TalentProfile
 
         const rpcData = data as any;
         const profile: ClientTalentProfileData = {
-          talent_id: rpcData.display_id || talentId.slice(0, 8).toUpperCase(),
+          talent_id: rpcData.display_id || idToUse.slice(0, 8).toUpperCase(),
           full_name: `${rpcData.first_name || ""} ${rpcData.last_initial || ""}.`.trim() || "Vetted Professional",
           avatar: rpcData.avatar_url || null,
           primary_role: rpcData.headline || "Professional",
@@ -75,7 +93,7 @@ export const TalentProfileDrawer = ({ talentId, isOpen, onClose }: TalentProfile
     };
 
     fetchTalentProfile();
-  }, [talentId, isOpen]);
+  }, [talentId, userId, isOpen]);
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
