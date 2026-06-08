@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle, Clock, Globe, Shield, Users, Zap, Briefcase, Layout, CreditCard, Search, UserCheck, ChevronRight, TrendingUp, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, Globe, Shield, Users, Zap, Briefcase, Layout, CreditCard, Search, UserCheck, ChevronRight, TrendingUp, Loader2, MessageSquare } from "lucide-react";
 import CommunityCTA from "@/components/website/CommunityCTA";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
