@@ -104,7 +104,7 @@ const ServiceModels = () => {
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-center gap-3">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none">{item.label} — {item.value}</span>
+                                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-none">{item.label} — {item.value}</span>
                                     </div>
                                 ))}
                             </div>
@@ -345,7 +345,7 @@ const ServiceModels = () => {
             {/* 4. GLOBAL OPERATIONS (REDESIGNED) */}
             <section className="py-24 px-2 sm:px-6 bg-[#0B0F19] text-white font-inter relative overflow-hidden">
                 {/* Subtle World Map background overlay */}
-                <div className="absolute inset-0 opacity-[0.3] pointer-events-none bg-[url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80')] bg-cover bg-center grayscale invert brightness-[1.2]" style={{ WebkitMaskImage: 'radial-gradient(circle at center, black 30%, transparent 95%)', maskImage: 'radial-gradient(circle at center, black 30%, transparent 95%)' }}></div>
+                <div className="absolute inset-0 opacity-[0.15] pointer-events-none bg-[url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80')] bg-cover bg-center grayscale invert brightness-[1.2]" style={{ WebkitMaskImage: 'radial-gradient(circle at center, black 30%, transparent 95%)', maskImage: 'radial-gradient(circle at center, black 30%, transparent 95%)' }}></div>
                 
                 <div className="container max-w-[1200px] mx-auto relative z-10">
                     <div className="flex flex-wrap items-center -mx-4">
@@ -356,14 +356,14 @@ const ServiceModels = () => {
                             transition={{ duration: 0.8 }}
                             className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0"
                         >
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 text-slate-400 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 text-slate-300 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
                                 Global Operations
                             </div>
                             <h2 className="text-3xl md:text-5xl font-semibold mb-6 tracking-tight leading-[1.15]">
                                 Build Distributed Teams Without <br />
                                 <span className="text-white/40">Operational Friction.</span>
                             </h2>
-                            <p className="text-base md:text-lg text-slate-400 mb-10 leading-relaxed max-w-xl font-medium">
+                            <p className="text-base md:text-lg text-slate-300 mb-10 leading-relaxed max-w-xl font-medium">
                                 Access vetted global talent, multi-timezone coverage, and fully managed compliance — without building the infrastructure yourself.
                             </p>
 
@@ -417,7 +417,7 @@ const ServiceModels = () => {
                                     <div className="absolute top-0 left-[-1px] w-[1px] h-0 bg-blue-500 group-hover:h-full transition-all duration-500" />
                                     <div className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-3">{cap.id} — Capability</div>
                                     <h3 className="text-xl font-bold text-white mb-2 tracking-tight">{cap.title}</h3>
-                                    <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-md">
+                                    <p className="text-sm text-slate-300 font-medium leading-relaxed max-w-md">
                                         {cap.desc}
                                     </p>
                                 </div>
