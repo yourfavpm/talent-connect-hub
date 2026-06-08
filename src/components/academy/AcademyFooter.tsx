@@ -19,10 +19,9 @@ const AcademyFooter = () => {
                         </p>
                         <div className="flex gap-3">
                             {[
-                                { icon: Twitter, href: "#" },
-                                { icon: Linkedin, href: "#" },
-                                { icon: Instagram, href: "#" },
-                                { icon: Facebook, href: "#" }
+                                { icon: Linkedin, href: "https://www.linkedin.com/company/opslyhr/" },
+                                { icon: Twitter, href: "https://x.com/opslyhr?s=21" },
+                                { icon: Instagram, href: "https://www.instagram.com/opslyhr?igsh=MTJhOXhzdXY3eTczMA==" }
                             ].map((social, i) => (
                                 <a 
                                     key={i} 

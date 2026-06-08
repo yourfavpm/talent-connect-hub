@@ -126,28 +126,10 @@ const TalentSignup = () => {
         
         if (roleError) console.error("Failed to assign talent role:", roleError);
         
-        try {
-          // 1. Account Created Notification
-          await sendTalentAccountCreatedEmail(
-            formData.email, 
-            formData.firstName, 
-            redirectUrl
-          );
-
-          // 2. Secure Verification Flow
-          if (!data.session) {
-            await requestTalentVerification(
-              data.user.id,
-              formData.email,
-              formData.firstName
-            );
-          }
-          
-          // 3. Welcome Email is now handled by the auth-verification edge function
-          // upon successful verification. It has been removed from here to prevent
-          // sending it before the user verifies their email.
-        } catch (emailError) {
-          console.error('Failed to send notifications:', emailError);
+          // Emails are now handled natively by Supabase Auth (via Custom SMTP and email templates).
+          // We removed manual edge-function triggers to prevent duplicate verification emails.
+        } catch (error) {
+          console.error('Post-signup setup error:', error);
         }
       }
 

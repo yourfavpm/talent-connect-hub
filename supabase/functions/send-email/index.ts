@@ -105,8 +105,9 @@ serve(async (req) => {
       brand_name: 'OPSlyHR',
       brand_website: 'https://opslyhr.com',
       social_linkedin: 'https://www.linkedin.com/company/opslyhr/',
-      social_tiktok: 'https://www.tiktok.com/@opslyhr?_r=1&_t=ZS-96qUCpKD8h6',
-      social_instagram: 'https://www.instagram.com/opslyhr?igsh=Y3UzeGxnYmp4MGdr&utm_source=qr',
+      social_tiktok: 'https://www.tiktok.com/@opslyhr?_r=1&_t=ZS-972oUQjwnw2',
+      social_instagram: 'https://www.instagram.com/opslyhr?igsh=MTJhOXhzdXY3eTczMA==',
+      social_twitter: 'https://x.com/opslyhr?s=21',
       social_facebook: 'https://www.facebook.com/share/1GNFHGMqB2/?mibextid=wwXIfr',
     };
 

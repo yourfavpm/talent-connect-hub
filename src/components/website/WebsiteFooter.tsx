@@ -17,13 +17,12 @@ const WebsiteFooter = () => {
             <p className="text-sm text-slate-500 leading-relaxed font-medium max-w-sm">
               OPSlyHR connects vetted product and operations professionals across EMEA with growth-focused companies globally.
             </p>
-            <div className="flex gap-3">
-              {[
-                { icon: Twitter, href: "#" },
-                { icon: Linkedin, href: "#" },
-                { icon: Instagram, href: "#" },
-                { icon: Facebook, href: "#" }
-              ].map((social, i) => (
+            <div className="flex gap-4">
+                {[
+                  { icon: Linkedin, href: "https://www.linkedin.com/company/opslyhr/" },
+                  { icon: Twitter, href: "https://x.com/opslyhr?s=21" },
+                  { icon: Instagram, href: "https://www.instagram.com/opslyhr?igsh=MTJhOXhzdXY3eTczMA==" },
+                ].map((social, i) => (
                 <a 
                   key={i} 
                   href={social.href} 

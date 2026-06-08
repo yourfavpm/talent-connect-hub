@@ -237,6 +237,7 @@ const TalentOnboarding = () => {
   const [talentId, setTalentId] = useState<string | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [stepError, setStepError] = useState<string | null>(null);
   const isLoaded = useRef(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -264,9 +265,9 @@ const TalentOnboarding = () => {
       industryFocus: [],
       functionalAreas: [],
       workHistory: [{ id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false }],
-      education: [{ id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false }],
-      certifications: [{ id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" }],
-      references: [{ id: Date.now().toString(), name: "", company: "", email: "", phone: "" }],
+      education: [],
+      certifications: [],
+      references: [],
     }
   });
 
@@ -395,10 +396,12 @@ const TalentOnboarding = () => {
   }, [user]);
 
   const nextStep = async () => {
+    setStepError(null);
     const fieldsToValidate = STEP_FIELDS[currentStep] || [];
     const isValid = await methods.trigger(fieldsToValidate);
     if (!isValid) { 
-      toast({ title: "Please fill all mandatory fields correctly", description: "The affected fields have been highlighted.", variant: "destructive" }); 
+      setStepError("Please complete all required fields correctly. Missing fields are highlighted below.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return; 
     }
     setLoading(true);
@@ -411,6 +414,7 @@ const TalentOnboarding = () => {
   };
 
   const prevStep = async () => {
+    setStepError(null);
     setLoading(true);
     await syncAllToDB();
     const prev = Math.max(currentStep - 1, 1);
@@ -982,6 +986,15 @@ const TalentOnboarding = () => {
 
             {/* Form Card */}
             <div className="bg-white rounded-xl border border-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-6 sm:p-8">
+              {stepError && (
+                <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-sm font-bold text-red-800">Incomplete Information</h3>
+                    <p className="text-sm text-red-700 mt-1">{stepError}</p>
+                  </div>
+                </div>
+              )}
               {renderStepContent()}
             </div>
 

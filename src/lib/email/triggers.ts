@@ -95,9 +95,10 @@ function buildJobPublishedEmail(vars: {
             <p style="margin:0 0 10px;font-size:13px;color:#94a3b8;text-align:center;">Follow us</p>
             <table role="presentation" align="center" cellspacing="0" cellpadding="0" border="0">
               <tr>
-                <td style="padding:0 10px;"><a href="https://linkedin.com/company/opslyhr" style="font-size:13px;color:#475569;text-decoration:none;font-weight:600;">LinkedIn</a></td>
-                <td style="padding:0 10px;"><a href="https://twitter.com/opslyhr" style="font-size:13px;color:#475569;text-decoration:none;font-weight:600;">Twitter / X</a></td>
-                <td style="padding:0 10px;"><a href="https://instagram.com/opslyhr" style="font-size:13px;color:#475569;text-decoration:none;font-weight:600;">Instagram</a></td>
+                <td style="padding:0 10px;"><a href="https://www.linkedin.com/company/opslyhr/" style="font-size:13px;color:#475569;text-decoration:none;font-weight:600;">LinkedIn</a></td>
+                <td style="padding:0 10px;"><a href="https://x.com/opslyhr?s=21" style="font-size:13px;color:#475569;text-decoration:none;font-weight:600;">Twitter / X</a></td>
+                <td style="padding:0 10px;"><a href="https://www.instagram.com/opslyhr?igsh=MTJhOXhzdXY3eTczMA==" style="font-size:13px;color:#475569;text-decoration:none;font-weight:600;">Instagram</a></td>
+                <td style="padding:0 10px;"><a href="https://www.tiktok.com/@opslyhr?_r=1&_t=ZS-972oUQjwnw2" style="font-size:13px;color:#475569;text-decoration:none;font-weight:600;">TikTok</a></td>
               </tr>
             </table>
             <p style="margin:14px 0 0;font-size:12px;color:#cbd5e1;text-align:center;">
