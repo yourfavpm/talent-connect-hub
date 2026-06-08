@@ -44,12 +44,13 @@ export const OB_INPUT_CLASS = "h-12 rounded-lg border border-slate-200 bg-white 
 // ── Primitive field components (defined OUTSIDE the main component to prevent
 //    React remounting them on every render, which would lose input focus) ────────
 
-export const FieldGroup = ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
+export const FieldGroup = ({ label, required, error, children }: { label: string; required?: boolean; error?: string | any; children: React.ReactNode }) => (
   <div className="space-y-1.5">
-    <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+    <Label className={clsx("text-[11px] font-bold uppercase tracking-widest", error ? "text-red-500" : "text-slate-500")}>
       {label}{required && <span className="text-red-500 ml-1">*</span>}
     </Label>
     {children}
+    {error && <p className="text-[11px] font-medium text-red-500 animate-in fade-in slide-in-from-top-1">{error}</p>}
   </div>
 );
 
@@ -113,6 +114,16 @@ const STEPS = [
   { id: 7, title: "References",           key: "references" },
   { id: 8, title: "Review & Submit",      key: "review" },
 ];
+
+const STEP_FIELDS: Record<number, (keyof OnboardFormValues)[]> = {
+  1: ["firstName", "lastName", "email", "phone", "country", "timezone", "languagesSpoken"],
+  2: ["roleCategory", "primaryRole", "headline", "shortBio", "yearsOfExperience", "availability", "secondarySkills", "toolsFamiliarWith"],
+  3: ["workHistory"],
+  4: ["cvUrl", "governmentIdUrl", "portfolioUrl"],
+  5: ["education"],
+  6: ["certifications"],
+  7: ["references"],
+};
 
 type SaveStatus = "idle" | "saving" | "saved" | "unsaved";
 
@@ -384,8 +395,12 @@ const TalentOnboarding = () => {
   }, [user]);
 
   const nextStep = async () => {
-    const isValid = await methods.trigger(STEPS[currentStep-1].key as any);
-    if (!isValid) { toast({ title: "Validation Error", description: "Please fix error fields.", variant: "destructive" }); return; }
+    const fieldsToValidate = STEP_FIELDS[currentStep] || [];
+    const isValid = await methods.trigger(fieldsToValidate);
+    if (!isValid) { 
+      toast({ title: "Please fill all mandatory fields correctly", description: "The affected fields have been highlighted.", variant: "destructive" }); 
+      return; 
+    }
     setLoading(true);
     await syncAllToDB();
     const next = Math.min(currentStep + 1, STEPS.length);
@@ -528,19 +543,19 @@ const TalentOnboarding = () => {
             <FieldGroup label="Email Address">
               <Input className={clsx(OB_INPUT_CLASS, "opacity-60 cursor-not-allowed bg-slate-50")} value={formData.email} readOnly />
             </FieldGroup>
-            <FieldGroup label="Phone Number" required>
-              <Input className={OB_INPUT_CLASS} value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} placeholder="+1 (555) 000-0000" />
+            <FieldGroup label="Phone Number" required error={errors.phone?.message}>
+              <Input className={clsx(OB_INPUT_CLASS, errors.phone && "border-red-500 focus:border-red-500 focus:ring-red-500")} value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} placeholder="+1 (555) 000-0000" />
             </FieldGroup>
             <div className="grid sm:grid-cols-2 gap-5">
-              <FieldGroup label="Country / Location" required>
-                <Input className={OB_INPUT_CLASS} value={formData.country} onChange={(e) => handleInputChange("country", e.target.value)} placeholder="e.g. United Kingdom" />
+              <FieldGroup label="Country / Location" required error={errors.country?.message}>
+                <Input className={clsx(OB_INPUT_CLASS, errors.country && "border-red-500 focus:border-red-500 focus:ring-red-500")} value={formData.country} onChange={(e) => handleInputChange("country", e.target.value)} placeholder="e.g. United Kingdom" />
               </FieldGroup>
-              <FieldGroup label="Timezone" required>
+              <FieldGroup label="Timezone" required error={errors.timezone?.message}>
                 <TimezoneSelector value={formData.timezone} onChange={(v) => handleInputChange("timezone", v)} />
               </FieldGroup>
             </div>
-            <FieldGroup label="Languages Spoken" required>
-              <Input className={OB_INPUT_CLASS} value={formData.languagesSpoken.join(", ")} onChange={(e) => handleInputChange("languagesSpoken", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. English, French, Spanish" />
+            <FieldGroup label="Languages Spoken" required error={errors.languagesSpoken?.message as string}>
+              <Input className={clsx(OB_INPUT_CLASS, errors.languagesSpoken && "border-red-500 focus:border-red-500 focus:ring-red-500")} value={formData.languagesSpoken.join(", ")} onChange={(e) => handleInputChange("languagesSpoken", e.target.value.split(",").map(s => s.trim()))} placeholder="e.g. English, French, Spanish" />
               <p className="text-[11px] text-slate-400 mt-1">Separate multiple languages with commas.</p>
             </FieldGroup>
           </div>
@@ -557,21 +572,23 @@ const TalentOnboarding = () => {
               value={formData.primaryRole} 
               onChange={(v) => handleInputChange("primaryRole", v)} 
             />
-            <FieldGroup label="Professional Headline" required>
-              <Input className={OB_INPUT_CLASS} value={formData.headline} onChange={(e) => handleInputChange("headline", e.target.value)} placeholder="e.g. Senior Operations Architect with 8+ Years Experience" />
+            {errors.primaryRole && <p className="text-[11px] font-medium text-red-500 animate-in fade-in slide-in-from-top-1">{errors.primaryRole.message}</p>}
+            
+            <FieldGroup label="Professional Headline" required error={errors.headline?.message}>
+              <Input className={clsx(OB_INPUT_CLASS, errors.headline && "border-red-500 focus:border-red-500 focus:ring-red-500")} value={formData.headline} onChange={(e) => handleInputChange("headline", e.target.value)} placeholder="e.g. Senior Operations Architect with 8+ Years Experience" />
               <p className="text-[11px] text-slate-400 mt-1">A concise summary of your professional expertise.</p>
             </FieldGroup>
-            <FieldGroup label="Short Bio / Executive Summary" required>
-              <Textarea className="rounded-lg border-slate-200 text-sm min-h-[120px] resize-none" value={formData.shortBio} onChange={(e) => handleInputChange("shortBio", e.target.value)} placeholder="Describe your career trajectory and key professional achievements..." />
-              <p className="text-[11px] text-slate-400 mt-1">Provide a brief overview of your background and value proposition.</p>
+            <FieldGroup label="Short Bio / Executive Summary" required error={errors.shortBio?.message}>
+              <Textarea className={clsx("rounded-lg border-slate-200 text-sm min-h-[120px] resize-none", errors.shortBio && "border-red-500 focus:border-red-500 focus:ring-red-500")} value={formData.shortBio} onChange={(e) => handleInputChange("shortBio", e.target.value)} placeholder="Describe your career trajectory and key professional achievements..." />
+              <p className="text-[11px] text-slate-400 mt-1">Provide a brief overview of your background and value proposition. Minimum 20 characters.</p>
             </FieldGroup>
             <div className="grid sm:grid-cols-2 gap-5">
-              <FieldGroup label="Years of Experience" required>
-                <Input className={OB_INPUT_CLASS} type="number" min="0" value={formData.yearsOfExperience} onChange={(e) => handleInputChange("yearsOfExperience", e.target.value)} placeholder="e.g. 7" />
+              <FieldGroup label="Years of Experience" required error={errors.yearsOfExperience?.message}>
+                <Input className={clsx(OB_INPUT_CLASS, errors.yearsOfExperience && "border-red-500 focus:border-red-500 focus:ring-red-500")} type="number" min="0" value={formData.yearsOfExperience} onChange={(e) => handleInputChange("yearsOfExperience", e.target.value)} placeholder="e.g. 7" />
               </FieldGroup>
-              <FieldGroup label="Availability" required>
+              <FieldGroup label="Availability" required error={errors.availability?.message}>
                 <Select value={formData.availability} onValueChange={(v) => handleInputChange("availability", v)}>
-                  <SelectTrigger className="h-12 rounded-lg border-slate-200">
+                  <SelectTrigger className={clsx("h-12 rounded-lg border-slate-200", errors.availability && "border-red-500 focus:border-red-500 focus:ring-red-500")}>
                     <SelectValue placeholder="Select availability" />
                   </SelectTrigger>
                   <SelectContent>
