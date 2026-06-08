@@ -48,46 +48,139 @@ const Pricing = () => {
             />
 
             {/* 1. HERO SECTION */}
-            <section className="pt-40 pb-24 px-6 relative overflow-hidden">
-                <div className="container max-w-[1000px] mx-auto text-center relative z-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold mb-8 tracking-tight leading-[1.1] text-slate-900">
-                            Build Operational Capacity, <br className="hidden md:block" />
-                            <span className="text-blue-600">Your Way.</span>
-                        </h1>
-                        <p className="text-lg md:text-xl text-slate-600 font-medium leading-relaxed max-w-3xl mx-auto mb-6">
-                            OpslyHR helps growing businesses hire, test, and manage operational talent through structured workforce solutions.
-                        </p>
-                        <p className="text-base text-slate-500 max-w-2xl mx-auto mb-12">
-                            Whether you need a single hire, a tested trial period, a fully managed team, or offshore operational capacity — Opsly gives you flexible ways to build reliable execution.
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Link to="/book-consultation" className="px-8 py-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all w-full sm:w-auto text-center">
-                                Build Your Team
-                            </Link>
-                            <Link to="/book-consultation" className="px-8 py-4 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:border-slate-900 hover:text-slate-900 transition-all w-full sm:w-auto text-center hover:bg-slate-50">
-                                Speak to Opsly
-                            </Link>
+            <section className="pt-32 md:pt-48 pb-24 px-6 relative overflow-hidden">
+                <div className="container max-w-[1200px] mx-auto relative z-10">
+                    <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
+                        {/* Left Content */}
+                        <div className="flex-1 w-full text-left">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6 }}
+                            >
+                                <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold mb-8 tracking-tight leading-[1.1] text-slate-900">
+                                    Build Operational Capacity, <br className="hidden md:block" />
+                                    <span className="text-blue-600">Your Way.</span>
+                                </h1>
+                                <p className="text-lg md:text-xl text-slate-600 font-medium leading-relaxed mb-6">
+                                    OpslyHR helps growing businesses hire, test, and manage operational talent through structured workforce solutions.
+                                </p>
+                                <p className="text-base text-slate-500 mb-12">
+                                    Whether you need a single hire, a tested trial period, a fully managed team, or offshore operational capacity — Opsly gives you flexible ways to build reliable execution.
+                                </p>
+                                <div className="flex flex-col sm:flex-row items-center gap-4">
+                                    <Link to="/book-consultation" className="px-8 py-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all w-full sm:w-auto text-center">
+                                        Build Your Team
+                                    </Link>
+                                    <Link to="/book-consultation" className="px-8 py-4 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:border-slate-900 hover:text-slate-900 transition-all w-full sm:w-auto text-center hover:bg-slate-50">
+                                        Speak to Opsly
+                                    </Link>
+                                </div>
+                            </motion.div>
                         </div>
-                    </motion.div>
+
+                        {/* Right Content - The Illustration */}
+                        <div className="flex-1 w-full flex justify-end">
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.8, delay: 0.2 }}
+                                className="relative w-full max-w-md"
+                            >
+                                <div className="bg-white border border-slate-200 rounded-[24px] p-10 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-blue-100/50 transition-colors duration-700"></div>
+                                    
+                                    <div className="relative space-y-0">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-10">Operational Cost Architecture</div>
+                                        
+                                        {[
+                                            { label: "Capacity Matching", status: "vetted" },
+                                            { label: "Platform Compliance", status: "centralized" },
+                                            { label: "Managed Success", status: "active" },
+                                            { label: "Scalable Growth", status: "unlimited" }
+                                        ].map((step, idx) => (
+                                            <div key={idx} className="relative flex items-start gap-6 pb-12 last:pb-0">
+                                                {/* Vertical Line */}
+                                                {idx !== 3 && (
+                                                    <div className="absolute left-[7px] top-[24px] w-[1px] h-[calc(100%-14px)] bg-slate-100">
+                                                        <motion.div 
+                                                            initial={{ height: 0 }}
+                                                            animate={{ height: "100%" }}
+                                                            transition={{ duration: 1, delay: 0.5 + idx * 0.2 }}
+                                                            className="w-full bg-blue-600/30"
+                                                        />
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Step Indicator */}
+                                                <motion.div 
+                                                    initial={{ scale: 0 }}
+                                                    animate={{ scale: 1 }}
+                                                    transition={{ duration: 0.4, delay: 0.4 + idx * 0.2 }}
+                                                    className={`w-4 h-4 rounded-full border-2 bg-white shrink-0 mt-1.5 z-10 transition-colors duration-300 ${idx === 1 ? 'border-blue-600' : 'border-slate-200'}`}
+                                                />
+                                                
+                                                {/* Label and Status */}
+                                                <div className="flex flex-col">
+                                                    <span className={`text-base font-bold tracking-tight transition-colors duration-300 ${idx === 1 ? 'text-slate-900' : 'text-slate-400'}`}>
+                                                        {step.label}
+                                                    </span>
+                                                    <span className={`text-[10px] font-bold uppercase tracking-widest mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 ${idx === 1 ? 'text-blue-600 opacity-100' : 'text-slate-400'}`}>
+                                                        {step.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Decorative background element */}
+                                <div className="absolute -z-10 -bottom-6 -right-6 w-24 h-24 bg-slate-50 rounded-2xl rotate-12"></div>
+                            </motion.div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             {/* 2. WHY OUR PRICING MODEL EXISTS */}
             <section className="py-24 px-6 bg-slate-50 border-y border-slate-100">
-                <div className="container max-w-4xl mx-auto text-center">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">The Problem</div>
-                    <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-12 tracking-tight">Hiring breaks down when businesses start scaling.</h2>
-                    
-                    <div className="space-y-6 text-lg text-slate-600 font-medium max-w-2xl mx-auto">
-                        <p>Not because talent is unavailable.</p>
-                        <p>But because execution becomes inconsistent, hiring becomes risky, and teams become difficult to manage.</p>
-                        <p className="text-blue-600 font-bold">OpslyHR solves this by giving businesses structured ways to build operational capacity, depending on their stage, risk tolerance, and scale.</p>
-                        <p className="pt-8 text-2xl font-bold text-slate-900">You don’t just hire through Opsly.<br className="md:hidden" /> You choose how you want to build.</p>
+                <div className="container max-w-[1200px] mx-auto">
+                    <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+                        {/* Left Content */}
+                        <div className="w-full lg:w-1/2">
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">The Problem</div>
+                            <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-12 tracking-tight">Hiring breaks down when businesses start scaling.</h2>
+                            
+                            <div className="space-y-6 text-lg text-slate-600 font-medium">
+                                <p>Not because talent is unavailable.</p>
+                                <p>But because execution becomes inconsistent, hiring becomes risky, and teams become difficult to manage.</p>
+                                <p className="text-blue-600 font-bold">OpslyHR solves this by giving businesses structured ways to build operational capacity, depending on their stage, risk tolerance, and scale.</p>
+                                <p className="pt-8 text-2xl font-bold text-slate-900">You don’t just hire through Opsly.<br className="md:hidden" /> You choose how you want to build.</p>
+                            </div>
+                        </div>
+
+                        {/* Right Content - Illustration Diagram */}
+                        <div className="w-full lg:w-1/2 px-4">
+                            <div className="relative pt-12 pb-8 px-4 md:px-0">
+                                {/* Horizontal visual spectrum */}
+                                <div className="relative">
+                                    <div className="h-[1px] w-full bg-slate-200 absolute top-1/2 -translate-y-1/2"></div>
+                                    <div className="flex justify-between relative z-10">
+                                        {[
+                                            { label: "Project", sub: "Low Commitment" },
+                                            { label: "Trial", sub: "Medium" },
+                                            { label: "Full Time Hire", sub: "High" }
+                                        ].map((point, i) => (
+                                            <div key={i} className="flex flex-col items-center">
+                                                <div className="w-3 h-3 rounded-full bg-white border-2 border-blue-600 ring-4 ring-slate-50 mb-4 transition-transform hover:scale-125 duration-300 cursor-pointer"></div>
+                                                <span className="text-sm font-bold text-slate-900 mb-1">{point.label}</span>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">{point.sub}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
