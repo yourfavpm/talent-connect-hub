@@ -556,14 +556,22 @@ const ServiceModels = () => {
                             ))}
                         </div>
                     </div>
+                </div>
+            </section>
 
-                    <div className="mt-20 pt-12 border-t border-slate-100 text-center">
-                        <p className="text-slate-500 font-medium mb-4">Still have questions?</p>
+            {/* PREFOOTER (Not sure which model fits) */}
+            <section className="py-24 px-6 bg-slate-50 border-t border-slate-100">
+                <div className="container max-w-[800px] mx-auto text-center">
+                    <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 tracking-tight">Not Sure Which Model Fits?</h2>
+                    <p className="text-base text-slate-600 font-medium leading-relaxed mb-10 max-w-2xl mx-auto">
+                        Every organization has unique operational requirements. Speak with our engagement experts to determine the most cost-effective and risk-aligned model for your team.
+                    </p>
+                    <div className="flex justify-center">
                         <Link 
                             to="/book-consultation"
-                            className="inline-flex items-center text-sm font-bold text-blue-600 hover:text-blue-700 transition-all"
+                            className="inline-flex items-center justify-center px-10 py-5 border-2 border-slate-900 text-slate-900 font-bold rounded-lg hover:bg-slate-900 hover:text-white transition-all duration-300 sm:w-auto w-full"
                         >
-                            Speak directly with our team <ArrowRight className="ml-2 w-4 h-4" />
+                            Book a Structured Consultation →
                         </Link>
                     </div>
                 </div>

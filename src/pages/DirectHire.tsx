@@ -253,30 +253,25 @@ const DirectHire = () => {
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="py-32 px-6 bg-white text-center">
-        <div className="container max-w-4xl mx-auto">
-          <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-4xl md:text-6xl font-semibold text-slate-900 mb-12 tracking-tight">Build Your Core Team <br /> Structurally.</h2>
-            <Link to="/book-consultation" className="w-full sm:w-auto inline-block">
-              <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="h-14 md:h-16 px-6 md:px-10 text-base md:text-lg rounded-xl border-2 border-slate-200 text-slate-700 hover:border-blue-600 hover:text-blue-700 hover:bg-blue-50 font-bold transition-all duration-300 w-full sm:w-auto flex items-center justify-center gap-2" 
-              >
-                Discuss Full Time Hire <ArrowRight className="h-5 w-5" />
-              </Button>
-            </Link>
-          </motion.div>
+            {/* PREFOOTER (Not sure which model fits) */}
+            <section className="py-24 px-6 bg-slate-50 border-t border-slate-100">
+                <div className="container max-w-[800px] mx-auto text-center">
+                    <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 tracking-tight">Not Sure Which Model Fits?</h2>
+                    <p className="text-base text-slate-600 font-medium leading-relaxed mb-10 max-w-2xl mx-auto">
+                        Every organization has unique operational requirements. Speak with our engagement experts to determine the most cost-effective and risk-aligned model for your team.
+                    </p>
+                    <div className="flex justify-center">
+                        <Link 
+                            to="/book-consultation"
+                            className="inline-flex items-center justify-center px-10 py-5 border-2 border-slate-900 text-slate-900 font-bold rounded-lg hover:bg-slate-900 hover:text-white transition-all duration-300 sm:w-auto w-full"
+                        >
+                            Book a Structured Consultation →
+                        </Link>
+                    </div>
+                </div>
+            </section>
         </div>
-      </section>
-    </div>
-  );
+    );
 };
 
 export default DirectHire;

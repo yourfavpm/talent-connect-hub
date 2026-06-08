@@ -44,8 +44,8 @@ const WebsiteFooter = () => {
                   { label: "Hire Talent", href: getZoneUrl(Zone.AUTH, "/auth/signup/client") },
                   { label: "Full Time Hire", to: "/direct-hire" },
                   { label: "Trial-to-Hire", to: "/trial-to-hire" },
-                  { label: "One-Time Projects", to: "/project-engagement" },
-                  { label: "Book Consultation", to: "/book-consultation" }
+                  { label: "Managed Operations Teams", to: "/managed-teams" },
+                  { label: "Offshore Hiring", to: "/offshore-hiring" }
                 ].map((link, i) => (
                   <li key={i}>
                     {link.href ? (

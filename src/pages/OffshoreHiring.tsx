@@ -265,26 +265,21 @@ const OffshoreHiring = () => {
                 </div>
             </section>
 
-            {/* FINAL CTA */}
-            <section className="py-24 px-6 bg-slate-900 text-center">
-                <div className="container max-w-4xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <h2 className="text-4xl md:text-6xl font-semibold text-white mb-8 tracking-tight">Scale Globally. <br /> Operate Seamlessly.</h2>
-                        <p className="text-lg text-slate-400 mb-12 font-medium max-w-2xl mx-auto">Ready to onboard your talent? Let us handle the compliance, payroll, and local benefits.</p>
-                        <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}>
-                            <Button 
-                                size="lg" 
-                                className="h-16 px-12 text-lg rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-lg" 
-                            >
-                                Start Global Engagement <ArrowRight className="ml-2 h-5 w-5" />
-                            </Button>
-                        </a>
-                    </motion.div>
+            {/* PREFOOTER (Not sure which model fits) */}
+            <section className="py-24 px-6 bg-slate-50 border-t border-slate-100">
+                <div className="container max-w-[800px] mx-auto text-center">
+                    <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-6 tracking-tight">Not Sure Which Model Fits?</h2>
+                    <p className="text-base text-slate-600 font-medium leading-relaxed mb-10 max-w-2xl mx-auto">
+                        Every organization has unique operational requirements. Speak with our engagement experts to determine the most cost-effective and risk-aligned model for your team.
+                    </p>
+                    <div className="flex justify-center">
+                        <Link 
+                            to="/book-consultation"
+                            className="inline-flex items-center justify-center px-10 py-5 border-2 border-slate-900 text-slate-900 font-bold rounded-lg hover:bg-slate-900 hover:text-white transition-all duration-300 sm:w-auto w-full"
+                        >
+                            Book a Structured Consultation →
+                        </Link>
+                    </div>
                 </div>
             </section>
         </div>
