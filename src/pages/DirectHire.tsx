@@ -181,12 +181,12 @@ const DirectHire = () => {
             </div>
             
             <div className="w-full lg:w-1/2 px-4">
-            <div className="bg-slate-50 p-12 rounded-[16px] border border-slate-100">
+            <div className="bg-slate-50 p-6 sm:p-8 md:p-12 rounded-[16px] border border-slate-100">
               <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-8">Financial Clarity</h4>
               <p className="text-slate-600 font-medium leading-relaxed mb-8">
                 Our pricing model is designed for simplicity and long-term alignment. We only succeed when you find the right leader for your organization.
               </p>
-              <div className="p-6 md:p-8 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4 md:space-y-6">
+              <div className="p-5 md:p-8 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4 md:space-y-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                   <span className="text-slate-500 font-medium">Placement Fee</span>
                   <span className="font-bold text-slate-900 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 w-fit">Standard Contingent</span>
