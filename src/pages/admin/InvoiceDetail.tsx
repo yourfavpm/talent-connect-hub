@@ -359,7 +359,7 @@ const AdminInvoiceDetail = () => {
                                 </Card>
                                 <Card className="shadow-none border-gray-100 bg-blue-50/20">
                                     <CardContent className="p-4">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">OPSlyHR Margin</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">OpslyHR Margin</p>
                                         <p className="text-xl font-bold text-blue-700 font-mono">${(invoice.margin_amount || (invoice.total_amount * 0.2)).toLocaleString()}</p>
                                     </CardContent>
                                 </Card>

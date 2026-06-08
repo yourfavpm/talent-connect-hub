@@ -158,7 +158,7 @@ const ForCompanies = () => {
                             When hiring lacks structure, leadership time shifts from strategy to screening, compliance, and coordination.
                         </p>
                         <p className="text-base text-slate-500 leading-relaxed max-w-lg">
-                            OPSlyHR replaces fragmented workflows with a unified operational model designed for scale.
+                            OpslyHR replaces fragmented workflows with a unified operational model designed for scale.
                         </p>
                     </motion.div>
 
@@ -221,7 +221,7 @@ const ForCompanies = () => {
                                 Operational Infrastructure, <br/>Not Just Hiring.
                             </h2>
                             <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
-                                OPSlyHR centralizes vetting, contracting, billing, and engagement management — reducing leadership overhead and operational risk.
+                                OpslyHR centralizes vetting, contracting, billing, and engagement management — reducing leadership overhead and operational risk.
                             </p>
                         </div>
                     </div>
@@ -320,7 +320,7 @@ const ForCompanies = () => {
                                 desc: "Start managed. Convert when ready.",
                                 attributes: [
                                     "20% platform margin",
-                                    "Talent paid via OPSlyHR",
+                                    "Talent paid via OpslyHR",
                                     "Monthly or hourly billing",
                                     "Conversion flexibility"
                                 ],
@@ -550,7 +550,7 @@ const ForCompanies = () => {
                             <div className="relative">
                                 <span className="absolute -top-10 -left-6 text-[120px] text-slate-100 font-serif leading-none pointer-events-none">“</span>
                                 <blockquote className="text-2xl md:text-3xl lg:text-4xl font-medium text-slate-900 leading-[1.3] relative z-10">
-                                    OPSlyHR transformed how we build our operations team. We moved from fragmented hiring to a <span className="text-blue-600">structured, world-class talent pipeline</span> in weeks.
+                                    OpslyHR transformed how we build our operations team. We moved from fragmented hiring to a <span className="text-blue-600">structured, world-class talent pipeline</span> in weeks.
                                 </blockquote>
                                 <div className="mt-12 flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-900 border border-slate-200">
@@ -636,7 +636,7 @@ const ForCompanies = () => {
                     <div className="grid lg:grid-cols-2 gap-20 items-start">
                         {/* Left Column: Differentiators */}
                         <div>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8">Why OPSlyHR</div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8">Why OpslyHR</div>
                             <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 leading-tight tracking-tight">
                                 Execution Infrastructure, <br/>Not Resume Volume.
                             </h2>

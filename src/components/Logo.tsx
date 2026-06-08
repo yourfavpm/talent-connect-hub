@@ -17,12 +17,12 @@ const Logo = ({
     <div className={`flex items-center gap-3 ${className} transition-all duration-300`}>
       <img 
         src={logoPath} 
-        alt="OPSlyHR" 
+        alt="OpslyHR" 
         className={`${imgHeight} w-auto object-contain filter drop-shadow-sm brightness-[1.02]`}
       />
       {showText && (
         <span className="text-xl font-black text-slate-900 tracking-tighter hidden sm:inline antialiased">
-          OPSlyHR
+          OpslyHR
         </span>
       )}
     </div>

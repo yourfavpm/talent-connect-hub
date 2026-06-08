@@ -175,7 +175,7 @@ const TalentMarketplace = () => {
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <a href={getZoneUrl(Zone.AUTH, "/auth/signup?portal=talent")}>
                             <Button size="lg" className="h-16 px-12 text-lg bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all font-bold shadow-2xl shadow-blue-900/40">
-                                Sign Up to OPSlyHR
+                                Sign Up to OpslyHR
                             </Button>
                         </a>
                         <Link to="/browse">

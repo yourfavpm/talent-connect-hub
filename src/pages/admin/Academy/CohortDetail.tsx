@@ -483,7 +483,7 @@ const CohortDetail = () => {
                         htmlTemplate: `
                             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
                                 <div style="background: #0f2147; padding: 40px; text-align: center;">
-                                    <img src="https://opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="width: 140px;" />
+                                    <img src="https://opslyhr.com/images/logocolored.svg" alt="OpslyHR" style="width: 140px;" />
                                 </div>
                                 <div style="padding: 40px; background: #fff;">
                                     <h1 style="color: #0f2147; font-size: 24px; margin-bottom: 20px;">Class Reminder</h1>
@@ -501,7 +501,7 @@ const CohortDetail = () => {
                                     </div>
                                 </div>
                                 <div style="background: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                                    <p style="color: #999; font-size: 12px;">&copy; 2026 OPSlyHR Academy. All rights reserved.</p>
+                                    <p style="color: #999; font-size: 12px;">&copy; 2026 OpslyHR Academy. All rights reserved.</p>
                                 </div>
                             </div>
                         `
@@ -719,7 +719,7 @@ const CohortDetail = () => {
                                 htmlTemplate: `
                                     <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
                                         <div style="background: #0f2147; padding: 48px 40px; text-align: center;">
-                                            <img src="https://opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="width: 140px; margin-bottom: 24px;" />
+                                            <img src="https://opslyhr.com/images/logocolored.svg" alt="OpslyHR" style="width: 140px; margin-bottom: 24px;" />
                                             <h1 style="color: #fff; font-size: 28px; margin: 0; letter-spacing: -0.5px;">🎓 Congratulations!</h1>
                                         </div>
                                         <div style="padding: 48px 40px; background: #fff;">
@@ -741,7 +741,7 @@ const CohortDetail = () => {
                                             <p style="color: #64748b; font-size: 15px; line-height: 1.7;">— The Opsly Academy Team</p>
                                         </div>
                                         <div style="background: #f9fafb; padding: 24px; text-align: center; border-top: 1px solid #eee;">
-                                            <p style="color: #94a3b8; font-size: 11px; margin: 0;">© ${new Date().getFullYear()} OPSlyHR Academy. All rights reserved.</p>
+                                            <p style="color: #94a3b8; font-size: 11px; margin: 0;">© ${new Date().getFullYear()} OpslyHR Academy. All rights reserved.</p>
                                             <p style="color: #94a3b8; font-size: 11px; margin: 4px 0 0 0;"><a href="${verificationUrl}" style="color: #2563eb;">Verify this certificate</a></p>
                                         </div>
                                     </div>

@@ -80,7 +80,7 @@ export const TalentProfileDrawer = ({ talentId, userId, isOpen, onClose }: Talen
           certifications: (rpcData.certifications || []).map((c: any) => ({
             id: c.id || Math.random().toString(),
             name: c.certificationName || c.name,
-            issuer: c.issuer || c.issuing_organization || "OPSlyHR",
+            issuer: c.issuer || c.issuing_organization || "OpslyHR",
           })),
           references: [],
         };

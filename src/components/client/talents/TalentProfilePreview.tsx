@@ -94,7 +94,7 @@ export const TalentProfilePreview = ({ talent, onInvite }: TalentProfilePreviewP
                           <Shield className="h-3 w-3" /> ID Verified
                         </Badge>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">OPSlyHR has verified this talent's identity.</TooltipContent>
+                      <TooltipContent side="top" className="text-xs">OpslyHR has verified this talent's identity.</TooltipContent>
                     </Tooltip>
                   </div>
                 </div>

@@ -366,14 +366,14 @@ const Pricing = () => {
                         <div className="grid grid-cols-2 md:grid-cols-3 bg-slate-50 border-b border-slate-200">
                             <div className="p-6 text-sm font-bold uppercase tracking-widest text-slate-400">Metric</div>
                             <div className="p-6 text-sm font-bold uppercase tracking-widest text-slate-900">Traditional Hiring</div>
-                            <div className="hidden md:block p-6 text-sm font-bold uppercase tracking-widest text-blue-600">OPSlyHR Managed</div>
+                            <div className="hidden md:block p-6 text-sm font-bold uppercase tracking-widest text-blue-600">OpslyHR Managed</div>
                         </div>
                         {[
                             { m: "Time-to-hire", t: "45–60 Days", v: "5–10 Days" },
                             { m: "Recruitment overhead", t: "High internal effort", v: "Zero operational noise" },
                             { m: "Compliance management", t: "Local desk only", v: "Global multi-currency" },
                             { m: "Replacement risk", t: "Sunk costs", v: "100% Guaranteed" },
-                            { m: "Operational coordination", t: "Client managed", v: "OPSlyHR facilitated" }
+                            { m: "Operational coordination", t: "Client managed", v: "OpslyHR facilitated" }
                         ].map((row, i) => (
                             <div key={i} className="grid grid-cols-2 md:grid-cols-3 border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors">
                                 <div className="p-6 text-sm font-bold text-slate-900 border-r border-slate-100">{row.m}</div>
@@ -476,7 +476,7 @@ const Pricing = () => {
                         <div className="space-y-4">
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-2">Engagement & Hiring</div>
                             {[
-                                { q: "Are there any upfront activation fees?", answer: "No. OPSlyHR does not charge setup or search fees. You only pay for talent once an engagement begins or a hire is finalized." },
+                                { q: "Are there any upfront activation fees?", answer: "No. OpslyHR does not charge setup or search fees. You only pay for talent once an engagement begins or a hire is finalized." },
                                 { q: "Do you require exclusivity?", answer: "Exclusivity is not required for contingent direct hire placements. However, for managed trials and projects, we focus on dedicated delivery." },
                                 { q: "What is your replacement guarantee?", answer: "Full-time placements include a 120-day replacement guarantee. Managed trials can be terminated or changed at any point with 30 days notice." }
                             ].map((faq, i) => (
@@ -487,7 +487,7 @@ const Pricing = () => {
                         <div className="space-y-4">
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-2">Compliance & Billing</div>
                             {[
-                                { q: "How is global payroll managed?", answer: "OPSlyHR acts as the Employer of Record for offshore talent, handling all local taxes, benefits, and labor laws. You pay one invoice." },
+                                { q: "How is global payroll managed?", answer: "OpslyHR acts as the Employer of Record for offshore talent, handling all local taxes, benefits, and labor laws. You pay one invoice." },
                                 { q: "Can we convert a trial professional to full-time?", answer: "Yes. Our Trial-to-Hire model includes a pre-defined conversion schedule based on the duration of the trial period." },
                                 { q: "Which currencies do you support for billing?", answer: "We primarily bill in USD, EUR, and GBP, but we can accommodate local currency billing for qualified enterprise accounts." }
                             ].map((faq, i) => (

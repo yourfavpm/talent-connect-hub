@@ -423,7 +423,7 @@ const TalentJobs = () => {
         <div className="flex items-center gap-1 bg-slate-100/50 p-1 rounded-xl border border-slate-100 overflow-x-auto">
            {[
              { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-             { id: "opslyhr", label: FEATURES.hire_request_v2_enabled ? "Hire Requests" : "OPSlyHR Jobs", icon: FEATURES.hire_request_v2_enabled ? ClipboardList : Briefcase },
+             { id: "opslyhr", label: FEATURES.hire_request_v2_enabled ? "Hire Requests" : "OpslyHR Jobs", icon: FEATURES.hire_request_v2_enabled ? ClipboardList : Briefcase },
              { id: "external", label: "External Roles", icon: Globe }
            ].map((tab) => (
              <button
@@ -497,7 +497,7 @@ const TalentJobs = () => {
               onClick={() => setTab("opslyhr")}
               className="h-10 px-6 bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-bold uppercase tracking-widest rounded-lg shadow-sm active:scale-[0.98]"
             >
-              Browse OPSlyHR Jobs
+              Browse OpslyHR Jobs
               <ArrowRight className="h-3.5 w-3.5 ml-2" />
             </Button>
             <Button 
@@ -536,7 +536,7 @@ const TalentJobs = () => {
                       type: 'job_posted',
                       title: 'New Job Posted',
                       jobTitle: (req as any).title,
-                      clientName: 'OPSlyHR Partner',
+                      clientName: 'OpslyHR Partner',
                       date: (req as any).published_at || (req as any).created_at,
                       status: 'Open'
                     })),
@@ -640,7 +640,7 @@ const TalentJobs = () => {
             <>
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
                 <div>
-                  <h2 className="text-[18px] font-bold text-slate-900 tracking-tight">OPSlyHR Hire Requests</h2>
+                  <h2 className="text-[18px] font-bold text-slate-900 tracking-tight">OpslyHR Hire Requests</h2>
                   <p className="text-[14px] text-slate-500">Hiring requests from verified enterprise clients.</p>
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto">
@@ -767,7 +767,7 @@ const TalentJobs = () => {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
                 <div>
                   <h2 className="text-[18px] font-bold text-slate-900 tracking-tight">Available Positions</h2>
-                  <p className="text-[14px] text-slate-500">Roles posted directly by OPSlyHR partners.</p>
+                  <p className="text-[14px] text-slate-500">Roles posted directly by OpslyHR partners.</p>
                 </div>
                 <div className="flex items-center gap-2.5 w-full md:w-auto">
                   <div className="relative flex-1 md:w-72">
@@ -1307,7 +1307,7 @@ const TalentJobs = () => {
                     try {
                       const { error } = await (supabase as unknown as { rpc: (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }> }).rpc('hr_v2_talent_apply', { req_id: v2ApplyingFor, note: v2ApplyNote });
                       if (error) throw error;
-                      toast({ title: "Application Seamlessly Submitted", description: "The OPSlyHR team has received your interest." });
+                      toast({ title: "Application Seamlessly Submitted", description: "The OpslyHR team has received your interest." });
                       setV2ApplyDialogOpen(false);
                       setV2ApplyNote("");
                       setV2ApplyingFor(null);

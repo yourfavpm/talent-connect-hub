@@ -188,7 +188,7 @@ const ServiceModels = () => {
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-widest uppercase mb-8 shadow-sm">
                             Engagement Framework
                         </div>
-                        <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">Three Structured Ways to Work With OPSlyHR</h2>
+                        <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-6 tracking-tight">Three Structured Ways to Work With OpslyHR</h2>
                         <p className="text-base md:text-lg text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
                             Each model is designed around risk allocation, speed, and long-term value.
                         </p>
@@ -206,7 +206,7 @@ const ServiceModels = () => {
                             <div className="space-y-10 w-full mb-16">
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Structure</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Full-time employment transfer. OPSlyHR performs the search and vetting; you hire onto your payroll.</p>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Full-time employment transfer. OpslyHR performs the search and vetting; you hire onto your payroll.</p>
                                 </div>
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Best For</div>
@@ -214,7 +214,7 @@ const ServiceModels = () => {
                                 </div>
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Risk Profile</div>
-                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Long-term alignment. 120-day replacement guarantee provided by OPSlyHR for every placement.</p>
+                                    <p className="text-sm text-slate-800 font-medium leading-relaxed">Long-term alignment. 120-day replacement guarantee provided by OpslyHR for every placement.</p>
                                 </div>
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Cost Model</div>
@@ -486,8 +486,8 @@ const ServiceModels = () => {
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-2">Engagement & Hiring</div>
                             {[
                                 { 
-                                    q: "What makes OPSlyHR different?", 
-                                    a: "Unlike generic marketplaces, OPSlyHR focus on structured, managed engagements. We handle the vetting, compliance, and ongoing coordination, allowing you to focus purely on execution and outcomes." 
+                                    q: "What makes OpslyHR different?", 
+                                    a: "Unlike generic marketplaces, OpslyHR focus on structured, managed engagements. We handle the vetting, compliance, and ongoing coordination, allowing you to focus purely on execution and outcomes." 
                                 },
                                 { 
                                     q: "Can I try a professional before hiring full-time?", 
@@ -511,8 +511,8 @@ const ServiceModels = () => {
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-2">Operations & Infrastructure</div>
                             {[
                                 { 
-                                    q: "Does OPSlyHR handle compliance and payroll?", 
-                                    a: "Yes. OPSlyHR manages all international compliance, contractor administration, and multi-currency payroll, providing you with a single, consolidated monthly bill." 
+                                    q: "Does OpslyHR handle compliance and payroll?", 
+                                    a: "Yes. OpslyHR manages all international compliance, contractor administration, and multi-currency payroll, providing you with a single, consolidated monthly bill." 
                                 },
                                 { 
                                     q: "How do you ensure operational continuity?", 
@@ -520,7 +520,7 @@ const ServiceModels = () => {
                                 },
                                 { 
                                     q: "What if I already have an in-house team?", 
-                                    a: "OPSlyHR is designed to complement existing teams. We provide specialized skills or additional capacity that integrates directly into your existing project management and communication tools." 
+                                    a: "OpslyHR is designed to complement existing teams. We provide specialized skills or additional capacity that integrates directly into your existing project management and communication tools." 
                                 },
                                 { 
                                     q: "Is there a dedicated account manager?", 

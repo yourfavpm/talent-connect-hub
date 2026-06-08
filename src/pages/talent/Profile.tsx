@@ -357,7 +357,7 @@ const TalentProfile = () => {
               </div>
               <div>
                 <p className="text-sm font-bold">Profile Ready for Review</p>
-                <p className="text-xs text-blue-100 mt-0.5">Your profile is 100% complete. Submit it now to start the OPSlyHR vetting process.</p>
+                <p className="text-xs text-blue-100 mt-0.5">Your profile is 100% complete. Submit it now to start the OpslyHR vetting process.</p>
               </div>
             </div>
             <Button onClick={() => setReviewDrawerOpen(true)} size="sm" className="bg-white text-blue-900 hover:bg-slate-100 font-bold h-9 px-4 w-full md:w-auto">
@@ -465,7 +465,7 @@ const TalentProfile = () => {
                 <h3 className="text-sm font-bold text-slate-900">Trust & Safety</h3>
              </div>
              <p className="text-xs text-slate-500 leading-relaxed mb-4">
-                Your data is managed under OPSlyHR Enterprise security protocols. Identity verification is permanent.
+                Your data is managed under OpslyHR Enterprise security protocols. Identity verification is permanent.
              </p>
              <div className="space-y-2">
                 {vetting?.status === 'approved' && talent.government_id_url && (

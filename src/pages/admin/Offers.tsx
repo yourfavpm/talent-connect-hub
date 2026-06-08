@@ -56,7 +56,7 @@ const AdminOffers = () => {
     setGenerating(true);
 
     try {
-      // Calculate talent rate (after OPSlyHR margin)
+      // Calculate talent rate (after OpslyHR margin)
       const talentRate = offer.hourly_rate * (1 - OPSLYHR_MARGIN / 100);
 
       // Generate contract number

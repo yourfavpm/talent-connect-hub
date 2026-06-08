@@ -218,7 +218,7 @@ export default function CreateHireRequest() {
 
       toast({
         title: "Hire Request Submitted",
-        description: "Your request has been submitted to OPSlyHR Admins for review.",
+        description: "Your request has been submitted to OpslyHR Admins for review.",
       });
 
       navigate(getInternalPath(`/client/hire-requests/${finalId}`));
@@ -294,7 +294,7 @@ export default function CreateHireRequest() {
               <div className="grid gap-4">
                 {[
                   { id: "direct_hire", title: "Direct Hire", desc: "We source and vet the talent. You hire them directly onto your payroll.", icon: Building2 },
-                  { id: "trial_to_hire", title: "Trial-to-Hire", desc: "Start with a 90-day risk-free trial period managed by OPSlyHR before deciding to hire.", icon: Clock },
+                  { id: "trial_to_hire", title: "Trial-to-Hire", desc: "Start with a 90-day risk-free trial period managed by OpslyHR before deciding to hire.", icon: Clock },
                   { id: "one_time_project", title: "One-Time Project", desc: "A fixed-scope engagement managed entirely through our platform.", icon: Briefcase },
                   { id: "offshore", title: "Offshore Hiring", desc: "Source top global talent specifically for remote offshore operations.", icon: Globe }
                 ].map((type) => {
@@ -601,7 +601,7 @@ export default function CreateHireRequest() {
                 <div>
                   <h4 className="text-sm font-bold text-amber-900">Next Steps</h4>
                   <p className="text-sm text-amber-800/90 mt-1 leading-relaxed">
-                    Once submitted, OPSlyHR administrators will review your request. We will then automatically match and shortlist the best-fitting, pre-vetted talent for you to review and interview.
+                    Once submitted, OpslyHR administrators will review your request. We will then automatically match and shortlist the best-fitting, pre-vetted talent for you to review and interview.
                   </p>
                 </div>
               </div>

@@ -25,7 +25,7 @@ const DirectHire = () => {
                 Build Long-Term Operational <br className="hidden md:block" /> Leadership with Confidence.
               </h1>
               <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-2xl">
-                OPSlyHR connects you with rigorously vetted product and operations leaders for permanent internal placement — backed by structured screening and replacement guarantees.
+                OpslyHR connects you with rigorously vetted product and operations leaders for permanent internal placement — backed by structured screening and replacement guarantees.
               </p>
                            <div className="flex flex-col sm:flex-row items-start gap-8">
                 <Link to="/book-consultation" className="w-full sm:w-auto">
@@ -238,7 +238,7 @@ const DirectHire = () => {
                 {[
                   { t: "Replacement guarantee", d: "Security for your investment." },
                   { t: "Skill-tier vetting", d: "Ensuring technical and cultural alignment." },
-                  { t: "Manager oversight", d: "OPSlyHR lead manages placement transition." },
+                  { t: "Manager oversight", d: "OpslyHR lead manages placement transition." },
                   { t: "Evaluation criteria", d: "Documented scorecard for every candidate." }
                 ].map((item, i) => (
                   <div key={i} className="pl-6 border-l border-white/10">

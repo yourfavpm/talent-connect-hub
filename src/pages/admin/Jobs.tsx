@@ -143,7 +143,7 @@ export default function AdminJobs() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Jobs</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage all hiring requests across OPSlyHR.</p>
+          <p className="text-sm text-gray-500 mt-1">Manage all hiring requests across OpslyHR.</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <PostInternalJobModal onJobPosted={fetchDashboardData} />

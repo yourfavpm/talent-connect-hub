@@ -646,7 +646,7 @@ const Index = () => {
           {/* Header */}
           <div className="mb-16 animate-slide-up">
             <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 mb-4 tracking-tight">
-              The OPSlyHR Vetting Engine
+              The OpslyHR Vetting Engine
             </h2>
             <p className="text-base md:text-lg text-slate-500 font-light max-w-2xl">
               A structured multi-layer quality system designed to ensure every professional meets global operational standards.
@@ -760,7 +760,7 @@ const Index = () => {
                 desc: "Start managed, convert anytime. The most flexible path to permanent scale.",
                 traits: [
                   "20% platform margin",
-                  "Payroll managed by OPSlyHR",
+                  "Payroll managed by OpslyHR",
                   "Monthly or hourly billing",
                   "Conversion flexibility"
                 ],
@@ -834,7 +834,7 @@ const Index = () => {
                 Operational Performance, Measured.
               </h2>
               <p className="text-base text-slate-600 mb-12 leading-relaxed max-w-lg">
-                OPSlyHR replaces guesswork with structured vetting, automated contracts, and transparent billing.
+                OpslyHR replaces guesswork with structured vetting, automated contracts, and transparent billing.
               </p>
 
               <div className="grid grid-cols-2 gap-4">
@@ -963,7 +963,7 @@ const Index = () => {
               Structured Hiring, Step by Step
             </h2>
             <p className="text-base text-slate-600 leading-relaxed">
-              From role definition to payment processing, OPSlyHR manages the entire talent lifecycle.
+              From role definition to payment processing, OpslyHR manages the entire talent lifecycle.
             </p>
           </div>
 
@@ -1170,7 +1170,7 @@ const Index = () => {
               Trusted by Growth-Focused Teams
             </h2>
             <p className="text-base text-slate-600 leading-relaxed">
-              Companies across SaaS and fintech rely on OPSlyHR for structured talent engagement.
+              Companies across SaaS and fintech rely on OpslyHR for structured talent engagement.
             </p>
           </div>
 

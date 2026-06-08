@@ -181,7 +181,7 @@ const TalentApplications = () => {
             job: {
               id: app.hire_request_id,
               title: requestMap[app.hire_request_id]?.title || "Hire Request",
-              role_needed: requestMap[app.hire_request_id]?.role_summary || requestMap[app.hire_request_id]?.service_model || "OPSlyHR Request",
+              role_needed: requestMap[app.hire_request_id]?.role_summary || requestMap[app.hire_request_id]?.service_model || "OpslyHR Request",
               weekly_hours: requestMap[app.hire_request_id]?.hours_per_week ?? 0,
               location: requestMap[app.hire_request_id]?.location_preference || "Remote",
               client: { company_name: "Verified OPSly Partner" },

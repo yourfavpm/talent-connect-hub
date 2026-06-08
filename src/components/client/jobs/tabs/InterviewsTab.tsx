@@ -43,7 +43,7 @@ export const InterviewsTab = ({ applications }: InterviewsTabProps) => {
           <div className="pt-4 border-t border-gray-100 space-y-2">
             <div className="flex items-center text-sm text-gray-600">
               <CalendarIcon className="w-4 h-4 mr-2 text-gray-400" /> 
-              <span>Pending OPSlyHR scheduling</span>
+              <span>Pending OpslyHR scheduling</span>
             </div>
             <div className="flex items-center text-sm text-gray-600">
               <Clock className="w-4 h-4 mr-2 text-gray-400" /> 

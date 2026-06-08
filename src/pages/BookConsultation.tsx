@@ -110,7 +110,7 @@ const BookConsultation = () => {
                         Thank you for trusting us. We'll be in touch within 24 hours to schedule a conversation that fits your time.
                     </p>
                     <Button asChild className="w-full h-14 text-lg rounded-full bg-stone-900 text-white hover:bg-stone-800">
-                        <Link to="/">Return to OPSlyHR</Link>
+                        <Link to="/">Return to OpslyHR</Link>
                     </Button>
                 </div>
             </div>
@@ -121,7 +121,7 @@ const BookConsultation = () => {
         <div className="min-h-screen bg-white selection:bg-slate-100 selection:text-slate-900 font-inter relative">
             <SEO 
                 title="Book a Consultation | Hire Vetted African Operations Leaders"
-                description="Request a consultation to define your next operational hire. OPSlyHR connects growth-stage companies with vetted African operations professionals through a structured matching process."
+                description="Request a consultation to define your next operational hire. OpslyHR connects growth-stage companies with vetted African operations professionals through a structured matching process."
                 keywords="Hire African Operations, Operations Talent Consultation, Vetted Ops Leaders Africa, Remote Operations Matching, Structured Talent Search"
             />
             {/* Faint Dotted Grid Pattern */}

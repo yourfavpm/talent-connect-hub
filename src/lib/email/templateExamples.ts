@@ -42,7 +42,7 @@ export async function sendTalentWelcomeEmailExample(
 
   await queueEmail({
     to: email,
-    subject: `Welcome to OPSlyHR, ${firstName}!`,
+    subject: `Welcome to OpslyHR, ${firstName}!`,
     htmlTemplate: html,
     templateName: 'talent_onboarding_welcome',
     templateVariables: {
@@ -170,7 +170,7 @@ export async function sendClientWelcomeEmailExample(
 
   await queueEmail({
     to: email,
-    subject: `Welcome to OPSlyHR, ${companyName}!`,
+    subject: `Welcome to OpslyHR, ${companyName}!`,
     htmlTemplate: html,
     templateName: 'client_onboarding_welcome',
     templateVariables: {
@@ -299,7 +299,7 @@ export async function sendPasswordResetEmailExample(
 
   await queueEmail({
     to: email,
-    subject: 'Reset Your OPSlyHR Password',
+    subject: 'Reset Your OpslyHR Password',
     htmlTemplate: html,
     templateName: 'password_reset',
     templateVariables: {

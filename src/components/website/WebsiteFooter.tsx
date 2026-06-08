@@ -15,7 +15,7 @@ const WebsiteFooter = () => {
               <Logo showText={false} imgHeight="h-7" />
             </Link>
             <p className="text-sm text-slate-500 leading-relaxed font-medium max-w-sm">
-              OPSlyHR connects vetted product and operations professionals across EMEA with growth-focused companies globally.
+              OpslyHR connects vetted product and operations professionals across EMEA with growth-focused companies globally.
             </p>
             <div className="flex gap-4">
                 {[
@@ -175,7 +175,7 @@ const WebsiteFooter = () => {
         {/* Copyright & Status */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-6 border-t border-slate-100">
           <p className="text-[11px] text-slate-400 font-medium">
-            © {new Date().getFullYear()} OPSlyHR. All rights reserved.
+            © {new Date().getFullYear()} OpslyHR. All rights reserved.
           </p>
           <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-white border border-slate-100 rounded-full shadow-xs">
             <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse"></div>

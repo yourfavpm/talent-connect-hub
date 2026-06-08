@@ -144,7 +144,7 @@ const TrialToHire = () => {
                             { 
                                 id: "02", 
                                 title: "Managed Execution", 
-                                desc: "Talent operates under OPSlyHR oversight, ensuring operational continuity from day one." 
+                                desc: "Talent operates under OpslyHR oversight, ensuring operational continuity from day one." 
                             },
                             { 
                                 id: "03", 

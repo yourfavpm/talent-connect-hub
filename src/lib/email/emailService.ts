@@ -57,7 +57,7 @@ export const queueEmail = async (options: QueueEmailOptions): Promise<string> =>
         const brandVariables = {
             brand_color: '#0f2147', // Deep OPSly Blue
             brand_logo: 'https://opslyhr.com/images/logocolored.svg',
-            brand_name: 'OPSlyHR',
+            brand_name: 'OpslyHR',
             brand_website: 'https://opslyhr.com',
             social_linkedin: 'https://www.linkedin.com/company/opslyhr/',
             social_tiktok: 'https://www.tiktok.com/@opslyhr?_r=1&_t=ZS-972oUQjwnw2',

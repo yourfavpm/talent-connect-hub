@@ -31,7 +31,7 @@ function buildJobPublishedEmail(vars: {
         <!-- Header -->
         <tr>
           <td style="background:#0f172a;padding:28px 40px;text-align:center;">
-            <img src="https://app.opslyhr.com/images/logoplain.png" alt="OPSlyHR" style="height:36px;" />
+            <img src="https://app.opslyhr.com/images/logoplain.png" alt="OpslyHR" style="height:36px;" />
           </td>
         </tr>
         <!-- Body -->
@@ -39,7 +39,7 @@ function buildJobPublishedEmail(vars: {
           <td style="padding:36px 40px 28px;">
             <p style="margin:0 0 6px;font-size:13px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">New Opportunity</p>
             <h1 style="margin:0 0 20px;font-size:22px;font-weight:700;color:#0f172a;line-height:1.35;">Hi ${vars.firstName}, a new role just went live!</h1>
-            <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.7;">A new hiring opportunity has just been posted on OPSlyHR and we think it might be a great fit for your skills and experience.</p>
+            <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.7;">A new hiring opportunity has just been posted on OpslyHR and we think it might be a great fit for your skills and experience.</p>
 
             <!-- Job card -->
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
@@ -74,7 +74,7 @@ function buildJobPublishedEmail(vars: {
               style="background:#fef9c3;border:1px solid #fde68a;border-radius:10px;margin-bottom:28px;">
               <tr><td style="padding:14px 18px;">
                 <p style="margin:0;font-size:13px;color:#78350f;line-height:1.6;">
-                  <strong>Important Notice:</strong> To maintain the quality of our talent network, all applicants must complete the OPSlyHR vetting process before they can be considered for client opportunities. If you have not yet completed your vetting, you will be prompted to do so when you apply.
+                  <strong>Important Notice:</strong> To maintain the quality of our talent network, all applicants must complete the OpslyHR vetting process before they can be considered for client opportunities. If you have not yet completed your vetting, you will be prompted to do so when you apply.
                 </p>
               </td></tr>
             </table>
@@ -102,7 +102,7 @@ function buildJobPublishedEmail(vars: {
               </tr>
             </table>
             <p style="margin:14px 0 0;font-size:12px;color:#cbd5e1;text-align:center;">
-              &copy; 2025 OPSlyHR &middot; <a href="mailto:hire@opslyhr.com" style="color:#94a3b8;">hire@opslyhr.com</a>
+              &copy; 2025 OpslyHR &middot; <a href="mailto:hire@opslyhr.com" style="color:#94a3b8;">hire@opslyhr.com</a>
             </p>
           </td>
         </tr>
@@ -1047,7 +1047,7 @@ export async function sendTalentInterviewInvitationEmail(params: {
         style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
         <tr>
           <td style="background:#0f172a;padding:28px 40px;text-align:center;">
-            <img src="https://app.opslyhr.com/images/logoplain.png" alt="OPSlyHR" style="height:36px;" />
+            <img src="https://app.opslyhr.com/images/logoplain.png" alt="OpslyHR" style="height:36px;" />
           </td>
         </tr>
         <tr>

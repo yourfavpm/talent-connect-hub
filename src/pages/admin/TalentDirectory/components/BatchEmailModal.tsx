@@ -125,13 +125,13 @@ const BatchEmailModal = ({ isOpen, onClose, selectedTalents }: BatchEmailModalPr
             <body>
               <div class="container">
                 <div class="header">
-                   <img src="https://opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="height: 64px; width: auto; display: block; margin: 0 auto;" />
+                   <img src="https://opslyhr.com/images/logocolored.svg" alt="OpslyHR" style="height: 64px; width: auto; display: block; margin: 0 auto;" />
                 </div>
                 <div class="content">
                   ${personalizedBody}
                 </div>
                 <div class="footer">
-                  <p>&copy; 2026 OPSlyHR</p>
+                  <p>&copy; 2026 OpslyHR</p>
                 </div>
               </div>
             </body>

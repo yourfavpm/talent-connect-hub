@@ -10,8 +10,8 @@ const About = () => {
         <div className="bg-white font-inter">
             <SEO 
                 title="About Us | Managed Operational Infrastructure"
-                description="Learn about OPSlyHR's mission to build the infrastructure behind modern operations teams. We connect vetted African operations professionals with global teams through managed engagement models."
-                keywords="About OPSlyHR, Operations Infrastructure, African Operations Experts, Remote Work Mission, Vetted Talent Network"
+                description="Learn about OpslyHR's mission to build the infrastructure behind modern operations teams. We connect vetted African operations professionals with global teams through managed engagement models."
+                keywords="About OpslyHR, Operations Infrastructure, African Operations Experts, Remote Work Mission, Vetted Talent Network"
             />
             <section className="pt-32 md:pt-48 pb-24 md:pb-32 px-6">
                 <div className="container max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
@@ -23,13 +23,13 @@ const About = () => {
                             className="flex flex-col items-start text-left"
                         >
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase mb-8 shadow-sm">
-                                About OPSlyHR
+                                About OpslyHR
                             </div>
                             <h1 className="text-4xl md:text-7xl font-semibold text-slate-900 mb-8 tracking-tight leading-[1.1]">
                                 Building the Infrastructure Behind <br className="hidden md:block" /> Modern Operations Teams.
                             </h1>
                             <p className="text-lg md:text-xl text-slate-600 mb-12 font-medium leading-relaxed max-w-xl">
-                                OPSlyHR connects vetted product and operations professionals with growth-focused companies — through structured, transparent, and managed engagement models.
+                                OpslyHR connects vetted product and operations professionals with growth-focused companies — through structured, transparent, and managed engagement models.
                                 <br /><span className="mt-4 block text-slate-900 font-bold">We are not a marketplace. We are operational infrastructure.</span>
                             </p>
                         </motion.div>
@@ -56,13 +56,13 @@ const About = () => {
             <section className="py-24 md:py-32 px-6 border-t border-slate-100 bg-slate-50/50">
                 <div className="container max-w-[1200px] mx-auto">
                     <div className="max-w-4xl mx-auto">
-                        <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-12 tracking-tight">Why OPSlyHR Exists</h2>
+                        <h2 className="text-3xl md:text-5xl font-semibold text-slate-900 mb-12 tracking-tight">Why OpslyHR Exists</h2>
                         <div className="space-y-8 text-lg text-slate-600 font-medium leading-[1.8]">
                             <p>
                                 Hiring operational talent is fragmented. Companies lose critical time screening for functional depth, agencies charge opaque fees for single placements, and marketplaces lack the rigorous quality control required for high-stakes roles. Global hiring only adds layers of compliance and payroll complexity.
                             </p>
                             <p>
-                                OPSlyHR was built to introduce structure where chaos exists. We replace fragmented recruitment workflows with curated vetting, transparent engagement models, and centralized operational management.
+                                OpslyHR was built to introduce structure where chaos exists. We replace fragmented recruitment workflows with curated vetting, transparent engagement models, and centralized operational management.
                             </p>
                             <p className="text-slate-900 font-bold">
                                 We believe that building specialized teams should be predictable, measurable, and managed.
@@ -98,7 +98,7 @@ const About = () => {
                             </ul>
                         </div>
                         <div className="bg-slate-50/50 p-12">
-                            <h4 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-8">OPSlyHR Model</h4>
+                            <h4 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-8">OpslyHR Model</h4>
                             <ul className="space-y-6">
                                 {[
                                     "Curated professional network",
@@ -125,7 +125,7 @@ const About = () => {
                         <div>
                             <h2 className="text-3xl font-semibold text-slate-900 mb-8 tracking-tight">For Growth-Focused Companies</h2>
                             <p className="text-slate-600 font-medium leading-relaxed mb-8">
-                                Companies need speed, risk control, and cost clarity. OPSlyHR provides the managed infrastructure to scale your operations without the administrative burden of traditional hiring or the uncertainty of marketplaces.
+                                Companies need speed, risk control, and cost clarity. OpslyHR provides the managed infrastructure to scale your operations without the administrative burden of traditional hiring or the uncertainty of marketplaces.
                             </p>
                             <ul className="space-y-4 mb-10">
                                 {["Curated matching", "Managed trials", "Permanent placements", "Project-based support", "Global infrastructure"].map((item, i) => (
@@ -142,7 +142,7 @@ const About = () => {
                         <div>
                             <h2 className="text-3xl font-semibold text-slate-900 mb-8 tracking-tight">For High-Impact Operators</h2>
                             <p className="text-slate-600 font-medium leading-relaxed mb-8">
-                                OPSlyHR is not open enrollment. We curate for long-term partnerships with professionals who value documented execution and transparent engagements with high-growth companies.
+                                OpslyHR is not open enrollment. We curate for long-term partnerships with professionals who value documented execution and transparent engagements with high-growth companies.
                             </p>
                             <ul className="space-y-4 mb-10">
                                 {["Structured engagements", "Transparent compensation", "Compliance handling", "Global opportunities"].map((item, i) => (
@@ -210,7 +210,7 @@ const About = () => {
                     >
                         <h2 className="text-4xl md:text-6xl font-semibold text-slate-900 mb-8 tracking-tight">Structured Teams. <br /> Measurable Impact.</h2>
                         <p className="text-lg text-slate-600 font-medium mb-12 max-w-2xl mx-auto">
-                            OPSlyHR exists to reduce friction in operational hiring and create predictable outcomes for companies and professionals alike.
+                            OpslyHR exists to reduce friction in operational hiring and create predictable outcomes for companies and professionals alike.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                             <a href={getZoneUrl(Zone.AUTH, "/auth/signup/client")}>

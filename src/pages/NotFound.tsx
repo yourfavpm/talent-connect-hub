@@ -109,9 +109,9 @@ const NotFound = () => {
             <footer className="py-12 px-8 border-t border-slate-100 relative z-10">
                 <div className="container max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
                     <div className="flex items-center gap-6">
-                        <Link to="/" className="text-xl font-bold tracking-tight text-slate-900">OPSlyHR</Link>
+                        <Link to="/" className="text-xl font-bold tracking-tight text-slate-900">OpslyHR</Link>
                         <span className="text-[13px] text-slate-400 font-medium">
-                            © {new Date().getFullYear()} OPSlyHR HR Solutions.
+                            © {new Date().getFullYear()} OpslyHR HR Solutions.
                         </span>
                     </div>
                     <Link to="/support" className="text-sm font-bold text-slate-600 hover:text-slate-900 flex items-center gap-2 transition-colors group">

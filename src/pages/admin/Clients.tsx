@@ -119,7 +119,7 @@ export default function AdminClients() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Clients</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage companies using OPSlyHR.</p>
+        <p className="text-sm text-gray-500 mt-1">Manage companies using OpslyHR.</p>
       </div>
 
       {/* Toolbar */}
@@ -225,7 +225,7 @@ export default function AdminClients() {
           </h3>
           <p className="text-sm text-gray-500 mt-1 text-center max-w-sm">
             {clients.length === 0 
-              ? "When companies sign up for OPSlyHR, they will appear here." 
+              ? "When companies sign up for OpslyHR, they will appear here." 
               : "Try adjusting your search query or removing some filters to find what you're looking for."}
           </p>
           {clients.length > 0 && (

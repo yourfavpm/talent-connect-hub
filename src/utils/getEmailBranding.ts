@@ -1,11 +1,11 @@
 /**
- * Standard OPSlyHR Email Branding Wrapper
+ * Standard OpslyHR Email Branding Wrapper
  * Used to wrap custom admin messages in a professional HTML envelope.
  */
 export const getBrandedEmailHtml = (body: string, title?: string) => {
   const brandColor = "#0f2147";
   const logoUrl = "https://opslyhr.com/images/logocolored.svg";
-  const brandName = "OPSlyHR";
+  const brandName = "OpslyHR";
 
   return `
 <!DOCTYPE html>
@@ -104,7 +104,7 @@ export const getBrandedEmailHtml = (body: string, title?: string) => {
       <a href="https://talent.opslyhr.com/dashboard" class="button">Go to Talent Portal</a>
     </div>
     <div class="footer">
-      &copy; 2026 OPSlyHR
+      &copy; 2026 OpslyHR
     </div>
   </div>
 </body>

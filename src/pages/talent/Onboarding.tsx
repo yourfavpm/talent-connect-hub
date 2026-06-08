@@ -821,7 +821,7 @@ const TalentOnboarding = () => {
             <div className="flex items-start gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl">
               <Checkbox id="confirm-accuracy" className="mt-0.5" defaultChecked />
               <Label htmlFor="confirm-accuracy" className="text-sm text-slate-600 font-normal cursor-pointer leading-relaxed">
-                I confirm this information is accurate and I authorize OPSlyHR Connect to verify my professional background.
+                I confirm this information is accurate and I authorize OpslyHR Connect to verify my professional background.
               </Label>
             </div>
           </div>
@@ -867,7 +867,7 @@ const TalentOnboarding = () => {
       <div className="sticky top-0 z-30 bg-white border-b border-slate-100">
         <div className="w-full px-4 sm:px-8 lg:px-12 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <span className="text-sm font-bold text-slate-900">OPSlyHR</span>
+            <span className="text-sm font-bold text-slate-900">OpslyHR</span>
             <span className="hidden sm:block text-slate-200">|</span>
             <span className="hidden sm:block text-xs font-medium text-slate-500">Professional Profile Setup</span>
           </div>

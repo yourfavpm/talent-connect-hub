@@ -281,7 +281,7 @@ const Jobs = () => {
           <div>
             <h4 className="text-sm font-medium text-yellow-800">Jobs pending approval</h4>
             <p className="text-sm text-yellow-700 mt-1">
-              You have job postings waiting for OPSlyHR admin approval. They will be published to the talent network once approved.
+              You have job postings waiting for OpslyHR admin approval. They will be published to the talent network once approved.
             </p>
           </div>
         </div>

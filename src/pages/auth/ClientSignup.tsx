@@ -108,7 +108,7 @@ const ClientSignup = () => {
       if (data.user) {
         toast({
           title: "Account created!",
-          description: `Welcome to OPSlyHR, ${formData.fullName}! Please check your email to verify your account.`,
+          description: `Welcome to OpslyHR, ${formData.fullName}! Please check your email to verify your account.`,
         });
         navigate("/auth/check-email");
       }
@@ -174,7 +174,7 @@ const ClientSignup = () => {
         
         <div>
           <Link to="/" className="inline-block mb-16 lg:mb-24">
-            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-32" />
+            <img src="/images/logoplain.png" alt="OpslyHR" className="h-32" />
           </Link>
 
           <div className="max-w-md">
@@ -182,7 +182,7 @@ const ClientSignup = () => {
               Get Started
             </h2>
             <p className="text-slate-500 text-lg font-medium leading-relaxed mb-12">
-              OPSlyHR provides structured systems for hiring and managing pre-vetted product and operations talent globally.
+              OpslyHR provides structured systems for hiring and managing pre-vetted product and operations talent globally.
             </p>
 
             <div className="space-y-6 pt-10 border-t border-slate-200/60 max-w-sm">
@@ -213,13 +213,13 @@ const ClientSignup = () => {
         {/* Mobile Header */}
         <div className="lg:hidden flex flex-col items-center mb-10 text-center">
           <Link to="/" className="mb-6">
-            <img src="/images/logoplain.png" alt="OPSlyHR" className="h-28" />
+            <img src="/images/logoplain.png" alt="OpslyHR" className="h-28" />
           </Link>
           <h1 className="text-2xl font-semibold text-slate-900 tracking-tight leading-tight mb-3">
             Get Started
           </h1>
           <p className="text-slate-500 text-base font-medium leading-relaxed">
-            OPSlyHR provides structured systems for hiring and managing pre-vetted product and operations talent globally.
+            OpslyHR provides structured systems for hiring and managing pre-vetted product and operations talent globally.
           </p>
         </div>
 

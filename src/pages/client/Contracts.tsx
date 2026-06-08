@@ -482,10 +482,10 @@ const Contracts = () => {
                     )}
                   </div>
                   <div>
-                    <p className="font-bold mb-4 text-xs uppercase tracking-wide">Accepted By OPSlyHR:</p>
+                    <p className="font-bold mb-4 text-xs uppercase tracking-wide">Accepted By OpslyHR:</p>
                     <div className="h-16 border-b border-black mb-2 flex items-end pb-1">
                       {selectedContract?.status === 'active' && (
-                        <span className="font-script text-2xl text-blue-900">OPSlyHR Admin</span>
+                        <span className="font-script text-2xl text-blue-900">OpslyHR Admin</span>
                       )}
                     </div>
                     <p className="text-xs uppercase font-semibold">Authorized Signature</p>

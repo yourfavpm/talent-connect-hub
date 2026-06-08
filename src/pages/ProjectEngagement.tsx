@@ -141,7 +141,7 @@ const ProjectEngagement = () => {
               { 
                 icon: Shield, 
                 title: "Centralized Coordination", 
-                desc: "An OPSlyHR Ops Lead manages the reporting and delivery layer for you." 
+                desc: "An OpslyHR Ops Lead manages the reporting and delivery layer for you." 
               }
             ].map((item, i) => (
               <motion.div 
@@ -251,7 +251,7 @@ const ProjectEngagement = () => {
                 <tr className="bg-slate-50 border-b border-slate-100">
                   <th className="px-8 py-6 text-sm font-bold text-slate-500 uppercase tracking-widest">Dimension</th>
                   <th className="px-8 py-6 text-sm font-bold text-slate-900 uppercase tracking-widest">Traditional Model</th>
-                  <th className="px-8 py-6 text-sm font-bold text-blue-600 uppercase tracking-widest bg-blue-50/30">OPSlyHR Project</th>
+                  <th className="px-8 py-6 text-sm font-bold text-blue-600 uppercase tracking-widest bg-blue-50/30">OpslyHR Project</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">

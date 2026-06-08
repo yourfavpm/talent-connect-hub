@@ -89,7 +89,7 @@ const ClientPayments = () => {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="p-4 bg-muted/30 rounded-lg space-y-1">
-                            <p className="font-medium">OPSlyHR Tech Inc.</p>
+                            <p className="font-medium">OpslyHR Tech Inc.</p>
                             <p className="text-sm text-muted-foreground">123 Tech Boulevard</p>
                             <p className="text-sm text-muted-foreground">San Francisco, CA 94107</p>
                             <p className="text-sm text-muted-foreground">United States</p>

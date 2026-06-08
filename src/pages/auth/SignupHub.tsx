@@ -32,7 +32,7 @@ const SignupHub = () => {
           className="text-center mb-10 md:mb-16"
         >
           <h1 className="text-3xl md:text-5xl font-black text-white mb-3 tracking-tight">
-            Get Started with OPSlyHR
+            Get Started with OpslyHR
           </h1>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
             Choose your signup path and join thousands of professionals and companies
@@ -179,7 +179,7 @@ const SignupHub = () => {
             </button>
           </p>
           <p className="text-xs text-slate-500">
-            © {new Date().getFullYear()} OPSlyHR. All rights reserved.
+            © {new Date().getFullYear()} OpslyHR. All rights reserved.
           </p>
         </motion.div>
       </div>

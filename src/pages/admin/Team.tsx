@@ -179,7 +179,7 @@ const AdminTeam = () => {
             // 4. Send Branded "You have been invited" Email
             const emailHtml = `
                 <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 16px; border: 1px solid #f1f5f9;">
-                    <h2 style="color: #0f172a; margin-bottom: 20px; font-weight: 800; font-size: 24px;">Welcome to OPSlyHR Administration Room</h2>
+                    <h2 style="color: #0f172a; margin-bottom: 20px; font-weight: 800; font-size: 24px;">Welcome to OpslyHR Administration Room</h2>
                     <p style="color: #475569; line-height: 1.6; margin-bottom: 24px; font-size: 15px;">
                         Hello ${formData.name},<br><br>
                         A secure administrator account has been provisioned for you. Your assigned role and permissions are now active.
@@ -196,7 +196,7 @@ const AdminTeam = () => {
             await supabase.functions.invoke('send-email', {
                 body: {
                     to: formData.email,
-                    subject: "Your OPSlyHR Admin Access Provisioned",
+                    subject: "Your OpslyHR Admin Access Provisioned",
                     htmlTemplate: emailHtml
                 }
             });

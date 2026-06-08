@@ -149,7 +149,7 @@ const CertificateView = () => {
             <div
               className="absolute inset-0 opacity-[0.04] mix-blend-multiply pointer-events-none"
               style={{
-                backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><text x='20' y='80' font-family='sans-serif' font-size='24' font-weight='bold' fill='%232563eb' transform='rotate(-45 80 80)'>OPSlyHR</text></svg>\")",
+                backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><text x='20' y='80' font-family='sans-serif' font-size='24' font-weight='bold' fill='%232563eb' transform='rotate(-45 80 80)'>OpslyHR</text></svg>\")",
                 backgroundRepeat: "repeat",
               }}
             />
@@ -159,7 +159,7 @@ const CertificateView = () => {
               {/* Logo */}
               <img
                 src="https://opslyhr.com/images/logocolored.svg"
-                alt="OPSlyHR"
+                alt="OpslyHR"
                 className="h-12 md:h-14 mb-8 object-contain"
                 crossOrigin="anonymous"
               />

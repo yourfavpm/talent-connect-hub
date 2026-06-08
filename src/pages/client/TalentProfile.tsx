@@ -69,7 +69,7 @@ const ClientTalentProfile = () => {
           certifications: (rpcData.certifications || []).map((c: any) => ({
             id: c.id || Math.random().toString(),
             name: c.certificationName || c.name,
-            issuer: c.issuer || c.issuing_organization || "OPSlyHR",
+            issuer: c.issuer || c.issuing_organization || "OpslyHR",
           })),
           references: [],
         };
@@ -101,7 +101,7 @@ const ClientTalentProfile = () => {
     try {
       toast({
         title: "Request Sent",
-        description: `We've notified OPSlyHR admins about your CV request for this professional.`,
+        description: `We've notified OpslyHR admins about your CV request for this professional.`,
       });
       
       // In a real app, this might trigger a notification or create a record

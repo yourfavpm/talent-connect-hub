@@ -10,7 +10,7 @@ const OffshoreHiring = () => {
         <div className="bg-white font-inter">
             <SEO 
                 title="Offshore Hiring | Scalable African Operations Infrastructure"
-                description="Build distributed operations teams in Africa and EMEA without the complexity. OPSlyHR handles international compliance, payroll, and vetting for high-impact remote operators."
+                description="Build distributed operations teams in Africa and EMEA without the complexity. OpslyHR handles international compliance, payroll, and vetting for high-impact remote operators."
                 keywords="Offshore Operations Hiring, Remote Teams Africa, EMEA Operations Talent, Global Hiring Infrastructure, African Operations Outsourcing"
             />
             {/* HERO SECTION */}

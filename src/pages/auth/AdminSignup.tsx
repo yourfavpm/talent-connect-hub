@@ -41,7 +41,7 @@ const AdminSignup = () => {
         password,
         options: {
           data: {
-            full_name: "OPSlyHR Super Admin",
+            full_name: "OpslyHR Super Admin",
             first_name: "Super",
             last_name: "Admin",
             portal: "admin" // Add portal meta just in case
@@ -89,7 +89,7 @@ const AdminSignup = () => {
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-2xl">
         <div className="text-center mb-8">
-          <img src="/images/logoplain.png" alt="OPSlyHR" className="h-40 mx-auto mb-4 opacity-80" />
+          <img src="/images/logoplain.png" alt="OpslyHR" className="h-40 mx-auto mb-4 opacity-80" />
           <div className="flex items-center justify-center gap-2 text-red-500 mb-2">
             <ShieldAlert className="h-5 w-5" />
             <span className="font-bold text-sm tracking-wider uppercase">Restricted Access</span>

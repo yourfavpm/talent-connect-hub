@@ -284,7 +284,7 @@ const ClientDashboard = () => {
               </Button>
             </div>
             <p className="text-xs text-gray-500">
-              Use this ID when contacting OPSlyHR support.
+              Use this ID when contacting OpslyHR support.
             </p>
           </Card>
 

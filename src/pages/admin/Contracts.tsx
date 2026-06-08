@@ -435,7 +435,7 @@ const AdminContracts = () => {
                               <p className="font-medium">${selectedContract?.talent_rate}/hr</p>
                             </div>
                             <div>
-                              <Label className="text-muted-foreground">OPSlyHR Margin</Label>
+                              <Label className="text-muted-foreground">OpslyHR Margin</Label>
                               <p className="font-medium">{selectedContract?.taskive_margin}%</p>
                             </div>
                             <div>

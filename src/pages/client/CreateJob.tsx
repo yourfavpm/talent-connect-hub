@@ -148,7 +148,7 @@ const CreateJob = () => {
 
       toast({
         title: "Job Submitted",
-        description: "Your job has been submitted to OPSlyHR for approval.",
+        description: "Your job has been submitted to OpslyHR for approval.",
       });
 
       // Redirect to the new job's detail page
@@ -302,8 +302,8 @@ const CreateJob = () => {
               <div className="grid gap-4">
                 {[
                   { id: "full_time", title: "Direct Hire", desc: "We source and vet the talent. You hire them directly onto your payroll. 15% placement fee.", icon: Briefcase },
-                  { id: "trial_to_hire", title: "Trial-to-Hire", desc: "Start with a risk-free trial period managed by OPSlyHR before deciding to hire directly.", icon: Clock },
-                  { id: "one_time_project", title: "One-Time Project", desc: "A fixed-scope engagement managed entirely through OPSlyHR.", icon: Calendar }
+                  { id: "trial_to_hire", title: "Trial-to-Hire", desc: "Start with a risk-free trial period managed by OpslyHR before deciding to hire directly.", icon: Clock },
+                  { id: "one_time_project", title: "One-Time Project", desc: "A fixed-scope engagement managed entirely through OpslyHR.", icon: Calendar }
                 ].map((type) => {
                   const Icon = type.icon;
                   const isSelected = formData.service_model === type.id;
@@ -461,7 +461,7 @@ const CreateJob = () => {
             <div className="space-y-6 animate-fade-in">
               <div>
                 <h2 className="text-lg font-medium text-gray-900 mb-1">Review & Submit</h2>
-                <p className="text-sm text-gray-500 mb-6">Confirm the details below before submitting to OPSlyHR.</p>
+                <p className="text-sm text-gray-500 mb-6">Confirm the details below before submitting to OpslyHR.</p>
               </div>
 
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 space-y-6">

@@ -110,7 +110,7 @@ const AcademyFooter = () => {
                 {/* Copyright & Info */}
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-slate-800">
                     <p className="text-[11px] text-slate-500 font-medium">
-                        © {new Date().getFullYear()} OPSly Academy. Powered by <a href={getZoneUrl(Zone.MARKETING)} className="text-slate-400 hover:text-white transition-colors">OPSlyHR</a>.
+                        © {new Date().getFullYear()} OPSly Academy. Powered by <a href={getZoneUrl(Zone.MARKETING)} className="text-slate-400 hover:text-white transition-colors">OpslyHR</a>.
                     </p>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1">

@@ -168,7 +168,7 @@ const Signup = () => {
       if (data.user) {
         toast({
           title: "Account created!",
-          description: `Welcome to OPSlyHR, ${isTalent ? formData.firstName : formData.fullName}! Please check your email to verify your account.`,
+          description: `Welcome to OpslyHR, ${isTalent ? formData.firstName : formData.fullName}! Please check your email to verify your account.`,
         });
         navigate("/auth/check-email");
       }
@@ -249,7 +249,7 @@ const Signup = () => {
         <div className="relative z-10 p-8 lg:p-16 flex flex-col justify-between h-full">
           <div>
             <Link to="/" className="inline-block mb-16 lg:mb-24">
-              <img src="/images/logoplain.png" alt="OPSlyHR" className="h-32" />
+              <img src="/images/logoplain.png" alt="OpslyHR" className="h-32" />
             </Link>
   
             <div className="max-w-md">
@@ -259,7 +259,7 @@ const Signup = () => {
               <p className="text-slate-200 text-lg font-medium leading-relaxed mb-12 opacity-90">
                 {isTalent
                   ? "Join an exclusive network of high-ownership professionals. Work with curated companies on your terms."
-                  : "OPSlyHR provides structured systems for hiring and managing pre-vetted product and operations talent globally."}
+                  : "OpslyHR provides structured systems for hiring and managing pre-vetted product and operations talent globally."}
               </p>
   
               <div className="space-y-6 pt-10 border-t border-white/10 max-w-sm">
@@ -305,7 +305,7 @@ const Signup = () => {
           <p className="text-slate-500 text-base font-medium leading-relaxed">
             {isTalent 
               ? "Join an exclusive network of high-ownership professionals. Work with curated companies on your terms."
-              : "OPSlyHR provides structured systems for hiring and managing pre-vetted product and operations talent globally."}
+              : "OpslyHR provides structured systems for hiring and managing pre-vetted product and operations talent globally."}
           </p>
         </div>
 

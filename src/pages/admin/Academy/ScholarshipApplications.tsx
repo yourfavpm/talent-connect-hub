@@ -158,7 +158,7 @@ const ScholarshipApplications = () => {
         htmlTemplate: `
           <div style="font-family:Inter,Arial,sans-serif;max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e5efff;border-radius:20px;overflow:hidden;">
             <div style="background:#0f2147;padding:34px;text-align:center;">
-              <img src="https://opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="width:136px;height:auto;" />
+              <img src="https://opslyhr.com/images/logocolored.svg" alt="OpslyHR" style="width:136px;height:auto;" />
             </div>
             <div style="padding:36px;color:#334155;font-size:16px;line-height:1.75;">${body}</div>
             <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:20px;text-align:center;color:#94a3b8;font-size:12px;">

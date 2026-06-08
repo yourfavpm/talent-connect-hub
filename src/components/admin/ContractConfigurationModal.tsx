@@ -119,7 +119,7 @@ export const ContractConfigurationModal = ({
                             </div>
                         </div>
                         <div className="col-span-3 text-xs text-muted-foreground text-right">
-                            OPSlyHR Revenue: ${(clientRate - parseFloat(talentRate)).toFixed(2)} per unit
+                            OpslyHR Revenue: ${(clientRate - parseFloat(talentRate)).toFixed(2)} per unit
                         </div>
                     </div>
 

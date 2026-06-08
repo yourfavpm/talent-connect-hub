@@ -28,5 +28,5 @@ vi.mock('@/integrations/supabase/client', () => ({
 // Set environment variables for tests
 process.env.VITE_RESEND_API_KEY = 'test-api-key';
 process.env.VITE_EMAIL_FROM = 'test@opslyhr.com';
-process.env.VITE_EMAIL_FROM_NAME = 'OPSlyHR';
+process.env.VITE_EMAIL_FROM_NAME = 'OpslyHR';
 process.env.VITE_APP_URL = 'http://localhost:5173';

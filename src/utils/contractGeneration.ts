@@ -16,7 +16,7 @@ export const generateClientContractTerms = (
 
     let text = `MASTER SERVICES AGREEMENT\n\n`;
     text += `This Master Services Agreement ("Agreement") is made and entered into as of ${date} (the "Effective Date") by and between:\n\n`;
-    text += `OPSlyHR Technologies Inc. ("Company"), a Delaware Corporation, and\n`;
+    text += `OpslyHR Technologies Inc. ("Company"), a Delaware Corporation, and\n`;
     text += `${clientName} ("Client").\n\n`;
     text += `1. ENGAGEMENT OF SERVICES\n`;
     text += `   1.1 Scope. Client hereby engages Company to provide the professional services of ${talentName} ("Talent") as a ${serviceModel.replace(/_/g, " ")} in the role of ${role}.\n`;
@@ -82,7 +82,7 @@ export const generateTalentContractTerms = (
 
     let text = `INDEPENDENT CONTRACTOR AGREEMENT\n\n`;
     text += `This Independent Contractor Agreement ("Agreement") is made on ${date} between:\n\n`;
-    text += `OPSlyHR Technologies Inc. ("Company") and\n`;
+    text += `OpslyHR Technologies Inc. ("Company") and\n`;
     text += `${talentName} ("Contractor").\n\n`;
 
     text += `1. SERVICES\n`;

@@ -81,7 +81,7 @@ const TalentOnboardingRedirect = () => {
         </div>
 
         <p className="mt-8 text-center text-slate-400 text-xs font-semibold uppercase tracking-widest">
-          OPSlyHR
+          OpslyHR
         </p>
       </div>
     </div>

@@ -93,7 +93,7 @@ const Organization = () => {
                                     id="legal_name" 
                                     value={settings?.legal_name || ""} 
                                     onChange={(e) => setSettings(s => s ? {...s, legal_name: e.target.value} : null)}
-                                    placeholder="e.g. OPSlyHR Connect Ltd"
+                                    placeholder="e.g. OpslyHR Connect Ltd"
                                     className="h-9 text-sm"
                                 />
                             </div>
@@ -103,7 +103,7 @@ const Organization = () => {
                                     id="display_name" 
                                     value={settings?.display_name || ""} 
                                     onChange={(e) => setSettings(s => s ? {...s, display_name: e.target.value} : null)}
-                                    placeholder="e.g. OPSlyHR Connect"
+                                    placeholder="e.g. OpslyHR Connect"
                                     className="h-9 text-sm"
                                 />
                             </div>

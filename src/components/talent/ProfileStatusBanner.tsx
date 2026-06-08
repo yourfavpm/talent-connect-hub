@@ -105,7 +105,7 @@ export const ProfileStatusBanner = ({
               </h3>
               <p className="hidden md:block text-xs md:text-[13.5px] text-slate-500 font-medium max-w-[500px]">
                 {progressPercent === 100 
-                  ? "Your profile is fully detailed. Submit it now to start the OPSlyHR vetting process."
+                  ? "Your profile is fully detailed. Submit it now to start the OpslyHR vetting process."
                   : "Finish setting up your profile to get vetted and matched with global opportunities."
                 }
               </p>

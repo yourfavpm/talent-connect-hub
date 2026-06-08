@@ -184,7 +184,7 @@ const MessageThread = () => {
                      <AvatarFallback className="bg-gray-100 text-gray-400 text-xl font-medium">👋</AvatarFallback>
                   </Avatar>
                   <p className="font-semibold text-gray-900">Start the conversation</p>
-                  <p className="text-sm text-gray-500 mt-1 leading-relaxed">Send a message to {recipient?.name}. OPSlyHR admins typically respond within 1 business day.</p>
+                  <p className="text-sm text-gray-500 mt-1 leading-relaxed">Send a message to {recipient?.name}. OpslyHR admins typically respond within 1 business day.</p>
                </div>
             ) : (
                messages.map((message) => {

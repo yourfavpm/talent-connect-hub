@@ -129,7 +129,7 @@ const VettingWorkspaceV2 = () => {
   
   // Vetting Note Modal State
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
-  const [noteSubject, setNoteSubject] = useState("Update regarding your OPSlyHR Profile");
+  const [noteSubject, setNoteSubject] = useState("Update regarding your OpslyHR Profile");
   const [noteBody, setNoteBody] = useState("");
 
   // ── Fetch data ─────────────────────────────────────────────────────
@@ -399,13 +399,13 @@ const VettingWorkspaceV2 = () => {
         .eq("user_id", profile.user_id);
 
       // 5. Send branded email notification
-      const emailSubject = "Congratulations! Your OPSlyHR Profile is Vetted";
+      const emailSubject = "Congratulations! Your OpslyHR Profile is Vetted";
       const emailBody = `
         Hello ${talentInfo.name},<br/><br/>
         Great news! Your profile has been officially vetted by our team at the <strong>${vettingLevelText}</strong> level.<br/><br/>
         Your profile is now visible to our partner clients, and you're officially part of the talent network. Keep an eye out for potential opportunities!<br/><br/>
         Best regards,<br/>
-        The OPSlyHR Team
+        The OpslyHR Team
       `;
       const brandedHtml = getBrandedEmailHtml(emailBody, emailSubject);
       

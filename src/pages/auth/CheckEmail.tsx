@@ -65,7 +65,7 @@ const CheckEmail = () => {
                         </h1>
                         
                         <p className="text-slate-500 text-base leading-relaxed mb-10 font-medium">
-                            We've sent a verification link to your inbox. Please click the link to activate your account and start using OPSlyHR.
+                            We've sent a verification link to your inbox. Please click the link to activate your account and start using OpslyHR.
                         </p>
 
                         <div className="space-y-4">

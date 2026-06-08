@@ -192,7 +192,7 @@ export default function HireRequestDetail() {
 
             <div className="space-y-6">
               <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 shadow-sm">
-                <h3 className="font-semibold text-blue-900 mb-4 flex items-center"><CheckCircle2 className="w-4 h-4 mr-2" /> OPSlyHR Process</h3>
+                <h3 className="font-semibold text-blue-900 mb-4 flex items-center"><CheckCircle2 className="w-4 h-4 mr-2" /> OpslyHR Process</h3>
                 <div className="space-y-3">
                   {[
                     { label: "Submitted", active: true },

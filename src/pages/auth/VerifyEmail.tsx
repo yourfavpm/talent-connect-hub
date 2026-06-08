@@ -143,7 +143,7 @@ const VerifyEmail = () => {
                                 Secure Activation.
                             </h2>
                             <p className="text-slate-200 text-lg font-medium leading-relaxed mb-10 opacity-90">
-                                Finalizing your access to the OPSlyHR ecosystem. We're setting up your professional profile and secure workspace.
+                                Finalizing your access to the OpslyHR ecosystem. We're setting up your professional profile and secure workspace.
                             </p>
                             <div className="flex items-center gap-3 py-6 border-t border-white/10 transition-all duration-500">
                                 <Shield className="w-5 h-5 text-blue-400/60" />
@@ -184,7 +184,7 @@ const VerifyEmail = () => {
 
                     <div className="mt-12 text-center">
                         <p className="text-slate-300 text-[10px] font-bold uppercase tracking-[0.2em]">
-                            &copy; {new Date().getFullYear()} OPSlyHR &bull; Strategic Human Resources
+                            &copy; {new Date().getFullYear()} OpslyHR &bull; Strategic Human Resources
                         </p>
                     </div>
                 </div>

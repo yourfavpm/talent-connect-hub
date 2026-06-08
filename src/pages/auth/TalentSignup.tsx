@@ -142,7 +142,7 @@ const TalentSignup = () => {
       if (data.user) {
         toast({
           title: "Account created!",
-          description: `Welcome to OPSlyHR, ${formData.firstName}! Please check your email to verify your account.`,
+          description: `Welcome to OpslyHR, ${formData.firstName}! Please check your email to verify your account.`,
         });
         navigate("/auth/check-email");
       }
@@ -216,7 +216,7 @@ const TalentSignup = () => {
         <div className="relative z-10 p-8 lg:p-16 flex flex-col justify-between h-full">
           <div>
             <Link to="/" className="inline-block mb-16 lg:mb-24">
-              <img src="/images/logoplain.png" alt="OPSlyHR" className="h-32" />
+              <img src="/images/logoplain.png" alt="OpslyHR" className="h-32" />
             </Link>
   
             <div className="max-w-md">
