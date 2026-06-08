@@ -22,12 +22,13 @@ import { STEPS, SECTION_KEYS, OB_INPUT_CLASS } from "./onboarding_config";
 // Re-export STEPS and SECTION_KEYS for use in other components
 export { STEPS, SECTION_KEYS };
 
-export const FieldGroup = ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
+export const FieldGroup = ({ label, required, error, children }: { label: string; required?: boolean; error?: string; children: React.ReactNode }) => (
   <div className="space-y-0.5">
-    <Label className="text-[9px] font-medium text-slate-400 uppercase tracking-widest pl-0.5">
+    <Label className={clsx("text-[9px] font-medium uppercase tracking-widest pl-0.5", error ? "text-red-500" : "text-slate-400")}>
       {label}{required && <span className="text-red-400 ml-0.5">*</span>}
     </Label>
     {children}
+    {error && <p className="text-[10px] text-red-500 mt-1 font-medium">{error}</p>}
   </div>
 );
 
@@ -146,30 +147,30 @@ export function getSectionData(step: number, values: OnboardFormValues): Record<
 // ── Form Section Components ──────────────────────────────────────────────────
 
 export const BasicInfoForm = ({ disabled }: { disabled?: boolean }) => {
-  const { watch, setValue } = useFormContext<OnboardFormValues>();
+  const { watch, setValue, formState: { errors } } = useFormContext<OnboardFormValues>();
   const formData = watch();
   return (
     <div className="space-y-6">
       <div className="grid md:grid-cols-2 gap-4">
-        <FieldGroup label="First Name" required>
-          <Input className={OB_INPUT_CLASS} value={formData.firstName} onChange={e => setValue("firstName", e.target.value)} placeholder="John" disabled={disabled} />
+        <FieldGroup label="First Name" required error={errors.firstName?.message}>
+          <Input className={clsx(OB_INPUT_CLASS, errors.firstName && "border-red-400 focus-visible:ring-red-400")} value={formData.firstName} onChange={e => setValue("firstName", e.target.value)} placeholder="John" disabled={disabled} />
         </FieldGroup>
-        <FieldGroup label="Last Name" required>
-          <Input className={OB_INPUT_CLASS} value={formData.lastName} onChange={e => setValue("lastName", e.target.value)} placeholder="Doe" disabled={disabled} />
+        <FieldGroup label="Last Name" required error={errors.lastName?.message}>
+          <Input className={clsx(OB_INPUT_CLASS, errors.lastName && "border-red-400 focus-visible:ring-red-400")} value={formData.lastName} onChange={e => setValue("lastName", e.target.value)} placeholder="Doe" disabled={disabled} />
         </FieldGroup>
       </div>
-      <FieldGroup label="Email" required>
-        <Input className={OB_INPUT_CLASS} value={formData.email} disabled placeholder="email@example.com" />
+      <FieldGroup label="Email" required error={errors.email?.message}>
+        <Input className={clsx(OB_INPUT_CLASS, errors.email && "border-red-400")} value={formData.email} disabled placeholder="email@example.com" />
       </FieldGroup>
       <div className="grid md:grid-cols-2 gap-4">
-        <FieldGroup label="Phone" required>
-          <Input className={OB_INPUT_CLASS} value={formData.phone} onChange={e => setValue("phone", e.target.value)} placeholder="+234..." disabled={disabled} />
+        <FieldGroup label="Phone" required error={errors.phone?.message}>
+          <Input className={clsx(OB_INPUT_CLASS, errors.phone && "border-red-400 focus-visible:ring-red-400")} value={formData.phone} onChange={e => setValue("phone", e.target.value)} placeholder="+234..." disabled={disabled} />
         </FieldGroup>
-        <FieldGroup label="Country" required>
+        <FieldGroup label="Country" required error={errors.country?.message}>
           <CountrySelector value={formData.country} onChange={v => setValue("country", v)} disabled={disabled} />
         </FieldGroup>
       </div>
-      <FieldGroup label="Timezone" required>
+      <FieldGroup label="Timezone" required error={errors.timezone?.message}>
         <TimezoneSelector value={formData.timezone} onChange={v => setValue("timezone", v)} disabled={disabled} />
       </FieldGroup>
       <FieldGroup label="Languages Spoken">
@@ -185,35 +186,35 @@ export const BasicInfoForm = ({ disabled }: { disabled?: boolean }) => {
 };
 
 export const ProfessionalDetailsForm = ({ disabled }: { disabled?: boolean }) => {
-  const { watch, setValue } = useFormContext<OnboardFormValues>();
+  const { watch, setValue, formState: { errors } } = useFormContext<OnboardFormValues>();
   const formData = watch();
   return (
     <div className="space-y-6">
-      <FieldGroup label="Role Category & Primary Role" required>
+      <FieldGroup label="Role Category & Primary Role" required error={errors.primaryRole?.message || errors.roleCategory?.message}>
         <RoleSelector
           category={formData.roleCategory} onCategoryChange={v => setValue("roleCategory", v)}
           value={formData.primaryRole} onChange={v => setValue("primaryRole", v)}
           disabled={disabled}
         />
       </FieldGroup>
-      <FieldGroup label="Headline" required>
-        <Input className={OB_INPUT_CLASS} value={formData.headline} onChange={e => setValue("headline", e.target.value)} placeholder="Senior React Developer" disabled={disabled} />
+      <FieldGroup label="Headline" required error={errors.headline?.message}>
+        <Input className={clsx(OB_INPUT_CLASS, errors.headline && "border-red-400 focus-visible:ring-red-400")} value={formData.headline} onChange={e => setValue("headline", e.target.value)} placeholder="Senior React Developer" disabled={disabled} />
       </FieldGroup>
-      <FieldGroup label="Short Bio" required>
-        <Textarea className="min-h-[80px] rounded-lg border border-slate-100 bg-white focus:border-slate-800 disabled:opacity-50 disabled:bg-slate-50 text-[12px] font-light placeholder:text-slate-200" value={formData.shortBio} onChange={e => setValue("shortBio", e.target.value)} placeholder="Tell us about yourself..." disabled={disabled} />
+      <FieldGroup label="Short Bio" required error={errors.shortBio?.message}>
+        <Textarea className={clsx("min-h-[80px] rounded-lg border bg-white focus:border-slate-800 disabled:opacity-50 disabled:bg-slate-50 text-[12px] font-light placeholder:text-slate-200", errors.shortBio ? "border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-500" : "border-slate-100")} value={formData.shortBio} onChange={e => setValue("shortBio", e.target.value)} placeholder="Tell us about yourself... (min 20 characters)" disabled={disabled} />
       </FieldGroup>
       <div className="grid md:grid-cols-2 gap-4">
-        <FieldGroup label="Years of Experience" required>
+        <FieldGroup label="Years of Experience" required error={errors.yearsOfExperience?.message}>
           <Select value={formData.yearsOfExperience} onValueChange={v => setValue("yearsOfExperience", v)} disabled={disabled}>
-            <SelectTrigger className={OB_INPUT_CLASS}><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectTrigger className={clsx(OB_INPUT_CLASS, errors.yearsOfExperience && "border-red-400 focus:ring-red-400")}><SelectValue placeholder="Select..." /></SelectTrigger>
             <SelectContent>
               {["0-1", "1-3", "3-5", "5-10", "10+"].map(y => <SelectItem key={y} value={y}>{y} years</SelectItem>)}
             </SelectContent>
           </Select>
         </FieldGroup>
-        <FieldGroup label="Availability" required>
+        <FieldGroup label="Availability" required error={errors.availability?.message}>
           <Select value={formData.availability} onValueChange={v => setValue("availability", v)} disabled={disabled}>
-            <SelectTrigger className={OB_INPUT_CLASS}><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectTrigger className={clsx(OB_INPUT_CLASS, errors.availability && "border-red-400 focus:ring-red-400")}><SelectValue placeholder="Select..." /></SelectTrigger>
             <SelectContent>
               <SelectItem value="full_time">Full-Time</SelectItem>
               <SelectItem value="part_time">Part-Time</SelectItem>

@@ -126,7 +126,16 @@ const TalentSignup = () => {
         
         if (roleError) console.error("Failed to assign talent role:", roleError);
         
-          // Emails are now handled natively by Supabase Auth (via Custom SMTP and email templates).
+        try {
+          await sendTalentWelcomeEmail({
+            email: formData.email,
+            firstName: formData.firstName
+          });
+        } catch (error) {
+          console.error("Failed to send welcome email:", error);
+        }
+        
+          // Verification Emails are now handled natively by Supabase Auth (via Custom SMTP and email templates).
           // We removed manual edge-function triggers to prevent duplicate verification emails.
       }
 

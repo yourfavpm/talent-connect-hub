@@ -65,6 +65,7 @@ const OnboardingV2 = () => {
   const [isLocked, setIsLocked] = useState(false);
   const [sectionStatuses, setSectionStatuses] = useState<Record<string, string>>({});
   const [progressPercent, setProgressPercent] = useState(0);
+  const [stepError, setStepError] = useState<string | null>(null);
   const hydrated = useRef(false);
   const [uploadingFields, setUploadingFields] = useState<Record<string, boolean>>({});
  
@@ -89,9 +90,9 @@ const OnboardingV2 = () => {
       functionalAreas: [], governmentIdUrl: "", cvUrl: "", proofOfAddressUrl: "",
       portfolioUrl: "", headline: "", shortBio: "",
       workHistory: [{ id: Date.now().toString(), companyName: "", roleTitle: "", roleDescription: "", startDate: "", endDate: "", isCurrent: false }],
-      education: [{ id: Date.now().toString(), institutionName: "", degree: "", startYear: "", endYear: "", isCurrent: false }],
-      certifications: [{ id: Date.now().toString(), certificationName: "", issuer: "", yearObtained: "", fileUrl: "" }],
-      references: [{ id: Date.now().toString(), name: "", company: "", email: "", phone: "" }],
+      education: [],
+      certifications: [],
+      references: [],
     },
   });
 
@@ -191,15 +192,13 @@ const OnboardingV2 = () => {
       const isValid = await methods.trigger(stepFields as any);
       
       if (!isValid) {
-        toast({
-          title: "Missing Information",
-          description: "Please fill in all mandatory fields before moving to the next section.",
-          variant: "destructive"
-        });
+        setStepError("Please fill in all mandatory fields correctly before continuing. See the highlighted fields below.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
     }
 
+    setStepError(null);
     await saveCurrentStep();
     setCurrentStep(targetStep);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -234,14 +233,12 @@ const OnboardingV2 = () => {
     }
 
     if (!allValid) {
-      toast({
-        title: "Incomplete Profile", 
-        description: "Please complete all mandatory sections before submitting.",
-        variant: "destructive"
-      });
+      setStepError("Please complete all mandatory sections before submitting. Missing fields are highlighted below.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
+    setStepError(null);
     setSubmitting(true);
     try {
       // Save current step first
@@ -366,6 +363,14 @@ const OnboardingV2 = () => {
           {/* ── Main content ─────────────────────────────────────────── */}
           <main className="flex-1 p-4 lg:p-10 xl:p-14 w-full min-w-0">
             <div className="max-w-5xl mx-auto xl:mx-0">
+            {stepError && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl flex items-start gap-3 shadow-sm animate-in fade-in slide-in-from-top-2">
+                <X className="w-5 h-5 shrink-0 mt-0.5" />
+                <div className="text-sm font-medium leading-snug">
+                  {stepError}
+                </div>
+              </div>
+            )}
             <Card className="bg-white shadow-[0_2px_10px_-3px_rgba(0,0,0,0.02)] border-slate-100/50 rounded-xl overflow-hidden">
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-center justify-between mb-6">
