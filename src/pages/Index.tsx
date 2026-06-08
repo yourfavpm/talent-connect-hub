@@ -399,7 +399,7 @@ const Index = () => {
                 icon: Users
               },
               {
-                value: "180+",
+                value: "15+",
                 metric: "Partner Companies",
                 color: "text-emerald-600",
                 pulse: "bg-emerald-600/5",
