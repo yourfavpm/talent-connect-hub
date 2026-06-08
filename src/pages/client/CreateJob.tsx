@@ -301,7 +301,7 @@ const CreateJob = () => {
 
               <div className="grid gap-4">
                 {[
-                  { id: "full_time", title: "Full Time Hire", desc: "We source and vet the talent. You hire them directly onto your payroll. 15% placement fee.", icon: Briefcase },
+                  { id: "full_time", title: "Full Time Hire", desc: "We source and vet the talent. You hire them directly onto your payroll. 10-15% placement fee.", icon: Briefcase },
                   { id: "trial_to_hire", title: "Trial-to-Hire", desc: "Start with a risk-free trial period managed by OpslyHR before deciding to hire directly.", icon: Clock },
                   { id: "one_time_project", title: "One-Time Project", desc: "A fixed-scope engagement managed entirely through OpslyHR.", icon: Calendar }
                 ].map((type) => {

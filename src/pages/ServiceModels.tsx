@@ -97,7 +97,7 @@ const ServiceModels = () => {
                             {/* Financial Clarity Row */}
                             <div className="flex flex-col sm:flex-row flex-wrap items-start justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-100 w-full">
                                 {[
-                                    { label: "Full Time Hire", value: "15-20%" },
+                                    { label: "Full Time Hire", value: "10-15%" },
                                     { label: "Trial", value: "$800+" },
                                     { label: "Managed Teams", value: "$1.2k+" },
                                     { label: "Offshore", value: "$200+" }

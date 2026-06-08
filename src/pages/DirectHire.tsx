@@ -29,9 +29,10 @@ const DirectHire = () => {
                 <Link to="/book-consultation" className="w-full sm:w-auto">
                   <Button 
                       size="lg" 
-                      className="h-16 px-12 text-lg rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-bold transition-all duration-300 shadow-xl shadow-blue-100 w-full" 
+                      variant="outline"
+                      className="h-14 md:h-16 px-6 md:px-10 text-base md:text-lg rounded-xl border-2 border-slate-200 text-slate-700 hover:border-blue-600 hover:text-blue-700 hover:bg-blue-50 font-bold transition-all duration-300 w-full sm:w-auto flex items-center justify-center gap-2" 
                   >
-                    Discuss Direct Placement <ArrowRight className="ml-2 h-5 w-5" />
+                    Discuss Full Time Hire <ArrowRight className="h-5 w-5" />
                   </Button>
                 </Link>
               </div>
@@ -175,7 +176,7 @@ const DirectHire = () => {
               </div>
               <div className="pt-12 border-t border-slate-100">
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Typical Range</div>
-                <div className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tighter">15%–20% <span className="text-xl text-slate-400 font-medium ml-2">of annual salary</span></div>
+                <div className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tighter">10-15% <span className="text-xl text-slate-400 font-medium ml-2">of annual salary</span></div>
               </div>
             </div>
             
@@ -185,18 +186,20 @@ const DirectHire = () => {
               <p className="text-slate-600 font-medium leading-relaxed mb-8">
                 Our pricing model is designed for simplicity and long-term alignment. We only succeed when you find the right leader for your organization.
               </p>
-              <div className="p-6 bg-white border border-slate-100 rounded-xl space-y-4">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500">Placement Fee</span>
-                  <span className="font-bold text-slate-900">Standard Contingent</span>
+              <div className="p-6 md:p-8 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4 md:space-y-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <span className="text-slate-500 font-medium">Placement Fee</span>
+                  <span className="font-bold text-slate-900 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 w-fit">Standard Contingent</span>
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500">Guarantee Period</span>
-                  <span className="font-bold text-slate-900">90 Days</span>
+                <div className="h-px w-full bg-slate-100" />
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <span className="text-slate-500 font-medium">Guarantee Period</span>
+                  <span className="font-bold text-slate-900 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 w-fit">90 Days</span>
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500">Search Fee</span>
-                  <span className="font-bold text-blue-600">$0 Upfront</span>
+                <div className="h-px w-full bg-slate-100" />
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <span className="text-slate-500 font-medium">Search Fee</span>
+                  <span className="font-bold text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 w-fit">$0 Upfront</span>
                 </div>
               </div>
             </div>

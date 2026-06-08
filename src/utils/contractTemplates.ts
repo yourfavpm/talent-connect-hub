@@ -32,7 +32,7 @@ export const CONTRACT_TEMPLATES = {
         <h3>Financial Terms</h3>
         <ul>
           <li>Annual Salary: {{annualSalary}}</li>
-          <li>Placement Fee (15%): {{placementFee}}</li>
+          <li>Placement Fee (10-15%): {{placementFee}}</li>
         </ul>
         
         <h3>Employment Relationship</h3>

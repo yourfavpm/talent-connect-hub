@@ -433,7 +433,7 @@ const ForCompanies = () => {
                                         </thead>
                                         <tbody className="divide-y divide-slate-100">
                                             {[
-                                                { p: "Margin", v1: "15% flat fee", v2: "20% platform margin", v3: "30% built-in" },
+                                                { p: "Margin", v1: "10-15% flat fee", v2: "20% platform margin", v3: "30% built-in" },
                                                 { p: "Billing Type", v1: "Single payment", v2: "Monthly/Hourly", v3: "Milestone-based" },
                                                 { p: "Timesheets", v1: "N/A", v2: "Required", v3: "N/A" },
                                                 { p: "Conversion", v1: "Instant", v2: "Flexible", v3: "Project Based" },

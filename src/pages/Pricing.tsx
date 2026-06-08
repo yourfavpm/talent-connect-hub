@@ -220,7 +220,7 @@ const Pricing = () => {
 
                             <div className="mt-auto pt-8 border-t border-slate-100 w-full mb-10">
                                 <div className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Typical Range</div>
-                                <div className="text-3xl font-bold text-slate-900 tracking-tight">15%–20%</div>
+                                <div className="text-3xl font-bold text-slate-900 tracking-tight">10-15%</div>
                                 <div className="text-xs font-medium text-slate-500 mt-1">of annual base salary</div>
                             </div>
 

@@ -18,7 +18,7 @@ import { generateContractContent, CONTRACT_TEMPLATES } from "@/utils/contractTem
   - Single page configures BOTH Client and Talent contracts
   - Shared context (job details, dates, service model)
   - Independent configurations (billing vs payment)
-  - Full Time Hire special logic (15% placement fee)
+  - Full Time Hire special logic (10-15% placement fee)
   - Conditional time tracking rules
   - Dual preview system
   - Single "Generate & Send" action
@@ -83,7 +83,7 @@ const AdminOfferConfig = () => {
     // Auto-calculate Net Rate based on Service Model
     useEffect(() => {
         if (serviceModel === 'full_time') {
-            // Full Time Hire: 15% placement fee
+            // Full Time Hire: 10-15% placement fee
             let annualSalary = clientBillingAmount;
 
             if (clientCompensationType === 'monthly') {
@@ -662,7 +662,7 @@ const AdminOfferConfig = () => {
                                     <div className="text-sm">
                                         <p className="font-semibold text-amber-900">Full Time Hire - One-Time Invoice</p>
                                         <p className="text-amber-700 mt-1">
-                                            Placement Fee: <span className="font-bold">${placementFee.toFixed(2)}</span> (15% of {clientCompensationType === 'annual' ? 'annual' : 'annual equivalent'})
+                                            Placement Fee: <span className="font-bold">${placementFee.toFixed(2)}</span> (10-15% of {clientCompensationType === 'annual' ? 'annual' : 'annual equivalent'})
                                         </p>
                                     </div>
                                 </div>
