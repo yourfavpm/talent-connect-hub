@@ -42,7 +42,7 @@ const WebsiteFooter = () => {
               <ul className="space-y-3">
                 {[
                   { label: "Hire Talent", href: getZoneUrl(Zone.AUTH, "/auth/signup/client") },
-                  { label: "Direct Hire", to: "/direct-hire" },
+                  { label: "Full Time Hire", to: "/direct-hire" },
                   { label: "Trial-to-Hire", to: "/trial-to-hire" },
                   { label: "One-Time Projects", to: "/project-engagement" },
                   { label: "Book Consultation", to: "/book-consultation" }

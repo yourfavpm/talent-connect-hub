@@ -293,7 +293,7 @@ export default function CreateHireRequest() {
 
               <div className="grid gap-4">
                 {[
-                  { id: "direct_hire", title: "Direct Hire", desc: "We source and vet the talent. You hire them directly onto your payroll.", icon: Building2 },
+                  { id: "direct_hire", title: "Full Time Hire", desc: "We source and vet the talent. You hire them directly onto your payroll.", icon: Building2 },
                   { id: "trial_to_hire", title: "Trial-to-Hire", desc: "Start with a 90-day risk-free trial period managed by OpslyHR before deciding to hire.", icon: Clock },
                   { id: "one_time_project", title: "One-Time Project", desc: "A fixed-scope engagement managed entirely through our platform.", icon: Briefcase },
                   { id: "offshore", title: "Offshore Hiring", desc: "Source top global talent specifically for remote offshore operations.", icon: Globe }

@@ -33,7 +33,7 @@ const WebsiteNavbar = () => {
     ];
 
     const SolutionLinks = [
-        { name: "Direct Hire", path: "/direct-hire" },
+        { name: "Full Time Hire", path: "/direct-hire" },
         { name: "Trial-to-Hire", path: "/trial-to-hire" },
         { name: "Managed Operations Teams", path: "/managed-teams" },
         { name: "Offshore Hiring", path: "/offshore-hiring" },

@@ -48,7 +48,7 @@ const ServiceModels = () => {
         <div className="bg-background min-h-screen text-foreground selection:bg-primary selection:text-white pb-0">
             <SEO 
                 title="Service Models | Flexible Engagement for Workforce Solutions"
-                description="Choose the engagement model that fits your growth. From Direct Hire to Managed Teams and Project-Based execution, explore how to scale with operational capacity."
+                description="Choose the engagement model that fits your growth. From Full Time Hire to Managed Teams and Project-Based execution, explore how to scale with operational capacity."
                 keywords="Service Models, Workforce Solutions, Remote Operations Engagement, Directed Placement, Project Based Capacity"
             />
 
@@ -82,7 +82,7 @@ const ServiceModels = () => {
                                 Engagement Models. <span className="text-slate-900/40">Clear Tradeoffs.</span>
                             </h1>
                             <p className="text-base md:text-lg text-slate-600 mb-10 md:mb-12 leading-relaxed font-medium">
-                                From permanent direct hires to managed teams and offshore payroll — each model solves a different operational need with transparent economics.
+                                From permanent full time hires to managed teams and offshore payroll — each model solves a different operational need with transparent economics.
                             </p>
                             
                             <div className="flex flex-col sm:flex-row items-start justify-start gap-8 mb-12 w-full sm:w-auto">
@@ -97,7 +97,7 @@ const ServiceModels = () => {
                             {/* Financial Clarity Row */}
                             <div className="flex flex-col sm:flex-row flex-wrap items-start justify-start gap-x-8 gap-y-4 pt-8 border-t border-slate-100 w-full">
                                 {[
-                                    { label: "Direct Hire", value: "15-20%" },
+                                    { label: "Full Time Hire", value: "15-20%" },
                                     { label: "Trial", value: "$800+" },
                                     { label: "Managed Teams", value: "$1.2k+" },
                                     { label: "Offshore", value: "$200+" }
@@ -115,7 +115,7 @@ const ServiceModels = () => {
                         <div className="space-y-4">
                             {[
                                 { 
-                                    title: "Direct Hire", 
+                                    title: "Full Time Hire", 
                                     desc: "One-time placement fee. Client owns relationship.", 
                                     icon: Building2, 
                                     color: "bg-slate-50 text-slate-600 border-slate-200" 
@@ -134,7 +134,7 @@ const ServiceModels = () => {
                                 },
                                 { 
                                     title: "Offshore Hiring", 
-                                    desc: "Compliant EOR and payroll for direct hires.", 
+                                    desc: "Compliant EOR and payroll for full time hires.", 
                                     icon: Globe, 
                                     color: "bg-amber-50 text-amber-600 border-amber-100" 
                                 }
@@ -202,10 +202,10 @@ const ServiceModels = () => {
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 border-y border-slate-100 divide-y md:divide-y-0 lg:divide-x divide-slate-100">
-                        {/* Column 1: Direct Hire */}
+                        {/* Column 1: Full Time Hire */}
                         <div className="py-12 lg:px-8 flex flex-col items-start bg-white hover:bg-slate-50/30 transition-colors group">
                             <div className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-4">Permanent</div>
-                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Direct Hire</h3>
+                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Full Time Hire</h3>
                             <p className="text-sm text-slate-500 mb-12 font-medium leading-relaxed">
                                 Client hires the talent permanently from day one.
                             </p>

@@ -406,7 +406,7 @@ export default function CreateAdminHireRequest() {
 
                   <div className="grid gap-4">
                     {[
-                      { id: "direct_hire", title: "Direct Hire", desc: "Source vetted talent for direct placement.", icon: Building2 },
+                      { id: "direct_hire", title: "Full Time Hire", desc: "Source vetted talent for direct placement.", icon: Building2 },
                       { id: "trial_to_hire", title: "Trial-to-Hire", desc: "Start with a trial engagement before hiring.", icon: Clock },
                       { id: "one_time_project", title: "One-Time Project", desc: "Deliver a fixed-scope engagement through our platform.", icon: Briefcase },
                       { id: "offshore", title: "Offshore Hiring", desc: "Hire remote talent for global teams.", icon: Globe },

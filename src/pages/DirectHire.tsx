@@ -212,7 +212,7 @@ const DirectHire = () => {
             {/* USE CASES */}
             <div className="space-y-12">
               <div>
-                <h2 className="text-3xl md:text-4xl font-semibold mb-8 tracking-tight">When Direct Hire Is the <br />Right Choice</h2>
+                <h2 className="text-3xl md:text-4xl font-semibold mb-8 tracking-tight">When Full Time Hire Is the <br />Right Choice</h2>
                 <div className="space-y-6">
                   {[
                     "C-level operations roles (COO, Ops Manager)",

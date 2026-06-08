@@ -94,7 +94,7 @@ interface Contract {
 
 const SERVICE_MODEL_LABELS: Record<string, string> = {
 
-  direct_hire: "Direct Hire",
+  direct_hire: "Full Time Hire",
   trial_to_hire: "Trial to Hire",
   one_time_project: "One Time Project",
   offshore_hiring: "Offshore Hiring",

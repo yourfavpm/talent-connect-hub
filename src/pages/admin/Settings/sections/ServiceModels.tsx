@@ -214,7 +214,7 @@ const ServiceModels = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                 <TabsList className="bg-gray-100/50 p-1">
                     <TabsTrigger value="direct_hire" className="data-[state=active]:bg-white data-[state=active]:shadow-sm px-6 h-8 text-xs font-bold uppercase tracking-wider">
-                        Direct Hire
+                        Full Time Hire
                     </TabsTrigger>
                     <TabsTrigger value="trial_to_hire" className="data-[state=active]:bg-white data-[state=active]:shadow-sm px-6 h-8 text-xs font-bold uppercase tracking-wider">
                         Trial-to-Hire

@@ -748,7 +748,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                title: "Direct Hire",
+                title: "Full Time Hire",
                 desc: "One-Time Fee. The client hires the talent permanently. OpslyHR handles sourcing, screening, and placement.",
                 traits: [
                   "15–20% of annual salary",
@@ -978,7 +978,7 @@ const Index = () => {
                 { 
                   num: "01", 
                   title: "Define Your Hiring Model", 
-                  desc: "Choose Direct Hire, Trial-to-Hire, or One-Time Project.", 
+                  desc: "Choose Full Time Hire, Trial-to-Hire, or One-Time Project.", 
                   note: "Service-level transparency ensured."
                 },
                 { 

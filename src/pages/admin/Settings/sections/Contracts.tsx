@@ -134,7 +134,7 @@ const Contracts = () => {
                                                 value={variable.description} 
                                                 onChange={(e) => updateVariable(index, 'description', e.target.value)}
                                                 className="h-8 text-xs"
-                                                placeholder="e.g. Total buyout amount for direct hire"
+                                                placeholder="e.g. Total buyout amount for full time hire"
                                             />
                                         </div>
                                     </div>

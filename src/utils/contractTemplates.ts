@@ -22,12 +22,12 @@ export const CONTRACT_TEMPLATES = {
     },
     CLIENT: {
         FULL_TIME: {
-            title: "Talent Placement Agreement (Direct Hire)",
+            title: "Talent Placement Agreement (Full Time Hire)",
             content: `
         <h2>Talent Placement Agreement</h2>
         <p><strong>Talent:</strong> {{talentName}} (ID: {{talentId}})</p>
         <p><strong>Role:</strong> {{roleTitle}}</p>
-        <p><strong>Engagement Type:</strong> Full-Time Direct Hire</p>
+        <p><strong>Engagement Type:</strong> Full-Time Full Time Hire</p>
         
         <h3>Financial Terms</h3>
         <ul>

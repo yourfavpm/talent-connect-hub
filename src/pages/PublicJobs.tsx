@@ -47,7 +47,7 @@ interface HireRequest {
 }
 
 const SERVICE_MODEL_LABELS: Record<string, string> = {
-  direct_hire: "Direct Hire",
+  direct_hire: "Full Time Hire",
   trial_to_hire: "Trial to Hire",
   contract_talent: "Contract",
   offshore_hiring: "Offshore",

@@ -267,7 +267,7 @@ const ForCompanies = () => {
                             {[
                                 { title: "Transparent Billing", desc: "Clear invoicing aligned to service model." },
                                 { title: "Dedicated Ops Manager", desc: "Every engagement includes operational oversight." },
-                                { title: "Service-Model Flexibility", desc: "Direct hire, trial-to-hire, or project-based." },
+                                { title: "Service-Model Flexibility", desc: "Full time hire, trial-to-hire, or project-based." },
                                 { title: "Automated Contracts", desc: "Service-type driven agreement generation." }
                             ].map((item, i) => (
                                 <motion.div 
@@ -304,7 +304,7 @@ const ForCompanies = () => {
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 px-4">
                         {[
                             {
-                                title: "Direct Hire",
+                                title: "Full Time Hire",
                                 desc: "Permanent placement with structured employment transfer.",
                                 attributes: [
                                     "15–20% placement fee",
@@ -313,7 +313,7 @@ const ForCompanies = () => {
                                     "90-day replacement guarantee"
                                 ],
                                 ideal: "Long-term leadership roles.",
-                                cta: "Explore Direct Hire",
+                                cta: "Explore Full Time Hire",
                                 link: "/service-models"
                             },
                             {
@@ -345,7 +345,7 @@ const ForCompanies = () => {
                             },
                             {
                                 title: "Offshore Hiring",
-                                desc: "Compliant EOR and payroll for direct hires.",
+                                desc: "Compliant EOR and payroll for full time hires.",
                                 attributes: [
                                     "Fixed platform margin",
                                     "Local tax & compliance handled",
@@ -426,7 +426,7 @@ const ForCompanies = () => {
                                         <thead>
                                             <tr className="bg-slate-50/50 border-b border-slate-100">
                                                 <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Parameter</th>
-                                                <th className="px-8 py-6 text-sm font-bold text-slate-900">Direct Hire</th>
+                                                <th className="px-8 py-6 text-sm font-bold text-slate-900">Full Time Hire</th>
                                                 <th className="px-8 py-6 text-sm font-bold text-slate-900">Trial-to-Hire</th>
                                                 <th className="px-8 py-6 text-sm font-bold text-slate-900">One-Time Project</th>
                                             </tr>

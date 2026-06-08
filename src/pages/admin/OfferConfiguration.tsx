@@ -18,7 +18,7 @@ import { generateContractContent, CONTRACT_TEMPLATES } from "@/utils/contractTem
   - Single page configures BOTH Client and Talent contracts
   - Shared context (job details, dates, service model)
   - Independent configurations (billing vs payment)
-  - Direct Hire special logic (15% placement fee)
+  - Full Time Hire special logic (15% placement fee)
   - Conditional time tracking rules
   - Dual preview system
   - Single "Generate & Send" action
@@ -83,7 +83,7 @@ const AdminOfferConfig = () => {
     // Auto-calculate Net Rate based on Service Model
     useEffect(() => {
         if (serviceModel === 'full_time') {
-            // Direct Hire: 15% placement fee
+            // Full Time Hire: 15% placement fee
             let annualSalary = clientBillingAmount;
 
             if (clientCompensationType === 'monthly') {
@@ -92,7 +92,7 @@ const AdminOfferConfig = () => {
 
             const fee = annualSalary * 0.15;
             setPlacementFee(fee);
-            setOpslyhrMargin(0); // No margin for Direct Hire
+            setOpslyhrMargin(0); // No margin for Full Time Hire
             setTalentNetRate(annualSalary); // Talent gets full salary from client
         } else {
             // Trial-to-Hire / Contract: 20% margin
@@ -106,7 +106,7 @@ const AdminOfferConfig = () => {
     // Auto-derive Time Tracking requirement
     useEffect(() => {
         if (serviceModel === 'full_time') {
-            // Direct Hire: NO time tracking
+            // Full Time Hire: NO time tracking
             setTimeTrackingRequired(false);
             setOvertimeEnabled(false);
         } else {
@@ -470,7 +470,7 @@ const AdminOfferConfig = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="trial_to_hire">Trial-to-Hire</SelectItem>
-                                    <SelectItem value="full_time">Direct Hire (Full-Time)</SelectItem>
+                                    <SelectItem value="full_time">Full Time Hire (Full-Time)</SelectItem>
                                     <SelectItem value="one_time">One-Time Project</SelectItem>
                                 </SelectContent>
                             </Select>
@@ -660,7 +660,7 @@ const AdminOfferConfig = () => {
                                 <div className="flex items-start gap-2">
                                     <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5" />
                                     <div className="text-sm">
-                                        <p className="font-semibold text-amber-900">Direct Hire - One-Time Invoice</p>
+                                        <p className="font-semibold text-amber-900">Full Time Hire - One-Time Invoice</p>
                                         <p className="text-amber-700 mt-1">
                                             Placement Fee: <span className="font-bold">${placementFee.toFixed(2)}</span> (15% of {clientCompensationType === 'annual' ? 'annual' : 'annual equivalent'})
                                         </p>

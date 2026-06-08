@@ -43,7 +43,7 @@ const Pricing = () => {
         <div className="bg-white min-h-screen text-slate-900 font-inter selection:bg-slate-900 selection:text-white pb-0">
             <SEO 
                 title="Transparent Pricing for Workforce Solutions"
-                description="Explore flexible engagement models for building reliable operational capacity. Transparent pricing for direct hire, managed teams, and project-based support."
+                description="Explore flexible engagement models for building reliable operational capacity. Transparent pricing for full time hire, managed teams, and project-based support."
                 keywords="Workforce Solutions Pricing, Operational Capacity Costs, Managed Teams Fees, Operations Hiring, Hire Operational Experts Cost"
             />
 
@@ -173,7 +173,7 @@ const Pricing = () => {
                                     {[
                                         { label: "Project", sub: "Low Commitment" },
                                         { label: "Trial", sub: "Medium" },
-                                        { label: "Direct Hire", sub: "High" }
+                                        { label: "Full Time Hire", sub: "High" }
                                     ].map((point, i) => (
                                         <div key={i} className="flex flex-col items-center">
                                             <div className="w-2.5 h-2.5 rounded-full bg-white border border-slate-300 ring-4 ring-white mb-4"></div>
@@ -201,7 +201,7 @@ const Pricing = () => {
                         {/* COLUMN 1 */}
                         <div className="p-8 md:p-12 flex flex-col items-start hover:bg-slate-50/50 transition-colors group">
                             <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">Permanent</div>
-                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Direct Hire</h3>
+                            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">Full Time Hire</h3>
                             <p className="text-sm text-slate-600 font-medium leading-relaxed mb-10">
                                 Build long-term internal leadership capacity.
                             </p>
@@ -232,7 +232,7 @@ const Pricing = () => {
                                 to="/book-consultation"
                                 className="w-full py-4 border-1.5 border-slate-900 text-slate-900 font-bold rounded-lg hover:bg-slate-900 hover:text-white transition-all text-center group-hover:scale-[1.02]"
                             >
-                                Discuss Direct Hire →
+                                Discuss Full Time Hire →
                             </Link>
                         </div>
 
@@ -477,7 +477,7 @@ const Pricing = () => {
                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 px-2">Engagement & Hiring</div>
                             {[
                                 { q: "Are there any upfront activation fees?", answer: "No. OpslyHR does not charge setup or search fees. You only pay for capacity once an engagement begins or a hire is finalized." },
-                                { q: "Do you require exclusivity?", answer: "Exclusivity is not required for contingent direct hire placements. However, for managed trials and projects, we focus on dedicated delivery." },
+                                { q: "Do you require exclusivity?", answer: "Exclusivity is not required for contingent full time hire placements. However, for managed trials and projects, we focus on dedicated delivery." },
                                 { q: "What is your replacement guarantee?", answer: "Full-time placements include a 120-day replacement guarantee. Managed trials can be terminated or changed at any point with 30 days notice." }
                             ].map((faq, i) => (
                                 <AccordionItem key={i} question={faq.q} answer={faq.answer} />

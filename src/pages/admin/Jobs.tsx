@@ -566,7 +566,7 @@ function PostInternalJobModal({ onJobPosted }: { onJobPosted: () => void }) {
                     <SelectValue placeholder="Service Model" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="direct_hire">Direct Hire</SelectItem>
+                    <SelectItem value="direct_hire">Full Time Hire</SelectItem>
                     <SelectItem value="trial_to_hire">Trial to Hire</SelectItem>
                     <SelectItem value="project_engagement">Project Engagement</SelectItem>
                     <SelectItem value="offshore_hiring">Offshore Hiring</SelectItem>

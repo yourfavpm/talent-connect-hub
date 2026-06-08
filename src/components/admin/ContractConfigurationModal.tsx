@@ -94,7 +94,7 @@ export const ContractConfigurationModal = ({
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="trial_to_hire">Trial-to-Hire</SelectItem>
-                                    <SelectItem value="direct_hire">Direct Hire</SelectItem>
+                                    <SelectItem value="direct_hire">Full Time Hire</SelectItem>
                                     <SelectItem value="one_time_project">One-Time Project</SelectItem>
                                     <SelectItem value="monthly_retainer">Monthly Retainer</SelectItem>
                                 </SelectContent>

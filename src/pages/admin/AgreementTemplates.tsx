@@ -60,7 +60,7 @@ interface AgreementTemplate {
 }
 
 const SERVICE_MODELS = [
-    { value: 'direct_hire', label: 'Direct Hire' },
+    { value: 'direct_hire', label: 'Full Time Hire' },
     { value: 'trial_to_hire', label: 'Trial-to-Hire' },
     { value: 'contract_talent', label: 'Contract Talent' }
 ];
@@ -568,7 +568,7 @@ const AgreementTemplates = () => {
                         <div className="space-y-2">
                             <Label className="text-xs font-semibold uppercase text-gray-400 tracking-wider">Template Name</Label>
                             <Input 
-                                placeholder="e.g. Direct Hire Client Agreement"
+                                placeholder="e.g. Full Time Hire Client Agreement"
                                 value={formData.clause_name}
                                 onChange={(e) => setFormData({ ...formData, clause_name: e.target.value })}
                                 className="bg-gray-50/50"
