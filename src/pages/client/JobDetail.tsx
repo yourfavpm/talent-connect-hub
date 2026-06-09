@@ -16,6 +16,7 @@ import { ShortlistTab } from "@/components/client/jobs/tabs/ShortlistTab";
 import { InterviewsTab } from "@/components/client/jobs/tabs/InterviewsTab";
 import { OffersTab } from "@/components/client/jobs/tabs/OffersTab";
 import { ActivityTab } from "@/components/client/jobs/tabs/ActivityTab";
+import { ClientOfferModal } from "@/components/client/jobs/ClientOfferModal";
 
 const CURRENCIES = [
   { value: "USD", label: "USD ($)", symbol: "$" },
@@ -31,6 +32,8 @@ const ClientJobDetail = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [offerModalOpen, setOfferModalOpen] = useState(false);
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
 
   // Fetch Job
   const { data: job, isLoading: jobLoading } = useQuery({
@@ -90,7 +93,7 @@ const ClientJobDetail = () => {
   });
 
   const initiateOfferMutation = useMutation({
-    mutationFn: async (appId: string) => {
+    mutationFn: async ({ appId, payload }: { appId: string, payload: any }) => {
       const app = applications?.find(a => a.id === appId);
       if (!app) throw new Error("Application not found");
 
@@ -98,15 +101,17 @@ const ClientJobDetail = () => {
       if (appError) throw appError;
 
       const { error: offerError } = await supabase.from('offers').insert({
+        job_id: job.id,
         client_id: job.client_id,
         talent_id: app.talent_id,
         role_title: job.title,
-        hourly_rate: job.budget_max || 0,
-        weekly_hours: job.weekly_hours || 40,
-        start_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        hourly_rate: payload.hourly_rate || 0,
+        weekly_hours: payload.weekly_hours || 40,
+        start_date: payload.start_date || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
         duration: job.duration || 'Ongoing',
         status: 'sent_to_admin',
-        special_terms: `Generated from role: ${job.title}`,
+        special_terms: payload.special_terms || `Generated from role: ${job.title}`,
+        meta: payload.meta,
         created_by: user?.id
       });
       if (offerError) throw offerError;
@@ -122,6 +127,8 @@ const ClientJobDetail = () => {
       }
     },
     onSuccess: () => {
+      setOfferModalOpen(false);
+      setSelectedAppId(null);
       queryClient.invalidateQueries({ queryKey: ['job_applications', id] });
       toast({ title: "Offer Initiated", description: "Admin will generate the contract shortly." });
     }
@@ -219,7 +226,10 @@ const ClientJobDetail = () => {
             <ShortlistTab 
               applications={applications || []} 
               onRequestInterview={(id) => requestInterviewMutation.mutate(id)} 
-              onInitiateOffer={(id) => initiateOfferMutation.mutate(id)}
+              onInitiateOffer={(id) => {
+                setSelectedAppId(id);
+                setOfferModalOpen(true);
+              }}
               isOfferPending={isOfferPending}
             />
           </TabsContent>
@@ -237,6 +247,20 @@ const ClientJobDetail = () => {
           </TabsContent>
         </div>
       </Tabs>
+
+      {/* Offer Modal */}
+      {offerModalOpen && selectedAppId && (
+        <ClientOfferModal
+          isOpen={offerModalOpen}
+          onClose={() => {
+            setOfferModalOpen(false);
+            setSelectedAppId(null);
+          }}
+          job={job}
+          loading={initiateOfferMutation.isPending}
+          onSubmit={(payload) => initiateOfferMutation.mutate({ appId: selectedAppId, payload })}
+        />
+      )}
     </div>
   );
 };

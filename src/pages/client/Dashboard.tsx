@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { sendClientEmailVerifiedEmail } from "@/lib/email/triggers";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus,
@@ -32,6 +33,9 @@ const ClientDashboard = () => {
     activeMembers: 0,
     pendingTimesheets: 0,
   });
+  const [recentJobs, setRecentJobs] = useState<any[]>([]);
+  const [shortlistedTalents, setShortlistedTalents] = useState<any[]>([]);
+  const [activeContracts, setActiveContracts] = useState<any[]>([]);
   const verificationTriggered = useRef(false);
   const { toast } = useToast();
 
@@ -102,6 +106,50 @@ const ClientDashboard = () => {
           activeMembers: (activeMembers || 0) + 1, // +1 for the owner
           pendingTimesheets: pendingTimesheets || 0,
         });
+
+        // Fetch recent jobs
+        const { data: jobs } = await supabase
+          .from("hr_v2_hire_requests")
+          .select("id, title, status, created_at, service_model")
+          .eq("client_user_id", authData.user.id)
+          .order("created_at", { ascending: false })
+          .limit(3);
+        setRecentJobs(jobs || []);
+
+        if (clientData) {
+          // Fetch active contracts
+          const { data: contracts } = await supabase
+            .from("contracts")
+            .select("id, role_title, status, talents(first_name, last_name)")
+            .eq("client_id", clientData.id)
+            .eq("status", "active")
+            .limit(3);
+          setActiveContracts(contracts || []);
+
+          // Fetch shortlisted talents
+          const { data: shortlists } = await supabase
+            .from("hr_v2_shortlists")
+            .select("id, talent_user_id, status, created_at, hr_v2_hire_requests!inner(title, client_user_id)")
+            .eq("hr_v2_hire_requests.client_user_id", authData.user.id)
+            .order("created_at", { ascending: false })
+            .limit(3);
+            
+          if (shortlists && shortlists.length > 0) {
+            const talentIds = shortlists.map(s => s.talent_user_id);
+            const { data: profiles } = await supabase
+              .from("profiles")
+              .select("user_id, first_name, last_name, avatar_url")
+              .in("user_id", talentIds);
+              
+            const enriched = shortlists.map(s => ({
+              ...s,
+              profile: profiles?.find(p => p.user_id === s.talent_user_id)
+            }));
+            setShortlistedTalents(enriched);
+          } else {
+            setShortlistedTalents([]);
+          }
+        }
       }
       setLoading(false);
     };
@@ -220,12 +268,30 @@ const ClientDashboard = () => {
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-sm font-medium text-gray-900">Active Contracts</h2>
             </div>
-            <div className="p-10 flex flex-col items-center justify-center text-center">
-              <div className="bg-gray-50 h-10 w-10 rounded-full flex items-center justify-center mb-3">
-                <Inbox className="h-5 w-5 text-gray-400" />
+            {activeContracts.length === 0 ? (
+              <div className="p-10 flex flex-col items-center justify-center text-center">
+                <div className="bg-gray-50 h-10 w-10 rounded-full flex items-center justify-center mb-3">
+                  <Inbox className="h-5 w-5 text-gray-400" />
+                </div>
+                <p className="text-sm text-gray-500">No active contracts yet.</p>
               </div>
-              <p className="text-sm text-gray-500">No active contracts yet.</p>
-            </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {activeContracts.map((contract) => (
+                  <div key={contract.id} className="px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                    <div>
+                      <h3 className="font-medium text-sm text-gray-900">{contract.role_title}</h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Talent: {contract.talents?.first_name} {contract.talents?.last_name}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-normal capitalize">
+                      {contract.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
 
           {/* 4. Recent Jobs Section */}
@@ -238,25 +304,80 @@ const ClientDashboard = () => {
                 </Button>
               </Link>
             </div>
-            <div className="p-10 flex flex-col items-center justify-center text-center">
-              <div className="bg-gray-50 h-10 w-10 rounded-full flex items-center justify-center mb-3">
-                <Briefcase className="h-5 w-5 text-gray-400" />
+            {recentJobs.length === 0 ? (
+              <div className="p-10 flex flex-col items-center justify-center text-center">
+                <div className="bg-gray-50 h-10 w-10 rounded-full flex items-center justify-center mb-3">
+                  <Briefcase className="h-5 w-5 text-gray-400" />
+                </div>
+                <p className="text-sm text-gray-500">No recent job posts.</p>
               </div>
-              <p className="text-sm text-gray-500">No recent job posts.</p>
-            </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {recentJobs.map((job) => (
+                  <div key={job.id} className="px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                    <div>
+                      <Link to={getInternalPath(`/client/jobs/${job.id}`)} className="font-medium text-sm text-brand-primary hover:underline">
+                        {job.title}
+                      </Link>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                        <span className="capitalize">{job.service_model?.replace(/_/g, " ")}</span>
+                        <span>•</span>
+                        <span>{new Date(job.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="bg-gray-50 text-gray-600 font-normal capitalize">
+                      {job.status?.replace(/_/g, " ")}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
 
           {/* 5. Shortlisted Talents */}
           <Card className="rounded-xl border border-gray-200 shadow-sm bg-white overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-sm font-medium text-gray-900">Shortlisted Talents</h2>
+            <div className="px-5 py-4 border-b border-gray-100">
+              <h2 className="text-sm font-medium text-gray-900">Recently Shortlisted</h2>
             </div>
-            <div className="p-10 flex flex-col items-center justify-center text-center">
-              <div className="bg-gray-50 h-10 w-10 rounded-full flex items-center justify-center mb-3">
-                <Users className="h-5 w-5 text-gray-400" />
+            {shortlistedTalents.length === 0 ? (
+              <div className="p-8 flex flex-col items-center justify-center text-center">
+                <div className="bg-blue-50 h-10 w-10 rounded-full flex items-center justify-center mb-3">
+                  <Users className="h-5 w-5 text-blue-500" />
+                </div>
+                <p className="text-sm text-gray-500">No talents shortlisted yet.</p>
               </div>
-              <p className="text-sm text-gray-500">No talents shortlisted yet.</p>
-            </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {shortlistedTalents.map((item) => (
+                  <div key={item.id} className="p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                        {item.profile?.avatar_url ? (
+                          <img src={item.profile.avatar_url} alt="avatar" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center bg-gray-100 text-gray-500 text-sm font-medium">
+                            {item.profile?.first_name?.[0] || ""}{item.profile?.last_name?.[0] || ""}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-sm text-gray-900">
+                          {item.profile?.first_name} {item.profile?.last_name}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          For: <span className="font-medium text-gray-700">{item.hr_v2_hire_requests?.title}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div className="p-3 bg-gray-50 border-t border-gray-100 text-center">
+                  <Link to={getInternalPath("/client/jobs")} className="text-xs font-medium text-blue-600 hover:text-blue-700">
+                    View all in Jobs
+                  </Link>
+                </div>
+              </div>
+            )}
           </Card>
 
         </div>

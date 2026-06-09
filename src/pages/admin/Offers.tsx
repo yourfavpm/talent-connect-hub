@@ -275,6 +275,80 @@ const AdminOffers = () => {
     return <Badge className={styles[status] || "bg-muted"}>{status.replace(/_/g, " ")}</Badge>;
   };
 
+  const renderOfferDetails = (offer: any) => {
+    const meta = offer.meta || {};
+    return (
+      <div className="space-y-3 mt-4 text-sm">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="text-muted-foreground">Role:</div>
+          <div className="font-medium">{offer.role_title}</div>
+          
+          <div className="text-muted-foreground">Client:</div>
+          <div className="font-medium">{offer.clients?.company_name}</div>
+          
+          <div className="text-muted-foreground">Talent:</div>
+          <div className="font-medium">{offer.talents?.first_name} {offer.talents?.last_name}</div>
+
+          <div className="text-muted-foreground">Start Date:</div>
+          <div className="font-medium">{new Date(offer.start_date).toLocaleDateString()}</div>
+          
+          <div className="text-muted-foreground">Weekly Hours:</div>
+          <div className="font-medium">{offer.weekly_hours}</div>
+        </div>
+
+        {meta.base_salary && (
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t">
+            <div className="text-muted-foreground">Base Salary:</div>
+            <div className="font-medium">${meta.base_salary}</div>
+            {meta.bonus_details && (
+              <>
+                <div className="text-muted-foreground">Bonus/Equity:</div>
+                <div className="font-medium">{meta.bonus_details}</div>
+              </>
+            )}
+          </div>
+        )}
+
+        {meta.payment_frequency && (
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t">
+            <div className="text-muted-foreground">Rate:</div>
+            <div className="font-medium">${offer.hourly_rate} / {meta.payment_frequency.replace('_', ' ')}</div>
+          </div>
+        )}
+
+        {meta.trial_duration && (
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t">
+            <div className="text-muted-foreground">Trial Duration:</div>
+            <div className="font-medium">{meta.trial_duration}</div>
+            
+            <div className="text-muted-foreground">Expected Conversion Salary:</div>
+            <div className="font-medium">${meta.expected_conversion_salary}</div>
+          </div>
+        )}
+
+        {meta.project_price && (
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t">
+            <div className="text-muted-foreground">Project Price:</div>
+            <div className="font-medium">${meta.project_price}</div>
+            
+            <div className="text-muted-foreground">Target Completion:</div>
+            <div className="font-medium">{meta.target_completion_date}</div>
+            
+            <div className="text-muted-foreground col-span-2 mt-2">Milestones:</div>
+            <div className="font-medium col-span-2 whitespace-pre-wrap bg-gray-50 p-2 rounded">{meta.milestones}</div>
+          </div>
+        )}
+
+        {offer.special_terms && (
+          <div className="pt-2 border-t">
+            <div className="text-muted-foreground mb-1">Special Terms & Notes:</div>
+            <div className="font-medium whitespace-pre-wrap bg-gray-50 p-2 rounded">{offer.special_terms}</div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const filteredOffers = offers.filter(
     (offer) =>
       offer.role_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -376,10 +450,7 @@ const AdminOffers = () => {
                           <DialogTitle>Offer Details</DialogTitle>
                         </DialogHeader>
                         {/* Details view content */}
-                        <div className="space-y-4 mt-4">
-                          <p>Role: {offer.role_title}</p>
-                          {/* ... simple details ... */}
-                        </div>
+                        {renderOfferDetails(offer)}
                       </DialogContent>
                     </Dialog>
                   </div>

@@ -39,9 +39,24 @@ export const ContractConfigurationModal = ({
 
     useEffect(() => {
         if (offer) {
-            setClientRate(offer.hourly_rate || 0);
-            setServiceModel("trial_to_hire");
-            if (offer.hourly_rate > 10000) setServiceModel("direct_hire");
+            const meta = offer.meta || {};
+            if (meta.base_salary) {
+                setServiceModel("direct_hire");
+                setClientRate(Number(meta.base_salary));
+                setBillingFreq("Monthly");
+            } else if (meta.project_price) {
+                setServiceModel("one_time_project");
+                setClientRate(Number(meta.project_price));
+                setProjectType("fixed");
+            } else {
+                // Trial or Offshore
+                setServiceModel("trial_to_hire");
+                setClientRate(offer.hourly_rate || 0);
+                if (meta.payment_frequency) {
+                    const freqMap: any = { hourly: "Weekly", weekly: "Weekly", bi_weekly: "Bi-Weekly", monthly: "Monthly" };
+                    setBillingFreq(freqMap[meta.payment_frequency] || "Bi-Weekly");
+                }
+            }
         }
     }, [offer]);
 

@@ -39,12 +39,14 @@ import {
   RefreshCw,
   XCircle,
   Loader2,
+  User,
 } from "lucide-react";
 
 const ROLE_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
   owner: { label: "Owner", color: "bg-purple-100 text-purple-800 border-purple-200", icon: Crown },
   admin: { label: "Admin", color: "bg-blue-100 text-blue-800 border-blue-200", icon: Shield },
   manager: { label: "Manager", color: "bg-emerald-100 text-emerald-800 border-emerald-200", icon: Briefcase },
+  staff: { label: "Staff", color: "bg-gray-100 text-gray-800 border-gray-200", icon: User },
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
@@ -56,7 +58,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 interface Member {
   id: string;
   user_id: string;
-  role: "owner" | "admin" | "manager";
+  role: "owner" | "admin" | "manager" | "staff";
   status: "active" | "invited" | "suspended";
   invited_at: string;
   accepted_at: string | null;
@@ -66,7 +68,7 @@ interface Member {
 interface PendingInvite {
   id: string;
   email: string;
-  role: "admin" | "manager";
+  role: "admin" | "manager" | "staff";
   status: string;
   invited_at: string;
   expires_at: string;
@@ -88,7 +90,7 @@ export default function TeamMembers() {
   // Invite modal
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<"admin" | "manager">("manager");
+  const [inviteRole, setInviteRole] = useState<"admin" | "manager" | "staff">("staff");
   const [inviting, setInviting] = useState(false);
 
   useEffect(() => { if (user) fetchAll(); }, [user]);
@@ -167,7 +169,7 @@ export default function TeamMembers() {
       toast({ title: "Invite sent!", description: `${inviteEmail} has been invited as ${inviteRole}.` });
       setInviteOpen(false);
       setInviteEmail("");
-      setInviteRole("manager");
+      setInviteRole("staff");
       fetchAll();
     } catch (err: any) {
       toast({ title: "Failed", description: err.message, variant: "destructive" });
@@ -321,6 +323,9 @@ export default function TeamMembers() {
                       <DropdownMenuItem onClick={() => changeMemberRole(member.id, "manager")}>
                         <Briefcase className="h-4 w-4 mr-2" /> Make Manager
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => changeMemberRole(member.id, "staff")}>
+                        <User className="h-4 w-4 mr-2" /> Make Staff
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       {member.status === "active" ? (
                         <DropdownMenuItem
@@ -396,13 +401,14 @@ export default function TeamMembers() {
             </div>
             <div className="space-y-1.5">
               <Label>Role</Label>
-              <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as "admin" | "manager")}>
+              <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as "admin" | "manager" | "staff")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Admin — can invite, manage members, approve timesheets</SelectItem>
                   <SelectItem value="manager">Manager — can view team, approve timesheets, send messages</SelectItem>
+                  <SelectItem value="staff">Staff — can only view their own tasks and perform work</SelectItem>
                 </SelectContent>
               </Select>
             </div>
