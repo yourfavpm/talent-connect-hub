@@ -230,11 +230,33 @@ export const sendTalentAccountCreatedEmail = async (email: string, firstName: st
     await queueEmail({
         to: email,
         toName: firstName,
-        templateKey: 'talent_auth_account_created',
+        subject: "Welcome to OPSlyHR! Verify Your Account",
         variables: {
             first_name: firstName,
             verification_link: verificationLink,
         },
+        htmlTemplate: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <img src="{{brand_logo}}" alt="{{brand_name}}" style="height: 40px;">
+    </div>
+    <div style="background-color: #fff; padding: 30px; border-radius: 8px; border: 1px solid #eee;">
+        <h2 style="color: #111827; margin-top: 0;">Welcome to OPSlyHR!</h2>
+        <p>Hi {{first_name}},</p>
+        <p>Your talent profile has been successfully created. Please verify your email address to get started with finding new opportunities.</p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{verification_link}}" style="background-color: {{brand_color}}; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Verify Account</a>
+        </div>
+        <p style="font-size: 13px; color: #6b7280; margin-top: 30px;">
+            Or copy and paste this link into your browser:<br>
+            <a href="{{verification_link}}" style="color: {{brand_color}}; word-break: break-all;">{{verification_link}}</a>
+        </p>
+    </div>
+</body>
+</html>`
     });
 };
 
@@ -260,11 +282,34 @@ export const sendTalentPasswordResetEmail = async (email: string, firstName: str
     await queueEmail({
         to: email,
         toName: firstName,
-        templateKey: 'talent_auth_password_reset',
+        subject: "Reset your OPSlyHR Password",
+        generateRecoveryLink: true,
+        redirectTo: redirectTo || `${AUTH_URL}/auth/update-password?portal=talent`,
         variables: {
             first_name: firstName,
-            reset_link: redirectTo || `${AUTH_URL}/auth/update-password?portal=talent`,
         },
+        htmlTemplate: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <img src="{{brand_logo}}" alt="{{brand_name}}" style="height: 40px;">
+    </div>
+    <div style="background-color: #fff; padding: 30px; border-radius: 8px; border: 1px solid #eee;">
+        <h2 style="color: #111827; margin-top: 0;">Password Reset Request</h2>
+        <p>Hi {{first_name}},</p>
+        <p>We received a request to reset your password for your OPSlyHR Talent account. If you didn't make this request, you can safely ignore this email.</p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{resetLink}}" style="background-color: {{brand_color}}; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Reset Password</a>
+        </div>
+        <p style="font-size: 13px; color: #6b7280; margin-top: 30px;">
+            Or copy and paste this link into your browser:<br>
+            <a href="{{resetLink}}" style="color: {{brand_color}}; word-break: break-all;">{{resetLink}}</a>
+        </p>
+    </div>
+</body>
+</html>`
     });
 };
 
@@ -278,7 +323,50 @@ export const sendTalentPasswordChangedEmail = async (email: string, firstName: s
         templateKey: 'talent_auth_password_changed',
         variables: {
             first_name: firstName,
+            support_email: 'hire@opslyhr.com',
+            support_url: 'https://opslyhr.com/support',
         },
+    });
+};
+
+/**
+ * Send client account created with credentials
+ */
+export const sendClientAccountCreatedEmail = async (email: string, firstName: string, tempPassword: string) => {
+    await queueEmail({
+        to: email,
+        toName: firstName,
+        subject: "Welcome to OPSlyHR! Your Account is Ready",
+        variables: {
+            first_name: firstName,
+            email: email,
+            password: tempPassword,
+            login_link: `${AUTH_URL}/auth/login?portal=client`,
+        },
+        htmlTemplate: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <img src="{{brand_logo}}" alt="{{brand_name}}" style="height: 40px;">
+    </div>
+    <div style="background-color: #fff; padding: 30px; border-radius: 8px; border: 1px solid #eee;">
+        <h2 style="color: #111827; margin-top: 0;">Welcome to OPSlyHR!</h2>
+        <p>Hi {{first_name}},</p>
+        <p>Your client account has been created by our administrative team. You can now log in to manage your talent requests, contracts, and invoices.</p>
+        <div style="background-color: #f9fafb; padding: 15px; border-radius: 6px; margin: 20px 0;">
+            <p style="margin: 0;"><strong>Login URL:</strong> <a href="{{login_link}}" style="color: {{brand_color}};">{{login_link}}</a></p>
+            <p style="margin: 10px 0 0 0;"><strong>Email:</strong> {{email}}</p>
+            <p style="margin: 10px 0 0 0;"><strong>Temporary Password:</strong> <code style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px;">{{password}}</code></p>
+        </div>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{login_link}}" style="background-color: {{brand_color}}; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Log in to your account</a>
+        </div>
+        <p>We recommend changing your password immediately after logging in for the first time.</p>
+    </div>
+</body>
+</html>`
     });
 };
 
@@ -289,11 +377,34 @@ export const sendClientPasswordResetEmail = async (email: string, contactName: s
     await queueEmail({
         to: email,
         toName: contactName,
-        templateKey: 'client_auth_password_reset',
+        subject: "Reset your OPSlyHR Password",
+        generateRecoveryLink: true,
+        redirectTo: redirectTo || `${AUTH_URL}/auth/update-password?portal=client`,
         variables: {
             first_name: contactName,
-            reset_link: redirectTo || `${AUTH_URL}/auth/update-password?portal=client`,
         },
+        htmlTemplate: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <img src="{{brand_logo}}" alt="{{brand_name}}" style="height: 40px;">
+    </div>
+    <div style="background-color: #fff; padding: 30px; border-radius: 8px; border: 1px solid #eee;">
+        <h2 style="color: #111827; margin-top: 0;">Password Reset Request</h2>
+        <p>Hi {{first_name}},</p>
+        <p>We received a request to reset your password for your OPSlyHR Client account. If you didn't make this request, you can safely ignore this email.</p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{resetLink}}" style="background-color: {{brand_color}}; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Reset Password</a>
+        </div>
+        <p style="font-size: 13px; color: #6b7280; margin-top: 30px;">
+            Or copy and paste this link into your browser:<br>
+            <a href="{{resetLink}}" style="color: {{brand_color}}; word-break: break-all;">{{resetLink}}</a>
+        </p>
+    </div>
+</body>
+</html>`
     });
 };
 
@@ -1176,6 +1287,42 @@ export const sendAdminInterviewActionEmail = async (data: {
         htmlTemplate,
     });
 };
+
+/**
+ * Send interview request notification to admin (initiated by client)
+ */
+export const sendAdminInterviewRequestEmail = async (data: {
+    adminEmail: string;
+    clientName: string;
+    talentName: string;
+    jobTitle: string;
+    proposedTimes: string[];
+    hireRequestId: string;
+}) => {
+    const htmlTemplate = `
+      <div style="font-family: sans-serif; color: #333;">
+        <h2 style="color: #0f172a;">New Interview Request</h2>
+        <p><strong>Client:</strong> ${data.clientName}</p>
+        <p><strong>Talent:</strong> ${data.talentName}</p>
+        <p><strong>Role:</strong> ${data.jobTitle}</p>
+        <p>The client has requested to schedule an interview with this candidate.</p>
+        <div style="margin: 20px 0; padding: 15px; background-color: #f8fafc; border-left: 4px solid #3b82f6; border-radius: 4px;">
+          <p style="margin:0 0 10px 0; font-size: 14px; color: #475569;"><strong>Proposed Times:</strong></p>
+          <ul style="margin: 0; padding-left: 20px; color: #333;">
+            ${data.proposedTimes.map(time => `<li>${new Date(time).toLocaleString()}</li>`).join('')}
+          </ul>
+        </div>
+        <p>Please review these times, coordinate with the candidate, and formally schedule the interview via the dashboard.</p>
+        <p><a href="${ADMIN_URL}/hire-requests/${data.hireRequestId}" style="display:inline-block;padding:10px 20px;background-color:#2563eb;color:white;text-decoration:none;border-radius:5px;margin-top:20px;font-weight:600;">Schedule Interview</a></p>
+      </div>
+    `;
+
+    await queueEmail({
+        to: data.adminEmail,
+        subject: `Interview Request: ${data.clientName} w/ ${data.talentName}`,
+        htmlTemplate,
+    });
+};
 /**
  * Send talent offer email
  */
@@ -1416,5 +1563,70 @@ export async function sendTalentInterviewInvitationEmail(params: {
     });
   } catch (err) {
     console.error("Error triggering interview invitation email:", err);
+  }
+}
+
+export async function sendClientInterviewRescheduleEmail(params: {
+  clientEmail: string;
+  clientName: string;
+  talentName: string;
+  jobTitle: string;
+  rescheduleReason: string;
+  proposedTime: string;
+}) {
+  const htmlBody = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reschedule Requested: ${params.jobTitle}</title>
+</head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f1f5f9;padding:40px 16px;">
+    <tr><td align="center">
+      <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0"
+        style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:#0f172a;padding:28px 40px;text-align:center;">
+            <img src="https://app.opslyhr.com/images/logoplain.png" alt="OpslyHR" style="height:36px;" />
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:36px 40px 28px;">
+            <h1 style="margin:0 0 20px;font-size:22px;font-weight:700;color:#0f172a;">Hi ${params.clientName},</h1>
+            <p style="margin:0 0 16px;font-size:15px;color:#475569;line-height:1.7;">
+              The candidate <strong>${params.talentName}</strong> has requested to reschedule the interview for the <strong>${params.jobTitle}</strong> role.
+            </p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:24px;">
+              <tr><td style="padding:22px 26px;">
+                <p style="margin:0 0 10px;"><strong>Proposed Time:</strong> ${params.proposedTime}</p>
+                <p style="margin:0;"><strong>Reason:</strong><br/>${params.rescheduleReason}</p>
+              </td></tr>
+            </table>
+            <p style="margin:0 0 16px;font-size:15px;color:#475569;line-height:1.7;">
+              Our Admin team will review this request and coordinate the new time. You can view the details in your dashboard.
+            </p>
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="border-radius:10px;background:#0f172a;">
+                  <a href="https://app.opslyhr.com/client/jobs" style="display:inline-block;padding:13px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">Go to Dashboard</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  try {
+    await queueEmail({
+      to: params.clientEmail,
+      subject: `Reschedule Requested: ${params.talentName} for ${params.jobTitle}`,
+      htmlTemplate: htmlBody
+    });
+  } catch (err) {
+    console.error("Error triggering client reschedule email:", err);
   }
 }

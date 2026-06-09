@@ -34,17 +34,11 @@ interface Contract {
   clients?: {
     company_name: string;
     user_id: string;
-    profiles: {
-      email: string;
-    };
   };
   talents?: {
     first_name: string;
     last_name: string;
     user_id: string;
-    profiles: {
-      email: string;
-    };
   };
 }
 
@@ -63,8 +57,8 @@ const AdminContracts = () => {
         .from("contracts" as any)
         .select(`
           *,
-          clients (company_name, user_id, profiles(email)),
-          talents (first_name, last_name, user_id, profiles(email))
+          clients (company_name, user_id),
+          talents (first_name, last_name, user_id)
         `)
         .order("created_at", { ascending: false });
 
@@ -105,12 +99,20 @@ const AdminContracts = () => {
       if (error) throw error;
 
       try {
-        if (contract.talents?.profiles?.email) {
-          await sendTalentContractReceivedEmail({
-            email: contract.talents.profiles.email,
-            firstName: contract.talents.first_name,
-            contractId: contract.id
-          });
+        if (contract.talents?.user_id) {
+          const { data: talentProfile } = await supabase
+            .from("profiles" as any)
+            .select("email")
+            .eq("id", contract.talents.user_id)
+            .single();
+
+          if (talentProfile?.email) {
+            await sendTalentContractReceivedEmail({
+              email: talentProfile.email,
+              firstName: contract.talents.first_name,
+              contractId: contract.id
+            });
+          }
         }
       } catch (emailErr) {
         console.error("Failed to send talent contract email:", emailErr);

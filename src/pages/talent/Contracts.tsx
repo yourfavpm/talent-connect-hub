@@ -160,22 +160,39 @@ const TalentContracts = () => {
 
             if (error) throw error;
 
-            const formattedContracts = (data || []).map((contract: any) => ({
-                id: contract.id,
-                clientName: contract.clients?.company_name || 'Unknown Client',
-                role: contract.role_title || 'N/A',
-                startDate: contract.start_date || new Date().toISOString(),
-                endDate: contract.end_date || new Date().toISOString(),
-                rate: `$${contract.talent_rate || 0}/hr`,
-                status: contract.status,
-                contract_terms: contract.contract_terms,
-                talent_contract_terms: contract.talent_contract_terms,
-                contract_number: contract.contract_number,
-                talent_signed_at: contract.talent_signed_at,
-                client_signed_at: contract.client_signed_at,
-                talent_signature_url: contract.talent_signature_url,
-                client_signature_url: contract.client_signature_url,
-            }));
+            const formattedContracts = (data || []).map((contract: any) => {
+                let status = contract.status;
+                if (contract.client_signed_at && contract.talent_signed_at) {
+                    status = 'active';
+                    if (contract.status !== 'active') {
+                        supabase.from('contracts').update({ status: 'active' } as any).eq('id', contract.id).then();
+                    }
+                } else if (contract.talent_signed_at && !contract.client_signed_at) {
+                    status = 'waiting_for_client';
+                } else if (contract.client_signed_at && !contract.talent_signed_at) {
+                    status = 'pending_signature';
+                } else {
+                    status = 'pending_signature';
+                }
+
+                return {
+                    id: contract.id,
+                    clientName: contract.clients?.company_name || 'Unknown Client',
+                    role: contract.role_title || 'N/A',
+                    startDate: contract.start_date || new Date().toISOString(),
+                    endDate: contract.end_date || new Date().toISOString(),
+                    rate: `$${contract.talent_rate || 0}/hr`,
+                    status: status,
+                    contract_terms: contract.contract_terms,
+                    talent_contract_terms: contract.talent_contract_terms,
+                    contract_number: contract.contract_number,
+                    talent_signed_at: contract.talent_signed_at,
+                    client_signed_at: contract.client_signed_at,
+                    talent_signature_url: contract.talent_signature_url,
+                    client_signature_url: contract.client_signature_url,
+                    client_id: contract.client_id,
+                };
+            });
 
             setContracts(formattedContracts);
         } catch (error: any) {
@@ -340,32 +357,53 @@ const TalentContracts = () => {
                         pdfUrl: pdfUrl || undefined
                     });
 
+                    // Also update the offer status to 'signed' and shortlist to 'hired'
+                    try {
+                      const { data: contractData } = await supabase.from('contracts').select('offer_id, hire_request_id, talent_id').eq('id', contractId).single();
+                      if (contractData?.offer_id) {
+                          await supabase.from('offers').update({ status: 'signed' } as any).eq('id', contractData.offer_id);
+                          // Removed auto-update to 'hired' for hr_v2_hire_requests to allow multiple hires per request
+                      }
+                      if (contractData?.hire_request_id && contractData?.talent_id) {
+                        await supabase.from('hr_v2_shortlist')
+                          .update({ status: 'hired' } as any)
+                          .eq('hire_request_id', contractData.hire_request_id)
+                          .eq('talent_id', contractData.talent_id);
+                      }
+                    } catch (offerErr) {
+                      console.error("Error updating offer status:", offerErr);
+                    }
+
                     // Fetch Client Email and send ACTIVE email to Client
-                    const { data: clientData } = await supabase
-                        .from('clients')
-                        .select('user_id')
-                        .eq('id', selectedContract.client_id)
-                        .single();
-                        
-                    if (clientData?.user_id) {
-                        const { data: clientProfile } = await supabase
-                            .from('profiles')
-                            .select('email')
-                            .eq('id', clientData.user_id)
-                            .single();
-                            
-                        if (clientProfile?.email) {
-                            await sendClientContractActiveEmail({
-                                clientEmail: clientProfile.email,
-                                clientName: selectedContract?.clientName || 'Client',
-                                talentName: user.user_metadata?.first_name || 'Talent',
-                                contractId: selectedContract?.contract_number || contractId,
-                                jobTitle: selectedContract?.role || 'Role',
-                                rate: selectedContract?.rate || 'Rate',
-                                startDate: selectedContract?.startDate || new Date().toISOString(),
-                                pdfUrl: pdfUrl || undefined
-                            });
-                        }
+                    try {
+                      const { data: clientData } = await supabase
+                          .from('clients')
+                          .select('user_id')
+                          .eq('id', selectedContract.client_id)
+                          .single();
+                          
+                      if (clientData?.user_id) {
+                          const { data: clientProfile } = await supabase
+                              .from('profiles')
+                              .select('email')
+                              .eq('id', clientData.user_id)
+                              .single();
+                              
+                          if (clientProfile?.email) {
+                              await sendClientContractActiveEmail({
+                                  clientEmail: clientProfile.email,
+                                  clientName: selectedContract?.clientName || 'Client',
+                                  talentName: user.user_metadata?.first_name || 'Talent',
+                                  contractId: selectedContract?.contract_number || contractId,
+                                  jobTitle: selectedContract?.role || 'Role',
+                                  rate: selectedContract?.rate || 'Rate',
+                                  startDate: selectedContract?.startDate || new Date().toISOString(),
+                                  pdfUrl: pdfUrl || undefined
+                              });
+                          }
+                      }
+                    } catch (clientEmailErr) {
+                      console.error("Error sending client active email:", clientEmailErr);
                     }
 
                 } catch (emailError) {
@@ -398,14 +436,16 @@ const TalentContracts = () => {
     const getStatusConfig = (status: string) => {
         const configs: Record<string, { label: string; className: string }> = {
             pending: { label: "Pending Signature", className: "bg-amber-100 text-amber-700" },
+            pending_signature: { label: "Pending Signature", className: "bg-amber-100 text-amber-700" },
+            waiting_for_client: { label: "Waiting for Client", className: "bg-blue-100 text-blue-700" },
             active: { label: "Active", className: "bg-green-100 text-green-700" },
-            completed: { label: "Completed", className: "bg-blue-100 text-blue-700" },
-            expired: { label: "Expired", className: "bg-gray-100 text-gray-700" },
+            completed: { label: "Completed", className: "bg-slate-100 text-slate-700" },
+            expired: { label: "Expired", className: "bg-red-100 text-red-700" },
         };
         return configs[status] || configs.pending;
     };
 
-    const pendingContracts = contracts.filter(c => c.status === 'pending' && !c.talent_signed_at);
+    const pendingContracts = contracts.filter(c => ['pending', 'pending_signature', 'waiting_for_client'].includes(c.status));
     const activeContracts = contracts.filter(c => c.status === 'active');
     const completedContracts = contracts.filter(c => c.status === 'completed');
 

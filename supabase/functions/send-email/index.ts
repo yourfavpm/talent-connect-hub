@@ -31,6 +31,8 @@ interface EmailRequest {
   variables?: Record<string, any>;
   priority?: string;
   attachments?: any[];
+  generateRecoveryLink?: boolean;
+  redirectTo?: string;
 }
 
 serve(async (req) => {
@@ -42,7 +44,7 @@ serve(async (req) => {
   try {
     // ── 2. Parse the request body ───────────────────────────────────
     const body = await req.json() as EmailRequest;
-    const { templateKey, htmlTemplate, subject, to, variables } = body;
+    const { templateKey, htmlTemplate, subject, to, variables, generateRecoveryLink, redirectTo } = body;
 
     if (!to) {
       return new Response(
@@ -126,8 +128,24 @@ serve(async (req) => {
 
     if (htmlTemplate && subject) {
       // ── New path: Use provided branded HTML template ────────────
-      finalSubject = subject
-      bodyHtml = htmlTemplate
+      
+      if (generateRecoveryLink && redirectTo) {
+        console.log(`Generating recovery link for ${to} redirecting to ${redirectTo}`)
+        const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+          type: 'recovery',
+          email: to,
+          options: { redirectTo }
+        })
+        if (linkError) {
+          console.error('Error generating reset link:', linkError)
+        } else if (linkData?.properties?.action_link) {
+          finalVariables.resetLink = linkData.properties.action_link
+          console.log('Reset link generated successfully')
+        }
+      }
+
+      finalSubject = renderTemplate(subject, finalVariables)
+      bodyHtml = renderTemplate(htmlTemplate, finalVariables)
       bodyText = ''  // HTML emails don't need separate text version
       
       console.log(`Sending branded HTML email: ${subject} → ${to}`)
@@ -221,7 +239,32 @@ serve(async (req) => {
     }
 
     if (body.attachments && Array.isArray(body.attachments)) {
-      resendPayload.attachments = body.attachments;
+      try {
+        resendPayload.attachments = await Promise.all(body.attachments.map(async (att) => {
+          if (att.path && att.path.startsWith('http')) {
+            console.log(`Downloading attachment from: ${att.path}`);
+            const resp = await fetch(att.path);
+            if (resp.ok) {
+              const arrayBuffer = await resp.arrayBuffer();
+              // Create a Uint8Array and convert to base64
+              const bytes = new Uint8Array(arrayBuffer);
+              let binary = '';
+              // Process in chunks to avoid max call stack size issues with large files
+              const chunkSize = 8192;
+              for (let i = 0; i < bytes.length; i += chunkSize) {
+                binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunkSize)));
+              }
+              const base64 = btoa(binary);
+              return { filename: att.filename, content: base64 };
+            } else {
+              console.warn(`Failed to fetch attachment from ${att.path}, status: ${resp.status}`);
+            }
+          }
+          return att;
+        }));
+      } catch (err) {
+        console.error('Error processing attachments:', err);
+      }
     }
 
     const resendResponse = await fetch('https://api.resend.com/emails', {

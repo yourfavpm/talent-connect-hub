@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ClientOfferModal } from "@/components/client/jobs/ClientOfferModal";
 import {
   Dialog,
   DialogContent,
@@ -110,9 +111,15 @@ export default function AdminHireRequestDetail() {
   const [applications, setApplications] = useState<EnrichedRow[]>([]);
   const [shortlist, setShortlist] = useState<EnrichedRow[]>([]);
   const [interviews, setInterviews] = useState<EnrichedRow[]>([]);
+  const [existingOffers, setExistingOffers] = useState<any[]>([]);
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState("");
+
+  // Offer Modal State
+  const [offerModalOpen, setOfferModalOpen] = useState(false);
+  const [selectedOfferTalentUserId, setSelectedOfferTalentUserId] = useState<string | null>(null);
+  const [offerSubmitting, setOfferSubmitting] = useState(false);
 
   // Shortlist dialog – browse vetted talents
   const [showShortlistDialog, setShowShortlistDialog] = useState(false);
@@ -471,6 +478,19 @@ export default function AdminHireRequestDetail() {
       );
       setInterviews(enrichedInt);
 
+      // Fetch offers
+      const { data: offersData } = await supabase
+        .from('offers')
+        .select(`
+          *,
+          talents (
+            user_id
+          )
+        `)
+        .eq('hire_request_id', id as string);
+      
+      setExistingOffers(offersData || []);
+
       // 6. Events
       const { data: evtData } = await supabase
         .from("hr_v2_request_events")
@@ -621,6 +641,53 @@ export default function AdminHireRequestDetail() {
 
   const handleFinalizeHire = (talentId: string) =>
     callRpc("hr_v2_admin_finalize_hire", { req_id: id, t_user_id: talentId }, "🎉 Hire finalized!");
+
+  const handleInitiateOffer = async (payload: any) => {
+    if (!selectedOfferTalentUserId || !request) return;
+    setOfferSubmitting(true);
+    try {
+      const { data: talentData, error: talentError } = await supabase
+        .from('talents')
+        .select('id')
+        .eq('user_id', selectedOfferTalentUserId)
+        .single();
+      if (talentError || !talentData) throw new Error("Could not find talent profile.");
+
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('user_id', request.client_user_id)
+        .single();
+      if (clientError || !clientData) throw new Error("Could not find client profile.");
+
+      const { error: offerError } = await supabase.from('offers').insert({
+        client_id: clientData.id,
+        talent_id: talentData.id,
+        role_title: request.title,
+        hourly_rate: payload.hourly_rate || 0,
+        weekly_hours: payload.weekly_hours || 40,
+        start_date: payload.start_date || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        duration: "Ongoing",
+        status: 'sent_to_admin',
+        special_terms: payload.special_terms || `Generated from hire request: ${request.title}`,
+        meta: payload.meta,
+        created_by: user?.id,
+        hire_request_id: request.id
+      });
+
+      if (offerError) throw offerError;
+
+      toast({ title: "Offer Initiated", description: "Offer has been created and is ready for contract generation." });
+      setOfferModalOpen(false);
+      setSelectedOfferTalentUserId(null);
+      fetchData(); 
+    } catch (error: any) {
+      console.error(error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setOfferSubmitting(false);
+    }
+  };
 
   const handleInviteToApply = async (talent: any) => {
     setActionLoading("invite");
@@ -922,6 +989,27 @@ export default function AdminHireRequestDetail() {
                           <Award className="w-3 h-3 mr-1" /> Finalize Hire
                         </Button>
                       )}
+                      
+                      {(() => {
+                        const activeOffer = existingOffers.find((o: any) => o.talents?.user_id === item.talent_user_id);
+                        if (activeOffer) {
+                          const isHired = activeOffer.status === 'signed' || activeOffer.status === 'accepted';
+                          return (
+                            <Badge className={isHired ? "bg-emerald-100 text-emerald-800 border-none font-bold" : "bg-slate-100 text-slate-800 border-none font-bold"}>
+                              {isHired ? "Hired" : "Offer Created"}
+                            </Badge>
+                          );
+                        }
+                        return (
+                          <Button size="sm" className="h-8 text-xs bg-brand-primary hover:bg-brand-primary/90 text-white font-bold" onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedOfferTalentUserId(item.talent_user_id);
+                            setOfferModalOpen(true);
+                          }}>
+                            Create Offer
+                          </Button>
+                        );
+                      })()}
                       <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => navigate(getInternalPath(`/admin/talents/${(item as any).v2_profile_id || item.talent_user_id}`))}>
                         <Eye className="w-3 h-3 mr-1" /> View
                       </Button>
@@ -1128,29 +1216,6 @@ export default function AdminHireRequestDetail() {
         </DialogContent>
       </Dialog>
 
-      {/* Schedule Interview Dialog */}
-      <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>Schedule Interview</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-slate-500">
-              Scheduling interview for <strong>{scheduleTarget?.profiles?.first_name || scheduleTarget?.first_name} {scheduleTarget?.profiles?.last_name || scheduleTarget?.last_name}</strong>.
-            </p>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Meeting Link (Google Meet, Zoom, etc.)</label>
-              <Input placeholder="https://meet.google.com/..." value={calendlyLink} onChange={(e) => setCalendlyLink(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Date & Time</label>
-              <Input type="datetime-local" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Meeting Notes / Agenda (Optional)</label>
-              <Textarea placeholder="Please be prepared to discuss your portfolio..." value={meetingNotes} onChange={(e) => setMeetingNotes(e.target.value)} className="h-20 resize-none" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowScheduleDialog(false)}>Cancel</Button>
             <Button onClick={handleScheduleInterview} disabled={!calendlyLink || !scheduledTime || !!actionLoading} className="bg-blue-600 text-white hover:bg-blue-700">
               {actionLoading === "schedule" ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Calendar className="w-4 h-4 mr-1.5" />} 
               {actionLoading === "schedule" ? "Scheduling..." : "Schedule"}
@@ -1228,6 +1293,48 @@ export default function AdminHireRequestDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Schedule Interview</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-500">
+              Scheduling interview for <strong>{scheduleTarget?.profiles?.first_name || scheduleTarget?.first_name} {scheduleTarget?.profiles?.last_name || scheduleTarget?.last_name}</strong>.
+            </p>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Meeting Link (Google Meet, Zoom, etc.)</label>
+              <Input placeholder="https://meet.google.com/..." value={calendlyLink} onChange={(e) => setCalendlyLink(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Date & Time</label>
+              <Input type="datetime-local" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Meeting Notes / Agenda (Optional)</label>
+              <Textarea placeholder="Please be prepared to discuss your portfolio..." value={meetingNotes} onChange={(e) => setMeetingNotes(e.target.value)} className="h-20 resize-none" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowScheduleDialog(false)}>Cancel</Button>
+            <Button onClick={handleScheduleInterview} disabled={!calendlyLink || !scheduledTime || !!actionLoading} className="bg-blue-600 text-white hover:bg-blue-700">
+              {actionLoading === "schedule" ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Calendar className="w-4 h-4 mr-1.5" />} 
+              {actionLoading === "schedule" ? "Scheduling..." : "Schedule"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {offerModalOpen && selectedOfferTalentUserId && (
+        <ClientOfferModal
+          isOpen={offerModalOpen}
+          onClose={() => {
+            setOfferModalOpen(false);
+            setSelectedOfferTalentUserId(null);
+          }}
+          loading={offerSubmitting}
+          onSubmit={handleInitiateOffer}
+        />
+      )}
 
       {/* Edit Published Job Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>

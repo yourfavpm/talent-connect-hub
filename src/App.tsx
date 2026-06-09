@@ -64,6 +64,7 @@ const ClientSignup = lazy(() => import("./pages/auth/ClientSignup"));
 const TalentSignup = lazy(() => import("./pages/auth/TalentSignup"));
 const AdminSignup = lazy(() => import("./pages/auth/AdminSignup"));
 const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
+const UpdatePassword = lazy(() => import("./pages/auth/UpdatePassword"));
 const CheckEmail = lazy(() => import("./pages/auth/CheckEmail"));
 const VerifyEmail = lazy(() => import("./pages/auth/VerifyEmail"));
 
@@ -391,6 +392,7 @@ const App = () => {
                   <Route path="/auth/verify-email" element={<VerifyEmail />} />
                   <Route path="/auth/admin-signup" element={<AdminSignup />} />
                   <Route path="/auth/reset-password" element={<ResetPassword />} />
+                  <Route path="/auth/update-password" element={<UpdatePassword />} />
                   <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<Navigate to="/auth/login" replace />} />
                 </>

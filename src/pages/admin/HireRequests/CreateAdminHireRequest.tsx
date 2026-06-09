@@ -100,7 +100,11 @@ export default function CreateAdminHireRequest() {
       const userId = authData?.user?.id;
       if (!userId) throw new Error("No user ID returned from account creation");
 
-      toast({ title: "Client Account Configured 🎉", description: `${newClientData.company_name} is active.` });
+      // Send the welcome email with credentials
+      const { sendClientAccountCreatedEmail } = await import('@/lib/email/triggers');
+      await sendClientAccountCreatedEmail(newClientData.email, newClientData.first_name || newClientData.company_name, newClientData.password);
+
+      toast({ title: "Client Account Configured 🎉", description: `${newClientData.company_name} is active. Credentials sent.` });
 
       // Refresh the client list and auto-select the newly created client
       const { data: allClients, error: fetchErr } = await supabase

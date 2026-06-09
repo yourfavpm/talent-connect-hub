@@ -39,7 +39,8 @@ const AdminOffers = () => {
         .select(`
           *,
           clients(company_name, primary_contact_name, billing_address),
-          talents(first_name, last_name, talent_id, email)
+          talents(first_name, last_name, talent_id, email),
+          contracts(status, client_signed_at, talent_signed_at)
         `)
         .order("created_at", { ascending: false });
 
@@ -427,7 +428,14 @@ const AdminOffers = () => {
                     )}
                     {offer.status === "contract_generated" && (
                       <Badge className="bg-blue-500 text-white px-3 py-1">
-                        Contract Sent
+                        {(() => {
+                          const contract = offer.contracts && offer.contracts[0];
+                          if (!contract) return "Contract Sent";
+                          if (contract.status === 'active' || (contract.client_signed_at && contract.talent_signed_at)) return "Fully Signed";
+                          if (contract.client_signed_at) return "Client Signed";
+                          if (contract.talent_signed_at) return "Talent Signed";
+                          return "Contract Sent";
+                        })()}
                       </Badge>
                     )}
                     <Dialog>

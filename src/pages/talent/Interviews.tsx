@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Video, Calendar, Clock, MapPin, X, FileText, CheckCircle2, ChevronRight, Ban, RefreshCw, CalendarCheck, CalendarClock, AlertCircle, MessageSquare, ArrowRight, ChevronLeft, Info, Building2 } from "lucide-react";
 import { format } from "date-fns";
-import { sendAdminInterviewActionEmail } from "@/lib/email/triggers";
+import { sendAdminInterviewActionEmail, sendClientInterviewRescheduleEmail } from "@/lib/email/triggers";
 import clsx from "clsx";
 import { Link, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +29,7 @@ interface V2Interview {
     title: string;
     role_summary: string | null;
   } | null;
+  client_proposed_time1?: string | null;
   client_company_name?: string;
 }
 
@@ -200,6 +201,26 @@ const TalentInterviews = () => {
           hireRequestId: selectedInterview.hire_request_id,
           details: `Reason: ${rescheduleReason}\nProposed Time: ${rescheduleTime}`
         }).catch(err => console.error("Failed to send admin email:", err));
+
+        if (selectedInterview.client_proposed_time1) {
+          // If this was originally requested by the client, notify the client
+          const { data: clientUser } = await supabase
+            .from('profiles')
+            .select('email, first_name, last_name')
+            .eq('user_id', selectedInterview.client_user_id)
+            .single();
+          
+          if (clientUser?.email) {
+            sendClientInterviewRescheduleEmail({
+              clientEmail: clientUser.email,
+              clientName: clientUser.first_name || 'Client',
+              talentName: `${user?.user_metadata?.first_name || "Talent"} ${user?.user_metadata?.last_name || ""}`,
+              jobTitle: selectedInterview.hr_v2_hire_requests?.title || "Role",
+              rescheduleReason,
+              proposedTime: rescheduleTime
+            }).catch(err => console.error("Failed to send client email:", err));
+          }
+        }
       }
 
       setRescheduleReason("");

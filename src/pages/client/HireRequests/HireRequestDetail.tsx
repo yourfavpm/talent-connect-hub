@@ -11,6 +11,8 @@ import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TalentProfileDrawer } from "@/components/client/talents/TalentProfileDrawer";
 import { ClientOfferModal } from "@/components/client/jobs/ClientOfferModal";
+import { ClientInterviewRequestModal } from "@/components/client/jobs/ClientInterviewRequestModal";
+import { sendAdminInterviewRequestEmail } from "@/lib/email/triggers";
 import { useToast } from "@/hooks/use-toast";
 
 export default function HireRequestDetail() {
@@ -26,6 +28,9 @@ export default function HireRequestDetail() {
   const [offerModalOpen, setOfferModalOpen] = useState(false);
   const [selectedOfferTalentUserId, setSelectedOfferTalentUserId] = useState<string | null>(null);
   const [offerSubmitting, setOfferSubmitting] = useState(false);
+  const [interviewRequestModalOpen, setInterviewRequestModalOpen] = useState(false);
+  const [selectedInterviewTalentUserId, setSelectedInterviewTalentUserId] = useState<string | null>(null);
+  const [interviewRequestSubmitting, setInterviewRequestSubmitting] = useState(false);
   const { toast } = useToast();
 
   const fetchRequestDetails = useCallback(async () => {
@@ -128,6 +133,40 @@ export default function HireRequestDetail() {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setOfferSubmitting(false);
+    }
+  };
+
+  const handleRequestInterview = async (proposedTimes: string[]) => {
+    if (!selectedInterviewTalentUserId || !request) return;
+    setInterviewRequestSubmitting(true);
+    try {
+      const { error } = await supabase.rpc('hr_v2_request_interview', {
+        req_id: id,
+        t_user_id: selectedInterviewTalentUserId,
+        p_times: proposedTimes
+      });
+
+      if (error) throw error;
+
+      // Trigger email to admin
+      await sendAdminInterviewRequestEmail({
+        adminEmail: 'hello@opslyhr.com', // OpslyHR admin
+        clientName: user?.email || 'Client',
+        talentName: 'Candidate', // We could fetch this if needed, but keeping simple
+        jobTitle: request.title,
+        proposedTimes,
+        hireRequestId: id as string
+      });
+
+      toast({ title: "Interview Requested", description: "Admin has been notified and will coordinate with the candidate." });
+      setInterviewRequestModalOpen(false);
+      setSelectedInterviewTalentUserId(null);
+      fetchRequestDetails();
+    } catch (error: any) {
+      console.error(error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setInterviewRequestSubmitting(false);
     }
   };
 
@@ -290,8 +329,8 @@ export default function HireRequestDetail() {
               {shortlist.map((candidate) => {
                 const profile = candidate.profiles;
                 if (!profile) return null;
-                const hasInterview = interviews.some((i) => i.talent_user_id === candidate.talent_user_id);
-                const hasOffer = existingOffers.some((o: any) => o.talents?.user_id === candidate.talent_user_id);
+                const interview = interviews.find((i) => i.talent_user_id === candidate.talent_user_id);
+                const activeOffer = existingOffers.find((o: any) => o.talents?.user_id === candidate.talent_user_id);
                 return (
                   <div key={candidate.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col group cursor-pointer" onClick={() => setSelectedTalentUserId(candidate.talent_user_id)}>
                     <div className="p-6 flex-grow">
@@ -315,26 +354,49 @@ export default function HireRequestDetail() {
                     <div className="px-5 py-4 bg-slate-50 border-t border-slate-100 flex flex-col gap-4">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Shortlisted {format(new Date(candidate.created_at), "MMM d")}</span>
-                        {hasInterview && (
-                          <Badge className="bg-emerald-100 text-emerald-700 border-none py-0.5 px-2 font-semibold text-[10px]"><Video className="w-3 h-3 mr-1" /> Interviewing</Badge>
+                        {interview && (
+                          <Badge className="bg-emerald-100 text-emerald-700 border-none py-0.5 px-2 font-semibold text-[10px]">
+                            <Video className="w-3 h-3 mr-1" /> 
+                            {interview.status === 'reschedule_requested' ? 'Reschedule Req.' : 'Interviewing'}
+                          </Badge>
                         )}
                       </div>
                       <div className="grid grid-cols-2 gap-2 w-full">
-                        {hasOffer ? (
-                           <Button size="sm" variant="outline" disabled className="w-full bg-gray-50 text-gray-400 border-dashed h-8 text-xs">
-                             Offer Sent
+                        {activeOffer ? (
+                           <Button size="sm" variant="outline" disabled className={`w-full h-8 text-xs ${activeOffer.status === 'signed' || activeOffer.status === 'accepted' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-50 text-gray-400 border-dashed'}`}>
+                             {activeOffer.status === 'signed' || activeOffer.status === 'accepted' ? 'Hired' : 'Offer Sent'}
                            </Button>
-                        ) : hasInterview ? (
+                        ) : interview ? (
+                           <>
+                             {interview.status === 'reschedule_requested' && interview.client_proposed_time1 ? (
+                               <Button
+                                 size="sm"
+                                 onClick={(e) => { e.stopPropagation(); setSelectedInterviewTalentUserId(candidate.talent_user_id); setInterviewRequestModalOpen(true); }}
+                                 className="w-full bg-amber-500 text-white hover:bg-amber-600 h-8 text-xs px-2"
+                               >
+                                 <Calendar className="w-3 h-3 mr-1.5" />
+                                 New Time
+                               </Button>
+                             ) : (
+                               <Button
+                                 size="sm"
+                                 onClick={(e) => { e.stopPropagation(); setSelectedOfferTalentUserId(candidate.talent_user_id); setOfferModalOpen(true); }}
+                                 className="w-full bg-gray-900 text-white hover:bg-gray-800 h-8 text-xs px-2"
+                               >
+                                 <FilePenLine className="w-3 h-3 mr-1.5" />
+                                 Offer
+                               </Button>
+                             )}
+                           </>
+                        ) : (
                            <Button
                              size="sm"
-                             onClick={(e) => { e.stopPropagation(); setSelectedOfferTalentUserId(candidate.talent_user_id); setOfferModalOpen(true); }}
-                             className="w-full bg-gray-900 text-white hover:bg-gray-800 h-8 text-xs px-2"
+                             onClick={(e) => { e.stopPropagation(); setSelectedInterviewTalentUserId(candidate.talent_user_id); setInterviewRequestModalOpen(true); }}
+                             className="w-full bg-slate-100 text-slate-700 hover:bg-slate-200 h-8 text-xs px-2"
                            >
-                             <FilePenLine className="w-3 h-3 mr-1.5" />
-                             Offer
+                             <Video className="w-3 h-3 mr-1.5" />
+                             Request Interview
                            </Button>
-                        ) : (
-                           <div className="col-span-1"></div>
                         )}
                         <Button variant="outline" size="sm" className="w-full h-8 text-xs bg-white text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 font-medium px-2 shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedTalentUserId(candidate.talent_user_id); }}>
                           View Profile
@@ -367,6 +429,18 @@ export default function HireRequestDetail() {
           job={request}
           loading={offerSubmitting}
           onSubmit={handleInitiateOffer}
+        />
+      )}
+
+      {interviewRequestModalOpen && selectedInterviewTalentUserId && (
+        <ClientInterviewRequestModal
+          isOpen={interviewRequestModalOpen}
+          onClose={() => {
+            setInterviewRequestModalOpen(false);
+            setSelectedInterviewTalentUserId(null);
+          }}
+          loading={interviewRequestSubmitting}
+          onSubmit={handleRequestInterview}
         />
       )}
     </div>

@@ -138,33 +138,46 @@ const AdminConsultationDetail = () => {
         try {
             setIsConverting(true);
             
-            // 1. Create Client
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { data: client, error: clientErr } = await (supabase.from('clients' as any).insert({
-                company_name: clientForm.company_name,
-                primary_contact_name: clientForm.contact_name,
-                primary_contact_email: clientForm.contact_email,
-                status: 'active'
-            } as any).select().single() as any);
+            // 1. Generate random password
+            const tempPassword = Math.random().toString(36).slice(-10) + "A1!";
 
-            if (clientErr) throw clientErr;
+            // 2. Create User + Client via Edge Function
+            const { data: authData, error: fnError } = await supabase.functions.invoke('create-user', {
+                body: {
+                  email: clientForm.contact_email,
+                  password: tempPassword,
+                  role: "client",
+                  firstName: clientForm.contact_name.split(' ')[0] || "Client",
+                  lastName: clientForm.contact_name.split(' ').slice(1).join(' ') || "Representative",
+                  company_name: clientForm.company_name,
+                }
+            });
 
-            // 2. Update Consultation
+            if (fnError) throw new Error(fnError.message || "Failed to create client account");
+            
+            const clientId = authData?.client?.id;
+            if (!clientId) throw new Error("No client ID returned from edge function");
+
+            // 3. Send the welcome email with credentials
+            const { sendClientAccountCreatedEmail } = await import('@/lib/email/triggers');
+            await sendClientAccountCreatedEmail(clientForm.contact_email, clientForm.contact_name, tempPassword);
+
+            // 4. Update Consultation
             await supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .from('consultations' as any)
                 .update({ 
                     lead_status: 'converted',
-                    converted_client_id: client.id 
+                    converted_client_id: clientId 
                 } as any)
                 .eq('id', id);
 
-            toast.success("Lead converted to client!");
+            toast.success("Lead converted to client! An email with credentials has been sent to them.");
             
             if (clientForm.create_job) {
-                navigate(getInternalPath(`/admin/clients/${(client as any).id}?action=create_job`));
+                navigate(getInternalPath(`/admin/clients/${clientId}?action=create_job`));
             } else {
-                navigate(getInternalPath(`/admin/clients/${(client as any).id}`));
+                navigate(getInternalPath(`/admin/clients/${clientId}`));
             }
 
         } catch (error: any) {
