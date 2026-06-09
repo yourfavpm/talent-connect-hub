@@ -385,7 +385,7 @@ const Index = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-16 lg:gap-24">
             {[
               {
-                value: "15+",
+                value: "6+",
                 metric: "Countries",
                 color: "text-violet-600",
                 pulse: "bg-violet-600/5",
