@@ -85,6 +85,11 @@ const ClientSettings = lazy(() => import("@/pages/client/Settings"));
 const HireRequestsList = lazy(() => import("@/pages/client/HireRequests/HireRequestsList"));
 const CreateHireRequest = lazy(() => import("@/pages/client/HireRequests/CreateHireRequest"));
 const HireRequestDetail = lazy(() => import("@/pages/client/HireRequests/HireRequestDetail"));
+const ClientTeamMembers = lazy(() => import("@/pages/client/TeamMembers"));
+const ClientPerformance = lazy(() => import("@/pages/client/Performance"));
+const ClientMessages = lazy(() => import("@/pages/client/Messages"));
+const ClientSubscription = lazy(() => import("@/pages/client/Subscription"));
+const JoinWorkspace = lazy(() => import("@/pages/auth/JoinWorkspace"));
 
 // Talent
 const TalentOnboarding = lazy(() => import("./pages/talent/Onboarding"));
@@ -371,6 +376,7 @@ const App = () => {
                   <Route path="/auth/signup" element={<SignupHub />} />
                   <Route path="/auth/signup/client" element={<ClientSignup />} />
                   <Route path="/auth/signup/talent" element={<TalentSignup />} />
+                  <Route path="/auth/join" element={<JoinWorkspace />} />
                   <Route path="/auth/check-email" element={<CheckEmail />} />
                   <Route path="/auth/verify-email" element={<VerifyEmail />} />
                   <Route path="/auth/admin-signup" element={<AdminSignup />} />
@@ -417,6 +423,10 @@ const App = () => {
                           <Route path="invoices" element={<Invoices />} />
                           <Route path="payments" element={<ClientPayments />} />
                           <Route path="team" element={<Team />} />
+                          <Route path="team-members" element={<ClientTeamMembers />} />
+                          <Route path="performance" element={<ClientPerformance />} />
+                          <Route path="messages" element={<ClientMessages />} />
+                          <Route path="subscription" element={<ClientSubscription />} />
                           <Route path="support" element={<ClientSupport />} />
                           <Route path="settings" element={<ClientSettings />} />
                         </Route>

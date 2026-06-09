@@ -17,7 +17,9 @@ import {
   Briefcase, 
   Clock, 
   CreditCard,
-  FileText
+  FileText,
+  Users,
+  Zap
 } from "lucide-react";
 
 export default function AdminClientDetail() {
@@ -29,6 +31,8 @@ export default function AdminClientDetail() {
   const [contracts, setContracts] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [supportTickets, setSupportTickets] = useState<any[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
+  const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchClientDetails = async () => {
@@ -47,17 +51,21 @@ export default function AdminClientDetail() {
 
       // Fetch related sub-data in parallel
       if (clientData) {
-        const [jobsRes, contractsRes, invoicesRes, supportRes] = await Promise.all([
+        const [jobsRes, contractsRes, invoicesRes, supportRes, membersRes, subRes] = await Promise.all([
           supabase.from("jobs").select("*").eq("client_id", id).order("created_at", { ascending: false }),
           supabase.from("contracts").select("*, talents(first_name, last_name)").eq("client_id", id).order("created_at", { ascending: false }),
           supabase.from("invoices").select("*").eq("client_id", id).order("created_at", { ascending: false }),
-          supabase.from("support_tickets").select("*").eq("user_id", clientData.user_id).order("created_at", { ascending: false })
+          supabase.from("support_tickets").select("*").eq("user_id", clientData.user_id).order("created_at", { ascending: false }),
+          supabase.from("client_members").select("*, profile:profiles(first_name, last_name, email)").eq("client_id", id).order("created_at", { ascending: true }),
+          supabase.from("client_subscriptions").select("*").eq("client_id", id).single()
         ]);
 
         if (jobsRes.data) setJobs(jobsRes.data);
         if (contractsRes.data) setContracts(contractsRes.data);
         if (invoicesRes.data) setInvoices(invoicesRes.data);
         if (supportRes.data) setSupportTickets(supportRes.data);
+        if (membersRes.data) setMembers(membersRes.data);
+        if (subRes.data) setSubscription(subRes.data);
       }
     } catch (error: any) {
       console.error("Error fetching client details:", error);
@@ -250,6 +258,18 @@ export default function AdminClientDetail() {
               >
                 Support Tickets
               </TabsTrigger>
+              <TabsTrigger 
+                value="members" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-6 py-3 text-sm font-medium data-[state=active]:text-gray-900 text-gray-500"
+              >
+                Members
+              </TabsTrigger>
+              <TabsTrigger 
+                value="subscription" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-6 py-3 text-sm font-medium data-[state=active]:text-gray-900 text-gray-500"
+              >
+                Subscription
+              </TabsTrigger>
             </TabsList>
             
             <div className="pt-6">
@@ -430,6 +450,116 @@ export default function AdminClientDetail() {
                       </table>
                     </div>
                   )}
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="members" className="mt-0 outline-none">
+                <Card className="border-gray-100 shadow-sm overflow-hidden">
+                  <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                    <h3 className="font-medium text-gray-900">Workspace Members</h3>
+                    <Badge className="bg-blue-50 text-blue-700 border-blue-200">
+                      {members.filter(m => m.status === 'active').length + 1} Seats Used
+                    </Badge>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+                        <tr>
+                          <th className="px-5 py-3 font-medium">Name</th>
+                          <th className="px-5 py-3 font-medium">Role</th>
+                          <th className="px-5 py-3 font-medium">Status</th>
+                          <th className="px-5 py-3 font-medium">Joined</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-5 py-3 text-gray-900">
+                            <div className="font-medium">{client.primary_contact_name || "Owner"}</div>
+                            <div className="text-xs text-gray-500">{client.primary_contact_email}</div>
+                          </td>
+                          <td className="px-5 py-3"><Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs">Owner</Badge></td>
+                          <td className="px-5 py-3"><Badge className="bg-green-100 text-green-800 border-green-200 text-xs">Active</Badge></td>
+                          <td className="px-5 py-3 text-gray-500">{new Date(client.created_at).toLocaleDateString()}</td>
+                        </tr>
+                        {members.map(member => (
+                          <tr key={member.id} className="hover:bg-gray-50">
+                            <td className="px-5 py-3 text-gray-900">
+                              <div className="font-medium">{member.profile?.first_name} {member.profile?.last_name}</div>
+                              <div className="text-xs text-gray-500">{member.profile?.email}</div>
+                            </td>
+                            <td className="px-5 py-3 capitalize"><Badge variant="outline">{member.role}</Badge></td>
+                            <td className="px-5 py-3 capitalize">
+                              <Badge className={
+                                member.status === 'active' ? "bg-green-100 text-green-800 border-green-200" :
+                                member.status === 'invited' ? "bg-amber-100 text-amber-800 border-amber-200" :
+                                "bg-red-100 text-red-800 border-red-200"
+                              }>
+                                {member.status}
+                              </Badge>
+                            </td>
+                            <td className="px-5 py-3 text-gray-500">
+                              {member.accepted_at ? new Date(member.accepted_at).toLocaleDateString() : 'Pending'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="subscription" className="mt-0 outline-none">
+                <Card className="border-gray-100 shadow-sm">
+                  <div className="p-6 max-w-2xl">
+                    <h3 className="font-semibold text-lg text-gray-900 mb-4 flex items-center gap-2">
+                      <CreditCard className="h-5 w-5 text-blue-600" /> Subscription Details
+                    </h3>
+                    
+                    {subscription ? (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                            <p className="text-xs text-gray-500 uppercase font-medium mb-1">Current Plan</p>
+                            <p className="text-xl font-bold capitalize text-gray-900">{subscription.plan}</p>
+                          </div>
+                          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                            <p className="text-xs text-gray-500 uppercase font-medium mb-1">Status</p>
+                            <Badge className={
+                              subscription.status === 'active' ? "bg-green-100 text-green-800" :
+                              subscription.status === 'trialing' ? "bg-amber-100 text-amber-800" : "bg-gray-100 text-gray-800"
+                            }>
+                              {subscription.status}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3 pt-2">
+                          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span className="text-sm text-gray-600">Seat Limit</span>
+                            <span className="font-medium">{subscription.max_team_members === -1 ? "Unlimited" : subscription.max_team_members}</span>
+                          </div>
+                          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span className="text-sm text-gray-600">Trial Ends At</span>
+                            <span className="font-medium">{subscription.trial_ends_at ? new Date(subscription.trial_ends_at).toLocaleDateString() : "-"}</span>
+                          </div>
+                          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span className="text-sm text-gray-600">Current Period End</span>
+                            <span className="font-medium">{subscription.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString() : "-"}</span>
+                          </div>
+                          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span className="text-sm text-gray-600">Stripe Customer ID</span>
+                            <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{subscription.stripe_customer_id || "None"}</code>
+                          </div>
+                          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span className="text-sm text-gray-600">Stripe Subscription ID</span>
+                            <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{subscription.stripe_subscription_id || "None"}</code>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-500 py-4">No subscription record found for this client.</div>
+                    )}
+                  </div>
                 </Card>
               </TabsContent>
             </div>

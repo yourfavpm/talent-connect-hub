@@ -148,6 +148,105 @@ export interface Database {
       // ── Clients ──────────────────────────────────────────────────────
       clients: GenericTable
 
+      // ── Client Workspace (SaaS Multi-Tenancy) ────────────────
+      client_members: {
+        Row: {
+          id: string
+          client_id: string
+          user_id: string
+          role: 'owner' | 'admin' | 'manager'
+          status: 'invited' | 'active' | 'suspended'
+          invited_by: string | null
+          invited_at: string
+          accepted_at: string | null
+          created_at: string
+        }
+        Insert: AnyWrite
+        Update: AnyWrite
+      }
+      client_invites: {
+        Row: {
+          id: string
+          client_id: string
+          email: string
+          role: 'admin' | 'manager'
+          token: string
+          invited_by: string
+          status: 'pending' | 'accepted' | 'expired' | 'revoked'
+          expires_at: string
+          created_at: string
+        }
+        Insert: AnyWrite
+        Update: AnyWrite
+      }
+      client_subscriptions: {
+        Row: {
+          id: string
+          client_id: string
+          plan: 'starter' | 'growth' | 'enterprise'
+          status: 'trialing' | 'active' | 'past_due' | 'canceled'
+          trial_ends_at: string | null
+          current_period_start: string | null
+          current_period_end: string | null
+          max_team_members: number
+          stripe_subscription_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: AnyWrite
+        Update: AnyWrite
+      }
+      talent_kpis: {
+        Row: {
+          id: string
+          client_id: string
+          talent_user_id: string
+          set_by_user_id: string
+          title: string
+          description: string | null
+          target_value: number | null
+          current_value: number | null
+          unit: string | null
+          period: 'weekly' | 'monthly' | 'quarterly'
+          due_date: string | null
+          status: 'active' | 'completed' | 'archived'
+          created_at: string
+          updated_at: string
+        }
+        Insert: AnyWrite
+        Update: AnyWrite
+      }
+      talent_performance_reviews: {
+        Row: {
+          id: string
+          client_id: string
+          talent_user_id: string
+          reviewed_by_user_id: string
+          review_period: string | null
+          overall_score: number | null
+          ratings: Record<string, number>
+          notes: string | null
+          shared_with_talent: boolean
+          created_at: string
+        }
+        Insert: AnyWrite
+        Update: AnyWrite
+      }
+      client_messages: {
+        Row: {
+          id: string
+          client_id: string
+          sender_user_id: string
+          recipient_user_id: string
+          content: string
+          read_at: string | null
+          attachment_url: string | null
+          created_at: string
+        }
+        Insert: AnyWrite
+        Update: AnyWrite
+      }
+
       // ── Jobs ─────────────────────────────────────────────────────────
       jobs: GenericTable
       job_applications: GenericTable

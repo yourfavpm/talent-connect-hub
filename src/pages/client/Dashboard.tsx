@@ -28,6 +28,8 @@ const ClientDashboard = () => {
     talentsHired: 0,
     pendingOffers: 0,
     outstandingInvoices: 0,
+    activeMembers: 0,
+    pendingTimesheets: 0,
   });
   const verificationTriggered = useRef(false);
   const { toast } = useToast();
@@ -70,8 +72,12 @@ const ClientDashboard = () => {
         if (clientData) {
           queries.push(supabase.from("invoices").select("*", { count: "exact", head: true }).eq("client_id", clientData.id).eq("status", "outstanding"));
           queries.push(supabase.from("offers").select("*", { count: "exact", head: true }).eq("client_id", clientData.id).eq("status", "pending"));
+          queries.push(supabase.from("client_members").select("*", { count: "exact", head: true }).eq("client_id", clientData.id).eq("status", "active"));
+          queries.push(supabase.from("timesheets").select("*, contracts!inner(client_id)", { count: "exact", head: true }).eq("contracts.client_id", clientData.id).eq("status", "submitted"));
         } else {
           // Push dummy empty results if no client record
+          queries.push(Promise.resolve({ count: 0 }));
+          queries.push(Promise.resolve({ count: 0 }));
           queries.push(Promise.resolve({ count: 0 }));
           queries.push(Promise.resolve({ count: 0 }));
         }
@@ -81,7 +87,9 @@ const ClientDashboard = () => {
           { count: pendingRequests },
           { count: hiredTalents },
           { count: outstandingInvoices },
-          { count: pendingOffers }
+          { count: pendingOffers },
+          { count: activeMembers },
+          { count: pendingTimesheets }
         ] = await Promise.all(queries);
 
         setStatsData({
@@ -90,6 +98,8 @@ const ClientDashboard = () => {
           talentsHired: hiredTalents || 0,
           outstandingInvoices: outstandingInvoices || 0,
           pendingOffers: pendingOffers || 0,
+          activeMembers: (activeMembers || 0) + 1, // +1 for the owner
+          pendingTimesheets: pendingTimesheets || 0,
         });
       }
       setLoading(false);
@@ -148,10 +158,10 @@ const ClientDashboard = () => {
   }
 
   const stats = [
-    { label: "Active Jobs", value: statsData.activeJobs, icon: Briefcase },
-    { label: "Talents Hired", value: statsData.talentsHired, icon: Users },
-    { label: "Pending Requests", value: statsData.pendingRequests, icon: Inbox },
-    { label: "Outstanding Invoices", value: statsData.outstandingInvoices, icon: FileText },
+    { label: "Active Team", value: statsData.activeMembers, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Talents Hired", value: statsData.talentsHired, icon: Briefcase, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Pending Timesheets", value: statsData.pendingTimesheets, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
+    { label: "Outstanding Invoices", value: statsData.outstandingInvoices, icon: FileText, color: "text-rose-600", bg: "bg-rose-50" },
   ];
 
   return (
@@ -164,26 +174,36 @@ const ClientDashboard = () => {
             Welcome back, {client?.company_name || "Partner"}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Here's what's happening with your hiring today.
+            Here's what's happening in your workspace today.
           </p>
         </div>
-        <Link to={getInternalPath("/client/jobs")}>
-          <Button className="w-full sm:w-auto">
-            <Plus className="mr-2 h-4 w-4" />
-            Post Job
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link to={getInternalPath("/client/team-members")}>
+            <Button variant="outline" className="w-full sm:w-auto">
+              <Users className="mr-2 h-4 w-4" />
+              Invite Team
+            </Button>
+          </Link>
+          <Link to={getInternalPath("/client/jobs")}>
+            <Button className="w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" />
+              Post Job
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* 2. Quick Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
-          <Card key={i} className="p-4 flex flex-col justify-between h-28 border border-gray-200 shadow-sm rounded-xl bg-white">
+          <Card key={i} className="p-4 flex flex-col justify-between h-28 border border-gray-200 shadow-sm rounded-xl bg-white hover:border-gray-300 transition-colors">
             <div className="flex items-center justify-between text-gray-500">
               <span className="text-sm font-medium">{stat.label}</span>
-              <stat.icon className="h-4 w-4" />
+              <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center", stat.bg)}>
+                <stat.icon className={cn("h-4 w-4", stat.color)} />
+              </div>
             </div>
-            <div className="text-2xl font-semibold text-gray-900">
+            <div className="text-2xl font-bold text-gray-900 mt-2">
               {stat.value}
             </div>
           </Card>

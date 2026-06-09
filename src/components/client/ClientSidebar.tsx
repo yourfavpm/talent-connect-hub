@@ -13,7 +13,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Copy,
-  Check
+  Check,
+  MessageSquare,
+  TrendingUp,
+  CreditCard,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,21 +28,40 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { getInternalPath } from "@/utils/subdomain";
 import Logo from "@/components/Logo";
 
-const navigation = [
-  { name: "Dashboard", href: "/client/dashboard", icon: LayoutDashboard, iconColor: "text-blue-600", bgColor: "bg-blue-50" },
-  // { name: "Browse Talents", href: "/client/browse-talents", icon: Users, iconColor: "text-indigo-600", bgColor: "bg-indigo-50" },
-  FEATURES.hire_request_v2_enabled 
-    ? { name: "Hire Requests", href: "/client/hire-requests", icon: Briefcase, iconColor: "text-emerald-600", bgColor: "bg-emerald-50" }
-    : { name: "Jobs", href: "/client/jobs", icon: Briefcase, iconColor: "text-emerald-600", bgColor: "bg-emerald-50" },
-  { name: "Contracts", href: "/client/contracts", icon: FileText, iconColor: "text-amber-600", bgColor: "bg-amber-50" },
-  { name: "Invoices", href: "/client/invoices", icon: Receipt, iconColor: "text-rose-600", bgColor: "bg-rose-50" },
-  { name: "My Team", href: "/client/team", icon: UserCheck, iconColor: "text-purple-600", bgColor: "bg-purple-50" },
+const navSections = [
+  {
+    label: "Hiring",
+    items: [
+      { name: "Dashboard", href: "/client/dashboard", icon: LayoutDashboard, iconColor: "text-blue-600", bgColor: "bg-blue-50" },
+      FEATURES.hire_request_v2_enabled
+        ? { name: "Hire Requests", href: "/client/hire-requests", icon: Briefcase, iconColor: "text-emerald-600", bgColor: "bg-emerald-50" }
+        : { name: "Jobs", href: "/client/jobs", icon: Briefcase, iconColor: "text-emerald-600", bgColor: "bg-emerald-50" },
+      { name: "Contracts", href: "/client/contracts", icon: FileText, iconColor: "text-amber-600", bgColor: "bg-amber-50" },
+      { name: "Invoices", href: "/client/invoices", icon: Receipt, iconColor: "text-rose-600", bgColor: "bg-rose-50" },
+    ],
+  },
+  {
+    label: "Workforce",
+    items: [
+      { name: "My Team", href: "/client/team", icon: UserCheck, iconColor: "text-purple-600", bgColor: "bg-purple-50" },
+      { name: "Timesheets", href: "/client/timesheets", icon: ClipboardList, iconColor: "text-cyan-600", bgColor: "bg-cyan-50" },
+      { name: "Performance", href: "/client/performance", icon: TrendingUp, iconColor: "text-indigo-600", bgColor: "bg-indigo-50" },
+      { name: "Messages", href: "/client/messages", icon: MessageSquare, iconColor: "text-sky-600", bgColor: "bg-sky-50" },
+    ],
+  },
+  {
+    label: "Company",
+    items: [
+      { name: "Team Members", href: "/client/team-members", icon: Users, iconColor: "text-violet-600", bgColor: "bg-violet-50" },
+      { name: "Subscription", href: "/client/subscription", icon: CreditCard, iconColor: "text-pink-600", bgColor: "bg-pink-50" },
+      { name: "Support", href: "/client/support", icon: HelpCircle, iconColor: "text-cyan-600", bgColor: "bg-cyan-50" },
+      { name: "Settings", href: "/client/settings", icon: Settings, iconColor: "text-slate-600", bgColor: "bg-slate-50" },
+    ],
+  },
 ];
 
-const secondaryNavigation = [
-  { name: "Support", href: "/client/support", icon: HelpCircle, iconColor: "text-cyan-600", bgColor: "bg-cyan-50" },
-  { name: "Profile", href: "/client/settings", icon: Settings, iconColor: "text-slate-600", bgColor: "bg-slate-50" },
-];
+// Flat list for badge counting compatibility
+const allNavItems = navSections.flatMap((s) => s.items);
 
 interface ClientSidebarProps {
   onLogout: () => void;
@@ -160,17 +183,15 @@ const ClientSidebar = ({ onLogout, mobileOpen, setMobileOpen, collapsed, setColl
         </div>
 
         {/* Main Navigation */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide py-6 px-4 flex flex-col gap-8">
-          <nav className="space-y-1">
-            {renderNavItems(navigation)}
-          </nav>
-          
-          <div className="space-y-4">
-            <p className="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Account</p>
-            <nav className="space-y-1">
-              {renderNavItems(secondaryNavigation)}
-            </nav>
-          </div>
+        <div className="flex-1 overflow-y-auto scrollbar-hide py-6 px-4 flex flex-col gap-4">
+          {navSections.map((section) => (
+            <div key={section.label} className="space-y-1">
+              {!isCollapsed && (
+                <p className="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{section.label}</p>
+              )}
+              {renderNavItems(section.items)}
+            </div>
+          ))}
         </div>
 
         {/* Footer actions */}
