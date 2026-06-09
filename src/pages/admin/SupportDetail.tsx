@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { sendSupportRepliedEmail } from "@/lib/email/triggers";
+import { getInternalPath } from "@/utils/subdomain";
 
 type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -131,7 +132,7 @@ const AdminSupportDetail = () => {
             setStatusUpdate(finalTicket.status);
         } catch (error: any) {
             toast.error("Error fetching ticket: " + error.message);
-            navigate("/admin/support");
+            navigate(getInternalPath("/admin/support"));
         } finally {
             setLoading(false);
         }
@@ -254,7 +255,7 @@ const AdminSupportDetail = () => {
                     <Button 
                         variant="ghost" 
                         size="sm" 
-                        onClick={() => navigate("/admin/support")}
+                        onClick={() => navigate(getInternalPath("/admin/support"))}
                         className="text-gray-500 hover:text-gray-900 -ml-2"
                     >
                         <ArrowLeft className="h-4 w-4 mr-1.5" />
@@ -390,7 +391,7 @@ const AdminSupportDetail = () => {
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="p-4 border-b border-gray-100 bg-gray-50/30 flex items-center justify-between">
                                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">User Context</h3>
-                                <Link to={`/admin/talents/${ticket.user_id}`} className="text-[10px] font-bold text-brand-primary hover:underline flex items-center gap-1">
+                                <Link to={getInternalPath(`/admin/talents/${ticket.user_id}`)} className="text-[10px] font-bold text-brand-primary hover:underline flex items-center gap-1">
                                     PROFILE <ExternalLink className="h-2.5 w-2.5" />
                                 </Link>
                             </div>

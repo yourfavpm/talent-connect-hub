@@ -4,7 +4,7 @@ import { getCurrentZone, Zone } from "@/utils/subdomain";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { FEATURES } from "@/config/features";
 import { useVettingVersion } from "./hooks/useVettingVersion";
@@ -195,6 +195,15 @@ const AdminVettingWorkspaceRouter = () => {
   const { version, isLoading } = useVettingVersion();
   if (isLoading) return <div className="min-h-screen flex items-center justify-center text-slate-400">Loading...</div>;
   return version === "v2" ? <VettingWorkspaceV2 /> : <VettingWorkspace />;
+};
+
+const PortalPrefixRedirect = ({ prefix }: { prefix: string }) => {
+  const location = useLocation();
+  const nextPath = location.pathname.startsWith(prefix)
+    ? location.pathname.slice(prefix.length) || "/"
+    : "/";
+
+  return <Navigate to={`${nextPath}${location.search}${location.hash}`} replace />;
 };
 
 
@@ -528,6 +537,7 @@ const App = () => {
                             <Route path="audit" element={<SettingsAuditLog />} />
                           </Route>
                         </Route>
+                        <Route path="admin/*" element={<PortalPrefixRedirect prefix="/admin" />} />
                       </>
                     )}
                     

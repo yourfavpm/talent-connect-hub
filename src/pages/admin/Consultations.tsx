@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { getInternalPath } from "@/utils/subdomain";
 import {
     Table,
     TableBody,
@@ -207,7 +208,7 @@ const AdminConsultations = () => {
                                 <TableRow 
                                     key={c.id} 
                                     className="group cursor-pointer hover:bg-gray-50/50 transition-colors border-gray-50 last:border-0"
-                                    onClick={() => navigate(`/admin/consultations/${c.id}`)}
+                                    onClick={() => navigate(getInternalPath(`/admin/consultations/${c.id}`))}
                                 >
                                     <TableCell className="pl-6 py-4">
                                         <div className="flex flex-col gap-0.5">

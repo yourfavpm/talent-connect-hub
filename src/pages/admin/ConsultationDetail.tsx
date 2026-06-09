@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { getInternalPath } from "@/utils/subdomain";
 import {
     Sheet,
     SheetContent,
@@ -161,9 +162,9 @@ const AdminConsultationDetail = () => {
             toast.success("Lead converted to client!");
             
             if (clientForm.create_job) {
-                navigate(`/admin/clients/${(client as any).id}?action=create_job`);
+                navigate(getInternalPath(`/admin/clients/${(client as any).id}?action=create_job`));
             } else {
-                navigate(`/admin/clients/${(client as any).id}`);
+                navigate(getInternalPath(`/admin/clients/${(client as any).id}`));
             }
 
         } catch (error: any) {
@@ -196,7 +197,7 @@ const AdminConsultationDetail = () => {
             {/* Header */}
             <div className="flex justify-between items-center border-b border-gray-100 pb-6">
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => navigate("/admin/consultations")} className="h-8 w-8 text-gray-400">
+                    <Button variant="ghost" size="icon" onClick={() => navigate(getInternalPath("/admin/consultations"))} className="h-8 w-8 text-gray-400">
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <div>
@@ -288,7 +289,7 @@ const AdminConsultationDetail = () => {
                             size="sm" 
                             variant="secondary" 
                             className="h-9 bg-emerald-50 text-emerald-700 font-bold border-emerald-100"
-                            onClick={() => navigate(`/admin/clients/${lead.converted_client_id}`)}
+                            onClick={() => navigate(getInternalPath(`/admin/clients/${lead.converted_client_id}`))}
                         >
                             View Client <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>

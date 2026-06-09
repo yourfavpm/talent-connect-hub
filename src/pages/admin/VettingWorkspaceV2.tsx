@@ -25,6 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getBrandedEmailHtml } from "@/utils/getEmailBranding";
+import { getInternalPath } from "@/utils/subdomain";
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -557,7 +558,7 @@ const VettingWorkspaceV2 = () => {
     <div className="space-y-6 w-full max-w-none px-6 lg:px-10 pb-20 font-inter">
       {/* ── Back button ─────────────────────────────────────────── */}
       <div className="flex items-center justify-between pt-6">
-        <Button variant="ghost" onClick={() => navigate("/admin/vetting")} className="gap-2 text-slate-500 hover:text-slate-900 border border-slate-200 bg-white rounded-lg">
+        <Button variant="ghost" onClick={() => navigate(getInternalPath("/admin/vetting"))} className="gap-2 text-slate-500 hover:text-slate-900 border border-slate-200 bg-white rounded-lg">
           <ChevronLeft className="h-4 w-4" /> Back to Queue
         </Button>
       </div>
@@ -593,7 +594,7 @@ const VettingWorkspaceV2 = () => {
           <div className="flex flex-wrap items-center gap-4">
             <Button 
                 variant="outline" 
-                onClick={() => navigate(`/admin/talents/${id}`)} 
+                onClick={() => navigate(getInternalPath(`/admin/talents/${id}`))} 
                 className="h-11 px-6 rounded-lg font-bold border-slate-200 text-indigo-600 hover:bg-indigo-50"
             >
               View Talent Profile

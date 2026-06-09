@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import TalentActionsDrawers from "./components/TalentActionsDrawers";
+import { getInternalPath } from "@/utils/subdomain";
 
 interface TalentData {
   id: string; // Legacy talents table ID
@@ -85,21 +86,51 @@ const AdminTalentProfileView = () => {
     if (!id) return;
     setLoading(true);
     try {
-      const { data: profile, error: pError } = await supabase
+      const profileLookupFilter = [`id.eq.${id}`, `user_id.eq.${id}`, `talent_id.eq.${id}`].join(",");
+      let { data: profile, error: pError } = await supabase
         .from("v2_talent_profiles")
         .select(`
           *,
           talents:user_id (*),
           profiles:user_id (heard_from)
         `)
-        .eq("id", id)
-        .single();
+        .or(profileLookupFilter)
+        .maybeSingle();
+
+      if (!profile) {
+        const { data: talentRecord } = await supabase
+          .from("talents")
+          .select("user_id, talent_id")
+          .or(profileLookupFilter)
+          .maybeSingle();
+
+        if (talentRecord?.user_id || talentRecord?.talent_id) {
+          const fallbackFilters = [
+            talentRecord.user_id ? `user_id.eq.${talentRecord.user_id}` : null,
+            talentRecord.talent_id ? `talent_id.eq.${talentRecord.talent_id}` : null,
+          ].filter(Boolean).join(",");
+
+          const fallback = await supabase
+            .from("v2_talent_profiles")
+            .select(`
+              *,
+              talents:user_id (*),
+              profiles:user_id (heard_from)
+            `)
+            .or(fallbackFilters)
+            .maybeSingle();
+
+          profile = fallback.data;
+          pError = fallback.error;
+        }
+      }
 
       if (pError) throw pError;
+      if (!profile) throw new Error("Talent profile not found");
       const pData = profile as ProfileData;
       if (userRole === "talent_manager" && pData.talent_manager_admin_id !== user?.id) {
         toast.error("You can only access talents assigned to you.");
-        navigate("/admin/my-talents");
+        navigate(getInternalPath("/admin/my-talents"));
         return;
       }
       setTp(pData);
@@ -212,7 +243,7 @@ const AdminTalentProfileView = () => {
              <Ban className="h-4 w-4" /> {tp.is_suspended ? "Unsuspend" : "Suspend"}
            </Button>
            <Button asChild className="h-11 rounded-xl shadow-lg shadow-indigo-500/10 bg-indigo-600 hover:bg-indigo-700 gap-2 font-bold uppercase tracking-widest text-[11px]">
-             <Link to={`/admin/vetting/${tp.id}`}>
+             <Link to={getInternalPath(`/admin/vetting/${tp.id}`)}>
                <ShieldCheck className="h-4 w-4" /> Open in Vetting
              </Link>
            </Button>

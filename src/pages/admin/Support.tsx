@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { getInternalPath } from "@/utils/subdomain";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -310,7 +311,7 @@ const AdminSupport = () => {
                                 <TableRow 
                                     key={ticket.id} 
                                     className={`group cursor-pointer border-b border-gray-50 hover:bg-gray-50/80 transition-colors ${ticket.unread_by_admin ? 'bg-blue-50/30' : ''}`}
-                                    onClick={() => navigate(`/admin/support/${ticket.id}`)}
+                                    onClick={() => navigate(getInternalPath(`/admin/support/${ticket.id}`))}
                                 >
                                     <TableCell className="pl-6 font-mono text-[11px] text-gray-500">
                                         <div className="flex items-center gap-2">
