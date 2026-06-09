@@ -40,6 +40,16 @@ const AdminOfferConfig = () => {
     const [contractDuration, setContractDuration] = useState<string>("");
     const [workingArrangement, setWorkingArrangement] = useState<string>("remote");
     const [expectedWeeklyHours, setExpectedWeeklyHours] = useState<number | null>(null);
+    const [currency, setCurrency] = useState<string>("USD");
+
+    const getCurrencySymbol = (code: string) => {
+        const symbols: Record<string, string> = {
+            USD: '$', CAD: 'CA$', GBP: '£', EUR: '€',
+            GHS: 'GH₵', NGN: '₦', KES: 'KSh', ZAR: 'R'
+        };
+        return symbols[code] || '$';
+    };
+    const currencySymbol = getCurrencySymbol(currency);
 
     // ========== CLIENT CONTRACT CONFIGURATION ==========
     const [clientCompensationType, setClientCompensationType] = useState<string>("hourly");
@@ -212,6 +222,7 @@ const AdminOfferConfig = () => {
             setJobDescription(data.jobs?.description || '');
             setClientBillingAmount(data.client_gross_amount || data.hourly_rate || 0);
             setContractStartDate(data.start_date || '');
+            if (data.preferred_currency) setCurrency(data.preferred_currency);
             if (data.expected_weekly_hours) setExpectedWeeklyHours(data.expected_weekly_hours);
 
         } catch (error) {
@@ -239,6 +250,7 @@ const AdminOfferConfig = () => {
             workingArrangement: workingArrangement,
             expectedWeeklyHours: expectedWeeklyHours?.toString() || 'Not specified',
             timeTrackingRequired: timeTrackingRequired ? 'Yes' : 'No',
+            currencySymbol,
             overtimeClause: overtimeEnabled
                 ? `<p><strong>Overtime:</strong> Hours exceeding ${expectedWeeklyHours}/week billed at 1.5× rate.</p>`
                 : '',
@@ -266,6 +278,7 @@ const AdminOfferConfig = () => {
             duration: contractDuration || 'Ongoing',
             workingArrangement: workingArrangement,
             timeTrackingRequired: timeTrackingRequired ? 'Yes' : 'No',
+            currencySymbol,
             overtimeClause: overtimeEnabled
                 ? `<p><strong>Overtime:</strong> Hours exceeding ${expectedWeeklyHours}/week paid at 1.5× rate.</p>`
                 : '',
@@ -317,7 +330,8 @@ const AdminOfferConfig = () => {
                 duration: contractDuration || 'Ongoing',
                 workingArrangement: workingArrangement,
                 expectedWeeklyHours: expectedWeeklyHours?.toString() || 'Not specified',
-                timeTrackingRequired: timeTrackingRequired ? 'Yes' : 'No'
+                timeTrackingRequired: timeTrackingRequired ? 'Yes' : 'No',
+                currencySymbol
             };
 
             const clientTerms = generateContractContent(clientContractTemplate, {
@@ -389,7 +403,8 @@ const AdminOfferConfig = () => {
 
                 // Status
                 status: 'pending',
-                created_by: (await supabase.auth.getUser()).data.user?.id
+                created_by: (await supabase.auth.getUser()).data.user?.id,
+                currency: currency
             });
 
             if (error) throw error;
@@ -397,7 +412,7 @@ const AdminOfferConfig = () => {
             // Update offer status to contract_generated
             const { error: offerError } = await supabase
                 .from('offers')
-                .update({ status: 'contract_generated' })
+                .update({ status: 'contract_generated', currency: currency })
                 .eq('id', offerId);
 
             if (offerError) console.error('Error updating offer status:', offerError);
@@ -511,6 +526,25 @@ const AdminOfferConfig = () => {
                                 onChange={(e) => setJobTitle(e.target.value)}
                                 placeholder="e.g. Senior Frontend Developer"
                             />
+                        </div>
+
+                        <div className="space-y-3">
+                            <Label>Currency</Label>
+                            <Select value={currency} onValueChange={setCurrency}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="USD">USD ($)</SelectItem>
+                                    <SelectItem value="CAD">CAD (CA$)</SelectItem>
+                                    <SelectItem value="GBP">GBP (£)</SelectItem>
+                                    <SelectItem value="EUR">EUR (€)</SelectItem>
+                                    <SelectItem value="GHS">GHS (GH₵)</SelectItem>
+                                    <SelectItem value="NGN">NGN (₦)</SelectItem>
+                                    <SelectItem value="KES">KES (KSh)</SelectItem>
+                                    <SelectItem value="ZAR">ZAR (R)</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-3">
@@ -632,7 +666,7 @@ const AdminOfferConfig = () => {
                                 Billing Amount ({clientCompensationType})
                             </Label>
                             <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{currencySymbol}</span>
                                 <Input
                                     type="number"
                                     value={clientBillingAmount}
@@ -690,7 +724,7 @@ const AdminOfferConfig = () => {
                                     <div className="text-sm">
                                         <p className="font-semibold text-amber-900">Full Time Hire - One-Time Invoice</p>
                                         <p className="text-amber-700 mt-1">
-                                            Placement Fee: <span className="font-bold">${placementFee.toFixed(2)}</span> (10-15% of {clientCompensationType === 'annual' ? 'annual' : 'annual equivalent'})
+                                            Placement Fee: <span className="font-bold">{currencySymbol}{placementFee.toFixed(2)}</span> (10-15% of {clientCompensationType === 'annual' ? 'annual' : 'annual equivalent'})
                                         </p>
                                     </div>
                                 </div>
@@ -733,7 +767,7 @@ const AdminOfferConfig = () => {
                         <div className="p-4 bg-white border border-green-200 rounded-lg space-y-3">
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-muted-foreground">Client Gross:</span>
-                                <span className="font-mono font-semibold">${clientBillingAmount.toFixed(2)}</span>
+                                <span className="font-mono font-semibold">{currencySymbol}{clientBillingAmount.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-muted-foreground">OpslyHR Margin:</span>
@@ -743,7 +777,7 @@ const AdminOfferConfig = () => {
                             <div className="flex justify-between items-center">
                                 <span className="text-sm font-semibold text-green-700">Talent Net Rate:</span>
                                 <span className="font-mono font-bold text-lg text-green-700">
-                                    ${talentNetRate.toFixed(2)}
+                                    {currencySymbol}{talentNetRate.toFixed(2)}
                                 </span>
                             </div>
                         </div>

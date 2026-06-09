@@ -24,7 +24,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useReactToPrint } from "react-to-print";
-import { sendTalentContractSignedEmail, sendAdminContractFullySignedEmail } from "@/lib/email/triggers";
+import { sendTalentContractSignedEmail, sendAdminContractFullySignedEmail, sendTalentContractActiveEmail, sendClientContractActiveEmail } from "@/lib/email/triggers";
 import SignatureCanvas from "react-signature-canvas";
 import { v4 as uuidv4 } from "uuid";
 import jsPDF from "jspdf";
@@ -302,7 +302,7 @@ const TalentContracts = () => {
                 console.error('Error sending email:', emailError);
             }
 
-            // Check if client has already signed, if so send admin notification
+            // Check if client has already signed, if so send admin notification AND active emails
             if (selectedContract?.client_signed_at) {
                 try {
                     const { data: adminUsers } = await supabase
@@ -327,14 +327,57 @@ const TalentContracts = () => {
                             });
                         }
                     }
+
+                    // Send ACTIVE email to Talent
+                    await sendTalentContractActiveEmail({
+                        talentEmail: user.email || '',
+                        talentName: user.user_metadata?.first_name || 'Talent',
+                        clientName: selectedContract?.clientName || 'Client',
+                        contractId: selectedContract?.contract_number || contractId,
+                        jobTitle: selectedContract?.role || 'Role',
+                        rate: selectedContract?.rate || 'Rate',
+                        startDate: selectedContract?.startDate || new Date().toISOString(),
+                        pdfUrl: pdfUrl || undefined
+                    });
+
+                    // Fetch Client Email and send ACTIVE email to Client
+                    const { data: clientData } = await supabase
+                        .from('clients')
+                        .select('user_id')
+                        .eq('id', selectedContract.client_id)
+                        .single();
+                        
+                    if (clientData?.user_id) {
+                        const { data: clientProfile } = await supabase
+                            .from('profiles')
+                            .select('email')
+                            .eq('id', clientData.user_id)
+                            .single();
+                            
+                        if (clientProfile?.email) {
+                            await sendClientContractActiveEmail({
+                                clientEmail: clientProfile.email,
+                                clientName: selectedContract?.clientName || 'Client',
+                                talentName: user.user_metadata?.first_name || 'Talent',
+                                contractId: selectedContract?.contract_number || contractId,
+                                jobTitle: selectedContract?.role || 'Role',
+                                rate: selectedContract?.rate || 'Rate',
+                                startDate: selectedContract?.startDate || new Date().toISOString(),
+                                pdfUrl: pdfUrl || undefined
+                            });
+                        }
+                    }
+
                 } catch (emailError) {
-                    console.error('Error sending admin notification:', emailError);
+                    console.error('Error sending active/admin notifications:', emailError);
                 }
             }
 
             toast({
                 title: "Success",
-                description: "Contract signed successfully",
+                description: selectedContract?.client_signed_at 
+                    ? "Contract fully executed." 
+                    : "Contract signed successfully. Awaiting client signature.",
             });
 
             setSignDialogOpen(false);

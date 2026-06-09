@@ -724,12 +724,46 @@ export const sendTalentContractSignedEmail = async (talent: {
         templateKey: 'talent_contract_signed',
         variables: {
             contract_id: talent.contractId,
-            professional_name: talent.talentName,
-            company_name: talent.clientName,
+            talent_name: talent.talentName,
+            client_name: talent.clientName,
             job_title: talent.jobTitle,
             rate: talent.rate,
             start_date: talent.startDate || '',
             first_payment_date: talent.startDate || '', // We default this to startDate if not available
+            employee_link: `${TALENT_URL}/contracts`,
+        },
+        attachments: talent.pdfUrl ? [{
+            filename: `Contract_${talent.contractId}.pdf`,
+            path: talent.pdfUrl
+        }] : undefined
+    });
+};
+
+/**
+ * Send talent contract ACTIVE email (both signed)
+ */
+export const sendTalentContractActiveEmail = async (talent: {
+    talentEmail: string;
+    talentName: string;
+    clientName: string;
+    contractId: string;
+    jobTitle: string;
+    rate: string;
+    startDate?: string;
+    pdfUrl?: string;
+}) => {
+    await queueEmail({
+        to: talent.talentEmail,
+        toName: talent.talentName,
+        templateKey: 'talent_contract_active',
+        variables: {
+            contract_id: talent.contractId,
+            talent_name: talent.talentName,
+            client_name: talent.clientName,
+            job_title: talent.jobTitle,
+            rate: talent.rate,
+            start_date: talent.startDate || '',
+            first_payment_date: talent.startDate || '',
             employee_link: `${TALENT_URL}/contracts`,
         },
         attachments: talent.pdfUrl ? [{
@@ -1211,8 +1245,42 @@ export const sendClientContractSignedEmail = async (contract: {
         templateKey: 'client_contract_signed',
         variables: {
             contract_id: contract.contractId,
-            professional_name: contract.talentName,
-            company_name: contract.clientName,
+            talent_name: contract.talentName,
+            client_name: contract.clientName,
+            job_title: contract.jobTitle,
+            rate: contract.rate,
+            start_date: contract.startDate || '',
+            first_payment_date: contract.startDate || '',
+            employee_link: `${CLIENT_URL}/contracts`,
+        },
+        attachments: contract.pdfUrl ? [{
+            filename: `Contract_${contract.contractId}.pdf`,
+            path: contract.pdfUrl
+        }] : undefined
+    });
+};
+
+/**
+ * Send client contract ACTIVE email (both signed)
+ */
+export const sendClientContractActiveEmail = async (contract: {
+    clientEmail: string;
+    clientName: string;
+    talentName: string;
+    contractId: string;
+    jobTitle: string;
+    rate: string;
+    startDate?: string;
+    pdfUrl?: string;
+}) => {
+    await queueEmail({
+        to: contract.clientEmail,
+        toName: contract.clientName,
+        templateKey: 'client_contract_active',
+        variables: {
+            contract_id: contract.contractId,
+            talent_name: contract.talentName,
+            client_name: contract.clientName,
             job_title: contract.jobTitle,
             rate: contract.rate,
             start_date: contract.startDate || '',

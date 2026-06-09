@@ -5,14 +5,14 @@ export const CONTRACT_TEMPLATES = {
       <h2>Master Service Agreement</h2>
       <p>This Master Service Agreement ("Agreement") is entered into between:</p>
       <ul>
-        <li><strong>Taskive Technologies Ltd</strong> ("Taskive")</li>
+        <li><strong>OpslyHR Technologies Ltd</strong> ("OpslyHR")</li>
         <li><strong>{{clientCompany}}</strong> ("Client")</li>
       </ul>
       <h3>Purpose</h3>
-      <p>This Agreement governs all talent sourcing, engagement, and operational services provided by Taskive to the Client.</p>
+      <p>This Agreement governs all talent sourcing, engagement, and operational services provided by OpslyHR to the Client.</p>
       <h3>Key Clauses</h3>
       <ul>
-        <li><strong>Scope of Services:</strong> Taskive provides sourcing, vetting, and administrative management of remote talent.</li>
+        <li><strong>Scope of Services:</strong> OpslyHR provides sourcing, vetting, and administrative management of remote talent.</li>
         <li><strong>Confidentiality:</strong> Both parties agree to maintain confidentiality of proprietary information.</li>
         <li><strong>Intellectual Property:</strong> All work product created by Talent for Client belongs to Client.</li>
         <li><strong>Liability:</strong> OpslyHR's liability is limited to fees paid in the prior 3 months.</li>
@@ -36,7 +36,7 @@ export const CONTRACT_TEMPLATES = {
         </ul>
         
         <h3>Employment Relationship</h3>
-        <p>Upon hire, the Talent becomes an employee of the Client. Taskive has no employment obligations post-placement.</p>
+        <p>Upon hire, the Talent becomes an employee of the Client. OpslyHR has no employment obligations post-placement.</p>
       `
         },
         TRIAL_TO_HIRE: {
@@ -113,7 +113,7 @@ export const CONTRACT_TEMPLATES = {
             title: "Engagement Completion & Transition Notice",
             content: `
         <h2>Employment Transition Notice</h2>
-        <p>This document confirms the conclusion of Taskive's engagement with {{talentName}} following successful placement with {{clientCompany}}.</p>
+        <p>This document confirms the conclusion of OpslyHR's engagement with {{talentName}} following successful placement with {{clientCompany}}.</p>
         <p>The Talent becomes a direct employee of the Client effective {{startDate}}.</p>
       `
         }
