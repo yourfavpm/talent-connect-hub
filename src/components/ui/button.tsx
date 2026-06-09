@@ -10,12 +10,12 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-brand-primary text-white hover:bg-brand-primary/90",
-        destructive: "bg-status-error text-white hover:bg-status-error/90",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline: "border border-gray-300 bg-transparent text-gray-800 hover:bg-gray-50",
         secondary: "border border-gray-300 bg-white text-gray-800 hover:bg-gray-50",
         ghost: "hover:bg-gray-100 hover:text-gray-900",
         link: "text-brand-primary underline-offset-4 hover:underline",
-        success: "bg-status-success text-white hover:bg-status-success/90",
+        success: "bg-green-600 text-white hover:bg-green-600/90",
       },
       size: {
         default: "h-11 px-5 py-3",    /* 44px height */
