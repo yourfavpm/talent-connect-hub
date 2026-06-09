@@ -75,6 +75,12 @@ const TalentActionsDrawers = ({
     }
   };
 
+  useEffect(() => {
+    if (shortlistOpen) {
+      fetchActiveHireRequests();
+    }
+  }, [shortlistOpen]);
+
   const handleShortlist = async () => {
     if (!selectedHireRequestId) return;
     setShortlistLoading(true);
@@ -132,6 +138,7 @@ const TalentActionsDrawers = ({
 
   const fetchAdmins = async () => {
     try {
+      setLoading(true);
       // Fetch all admins and their roles using the new RBAC system
       const { data: adminsWithRoles, error: adminError } = await supabase
         .from("admin_users")
@@ -144,7 +151,9 @@ const TalentActionsDrawers = ({
               name
             )
           )
-        `);
+        `)
+        .eq("status", "active")
+        .order("full_name");
       
       if (adminError) throw adminError;
 
@@ -168,8 +177,16 @@ const TalentActionsDrawers = ({
     } catch (err: any) {
       console.error("Error fetching admins:", err);
       toast.error("Failed to load administrators: " + (err.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (assignOpen) {
+      fetchAdmins();
+    }
+  }, [assignOpen]);
 
   const handleAssignManager = async () => {
     setLoading(true);
@@ -284,10 +301,7 @@ const TalentActionsDrawers = ({
       </Sheet>
 
       {/* Assign Manager Drawer */}
-      <Sheet open={assignOpen} onOpenChange={(v) => {
-          setAssignOpen(v);
-          if (v) fetchAdmins();
-        }}>
+      <Sheet open={assignOpen} onOpenChange={setAssignOpen}>
         <SheetContent className="sm:max-w-md flex flex-col h-full p-0">
           <SheetHeader className="p-6 border-b border-slate-100">
             <SheetTitle className="flex items-center gap-2">
@@ -351,10 +365,7 @@ const TalentActionsDrawers = ({
       </Sheet>
 
       {/* Shortlist Drawer */}
-      <Sheet open={shortlistOpen} onOpenChange={(v) => {
-        setShortlistOpen(v);
-        if (v) fetchActiveHireRequests();
-      }}>
+      <Sheet open={shortlistOpen} onOpenChange={setShortlistOpen}>
         <SheetContent className="sm:max-w-md flex flex-col h-full p-0">
           <SheetHeader className="p-6 border-b border-slate-100">
             <SheetTitle className="flex items-center gap-2">
