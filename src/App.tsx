@@ -81,6 +81,7 @@ const ClientPayments = lazy(() => import("@/pages/client/Payments"));
 const ClientTimesheets = lazy(() => import("@/pages/client/Timesheets"));
 const Team = lazy(() => import("@/pages/client/Team"));
 const ClientSupport = lazy(() => import("@/pages/client/Support"));
+const ClientTicketDetail = lazy(() => import("@/pages/client/TicketDetail"));
 const ClientSettings = lazy(() => import("@/pages/client/Settings"));
 const HireRequestsList = lazy(() => import("@/pages/client/HireRequests/HireRequestsList"));
 const CreateHireRequest = lazy(() => import("@/pages/client/HireRequests/CreateHireRequest"));
@@ -428,6 +429,7 @@ const App = () => {
                           <Route path="messages" element={<ClientMessages />} />
                           <Route path="subscription" element={<ClientSubscription />} />
                           <Route path="support" element={<ClientSupport />} />
+                          <Route path="support/:id" element={<ClientTicketDetail />} />
                           <Route path="settings" element={<ClientSettings />} />
                         </Route>
                       </>

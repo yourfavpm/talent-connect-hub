@@ -8,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Send, User, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { notifyUser } from "@/utils/notifications";
+import { useAuth } from "@/hooks/useAuth";
+import { sendSupportRepliedEmail } from "@/lib/email/triggers";
 
 interface SupportThreadProps {
     ticketId: string;
@@ -26,6 +28,7 @@ interface Reply {
 
 const SupportThread = ({ ticketId, isAdmin = false, currentUserId, ticketOwnerId }: SupportThreadProps) => {
     const { toast } = useToast();
+    const { user } = useAuth();
     const [replies, setReplies] = useState<Reply[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const [sending, setSending] = useState(false);
@@ -111,6 +114,19 @@ const SupportThread = ({ ticketId, isAdmin = false, currentUserId, ticketOwnerId
                         "support",
                         `/talent/support/${ticketId}`
                     );
+                } else if (!isAdmin) {
+                    // User replied, notify admin
+                    try {
+                        await sendSupportRepliedEmail({
+                            email: user?.email || '',
+                            ticketId: ticketId,
+                            isTalent: window.location.pathname.includes('/talent/'),
+                            isAdminReply: false,
+                            replyContent: newMessage
+                        });
+                    } catch (e) {
+                        console.error("Failed to send admin notification", e);
+                    }
                 }
             }
 

@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import SEO from "@/components/SEO";
+import { sendNewConsultationEmail } from "@/lib/email/triggers";
 
 const BookConsultation = () => {
     const { toast } = useToast();
@@ -47,6 +48,19 @@ const BookConsultation = () => {
             } as any);
 
             if (error) throw error;
+
+            try {
+                await sendNewConsultationEmail({
+                    name: `${formData.firstName} ${formData.lastName}`,
+                    email: formData.email,
+                    company: formData.company,
+                    objective: formData.objective,
+                    date: formData.preferredDate,
+                    message: formData.details
+                });
+            } catch (e) {
+                console.error("Failed to send consultation email notification", e);
+            }
 
             setSubmitted(true);
         } catch (error: unknown) {

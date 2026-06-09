@@ -19,8 +19,8 @@ import {
   ArrowLeft,
   Paperclip,
   CheckCircle2
-} from "lucide-react";
 import { notifyUser } from "@/utils/notifications";
+import { sendSupportTicketCreatedEmail } from "@/lib/email/triggers";
 
 const categories = [
   { value: "payment", label: "Payment & Invoicing" },
@@ -95,6 +95,18 @@ const SupportTicketForm = () => {
         "support",
         `/talent/support/${data.id}`
       );
+
+      try {
+          await sendSupportTicketCreatedEmail({
+              email: user.email || '',
+              ticketId: data.id,
+              isTalent: true,
+              subject: formData.subject,
+              description: formData.description
+          });
+      } catch (e) {
+          console.error("Failed to send support ticket email", e);
+      }
 
       toast({
         title: "Support ticket created.",

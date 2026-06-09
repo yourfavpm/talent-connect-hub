@@ -110,7 +110,7 @@ export const ShortlistTab = ({ applications, onRequestInterview, onInitiateOffer
                       className={isOfferPending ? "bg-gray-100 text-gray-400" : "bg-gray-900 text-white hover:bg-gray-800"}
                     >
                       <FilePenLine className="w-4 h-4 mr-2" />
-                      Generate Offer
+                      Send Offer
                     </Button>
                   )}
                   

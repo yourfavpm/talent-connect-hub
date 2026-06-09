@@ -57,7 +57,6 @@ interface TicketRecord {
         email: string;
         first_name: string;
         last_name: string;
-        role: string;
     };
 }
 
@@ -120,7 +119,7 @@ const AdminSupportDetail = () => {
                 .from("support_tickets") as any)
                 .select(`
                     *,
-                    user:profiles (id, email, first_name, last_name, role)
+                    user:profiles (id, email, first_name, last_name)
                 `)
                 .eq("id", id)
                 .single();
@@ -180,10 +179,13 @@ const AdminSupportDetail = () => {
             // Trigger Email to User
             try {
                 if (ticket?.user?.email) {
+                    const { data: talentData } = await supabase.from('talents').select('id').eq('id', ticket.user_id).single();
+                    const isTalent = !!talentData;
+
                     await sendSupportRepliedEmail({
                         email: ticket.user.email,
                         ticketId: ticket.id,
-                        isTalent: ticket.user.role === 'talent'
+                        isTalent: isTalent
                     });
                 }
             } catch (emailErr) {

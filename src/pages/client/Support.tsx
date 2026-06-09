@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { sendSupportTicketCreatedEmail } from "@/lib/email/triggers";
 import {
     MessageSquare,
     Plus,
@@ -39,6 +41,7 @@ export default function Support() {
     const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const navigate = useNavigate();
     const [newTicket, setNewTicket] = useState({
         subject: "",
         description: "",
@@ -82,16 +85,30 @@ export default function Support() {
 
         setSubmitting(true);
         try {
-            const { error } = await supabase.from("support_tickets").insert({
+            const { data, error } = await supabase.from("support_tickets").insert({
                 user_id: user.id,
                 subject: newTicket.subject,
                 description: newTicket.description,
                 category: newTicket.category as any,
                 priority: newTicket.priority,
                 status: "open",
-            });
+            }).select();
 
             if (error) throw error;
+
+            if (data && data[0]) {
+                 try {
+                     await sendSupportTicketCreatedEmail({
+                         email: user.email || '',
+                         ticketId: data[0].id,
+                         isTalent: false,
+                         subject: newTicket.subject,
+                         description: newTicket.description
+                     });
+                 } catch (e) {
+                     console.error("Failed to send support email", e);
+                 }
+            }
 
             toast({
                 title: "Ticket Created",
@@ -227,7 +244,7 @@ export default function Support() {
                         </div>
                     ) : (
                         openTickets.map((ticket) => (
-                            <TicketCard key={ticket.id} ticket={ticket} getStatusBadge={getStatusBadge} />
+                            <TicketCard key={ticket.id} ticket={ticket} getStatusBadge={getStatusBadge} onClick={() => navigate(`/client/support/${ticket.id}`)} />
                         ))
                     )}
                 </TabsContent>
@@ -239,7 +256,7 @@ export default function Support() {
                         </div>
                     ) : (
                         resolvedTickets.map((ticket) => (
-                            <TicketCard key={ticket.id} ticket={ticket} getStatusBadge={getStatusBadge} />
+                            <TicketCard key={ticket.id} ticket={ticket} getStatusBadge={getStatusBadge} onClick={() => navigate(`/client/support/${ticket.id}`)} />
                         ))
                     )}
                 </TabsContent>
@@ -248,8 +265,8 @@ export default function Support() {
     );
 }
 
-const TicketCard = ({ ticket, getStatusBadge }: { ticket: any, getStatusBadge: any }) => (
-    <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer">
+const TicketCard = ({ ticket, getStatusBadge, onClick }: { ticket: any, getStatusBadge: any, onClick: () => void }) => (
+    <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer" onClick={onClick}>
         <div className="flex justify-between items-start">
             <div className="flex items-start gap-4">
                 <div className="mt-1 bg-primary/10 p-2 rounded-lg">
