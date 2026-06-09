@@ -19,6 +19,7 @@ import {
   ArrowLeft,
   Paperclip,
   CheckCircle2
+} from "lucide-react";
 import { notifyUser } from "@/utils/notifications";
 import { sendSupportTicketCreatedEmail } from "@/lib/email/triggers";
 

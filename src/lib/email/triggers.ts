@@ -886,27 +886,27 @@ export const sendNewConsultationEmail = async (consultation: {
     await queueEmail({
         to: 'info@opslyhr.com',
         toName: 'OpslyHR Team',
-        subject: \`New Consultation Booked: \${consultation.name}\`,
-        htmlTemplate: \`
+        subject: `New Consultation Booked: ${consultation.name}`,
+        htmlTemplate: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
             <h2 style="color: #0f172a;">New Consultation Request</h2>
             <p>A new consultation has been booked on the website.</p>
             <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Name:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">\${consultation.name}</td></tr>
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">\${consultation.email}</td></tr>
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Company:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">\${consultation.company || 'N/A'}</td></tr>
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Objective:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">\${consultation.objective || 'N/A'}</td></tr>
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Preferred Date:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">\${consultation.date || 'Flexible'}</td></tr>
+              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Name:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${consultation.name}</td></tr>
+              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${consultation.email}</td></tr>
+              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Company:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${consultation.company || 'N/A'}</td></tr>
+              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Objective:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${consultation.objective || 'N/A'}</td></tr>
+              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Preferred Date:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${consultation.date || 'Flexible'}</td></tr>
             </table>
             <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 15px 0;">
                <p style="margin: 0 0 5px; font-size: 12px; color: #64748b; font-weight: bold; text-transform: uppercase;">Message</p>
-               <p style="margin: 0; color: #334155; white-space: pre-wrap;">\${consultation.message || 'No additional message.'}</p>
+               <p style="margin: 0; color: #334155; white-space: pre-wrap;">${consultation.message || 'No additional message.'}</p>
             </div>
             <div style="margin-top: 20px;">
-              <a href="\${ADMIN_URL}/consultations" style="display: inline-block; padding: 10px 20px; background-color: #0f172a; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">View in Admin Portal</a>
+              <a href="${ADMIN_URL}/consultations" style="display: inline-block; padding: 10px 20px; background-color: #0f172a; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">View in Admin Portal</a>
             </div>
           </div>
-        \`
+        `
     });
 };
 
