@@ -253,8 +253,7 @@ const Pricing = () => {
                                 </ul>
                                 <div className="pt-6 border-t border-slate-100">
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Pricing</div>
-                                    <p className="font-bold text-slate-900">Trial setup fee + placement fee upon conversion</p>
-                                    <p className="font-bold text-slate-900 mt-1">Monthly trial management fee (if applicable)</p>
+                                    <p className="font-bold text-slate-900">$500 - $2000 + conversion fee</p>
                                 </div>
                             </div>
                         </div>
@@ -287,8 +286,7 @@ const Pricing = () => {
                                 </ul>
                                 <div className="pt-6 border-t border-slate-200">
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Pricing</div>
-                                    <p className="font-bold text-slate-900">Setup fee per hire or team build</p>
-                                    <p className="font-bold text-slate-900 mt-1">Monthly management fee per staff member or bundled team plan</p>
+                                    <p className="font-bold text-slate-900">$800 - $4,000</p>
                                 </div>
                             </div>
                         </div>
