@@ -98,7 +98,7 @@ const AdminOfferConfig = () => {
             // Trial-to-Hire / Contract: 20% margin
             const margin = (clientBillingAmount * 20) / 100;
             setPlacementFee(0);
-            setTaskiveMargin(20);
+            setOpslyhrMargin(20);
             setTalentNetRate(clientBillingAmount - margin);
         }
     }, [clientBillingAmount, serviceModel, clientCompensationType]);
@@ -372,7 +372,7 @@ const AdminOfferConfig = () => {
                 hourly_rate: clientBillingAmount,
                 client_gross_amount: clientBillingAmount,
                 talent_rate: talentNetRate,
-                taskive_margin: taskiveMargin,
+                taskive_margin: opslyhrMargin,
 
                 // Talent payment configuration
                 talent_payment_frequency: talentPaymentFrequency,
@@ -709,7 +709,7 @@ const AdminOfferConfig = () => {
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-muted-foreground">OpslyHR Margin:</span>
-                                <span className="font-mono">{taskiveMargin}%</span>
+                                <span className="font-mono">{opslyhrMargin}%</span>
                             </div>
                             <div className="h-px bg-green-200"></div>
                             <div className="flex justify-between items-center">
