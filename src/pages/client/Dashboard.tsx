@@ -16,6 +16,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { getInternalPath } from "@/utils/subdomain";
+import { cn } from "@/lib/utils";
 
 const ClientDashboard = () => {
   const [client, setClient] = useState<any>(null);
@@ -70,7 +71,7 @@ const ClientDashboard = () => {
 
         // Only add client-specific queries if we actually found a client record
         if (clientData) {
-          queries.push(supabase.from("invoices").select("*", { count: "exact", head: true }).eq("client_id", clientData.id).eq("status", "outstanding"));
+          queries.push(supabase.from("invoices").select("*", { count: "exact", head: true }).eq("client_id", clientData.id).neq("status", "paid"));
           queries.push(supabase.from("offers").select("*", { count: "exact", head: true }).eq("client_id", clientData.id).eq("status", "pending"));
           queries.push(supabase.from("client_members").select("*", { count: "exact", head: true }).eq("client_id", clientData.id).eq("status", "active"));
           queries.push(supabase.from("timesheets").select("*, contracts!inner(client_id)", { count: "exact", head: true }).eq("contracts.client_id", clientData.id).eq("status", "submitted"));
