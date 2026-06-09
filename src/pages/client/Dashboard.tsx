@@ -120,7 +120,7 @@ const ClientDashboard = () => {
           // Fetch active contracts
           const { data: contracts } = await supabase
             .from("contracts")
-            .select("id, role_title, status, talents(first_name, last_name)")
+            .select("id, role_title, status, client_signed_at, talent_signed_at, documentUrl, talents(first_name, last_name)")
             .eq("client_id", clientData.id)
             .eq("status", "active")
             .limit(3);
@@ -284,10 +284,35 @@ const ClientDashboard = () => {
                       <p className="text-xs text-gray-500 mt-1">
                         Talent: {contract.talents?.first_name} {contract.talents?.last_name}
                       </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        {contract.client_signed_at && (
+                          <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                            ✓ Client Signed
+                          </span>
+                        )}
+                        {contract.talent_signed_at && (
+                          <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                            ✓ Talent Signed
+                          </span>
+                        )}
+                        {(contract.client_signed_at || contract.talent_signed_at) && (
+                           <span className="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100 font-script">
+                             ✓ OpslyHR Signature Added
+                           </span>
+                        )}
+                      </div>
                     </div>
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-normal capitalize">
-                      {contract.status}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-2">
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-normal capitalize">
+                        {contract.status}
+                      </Badge>
+                      {contract.documentUrl && (
+                        <a href={contract.documentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-primary hover:underline flex items-center">
+                          <FileText className="h-3 w-3 mr-1" />
+                          View PDF
+                        </a>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

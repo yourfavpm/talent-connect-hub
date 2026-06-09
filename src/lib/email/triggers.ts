@@ -711,8 +711,12 @@ export const sendClientContractAcceptedEmail = async (client: {
 export const sendTalentContractSignedEmail = async (talent: {
     talentEmail: string;
     talentName: string;
+    clientName: string;
     contractId: string;
+    jobTitle: string;
+    rate: string;
     startDate?: string;
+    pdfUrl?: string;
 }) => {
     await queueEmail({
         to: talent.talentEmail,
@@ -720,7 +724,39 @@ export const sendTalentContractSignedEmail = async (talent: {
         templateKey: 'talent_contract_signed',
         variables: {
             contract_id: talent.contractId,
+            professional_name: talent.talentName,
+            company_name: talent.clientName,
+            job_title: talent.jobTitle,
+            rate: talent.rate,
             start_date: talent.startDate || '',
+            first_payment_date: talent.startDate || '', // We default this to startDate if not available
+            employee_link: `${TALENT_URL}/contracts`,
+        },
+        attachments: talent.pdfUrl ? [{
+            filename: `Contract_${talent.contractId}.pdf`,
+            path: talent.pdfUrl
+        }] : undefined
+    });
+};
+
+/**
+ * Send talent contract ready notification
+ */
+export const sendTalentContractReadyEmail = async (talent: {
+    talentEmail: string;
+    talentName: string;
+    clientName: string;
+    jobTitle: string;
+}) => {
+    await queueEmail({
+        to: talent.talentEmail,
+        toName: talent.talentName,
+        templateKey: 'talent_contract_ready',
+        variables: {
+            talent_name: talent.talentName,
+            client_name: talent.clientName,
+            job_title: talent.jobTitle,
+            contract_link: `${TALENT_URL}/contracts`,
         },
     });
 };
@@ -1164,16 +1200,29 @@ export const sendClientContractSignedEmail = async (contract: {
     clientName: string;
     talentName: string;
     contractId: string;
+    jobTitle: string;
+    rate: string;
+    startDate?: string;
+    pdfUrl?: string;
 }) => {
     await queueEmail({
         to: contract.clientEmail,
         toName: contract.clientName,
         templateKey: 'client_contract_signed',
         variables: {
-            client_name: contract.clientName,
-            talent_name: contract.talentName,
             contract_id: contract.contractId,
+            professional_name: contract.talentName,
+            company_name: contract.clientName,
+            job_title: contract.jobTitle,
+            rate: contract.rate,
+            start_date: contract.startDate || '',
+            first_payment_date: contract.startDate || '',
+            employee_link: `${CLIENT_URL}/contracts`,
         },
+        attachments: contract.pdfUrl ? [{
+            filename: `Contract_${contract.contractId}.pdf`,
+            path: contract.pdfUrl
+        }] : undefined
     });
 };
 

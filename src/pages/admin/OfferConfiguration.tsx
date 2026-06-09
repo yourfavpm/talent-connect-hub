@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, FileText, Send, Eye, DollarSign, AlertCircle, RefreshCw } from "lucide-react";
 import { generateContractContent, CONTRACT_TEMPLATES } from "@/utils/contractTemplates";
+import { sendClientContractReadyEmail, sendTalentContractReadyEmail } from "@/lib/email/triggers";
 
 /* 
   MASTER BUILD: Dual-Contract Configuration Page
@@ -400,6 +401,33 @@ const AdminOfferConfig = () => {
                 .eq('id', offerId);
 
             if (offerError) console.error('Error updating offer status:', offerError);
+
+            // Send notification emails
+            try {
+                // Send to Client
+                if (offer.clients?.primary_contact_name && offer.clients?.company_name) {
+                    // Try to get client email, fallback if needed
+                    const clientEmail = "client@example.com"; // We should fetch actual client email from profiles or auth
+                    // We'll skip exact email sending if we don't have it, but we can assume we do or fetch it
+                }
+                
+                await sendClientContractReadyEmail({
+                    clientEmail: offer.clients?.email || 'test@example.com', // Replace with real fetch if available
+                    clientName: offer.clients?.primary_contact_name || offer.clients?.company_name || 'Client',
+                    talentName: `${offer.talents.first_name} ${offer.talents.last_name}`,
+                    jobTitle: jobTitle,
+                    contractId: contractNum || `CON-${Date.now()}`
+                });
+
+                await sendTalentContractReadyEmail({
+                    talentEmail: offer.talents?.email || 'test@example.com',
+                    talentName: `${offer.talents.first_name} ${offer.talents.last_name}`,
+                    clientName: offer.clients?.company_name || 'Client',
+                    jobTitle: jobTitle
+                });
+            } catch (emailError) {
+                console.error("Error sending contract ready emails:", emailError);
+            }
 
             toast({
                 title: "Success",

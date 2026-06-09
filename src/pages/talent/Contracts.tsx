@@ -19,11 +19,17 @@ import {
     Clock,
     AlertCircle,
     Pen,
+    ArrowRight,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useReactToPrint } from "react-to-print";
 import { sendTalentContractSignedEmail, sendAdminContractFullySignedEmail } from "@/lib/email/triggers";
+import SignatureCanvas from "react-signature-canvas";
+import { v4 as uuidv4 } from "uuid";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { Loader2 } from "lucide-react";
 
 interface Contract {
     id: string;
@@ -37,8 +43,8 @@ interface Contract {
     talent_contract_terms?: string;
     contract_number?: string;
     talent_signed_at?: string;
-    client_signed_at?: string;
     talent_signature_url?: string;
+    client_signature_url?: string;
 }
 
 const EmptyState = ({
@@ -120,8 +126,11 @@ const TalentContracts = () => {
     const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
     const [viewDialogOpen, setViewDialogOpen] = useState(false);
     const [signDialogOpen, setSignDialogOpen] = useState(false);
-    const [signature, setSignature] = useState("");
+    const [signMode, setSignMode] = useState<"draw" | "type">("type");
+    const [typedSignature, setTypedSignature] = useState("");
+    const sigCanvas = useRef<SignatureCanvas>(null);
     const [loading, setLoading] = useState(true);
+    const [isSigning, setIsSigning] = useState(false);
     const { toast } = useToast();
 
     const printRef = useRef<HTMLDivElement>(null);
@@ -165,6 +174,7 @@ const TalentContracts = () => {
                 talent_signed_at: contract.talent_signed_at,
                 client_signed_at: contract.client_signed_at,
                 talent_signature_url: contract.talent_signature_url,
+                client_signature_url: contract.client_signature_url,
             }));
 
             setContracts(formattedContracts);
@@ -185,37 +195,108 @@ const TalentContracts = () => {
     }, [user]);
 
 
-    const handleSign = async (contractId: string) => {
-        if (!signature.trim()) {
-            toast({
-                title: "Error",
-                description: "Please enter your signature",
-                variant: "destructive",
-            });
-            return;
-        }
-
+    const generateAndUploadPDF = async (contractId: string, currentContract: any) => {
+        if (!printRef.current) return null;
+        
         try {
-            const signatureUrl = `data:text/plain;base64,${btoa(signature)}`;
+            const canvas = await html2canvas(printRef.current, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+            });
+            
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'px',
+                format: [canvas.width, canvas.height]
+            });
+            
+            // Add watermark
+            pdf.setTextColor(230, 230, 230);
+            pdf.setFontSize(canvas.width / 10);
+            pdf.text("OpslyHR", canvas.width / 2, canvas.height / 2, { angle: 45, align: "center" });
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+            const pdfBlob = pdf.output('blob');
+
+            const fileName = `${contractId}-${uuidv4()}.pdf`;
+            const { data, error } = await supabase.storage
+                .from('contracts')
+                .upload(fileName, pdfBlob, {
+                    contentType: 'application/pdf',
+                    upsert: true
+                });
+
+            if (error) throw error;
+
+            const { data: publicUrlData } = supabase.storage
+                .from('contracts')
+                .getPublicUrl(fileName);
+
+            return publicUrlData.publicUrl;
+        } catch (error) {
+            console.error("PDF generation error", error);
+            return null;
+        }
+    };
+
+    const handleSign = async (contractId: string) => {
+        try {
+            setIsSigning(true);
+            
+            let signatureUrl = "";
+            if (signMode === "draw") {
+                if (sigCanvas.current?.isEmpty()) {
+                    toast({ title: "Error", description: "Please provide a signature.", variant: "destructive" });
+                    setIsSigning(false);
+                    return;
+                }
+                signatureUrl = sigCanvas.current?.getTrimmedCanvas().toDataURL('image/png') || "";
+            } else {
+                if (!typedSignature.trim()) {
+                    toast({ title: "Error", description: "Please type your name to sign.", variant: "destructive" });
+                    setIsSigning(false);
+                    return;
+                }
+                signatureUrl = `data:text/plain;base64,${btoa(typedSignature)}`;
+            }
+
+            const updatedContractData = {
+                talent_signed_at: new Date().toISOString(),
+                talent_signature_url: signatureUrl,
+                status: 'active' // Auto-activate upon talent signature
+            };
 
             const { error } = await supabase
                 .from('contracts')
-                .update({
-                    talent_signed_at: new Date().toISOString(),
-                    talent_signature_url: signatureUrl,
-                    status: 'active' // Auto-activate upon talent signature
-                })
+                .update(updatedContractData)
                 .eq('id', contractId);
 
             if (error) throw error;
+            
+            const updatedContract = { ...selectedContract, ...updatedContractData } as Contract;
+            setSelectedContract(updatedContract);
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const pdfUrl = await generateAndUploadPDF(contractId, updatedContract);
+
+            if (pdfUrl) {
+                await supabase.from('contracts').update({ documentUrl: pdfUrl }).eq('id', contractId);
+            }
 
             // Send email to talent confirming signature
             try {
                 await sendTalentContractSignedEmail({
                     talentEmail: user.email || '',
                     talentName: user.user_metadata?.first_name || 'Talent',
-                    contractId: selectedContract?.contract_number,
-                    startDate: selectedContract?.start_date || '',
+                    clientName: selectedContract?.clientName || 'Client',
+                    contractId: selectedContract?.contract_number || contractId,
+                    jobTitle: selectedContract?.role || 'Role',
+                    rate: selectedContract?.rate || 'Rate',
+                    startDate: selectedContract?.startDate || new Date().toISOString(),
+                    pdfUrl: pdfUrl || undefined
                 });
             } catch (emailError) {
                 console.error('Error sending email:', emailError);
@@ -224,7 +305,6 @@ const TalentContracts = () => {
             // Check if client has already signed, if so send admin notification
             if (selectedContract?.client_signed_at) {
                 try {
-                    // Fetch admin email
                     const { data: adminUsers } = await supabase
                         .from('user_roles')
                         .select('user_id')
@@ -258,7 +338,7 @@ const TalentContracts = () => {
             });
 
             setSignDialogOpen(false);
-            setSignature("");
+            setViewDialogOpen(false);
             fetchContracts();
         } catch (error: any) {
             console.error('Error signing contract:', error);
@@ -267,6 +347,8 @@ const TalentContracts = () => {
                 description: error.message,
                 variant: "destructive",
             });
+        } finally {
+            setIsSigning(false);
         }
     };
 
@@ -409,10 +491,46 @@ const TalentContracts = () => {
                                 </div>
                             </div>
 
-                            <div ref={printRef} className="prose max-w-none p-6 bg-white rounded-lg border">
+                            <div ref={printRef} className="border p-8 rounded-lg bg-white text-black shadow-sm overflow-auto max-h-[60vh] print:max-h-none print:shadow-none">
+                                <div className="mb-8 text-center border-b pb-4">
+                                  <h1 className="text-2xl font-bold uppercase tracking-wider">Service Agreement</h1>
+                                  <p className="text-gray-500 mt-2">Contract #{selectedContract.contract_number || selectedContract.id.slice(0, 8)}</p>
+                                </div>
                                 <div dangerouslySetInnerHTML={{
-                                    __html: selectedContract.talent_contract_terms || selectedContract.contract_terms || 'No contract terms available'
-                                }} />
+                                    __html: selectedContract.talent_contract_terms || selectedContract.contract_terms || '<p>No contract terms available</p>'
+                                }} className="prose max-w-none font-serif text-sm leading-relaxed mb-8" />
+                                
+                                <div className="mt-12 pt-8 border-t grid grid-cols-2 gap-12 break-inside-avoid">
+                                  <div>
+                                    <p className="font-bold mb-4 text-xs uppercase tracking-wide">Confirmed and Agreed By:</p>
+                                    <div className="h-16 border-b border-black mb-2 flex items-end pb-1">
+                                      {selectedContract?.talent_signed_at && (
+                                        <div className="font-script text-2xl text-blue-900 flex flex-col items-start">
+                                          {selectedContract.talent_signature_url && selectedContract.talent_signature_url.startsWith('data:image') ? (
+                                            <img src={selectedContract.talent_signature_url} alt="Talent Signature" className="h-12 object-contain" />
+                                          ) : selectedContract.talent_signature_url ? (
+                                            <div className="font-script text-3xl mb-2">{atob(selectedContract.talent_signature_url.replace('data:text/plain;base64,', ''))}</div>
+                                          ) : (
+                                            <span>{user?.user_metadata?.first_name} (Signed)</span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <p className="text-xs uppercase font-semibold">Talent Signature</p>
+                                    {selectedContract?.talent_signed_at && (
+                                      <p className="text-[10px] text-gray-500 mt-1">Date: {new Date(selectedContract.talent_signed_at).toLocaleDateString()}</p>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-bold mb-4 text-xs uppercase tracking-wide">Accepted By OpslyHR:</p>
+                                    <div className="h-16 border-b border-black mb-2 flex items-end pb-1">
+                                      {selectedContract?.status === 'active' && (
+                                        <span className="font-script text-2xl text-blue-900">OpslyHR Admin</span>
+                                      )}
+                                    </div>
+                                    <p className="text-xs uppercase font-semibold">Authorized Signature</p>
+                                  </div>
+                                </div>
                             </div>
 
                             <div className="flex gap-3 justify-end">
@@ -437,11 +555,11 @@ const TalentContracts = () => {
 
             {/* Sign Contract Dialog */}
             <Dialog open={signDialogOpen} onOpenChange={setSignDialogOpen}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                         <DialogTitle>Sign Contract</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
+                    <div className="space-y-4 py-4">
                         <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                             <div className="flex items-start gap-2">
                                 <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
@@ -451,20 +569,62 @@ const TalentContracts = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label>Type your full name to sign</Label>
-                            <Input
-                                value={signature}
-                                onChange={(e) => setSignature(e.target.value)}
-                                placeholder="Your Full Name"
-                            />
+
+                        <div className="flex gap-4 mb-4">
+                            <Button
+                                variant={signMode === "type" ? "default" : "outline"}
+                                onClick={() => setSignMode("type")}
+                                className="flex-1"
+                            >
+                                Type Signature
+                            </Button>
+                            <Button
+                                variant={signMode === "draw" ? "default" : "outline"}
+                                onClick={() => setSignMode("draw")}
+                                className="flex-1"
+                            >
+                                Draw Signature
+                            </Button>
                         </div>
-                        <div className="flex gap-3 justify-end">
+
+                        {signMode === "type" ? (
+                            <div className="space-y-2">
+                                <Label>Type your full name</Label>
+                                <Input
+                                    value={typedSignature}
+                                    onChange={(e) => setTypedSignature(e.target.value)}
+                                    placeholder="John Doe"
+                                    className="font-script text-2xl h-14"
+                                />
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <Label>Draw your signature</Label>
+                                <div className="border rounded-md bg-slate-50 relative">
+                                    <SignatureCanvas
+                                        ref={sigCanvas}
+                                        canvasProps={{
+                                            className: "w-full h-40 cursor-crosshair",
+                                        }}
+                                    />
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="absolute top-2 right-2 h-7 px-2 text-xs"
+                                        onClick={() => sigCanvas.current?.clear()}
+                                    >
+                                        Clear
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                        
+                        <div className="flex justify-end gap-3 mt-4">
                             <Button variant="outline" onClick={() => setSignDialogOpen(false)}>
                                 Cancel
                             </Button>
-                            <Button onClick={() => selectedContract && handleSign(selectedContract.id)}>
-                                <Check className="h-4 w-4 mr-2" />
+                            <Button onClick={() => selectedContract && handleSign(selectedContract.id)} disabled={isSigning}>
+                                {isSigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Sign Contract
                             </Button>
                         </div>

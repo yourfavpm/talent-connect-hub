@@ -8,6 +8,7 @@ interface EmailOptions {
     htmlTemplate?: string;
     subject?: string;
     priority?: 'high' | 'normal';
+    attachments?: { filename: string, path?: string, content?: string }[];
 }
 
 interface QueueEmailOptions extends EmailOptions {
@@ -76,6 +77,7 @@ export const queueEmail = async (options: QueueEmailOptions): Promise<string> =>
                 toName: options.toName,
                 variables: brandVariables,
                 priority: options.priority,
+                attachments: options.attachments,
             },
         });
 

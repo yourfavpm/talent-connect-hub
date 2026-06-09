@@ -30,6 +30,7 @@ interface EmailRequest {
   toName?: string;
   variables?: Record<string, any>;
   priority?: string;
+  attachments?: any[];
 }
 
 serve(async (req) => {
@@ -211,12 +212,16 @@ serve(async (req) => {
       )
     }
 
-    const resendPayload = {
+    const resendPayload: any = {
       from: `${FROM_NAME} <${FROM_EMAIL}>`,
       to: [to],
       subject: finalSubject,
       html: bodyHtml,
       text: bodyText,
+    }
+
+    if (body.attachments && Array.isArray(body.attachments)) {
+      resendPayload.attachments = body.attachments;
     }
 
     const resendResponse = await fetch('https://api.resend.com/emails', {

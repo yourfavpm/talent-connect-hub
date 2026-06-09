@@ -25,6 +25,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { sendClientContractSignedEmail, sendAdminContractFullySignedEmail } from "@/lib/email/triggers";
+import SignatureCanvas from "react-signature-canvas";
+import { v4 as uuidv4 } from "uuid";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { Loader2 } from "lucide-react";
 
 interface Contract {
   id: string;
@@ -121,7 +126,12 @@ const Contracts = () => {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [signDialogOpen, setSignDialogOpen] = useState(false);
+  const [signMode, setSignMode] = useState<"draw" | "type">("type");
+  const [typedSignature, setTypedSignature] = useState("");
+  const sigCanvas = useRef<SignatureCanvas>(null);
   const [loading, setLoading] = useState(true);
+  const [isSigning, setIsSigning] = useState(false);
   const { toast } = useToast();
 
   const printRef = useRef<HTMLDivElement>(null);
@@ -181,25 +191,101 @@ const Contracts = () => {
   };
 
 
+  const generateAndUploadPDF = async (contractId: string, currentContract: any) => {
+    if (!printRef.current) return null;
+    
+    try {
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      
+      // Add watermark
+      pdf.setTextColor(230, 230, 230);
+      pdf.setFontSize(canvas.width / 10);
+      // Rotate and place watermark in the middle
+      pdf.text("OpslyHR", canvas.width / 2, canvas.height / 2, { angle: 45, align: "center" });
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+      const pdfBlob = pdf.output('blob');
+
+      const fileName = `${contractId}-${uuidv4()}.pdf`;
+      const { data, error } = await supabase.storage
+        .from('contracts')
+        .upload(fileName, pdfBlob, {
+          contentType: 'application/pdf',
+          upsert: true
+        });
+
+      if (error) throw error;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('contracts')
+        .getPublicUrl(fileName);
+
+      return publicUrlData.publicUrl;
+    } catch (error) {
+      console.error("PDF generation error", error);
+      return null;
+    }
+  };
+
   const handleSign = async (contractId: string) => {
     try {
-      setLoading(true);
-      console.log("Signing contract...", contractId);
+      setIsSigning(true);
+      
+      let signatureUrl = "";
+      if (signMode === "draw") {
+        if (sigCanvas.current?.isEmpty()) {
+          toast({ title: "Error", description: "Please provide a signature.", variant: "destructive" });
+          setIsSigning(false);
+          return;
+        }
+        signatureUrl = sigCanvas.current?.getTrimmedCanvas().toDataURL('image/png') || "";
+      } else {
+        if (!typedSignature.trim()) {
+          toast({ title: "Error", description: "Please type your name to sign.", variant: "destructive" });
+          setIsSigning(false);
+          return;
+        }
+        signatureUrl = `data:text/plain;base64,${btoa(typedSignature)}`;
+      }
 
-      // Simple Click-to-Sign Logic
-      const signatureUrl = "https://placehold.co/600x150/png?text=Signed+by+Client";
-
-      // Update Contract - Status remains 'pending' until talent also signs
-      const { error } = await supabase.from('contracts').update({
+      // Update Contract with Signature Temporarily to render in PDF
+      const updatedContractData = {
         client_signed_at: new Date().toISOString(),
         client_signature_url: signatureUrl,
-        // Status remains 'pending' - awaiting talent signature
-        // Only talent signing will activate the contract
-      }).eq('id', contractId);
+      };
+
+      const { error } = await supabase.from('contracts').update(updatedContractData).eq('id', contractId);
 
       if (error) {
-        console.error("Supabase update error:", error);
         throw error;
+      }
+      
+      // We need to wait a tick for the UI to update with the new signature if we were to generate PDF here.
+      // But we will just upload the signature first, and generate PDF later or just return the contract.
+      // Wait, let's update selectedContract so printRef re-renders with signature
+      const updatedContract = { ...selectedContract, ...updatedContractData } as Contract;
+      setSelectedContract(updatedContract);
+      
+      // Wait for React to render the signature in the printRef
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Now generate PDF
+      const pdfUrl = await generateAndUploadPDF(contractId, updatedContract);
+
+      // Save PDF URL if generated
+      if (pdfUrl) {
+         await supabase.from('contracts').update({ documentUrl: pdfUrl }).eq('id', contractId);
       }
 
       // Notify Admin
@@ -227,6 +313,10 @@ const Contracts = () => {
           clientName: user?.user_metadata?.full_name || 'Client',
           talentName: selectedContract?.talentName || 'Talent',
           contractId: selectedContract?.contract_number || contractId,
+          jobTitle: selectedContract?.role || 'Role',
+          rate: selectedContract?.rate || 'Rate',
+          startDate: selectedContract?.startDate || new Date().toISOString(),
+          pdfUrl: pdfUrl || undefined
         });
       } catch (emailError) {
         console.error('Error sending email:', emailError);
@@ -235,18 +325,11 @@ const Contracts = () => {
       // Check if talent has already signed, if so send admin notification
       if (selectedContract?.talent_signed_at) {
         try {
-          // Fetch admin email
-          const { data: adminUsers } = await supabase
-            .from('user_roles')
-            .select('user_id')
-            .eq('role', 'super_admin')
-            .limit(1);
-
-          if (adminUsers && adminUsers.length > 0) {
+          if (admins && admins.length > 0) {
             const { data: adminProfile } = await supabase
               .from('profiles')
               .select('email')
-              .eq('id', adminUsers[0].user_id)
+              .eq('id', admins[0].user_id)
               .single();
 
             if (adminProfile?.email) {
@@ -269,12 +352,13 @@ const Contracts = () => {
       });
 
       fetchContracts();
+      setSignDialogOpen(false);
       setViewDialogOpen(false);
     } catch (error: any) {
       console.error("Sign Handler Error:", error);
       toast({ title: "Error signing contract", description: error.message || "Unknown error", variant: "destructive" });
     } finally {
-      setLoading(false);
+      setIsSigning(false);
     }
   };
 
@@ -442,9 +526,9 @@ const Contracts = () => {
                   <Download className="mr-2 h-4 w-4" /> Download PDF
                 </Button>
                 {selectedContract?.status === 'pending_signature' && (
-                  <Button onClick={() => handleSign(selectedContract.id)} disabled={loading}>
+                  <Button onClick={() => setSignDialogOpen(true)} disabled={isSigning}>
                     <Pen className="mr-2 h-4 w-4" />
-                    {loading ? "Signing..." : "Click to Sign Contract"}
+                    Sign Contract
                   </Button>
                 )}
               </div>
@@ -470,9 +554,13 @@ const Contracts = () => {
                     <div className="h-16 border-b border-black mb-2 flex items-end pb-1">
                       {selectedContract?.status !== 'pending_signature' && (
                         <div className="font-script text-2xl text-blue-900 flex flex-col items-start">
-                          <span>{selectedContract.talentName.split(" ")[0]} (Signed)</span>
-                          {/* If we have a signature image, show it */}
-                          {/* Note: logic for client signature image overlay would go here if needed */}
+                          {selectedContract.client_signature_url && selectedContract.client_signature_url.startsWith('data:image') ? (
+                            <img src={selectedContract.client_signature_url} alt="Client Signature" className="h-12 object-contain" />
+                          ) : selectedContract.client_signature_url ? (
+                            <div className="font-script text-3xl mb-2">{atob(selectedContract.client_signature_url.replace('data:text/plain;base64,', ''))}</div>
+                          ) : (
+                            <span>{selectedContract.talentName.split(" ")[0]} (Signed)</span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -494,6 +582,74 @@ const Contracts = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Sign Dialog */}
+      <Dialog open={signDialogOpen} onOpenChange={setSignDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Sign Contract</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex gap-4 mb-4">
+              <Button
+                variant={signMode === "type" ? "default" : "outline"}
+                onClick={() => setSignMode("type")}
+                className="flex-1"
+              >
+                Type Signature
+              </Button>
+              <Button
+                variant={signMode === "draw" ? "default" : "outline"}
+                onClick={() => setSignMode("draw")}
+                className="flex-1"
+              >
+                Draw Signature
+              </Button>
+            </div>
+
+            {signMode === "type" ? (
+              <div className="space-y-2">
+                <Label>Type your full name</Label>
+                <Input
+                  value={typedSignature}
+                  onChange={(e) => setTypedSignature(e.target.value)}
+                  placeholder="John Doe"
+                  className="font-script text-2xl h-14"
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>Draw your signature</Label>
+                <div className="border rounded-md bg-slate-50 relative">
+                  <SignatureCanvas
+                    ref={sigCanvas}
+                    canvasProps={{
+                      className: "w-full h-40 cursor-crosshair",
+                    }}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 right-2 h-7 px-2 text-xs"
+                    onClick={() => sigCanvas.current?.clear()}
+                  >
+                    Clear
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setSignDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => selectedContract && handleSign(selectedContract.id)} disabled={isSigning}>
+              {isSigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sign & Accept
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
