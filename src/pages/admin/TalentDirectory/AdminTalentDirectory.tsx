@@ -24,9 +24,19 @@ import {
   Square,
   Mail,
   X,
+  MoreHorizontal,
+  Ban,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import BatchEmailModal from "./components/BatchEmailModal";
+import TalentActionsDrawers from "./components/TalentActionsDrawers";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -77,6 +87,10 @@ const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) =>
   const [talents, setTalents] = useState<TalentProfile[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+
+  // Drawer states
+  const [activeTalent, setActiveTalent] = useState<TalentProfile | null>(null);
+  const [suspendOpen, setSuspendOpen] = useState(false);
 
   const fetchTalents = async () => {
     const shouldScopeToManager = userRole === "talent_manager" || mode !== "global";
@@ -337,9 +351,30 @@ const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) =>
                        </div>
                     </TableCell>
                     <TableCell className="text-right pr-6">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ChevronRight className="h-4 w-4 text-slate-400" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                            <MoreHorizontal className="h-4 w-4 text-slate-400" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40 border-slate-100 shadow-xl rounded-xl">
+                          <DropdownMenuItem className="cursor-pointer font-medium text-xs text-slate-700" onClick={(e) => { e.stopPropagation(); navigate(`/talents/${tp.id}`); }}>
+                            View Profile
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="bg-slate-100" />
+                          <DropdownMenuItem 
+                            className="cursor-pointer font-medium text-xs text-red-600 focus:text-red-700 focus:bg-red-50" 
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              setActiveTalent(tp);
+                              setSuspendOpen(true);
+                            }}
+                          >
+                            <Ban className="mr-2 h-3.5 w-3.5" />
+                            {tp.is_suspended ? "Unsuspend" : "Suspend"}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))
@@ -401,6 +436,21 @@ const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) =>
         onClose={() => setIsEmailModalOpen(false)}
         selectedTalents={selectedTalentsData}
       />
+
+      {activeTalent && (
+        <TalentActionsDrawers
+          tp={activeTalent}
+          emailOpen={false}
+          setEmailOpen={() => {}}
+          shortlistOpen={false}
+          setShortlistOpen={() => {}}
+          suspendOpen={suspendOpen}
+          setSuspendOpen={setSuspendOpen}
+          assignOpen={false}
+          setAssignOpen={() => {}}
+          onSuccess={fetchTalents}
+        />
+      )}
     </div>
   );
 };

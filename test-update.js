@@ -10,10 +10,18 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function run() {
   const { data, error } = await supabase
     .from("v2_talent_profiles")
-    .select("is_suspended, suspension_reason, suspended_at, suspended_by")
+    .select("id")
     .limit(1);
-  console.log("Error:", error);
-  console.log("Data:", JSON.stringify(data, null, 2));
-}
 
+  if (data && data.length > 0) {
+    const tpId = data[0].id;
+    console.log("Found profile", tpId);
+    // Just testing if the column accepts updates
+    const { error: updateError } = await supabase
+      .from("v2_talent_profiles")
+      .update({ is_suspended: false })
+      .eq("id", tpId);
+    console.log("Update Error:", updateError);
+  }
+}
 run();
