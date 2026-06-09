@@ -118,6 +118,80 @@ const TALENT_URL = 'https://talent.opslyhr.com';
 const CLIENT_URL = 'https://client.opslyhr.com';
 const ADMIN_URL = 'https://admin.opslyhr.com';
 
+const escapeHtml = (value: unknown): string =>
+    String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+const formatAdminValue = (value: unknown, fallback = "N/A") => {
+    const text = String(value ?? "").trim();
+    return escapeHtml(text || fallback);
+};
+
+const buildAdminNotificationEmail = (options: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    rows: Array<{ label: string; value?: unknown }>;
+    messageLabel?: string;
+    message?: unknown;
+    ctaLabel: string;
+    ctaUrl: string;
+}) => {
+    const rows = options.rows.map(row => `
+        <tr>
+          <td style="padding:12px 0;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;width:38%;">${escapeHtml(row.label)}</td>
+          <td style="padding:12px 0;border-bottom:1px solid #e2e8f0;color:#0f172a;font-size:14px;font-weight:600;">${formatAdminValue(row.value)}</td>
+        </tr>
+    `).join("");
+
+    const messageBlock = options.message ? `
+      <div style="margin:24px 0 0;padding:18px 20px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+        <p style="margin:0 0 8px;color:#64748b;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;">${escapeHtml(options.messageLabel || "Message")}</p>
+        <p style="margin:0;color:#334155;font-size:14px;line-height:1.7;white-space:pre-wrap;">${formatAdminValue(options.message, "No message provided.")}</p>
+      </div>
+    ` : "";
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>${escapeHtml(options.title)}</title>
+</head>
+<body style="margin:0;padding:0;background:#eef2f7;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#eef2f7;padding:40px 16px;">
+    <tr><td align="center">
+      <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="max-width:640px;width:100%;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 18px 45px rgba(15,23,42,.10);">
+        <tr>
+          <td style="background:#0f2147;padding:30px 40px;text-align:center;">
+            <img src="https://opslyhr.com/images/logocolored.svg" alt="OPSlyHR" style="height:42px;display:inline-block;background:#ffffff;border-radius:10px;padding:8px 12px;" />
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:36px 40px 34px;">
+            <p style="margin:0 0 8px;color:#0f766e;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;">${escapeHtml(options.eyebrow)}</p>
+            <h1 style="margin:0 0 14px;color:#0f172a;font-size:24px;line-height:1.3;font-weight:800;">${escapeHtml(options.title)}</h1>
+            <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.7;">${escapeHtml(options.intro)}</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #e2e8f0;">
+              ${rows}
+            </table>
+            ${messageBlock}
+            <div style="margin-top:28px;">
+              <a href="${escapeHtml(options.ctaUrl)}" style="display:inline-block;background:#0f2147;color:#ffffff;text-decoration:none;border-radius:10px;padding:13px 22px;font-size:14px;font-weight:800;">${escapeHtml(options.ctaLabel)}</a>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+};
+
 // --- AUTH & ACCOUNT TRIGGERS ---
 
 /**
@@ -813,20 +887,21 @@ export const sendSupportTicketCreatedEmail = async (ticket: {
         to: 'info@opslyhr.com',
         toName: 'OpslyHR Admin',
         subject: `New Support Ticket: ${ticket.subject || ticket.ticketId}`,
-        htmlTemplate: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
-            <h2 style="color: #0f172a;">New Support Ticket</h2>
-            <p>A new support ticket has been created by <strong>${ticket.email}</strong>.</p>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Ticket ID:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${ticket.ticketId}</td></tr>
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Subject:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${ticket.subject || 'N/A'}</td></tr>
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee; vertical-align: top;"><strong>Description:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${ticket.description || 'N/A'}</td></tr>
-            </table>
-            <div style="margin-top: 20px;">
-              <a href="${ADMIN_URL}/support/${ticket.ticketId}" style="display: inline-block; padding: 10px 20px; background-color: #0f172a; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">View Ticket</a>
-            </div>
-          </div>
-        `
+        htmlTemplate: buildAdminNotificationEmail({
+            eyebrow: "Support",
+            title: "New Support Ticket",
+            intro: "A new support request has been submitted and is ready for review.",
+            rows: [
+                { label: "Ticket ID", value: ticket.ticketId },
+                { label: "Submitted By", value: ticket.email },
+                { label: "Portal", value: ticket.isTalent ? "Talent" : "Client" },
+                { label: "Subject", value: ticket.subject },
+            ],
+            messageLabel: "Description",
+            message: ticket.description,
+            ctaLabel: "View Ticket",
+            ctaUrl: `${ADMIN_URL}/support/${ticket.ticketId}`,
+        })
     });
 };
 
@@ -842,13 +917,25 @@ export const sendSupportRepliedEmail = async (ticket: {
 }) => {
     if (ticket.isAdminReply) {
         // Admin replied, notify the user
+        const portal = ticket.isTalent ? "Talent" : "Client";
+        const ticketLink = `${ticket.isTalent ? TALENT_URL : CLIENT_URL}/support/${ticket.ticketId}`;
         await queueEmail({
             to: ticket.email,
-            templateKey: ticket.isTalent ? 'talent_support_replied' : 'client_support_replied',
-            variables: {
-                ticket_id: ticket.ticketId,
-                ticket_link: `${ticket.isTalent ? TALENT_URL : CLIENT_URL}/support/${ticket.ticketId}`,
-            },
+            toName: portal,
+            subject: `New Reply on Support Ticket: ${ticket.ticketId}`,
+            htmlTemplate: buildAdminNotificationEmail({
+                eyebrow: "Support Update",
+                title: "New Reply from OpslyHR Support",
+                intro: "Our support team replied to your ticket. You can review the response in your portal.",
+                rows: [
+                    { label: "Ticket ID", value: ticket.ticketId },
+                    { label: "Portal", value: portal },
+                ],
+                messageLabel: "Reply",
+                message: ticket.replyContent,
+                ctaLabel: "Open Ticket",
+                ctaUrl: ticketLink,
+            })
         });
     } else {
         // User replied, notify admin
@@ -856,18 +943,20 @@ export const sendSupportRepliedEmail = async (ticket: {
             to: 'info@opslyhr.com',
             toName: 'OpslyHR Admin',
             subject: `New Reply on Support Ticket: ${ticket.ticketId}`,
-            htmlTemplate: `
-              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
-                <h2 style="color: #0f172a;">New Ticket Reply</h2>
-                <p>A new reply has been added to ticket <strong>${ticket.ticketId}</strong> by <strong>${ticket.email}</strong>.</p>
-                <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 15px 0;">
-                   <p style="margin: 0; color: #334155; white-space: pre-wrap;">${ticket.replyContent || 'No content provided.'}</p>
-                </div>
-                <div style="margin-top: 20px;">
-                  <a href="${ADMIN_URL}/support/${ticket.ticketId}" style="display: inline-block; padding: 10px 20px; background-color: #0f172a; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">View Ticket</a>
-                </div>
-              </div>
-            `
+            htmlTemplate: buildAdminNotificationEmail({
+                eyebrow: "Support Reply",
+                title: "New Reply on Support Ticket",
+                intro: "A user added a new reply to an existing support ticket.",
+                rows: [
+                    { label: "Ticket ID", value: ticket.ticketId },
+                    { label: "Replied By", value: ticket.email },
+                    { label: "Portal", value: ticket.isTalent ? "Talent" : "Client" },
+                ],
+                messageLabel: "Reply",
+                message: ticket.replyContent,
+                ctaLabel: "View Ticket",
+                ctaUrl: `${ADMIN_URL}/support/${ticket.ticketId}`,
+            })
         });
     }
 };
@@ -887,26 +976,62 @@ export const sendNewConsultationEmail = async (consultation: {
         to: 'info@opslyhr.com',
         toName: 'OpslyHR Team',
         subject: `New Consultation Booked: ${consultation.name}`,
-        htmlTemplate: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
-            <h2 style="color: #0f172a;">New Consultation Request</h2>
-            <p>A new consultation has been booked on the website.</p>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Name:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${consultation.name}</td></tr>
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Email:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${consultation.email}</td></tr>
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Company:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${consultation.company || 'N/A'}</td></tr>
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Objective:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${consultation.objective || 'N/A'}</td></tr>
-              <tr><td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Preferred Date:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #eee;">${consultation.date || 'Flexible'}</td></tr>
-            </table>
-            <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 15px 0;">
-               <p style="margin: 0 0 5px; font-size: 12px; color: #64748b; font-weight: bold; text-transform: uppercase;">Message</p>
-               <p style="margin: 0; color: #334155; white-space: pre-wrap;">${consultation.message || 'No additional message.'}</p>
-            </div>
-            <div style="margin-top: 20px;">
-              <a href="${ADMIN_URL}/consultations" style="display: inline-block; padding: 10px 20px; background-color: #0f172a; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">View in Admin Portal</a>
-            </div>
-          </div>
-        `
+        htmlTemplate: buildAdminNotificationEmail({
+            eyebrow: "Consultation",
+            title: "New Consultation Request",
+            intro: "A prospect submitted the consultation form on the website.",
+            rows: [
+                { label: "Name", value: consultation.name },
+                { label: "Email", value: consultation.email },
+                { label: "Company", value: consultation.company },
+                { label: "Objective", value: consultation.objective },
+                { label: "Preferred Date", value: consultation.date || "Flexible" },
+            ],
+            messageLabel: "Details",
+            message: consultation.message,
+            ctaLabel: "View Consultations",
+            ctaUrl: `${ADMIN_URL}/consultations`,
+        })
+    });
+};
+
+/**
+ * Send hire request submitted notification
+ */
+export const sendNewHireRequestEmail = async (request: {
+    requestId: string;
+    title?: string;
+    clientEmail?: string;
+    clientName?: string;
+    serviceModel?: string;
+    engagementType?: string;
+    budget?: string;
+    location?: string;
+    summary?: string;
+}) => {
+    await queueEmail({
+        to: 'info@opslyhr.com',
+        toName: 'OpslyHR Team',
+        subject: `New Hire Request Submitted: ${request.title || request.requestId}`,
+        htmlTemplate: buildAdminNotificationEmail({
+            eyebrow: "Hire Request",
+            title: "New Hire Request Submitted",
+            intro: "A client submitted a new hire request for OpslyHR review.",
+            rows: [
+                { label: "Request ID", value: request.requestId },
+                { label: "Title", value: request.title },
+                { label: "Client", value: request.clientName || request.clientEmail },
+                { label: "Client Email", value: request.clientEmail },
+                { label: "Service Model", value: request.serviceModel },
+                { label: "Engagement", value: request.engagementType },
+                { label: "Budget", value: request.budget },
+                { label: "Location", value: request.location },
+            ],
+            messageLabel: "Role Summary",
+            message: request.summary,
+            ctaLabel: "Review Hire Request",
+            ctaUrl: `${ADMIN_URL}/hire-requests/${request.requestId}`,
+        })
     });
 };
 

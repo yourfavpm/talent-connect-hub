@@ -79,7 +79,17 @@ serve(async (req) => {
        subject?.toLowerCase().includes('invited') ||
        subject?.toLowerCase().includes('account'));
 
-    const isAnonymousBypass = isAnonAllowedTemplate || isHtmlAuthSystemEmail;
+    const normalizedSubject = subject?.toLowerCase() || '';
+    const isAdminNotificationEmail = htmlTemplate &&
+      to.toLowerCase() === 'info@opslyhr.com' &&
+      (
+        normalizedSubject.startsWith('new consultation') ||
+        normalizedSubject.startsWith('new support ticket') ||
+        normalizedSubject.startsWith('new hire request') ||
+        normalizedSubject.startsWith('new reply on support ticket')
+      );
+
+    const isAnonymousBypass = isAnonAllowedTemplate || isHtmlAuthSystemEmail || isAdminNotificationEmail;
 
     if ((authError || !user) && !isAnonymousBypass) {
       return new Response(

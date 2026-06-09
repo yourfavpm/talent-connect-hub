@@ -46,7 +46,7 @@ export default function Support() {
         subject: "",
         description: "",
         category: "other",
-        priority: "normal",
+        priority: "medium",
     });
 
     useEffect(() => {
@@ -115,7 +115,7 @@ export default function Support() {
                 description: "Support request submitted successfully.",
             });
             setDialogOpen(false);
-            setNewTicket({ subject: "", description: "", category: "other", priority: "normal" });
+            setNewTicket({ subject: "", description: "", category: "other", priority: "medium" });
             fetchTickets();
         } catch (error: any) {
             toast({
@@ -205,7 +205,7 @@ export default function Support() {
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="low">Low</SelectItem>
-                                            <SelectItem value="normal">Normal</SelectItem>
+                                            <SelectItem value="medium">Normal</SelectItem>
                                             <SelectItem value="high">High</SelectItem>
                                             <SelectItem value="urgent">Urgent</SelectItem>
                                         </SelectContent>

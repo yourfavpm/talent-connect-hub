@@ -180,13 +180,15 @@ const AdminSupportDetail = () => {
             // Trigger Email to User
             try {
                 if (ticket?.user?.email) {
-                    const { data: talentData } = await supabase.from('talents').select('id').eq('id', ticket.user_id).single();
+                    const { data: talentData } = await supabase.from('talents').select('id').eq('user_id', ticket.user_id).maybeSingle();
                     const isTalent = !!talentData;
 
                     await sendSupportRepliedEmail({
                         email: ticket.user.email,
                         ticketId: ticket.id,
-                        isTalent: isTalent
+                        isTalent: isTalent,
+                        isAdminReply: true,
+                        replyContent: replyText
                     });
                 }
             } catch (emailErr) {

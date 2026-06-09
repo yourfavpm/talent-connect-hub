@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Check, ChevronRight, X, ArrowLeft, Briefcase, Clock, Calendar, Globe, Building2 } from "lucide-react";
+import { sendNewHireRequestEmail } from "@/lib/email/triggers";
 
 const STEPS = ["Model", "Basics", "Details", "Review"];
 
@@ -215,6 +216,32 @@ export default function CreateHireRequest() {
       const { error } = await (supabase as any).rpc('hr_v2_submit_request', { req_id: finalId });
 
       if (error) throw error;
+
+      try {
+        const formatBudget = () => {
+          const currency = formData.preferred_currency || "USD";
+          if (formData.budget_type === "fixed") {
+            return formData.fixed_budget ? `${currency} ${formData.fixed_budget} fixed` : "Fixed budget not specified";
+          }
+          const min = formData.budget_min ? `${currency} ${formData.budget_min}` : "";
+          const max = formData.budget_max ? `${currency} ${formData.budget_max}` : "";
+          return [min, max].filter(Boolean).join(" - ") || "Budget not specified";
+        };
+
+        await sendNewHireRequestEmail({
+          requestId: finalId,
+          title: formData.title,
+          clientEmail: user?.email || "",
+          clientName: user?.user_metadata?.full_name || user?.email || "",
+          serviceModel: formData.service_model,
+          engagementType: formData.engagement_type,
+          budget: formatBudget(),
+          location: formData.location_preference,
+          summary: formData.role_summary,
+        });
+      } catch (emailError) {
+        console.error("Failed to send hire request admin notification", emailError);
+      }
 
       toast({
         title: "Hire Request Submitted",
