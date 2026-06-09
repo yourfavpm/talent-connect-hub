@@ -6,10 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Clock, CheckCircle2, AlertCircle, FileText, Users, Building, Globe, MapPin, DollarSign, UserCheck, Video } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle2, AlertCircle, FileText, Users, Building, Globe, MapPin, DollarSign, UserCheck, Video, FilePenLine } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TalentProfileDrawer } from "@/components/client/talents/TalentProfileDrawer";
+import { ClientOfferModal } from "@/components/client/jobs/ClientOfferModal";
+import { useToast } from "@/hooks/use-toast";
 
 export default function HireRequestDetail() {
   const { id } = useParams();
@@ -18,8 +20,13 @@ export default function HireRequestDetail() {
   const [request, setRequest] = useState<any>(null);
   const [shortlist, setShortlist] = useState<any[]>([]);
   const [interviews, setInterviews] = useState<any[]>([]);
+  const [existingOffers, setExistingOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTalentUserId, setSelectedTalentUserId] = useState<string | null>(null);
+  const [offerModalOpen, setOfferModalOpen] = useState(false);
+  const [selectedOfferTalentUserId, setSelectedOfferTalentUserId] = useState<string | null>(null);
+  const [offerSubmitting, setOfferSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const fetchRequestDetails = useCallback(async () => {
     try {
@@ -59,6 +66,14 @@ export default function HireRequestDetail() {
         .eq('hire_request_id', id);
       setInterviews(interviewData || []);
 
+      // Fetch existing offers for this request
+      const { data: offersData } = await supabase
+        .from('offers')
+        .select('talent_id, status, talents!inner(user_id)')
+        .eq('created_by', user?.id)
+        .eq('role_title', requestData.title);
+      setExistingOffers(offersData || []);
+
     } catch (error) {
       console.error("Error fetching request details:", error);
     } finally {
@@ -69,6 +84,52 @@ export default function HireRequestDetail() {
   useEffect(() => {
     if (user && id) fetchRequestDetails();
   }, [user, id, fetchRequestDetails]);
+
+  const handleInitiateOffer = async (payload: any) => {
+    if (!selectedOfferTalentUserId || !request) return;
+    setOfferSubmitting(true);
+    try {
+      const { data: talentData, error: talentError } = await supabase
+        .from('talents')
+        .select('id')
+        .eq('user_id', selectedOfferTalentUserId)
+        .single();
+      if (talentError || !talentData) throw new Error("Could not find talent profile.");
+
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+      if (clientError || !clientData) throw new Error("Could not find client profile.");
+
+      const { error: offerError } = await supabase.from('offers').insert({
+        client_id: clientData.id,
+        talent_id: talentData.id,
+        role_title: request.title,
+        hourly_rate: payload.hourly_rate || 0,
+        weekly_hours: payload.weekly_hours || 40,
+        start_date: payload.start_date || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        duration: "Ongoing",
+        status: 'sent_to_admin',
+        special_terms: payload.special_terms || `Generated from hire request: ${request.title}`,
+        meta: payload.meta,
+        created_by: user?.id
+      });
+
+      if (offerError) throw offerError;
+
+      toast({ title: "Offer Initiated", description: "Admin will generate the contract shortly." });
+      setOfferModalOpen(false);
+      setSelectedOfferTalentUserId(null);
+      fetchRequestDetails(); 
+    } catch (error: any) {
+      console.error(error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setOfferSubmitting(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, { label: string; cls: string }> = {
@@ -230,6 +291,7 @@ export default function HireRequestDetail() {
                 const profile = candidate.profiles;
                 if (!profile) return null;
                 const hasInterview = interviews.some((i) => i.talent_user_id === candidate.talent_user_id);
+                const hasOffer = existingOffers.some((o: any) => o.talents?.user_id === candidate.talent_user_id);
                 return (
                   <div key={candidate.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col group cursor-pointer" onClick={() => setSelectedTalentUserId(candidate.talent_user_id)}>
                     <div className="p-6 flex-grow">
@@ -257,9 +319,25 @@ export default function HireRequestDetail() {
                           <Badge className="bg-emerald-100 text-emerald-700 border-none w-max py-0 font-semibold"><Video className="w-3 h-3 mr-1" /> Interviewing</Badge>
                         )}
                       </div>
-                      <Button variant="outline" size="sm" className="h-8 text-xs bg-white text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 font-medium px-4 shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedTalentUserId(candidate.talent_user_id); }}>
-                        View Profile
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        {hasOffer ? (
+                           <Button size="sm" variant="outline" disabled className="bg-gray-50 text-gray-400 border-dashed h-8 text-xs">
+                             Offer Generated
+                           </Button>
+                        ) : (hasInterview ? (
+                           <Button
+                             size="sm"
+                             onClick={(e) => { e.stopPropagation(); setSelectedOfferTalentUserId(candidate.talent_user_id); setOfferModalOpen(true); }}
+                             className="bg-gray-900 text-white hover:bg-gray-800 h-8 text-xs px-3"
+                           >
+                             <FilePenLine className="w-3 h-3 mr-1.5" />
+                             Send Offer
+                           </Button>
+                        ) : null)}
+                        <Button variant="outline" size="sm" className="h-8 text-xs bg-white text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 font-medium px-4 shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedTalentUserId(candidate.talent_user_id); }}>
+                          View Profile
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -274,6 +352,19 @@ export default function HireRequestDetail() {
           userId={selectedTalentUserId}
           isOpen={!!selectedTalentUserId}
           onClose={() => setSelectedTalentUserId(null)}
+        />
+      )}
+
+      {offerModalOpen && selectedOfferTalentUserId && (
+        <ClientOfferModal
+          isOpen={offerModalOpen}
+          onClose={() => {
+            setOfferModalOpen(false);
+            setSelectedOfferTalentUserId(null);
+          }}
+          job={request}
+          loading={offerSubmitting}
+          onSubmit={handleInitiateOffer}
         />
       )}
     </div>
