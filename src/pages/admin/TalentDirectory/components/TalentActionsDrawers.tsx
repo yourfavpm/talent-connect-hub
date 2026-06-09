@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   Sheet, 
   SheetContent, 
@@ -20,8 +20,14 @@ import {
   Loader2, 
   Check, 
   Search,
-  Users
+  Users,
+  Bold,
+  Italic,
+  List
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Label } from "@/components/ui/label";
+import { sendEmail } from "@/lib/email/emailService";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -60,6 +66,37 @@ const TalentActionsDrawers = ({
   const [activeHireRequests, setActiveHireRequests] = useState<any[]>([]);
   const [selectedHireRequestId, setSelectedHireRequestId] = useState<string | null>(null);
   const [shortlistLoading, setShortlistLoading] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const applyFormat = (tag: string, placeholder: string = "") => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selection = textarea.value.substring(start, end);
+    const content = selection || placeholder;
+    
+    let formatted = "";
+    if (tag === 'ul') {
+      formatted = `\n<ul>\n  <li>${content}</li>\n</ul>\n`;
+    } else if (tag === 'li') {
+      formatted = `<li>${content}</li>`;
+    } else {
+      formatted = `<${tag}>${content}</${tag}>`;
+    }
+
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+    
+    setEmailBody(before + formatted + after);
+    
+    setTimeout(() => {
+      textarea.focus();
+      const newPos = start + formatted.length;
+      textarea.setSelectionRange(newPos, newPos);
+    }, 0);
+  };
 
   const fetchActiveHireRequests = async () => {
     try {
@@ -219,13 +256,66 @@ const TalentActionsDrawers = ({
   };
 
   const handleSendEmail = async () => {
+    if (!emailSubject || !emailBody) {
+      toast.error("Please fill in both subject and message body.");
+      return;
+    }
+
     setLoading(true);
     try {
-      // Mock email sending / Log communication
-      toast.success("Email drafted and logged in communications (simulation)");
-      setEmailOpen(false);
+      const personalizedBody = emailBody
+        .replace(/{{first_name}}/g, tp?.talents?.first_name || "there")
+        .replace(/{{last_name}}/g, tp?.talents?.last_name || "")
+        .replace(/\n/g, '<br/>');
+
+      const success = await sendEmail({
+        to: tp?.talents?.email,
+        toName: `${tp?.talents?.first_name || ""} ${tp?.talents?.last_name || ""}`.trim(),
+        subject: emailSubject,
+        htmlTemplate: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; margin: 0; padding: 0; }
+              .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+              .header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #f1f5f9; }
+              .content { padding: 40px 30px; font-size: 16px; color: #334155; }
+              .footer { padding: 30px; border-top: 1px solid #f1f5f9; background-color: #f8fafc; font-size: 12px; color: #64748b; text-align: center; }
+              b, strong { color: #0f172a; font-weight: 700; }
+              ul { padding-left: 20px; margin-bottom: 20px; }
+              li { margin-bottom: 8px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                 <img src="https://opslyhr.com/images/logocolored.svg" alt="OpslyHR" style="height: 64px; width: auto; display: block; margin: 0 auto;" />
+              </div>
+              <div class="content">
+                ${personalizedBody}
+              </div>
+              <div class="footer">
+                <p>&copy; 2026 OpslyHR</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+        priority: 'normal'
+      });
+
+      if (success) {
+        toast.success("Email sent successfully!");
+        setEmailSubject("");
+        setEmailBody("");
+        setEmailOpen(false);
+      } else {
+        toast.error("Failed to send email");
+      }
     } catch (err: any) {
-      toast.error("Failed to send email");
+      toast.error("Failed to send email: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -242,18 +332,65 @@ const TalentActionsDrawers = ({
             </SheetTitle>
             <SheetDescription>Compose a message to {tp?.talents?.first_name}.</SheetDescription>
           </SheetHeader>
-          <div className="space-y-4 py-6">
-            <Input 
-              placeholder="Subject" 
-              value={emailSubject} 
-              onChange={e => setEmailSubject(e.target.value)} 
-            />
-            <Textarea 
-              className="min-h-[200px]" 
-              placeholder="Write your message here..." 
-              value={emailBody} 
-              onChange={e => setEmailBody(e.target.value)}
-            />
+          <div className="space-y-6 py-6">
+            <div className="space-y-2">
+              <Label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Email Subject</Label>
+              <Input 
+                placeholder="e.g. Important Update Regarding Your Profile" 
+                value={emailSubject} 
+                onChange={e => setEmailSubject(e.target.value)} 
+                className="h-11 bg-slate-50 border-slate-200"
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center mb-1">
+                <Label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Message Content</Label>
+                <TooltipProvider>
+                  <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-md border border-slate-200">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => applyFormat('b')}>
+                          <Bold className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Bold</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => applyFormat('i')}>
+                          <Italic className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Italic</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => applyFormat('ul', 'Item')}>
+                          <List className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Bullet List</TooltipContent>
+                    </Tooltip>
+                    <div className="w-px h-4 bg-slate-200 mx-1" />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px] font-mono" onClick={() => applyFormat('first_name', '{{first_name}}')}>
+                           {"{fn}"}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Insert First Name</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TooltipProvider>
+              </div>
+              <Textarea 
+                ref={textareaRef}
+                className="min-h-[250px] bg-white border-slate-200 font-light leading-relaxed resize-none" 
+                placeholder="Hello {{first_name}}, write your message here..." 
+                value={emailBody} 
+                onChange={e => setEmailBody(e.target.value)}
+              />
+            </div>
           </div>
           <SheetFooter>
             <Button className="w-full" onClick={handleSendEmail} disabled={loading}>
