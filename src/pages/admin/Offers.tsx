@@ -138,15 +138,6 @@ const AdminOffers = () => {
   /* New Config Flow */
 
   const handleOpenConfig = (offer: any) => {
-    // Check if offer has a job
-    if (!offer.job_id) {
-      toast({
-        title: "Job Required",
-        description: "Please create an internal job before configuring the contract.",
-        variant: "destructive",
-      });
-      return;
-    }
     navigate(`/admin/offers/${offer.id}/configure`);
   };
 
