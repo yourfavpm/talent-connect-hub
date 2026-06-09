@@ -312,29 +312,31 @@ export default function HireRequestDetail() {
                         </div>
                       )}
                     </div>
-                    <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                      <div className="flex flex-col gap-1.5">
-                        <span className="text-xs font-medium text-slate-500">Shortlisted {format(new Date(candidate.created_at), "MMM d")}</span>
+                    <div className="px-5 py-4 bg-slate-50 border-t border-slate-100 flex flex-col gap-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Shortlisted {format(new Date(candidate.created_at), "MMM d")}</span>
                         {hasInterview && (
-                          <Badge className="bg-emerald-100 text-emerald-700 border-none w-max py-0 font-semibold"><Video className="w-3 h-3 mr-1" /> Interviewing</Badge>
+                          <Badge className="bg-emerald-100 text-emerald-700 border-none py-0.5 px-2 font-semibold text-[10px]"><Video className="w-3 h-3 mr-1" /> Interviewing</Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="grid grid-cols-2 gap-2 w-full">
                         {hasOffer ? (
-                           <Button size="sm" variant="outline" disabled className="bg-gray-50 text-gray-400 border-dashed h-8 text-xs">
-                             Offer Generated
+                           <Button size="sm" variant="outline" disabled className="w-full bg-gray-50 text-gray-400 border-dashed h-8 text-xs">
+                             Offer Sent
                            </Button>
-                        ) : (hasInterview ? (
+                        ) : hasInterview ? (
                            <Button
                              size="sm"
                              onClick={(e) => { e.stopPropagation(); setSelectedOfferTalentUserId(candidate.talent_user_id); setOfferModalOpen(true); }}
-                             className="bg-gray-900 text-white hover:bg-gray-800 h-8 text-xs px-3"
+                             className="w-full bg-gray-900 text-white hover:bg-gray-800 h-8 text-xs px-2"
                            >
                              <FilePenLine className="w-3 h-3 mr-1.5" />
-                             Send Offer
+                             Offer
                            </Button>
-                        ) : null)}
-                        <Button variant="outline" size="sm" className="h-8 text-xs bg-white text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 font-medium px-4 shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedTalentUserId(candidate.talent_user_id); }}>
+                        ) : (
+                           <div className="col-span-1"></div>
+                        )}
+                        <Button variant="outline" size="sm" className="w-full h-8 text-xs bg-white text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 font-medium px-2 shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedTalentUserId(candidate.talent_user_id); }}>
                           View Profile
                         </Button>
                       </div>
