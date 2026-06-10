@@ -60,6 +60,7 @@ interface TalentProfile {
   vetting_level_text: string | null;
   created_at: string;
   talents: TalentBase | null;
+  heard_from?: string | null;
 }
 
 // Tabs defined by pipeline stages
@@ -109,7 +110,8 @@ const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) =>
             talent_id,
             primary_role,
             country,
-            timezone
+            timezone,
+            heard_from
           )
         `);
 
@@ -275,6 +277,7 @@ const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) =>
                 <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-500 py-4">Progress</TableHead>
                 <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-500 py-4">Vetting</TableHead>
                 <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-500 py-4">Location</TableHead>
+                <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-500 py-4">Source</TableHead>
                 <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-500 py-4 text-right pr-6">Action</TableHead>
               </TableRow>
             </TableHeader>
@@ -349,6 +352,11 @@ const AdminTalentDirectory = ({ mode = "global" }: AdminTalentDirectoryProps) =>
                          <p className="text-xs text-slate-600 font-medium">{tp.talents?.country || "—"}</p>
                          <p className="text-[10px] text-slate-400">{tp.talents?.timezone || "—"}</p>
                        </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-xs text-slate-500 capitalize">
+                        {tp.heard_from?.replace('_', ' ') || tp.talents?.heard_from?.replace('_', ' ') || "—"}
+                      </span>
                     </TableCell>
                     <TableCell className="text-right pr-6">
                       <DropdownMenu>
