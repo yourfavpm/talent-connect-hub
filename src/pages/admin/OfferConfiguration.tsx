@@ -93,7 +93,7 @@ const AdminOfferConfig = () => {
 
     // Auto-calculate Net Rate based on Service Model
     useEffect(() => {
-        if (serviceModel === 'full_time') {
+        if (serviceModel === 'direct_hire') {
             // Full Time Hire: 10-15% placement fee
             let annualSalary = clientBillingAmount;
 
@@ -116,7 +116,7 @@ const AdminOfferConfig = () => {
 
     // Auto-derive Time Tracking requirement
     useEffect(() => {
-        if (serviceModel === 'full_time') {
+        if (serviceModel === 'direct_hire') {
             // Full Time Hire: NO time tracking
             setTimeTrackingRequired(false);
             setOvertimeEnabled(false);
@@ -282,7 +282,7 @@ const AdminOfferConfig = () => {
             overtimeClause: overtimeEnabled
                 ? `<p><strong>Overtime:</strong> Hours exceeding ${expectedWeeklyHours}/week paid at 1.5× rate.</p>`
                 : '',
-            employmentTransferClause: serviceModel === 'full_time'
+            employmentTransferClause: serviceModel === 'direct_hire'
                 ? '<p><strong>Employment Transfer:</strong> This agreement confirms your direct employment with the client.</p>'
                 : ''
         };
@@ -355,7 +355,7 @@ const AdminOfferConfig = () => {
                 overtimeClause: overtimeEnabled
                     ? `<p><strong>Overtime:</strong> Hours exceeding ${expectedWeeklyHours}/week paid at 1.5× rate.</p>`
                     : '',
-                employmentTransferClause: serviceModel === 'full_time'
+                employmentTransferClause: serviceModel === 'direct_hire'
                     ? '<p><strong>Employment Transfer:</strong> This agreement confirms your direct employment with the client.</p>'
                     : ''
             });
@@ -375,7 +375,7 @@ const AdminOfferConfig = () => {
                 weekly_hours: expectedWeeklyHours || 40, // Default to 40 hours if not specified
 
                 // Billing configuration (critical for invoicing)
-                compensation_type: clientCompensationType,
+                compensation_type: clientCompensationType === 'annual' ? 'fixed' : clientCompensationType,
                 service_model: serviceModel,
                 billing_frequency: serviceModel === 'direct_hire' ? 'one_time' : clientBillingFrequency,
                 billing_day: clientBillingDay,
@@ -513,8 +513,8 @@ const AdminOfferConfig = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="trial_to_hire">Trial-to-Hire</SelectItem>
-                                    <SelectItem value="full_time">Full Time Hire (Full-Time)</SelectItem>
-                                    <SelectItem value="one_time">One-Time Project</SelectItem>
+                                    <SelectItem value="direct_hire">Full Time Hire (Full-Time)</SelectItem>
+                                    <SelectItem value="contract_talent">Contract Talent</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -635,7 +635,7 @@ const AdminOfferConfig = () => {
                         <div className="space-y-3">
                             <Label>Compensation Type</Label>
                             <RadioGroup value={clientCompensationType} onValueChange={setClientCompensationType}>
-                                {serviceModel === 'full_time' ? (
+                                {serviceModel === 'direct_hire' ? (
                                     <>
                                         <div className="flex items-center space-x-2">
                                             <RadioGroupItem value="annual" id="annual" />
@@ -676,7 +676,7 @@ const AdminOfferConfig = () => {
                             </div>
                         </div>
 
-                        {serviceModel !== 'full_time' && (
+                        {serviceModel !== 'direct_hire' && (
                             <>
                                 <div className="space-y-3">
                                     <Label>Billing Frequency</Label>
@@ -717,7 +717,7 @@ const AdminOfferConfig = () => {
                             </>
                         )}
 
-                        {serviceModel === 'full_time' && (
+                        {serviceModel === 'direct_hire' && (
                             <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
                                 <div className="flex items-start gap-2">
                                     <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5" />
@@ -782,7 +782,7 @@ const AdminOfferConfig = () => {
                             </div>
                         </div>
 
-                        {serviceModel !== 'full_time' && (
+                        {serviceModel !== 'direct_hire' && (
                             <>
                                 <div className="space-y-3">
                                     <Label>Payment Frequency</Label>
@@ -878,7 +878,7 @@ const AdminOfferConfig = () => {
 
             {/* ========== CLIENT PREVIEW DIALOG ========== */}
             <Dialog open={clientPreviewOpen} onOpenChange={setClientPreviewOpen}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
                     <DialogHeader>
                         <DialogTitle>Client Contract Preview</DialogTitle>
                     </DialogHeader>
@@ -891,7 +891,7 @@ const AdminOfferConfig = () => {
 
             {/* ========== TALENT PREVIEW DIALOG ========== */}
             <Dialog open={talentPreviewOpen} onOpenChange={setTalentPreviewOpen}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
                     <DialogHeader>
                         <DialogTitle>Talent Contract Preview</DialogTitle>
                     </DialogHeader>

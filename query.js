@@ -1,11 +1,16 @@
 import { config } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
+import { execSync } from 'child_process';
 
 config();
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 async function run() {
-  const { data, error } = await supabase.from('profiles').select('id, user_id, email, heard_from').order('created_at', { ascending: false }).limit(15);
-  console.log("Recent Profiles:", data);
+  const psql = `npx -y supabase db query "ALTER TYPE compensation_type ADD VALUE IF NOT EXISTS 'annual';" --db-url "${process.env.SUPABASE_URL.replace('https://', 'postgresql://postgres:limitlessopslyhr@db.')}:5432/postgres"`;
+  try {
+    const res = execSync(psql, { stdio: 'inherit' });
+    console.log("Success");
+  } catch (err) {
+    console.error("Failed", err);
+  }
 }
 run();
