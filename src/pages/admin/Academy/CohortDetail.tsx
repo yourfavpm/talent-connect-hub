@@ -231,7 +231,7 @@ const CohortDetail = () => {
 
             // 2. Fetch All Data
             const [enrollmentsRes, sessionsRes, announcementsRes, assignmentsRes, submissionsRes, receiptsRes] = await Promise.all([
-                supabase.from("academy_enrollments").select("id, student_id, student_name, student_email, enrollment_status, is_top_grad, progress_percent, streak_count, total_study_hours, coupon_code, payment_plan, installment_2_amount, installment_2_paid, installment_2_due_date, created_at").eq("cohort_id", id),
+                supabase.from("academy_enrollments").select("id, student_id, student_name, student_email, enrollment_status, is_top_grad, progress_percent, coupon_code, payment_plan, installment_2_amount, installment_2_paid, installment_2_due_date, created_at").eq("cohort_id", id),
                 supabase.from("sessions").select("*").eq("cohort_id", id).order("session_date", { ascending: true }),
                 supabase.from("announcements").select("*").eq("cohort_id", id).order("created_at", { ascending: false }),
                 supabase.from("assignments").select("*").eq("cohort_id", id).order("created_at", { ascending: false }),
