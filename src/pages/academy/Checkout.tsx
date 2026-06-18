@@ -18,7 +18,9 @@ import {
     Copy,
     Building2,
     Clock,
-    FileCheck
+    FileCheck,
+    Tag,
+    X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -75,6 +77,17 @@ const Checkout = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>('paystack');
     const [showBankTransfer, setShowBankTransfer] = useState(false);
+
+    // Coupon state
+    const [couponInput, setCouponInput] = useState("");
+    const [couponApplying, setCouponApplying] = useState(false);
+    const [appliedCoupon, setAppliedCoupon] = useState<{
+        code: string;
+        discountPct: number;
+        couponId: string;
+        message: string;
+    } | null>(null);
+    const [couponError, setCouponError] = useState("");
     
     // Proactively preload Kora Script on mount
     useEffect(() => {
@@ -265,6 +278,54 @@ const Checkout = () => {
         }
     };
 
+    // ── Coupon helpers ──────────────────────────────────────────
+    const getDiscountedPrice = (originalNaira: number, originalUsd: number) => {
+        if (!appliedCoupon) return { naira: originalNaira, usd: originalUsd };
+        const factor = 1 - appliedCoupon.discountPct / 100;
+        return {
+            naira: Math.round(originalNaira * factor),
+            usd: parseFloat((originalUsd * factor).toFixed(2)),
+        };
+    };
+
+    const handleApplyCoupon = async () => {
+        if (!couponInput.trim()) return;
+        if (!course) return;
+        setCouponError("");
+        setCouponApplying(true);
+        try {
+            const { data, error } = await supabase.rpc("validate_coupon", {
+                p_course_slug: course.slug,
+                p_code: couponInput.trim(),
+            });
+
+            if (error) throw error;
+
+            if (data?.valid) {
+                setAppliedCoupon({
+                    code: couponInput.trim().toUpperCase(),
+                    discountPct: data.discount_pct,
+                    couponId: data.coupon_id,
+                    message: data.message,
+                });
+                setCouponInput("");
+                toast({ title: "Coupon applied! 🎉", description: data.message });
+            } else {
+                setCouponError(data?.message || "Invalid coupon code.");
+            }
+        } catch (err: any) {
+            setCouponError(err.message || "Failed to validate coupon.");
+        } finally {
+            setCouponApplying(false);
+        }
+    };
+
+    const handleRemoveCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponError("");
+        setCouponInput("");
+    };
+
     const handleReceiptSubmit = async () => {
         if (!receiptFile) {
             toast({ title: "Receipt Required", description: "Please upload your payment receipt before submitting.", variant: "destructive" });
@@ -396,6 +457,12 @@ const Checkout = () => {
         }
 
         setProcessing(true);
+
+        // Compute discounted prices
+        const { naira: finalNaira, usd: finalUsd } = getDiscountedPrice(
+            course.price_naira,
+            course.price_usd
+        );
         
         try {
             // Create Checkout Session reference
@@ -416,7 +483,7 @@ const Checkout = () => {
             const sessionId = sessionData.id;
             
             // Determine which payment provider to use
-            const amountKobo = Math.round((course.price_naira || 0) * 100);
+            const amountKobo = Math.round(finalNaira * 100); // use discounted price
             
             // Generate a shorter, completely unique transaction reference (16 chars max, no underscores)
             const reference = `ENR-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
@@ -464,7 +531,7 @@ const Checkout = () => {
                         console.log("Payment confirmed by Kora:", response.reference);
                         setIsOfflinePayment(false);
                         setSuccess(true);
-                        processPostPaymentSuccess(response.reference, sessionId);
+                        processPostPaymentSuccess(response.reference, sessionId, undefined, undefined, undefined, finalNaira, finalUsd);
                     },
                     onClose: () => {
                         toast({ title: "Cancelled", description: "Payment was cancelled." });
@@ -481,7 +548,7 @@ const Checkout = () => {
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     setIsOfflinePayment(false);
                     setSuccess(true);
-                    return processPostPaymentSuccess("simulated_ref_" + Date.now(), sessionId);
+                    return processPostPaymentSuccess("simulated_ref_" + Date.now(), sessionId, undefined, undefined, undefined, finalNaira, finalUsd);
                 }
 
                 const paystack = new PaystackService({ publicKey: paystackPublicKey });
@@ -495,7 +562,7 @@ const Checkout = () => {
                         console.log("Payment confirmed by Paystack:", response.reference);
                         setIsOfflinePayment(false);
                         setSuccess(true);
-                        processPostPaymentSuccess(response.reference, sessionId);
+                        processPostPaymentSuccess(response.reference, sessionId, undefined, undefined, undefined, finalNaira, finalUsd);
                     },
                     onClose: () => {
                         toast({ title: "Cancelled", description: "Payment was cancelled." });
@@ -518,13 +585,17 @@ const Checkout = () => {
         sessionId: string,
         customEmail?: string,
         customFullName?: string,
-        customCohortId?: string
+        customCohortId?: string,
+        finalPriceNaira?: number,
+        finalPriceUsd?: number
     ) => {
         try {
             console.log("Processing post-payment for session:", sessionId);
             const targetEmail = (customEmail || email).trim().toLowerCase();
             const targetFullName = (customFullName || fullName).trim() || targetEmail.split('@')[0];
             const targetCohortId = customCohortId || selectedCohortId;
+            const usedNaira = finalPriceNaira ?? course?.price_naira ?? 0;
+            const usedUsd = finalPriceUsd ?? course?.price_usd ?? 0;
 
             // STEP 1: Determine active user if they happen to be logged in (optional for guest checkout)
             let activeUserId: string | null = null;
@@ -549,7 +620,12 @@ const Checkout = () => {
                     p_paystack_reference: paymentProvider === 'paystack' ? reference : null,
                     p_user_id: activeUserId, // can be null, the RPC handles it
                     p_payment_method: paymentProvider,
-                    p_kora_reference: paymentProvider === 'kora' ? reference : null
+                    p_kora_reference: paymentProvider === 'kora' ? reference : null,
+                    // Coupon data
+                    p_coupon_code: appliedCoupon?.code || null,
+                    p_discount_pct: appliedCoupon?.discountPct || 0,
+                    p_final_price_naira: usedNaira,
+                    p_final_price_usd: usedUsd,
                 });
 
                 if (rpcError) {
@@ -587,7 +663,7 @@ const Checkout = () => {
                             cohortName: cohortInfo?.name || "Upcoming Cohort",
                             duration: "4 Weeks",
                             level: course?.level || "Beginner",
-                            amountNaira: String(course?.price_naira || 0),
+                            amountNaira: String(usedNaira),
                             reference: reference,
                         }
                     }
@@ -698,7 +774,18 @@ const Checkout = () => {
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-slate-800 truncate">{course.title}</p>
                                 </div>
-                                <p className="text-sm font-semibold text-blue-600 shrink-0">₦{course.price_naira.toLocaleString()}</p>
+                                <div className="text-right shrink-0">
+                                    {appliedCoupon ? (
+                                        <>
+                                            <p className="text-[11px] text-slate-400 line-through">₦{course.price_naira.toLocaleString()}</p>
+                                            <p className="text-sm font-semibold text-emerald-600">
+                                                ₦{getDiscountedPrice(course.price_naira, course.price_usd).naira.toLocaleString()}
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <p className="text-sm font-semibold text-blue-600">₦{course.price_naira.toLocaleString()}</p>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
@@ -942,6 +1029,52 @@ const Checkout = () => {
                                                         </span>
                                                     </div>
 
+                                                    {/* ── Coupon Code Input ── */}
+                                                    <div className="border-t border-slate-100 pt-4">
+                                                        {appliedCoupon ? (
+                                                            <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-emerald-50/70 border border-emerald-200/60 rounded-xl">
+                                                                <Tag className="w-4 h-4 text-emerald-600 shrink-0" />
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-xs font-bold text-emerald-700 font-mono tracking-wider">{appliedCoupon.code}</p>
+                                                                    <p className="text-[10px] text-emerald-600">{appliedCoupon.message}</p>
+                                                                </div>
+                                                                <button
+                                                                    onClick={handleRemoveCoupon}
+                                                                    className="w-6 h-6 flex items-center justify-center rounded-lg text-emerald-500 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                                                >
+                                                                    <X className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="space-y-1.5">
+                                                                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                                                    <Tag className="w-3 h-3" /> Have a coupon code?
+                                                                </label>
+                                                                <div className="flex gap-2">
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="Enter code"
+                                                                        value={couponInput}
+                                                                        onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(""); }}
+                                                                        onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                                                                        className="flex-1 h-9 px-3 bg-white rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-xs font-mono text-slate-800 uppercase tracking-wider placeholder:normal-case placeholder:font-sans placeholder:text-slate-400"
+                                                                    />
+                                                                    <Button
+                                                                        type="button"
+                                                                        onClick={handleApplyCoupon}
+                                                                        disabled={couponApplying || !couponInput.trim()}
+                                                                        className="h-9 px-4 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-100 disabled:text-slate-400 text-white rounded-lg text-xs font-semibold transition-all gap-1.5 shrink-0"
+                                                                    >
+                                                                        {couponApplying ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Apply"}
+                                                                    </Button>
+                                                                </div>
+                                                                {couponError && (
+                                                                    <p className="text-[11px] text-red-500 font-medium">{couponError}</p>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
                                                     <Button
                                                         onClick={handlePayment}
                                                         disabled={processing}
@@ -955,7 +1088,7 @@ const Checkout = () => {
                                                         ) : (
                                                             <>
                                                                 <ShieldCheck className="w-4 h-4" />
-                                                                Pay ₦{course.price_naira.toLocaleString()}
+                                                                Pay ₦{getDiscountedPrice(course.price_naira, course.price_usd).naira.toLocaleString()}
                                                             </>
                                                         )}
                                                     </Button>

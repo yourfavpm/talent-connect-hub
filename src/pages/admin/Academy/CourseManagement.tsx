@@ -9,17 +9,17 @@ import {
     ExternalLink, 
     Search,
     Filter,
-    MoreVertical,
     Loader2,
-    CheckCircle2,
-    AlertCircle,
-    ArrowRight
+    ArrowRight,
+    Ticket,
+    Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { getInternalPath } from "@/utils/subdomain";
 import CreateCourseModal from "@/components/admin/Academy/CreateCourseModal";
+import CourseCouponsModal from "@/components/admin/Academy/CourseCouponsModal";
 import { getZoneUrl, Zone } from "@/utils/subdomain";
 
 interface Course {
@@ -40,9 +40,20 @@ const CourseManagement = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     
-    // Modal state
+    // Course create/edit modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState<any>(null);
+
+    // Coupon modal state
+    const [couponModalOpen, setCouponModalOpen] = useState(false);
+    const [couponCourseSlug, setCouponCourseSlug] = useState<string | null>(null);
+    const [couponCourseTitle, setCouponCourseTitle] = useState("");
+
+    const openCouponModal = (slug: string | null, title: string) => {
+        setCouponCourseSlug(slug);
+        setCouponCourseTitle(title);
+        setCouponModalOpen(true);
+    };
 
     const fetchCourses = useCallback(async () => {
         setLoading(true);
@@ -99,15 +110,24 @@ const CourseManagement = () => {
                         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Academy Course Hub</h1>
                         <p className="text-slate-500 font-medium text-xs mt-1">Manage your dynamic course catalog and learning content.</p>
                     </div>
-                    <Button 
-                        onClick={() => {
-                            setSelectedCourse(null);
-                            setIsModalOpen(true);
-                        }}
-                        className="h-10 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs gap-2 shadow-xs transition-all"
-                    >
-                        <Plus className="w-4 h-4" /> Create New Course
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            onClick={() => openCouponModal(null, "All Courses")}
+                            variant="outline"
+                            className="h-10 px-4 rounded-xl font-bold text-xs gap-2 border-slate-200 text-violet-600 hover:bg-violet-50 hover:border-violet-200 transition-all"
+                        >
+                            <Globe className="w-4 h-4" /> Global Coupons
+                        </Button>
+                        <Button 
+                            onClick={() => {
+                                setSelectedCourse(null);
+                                setIsModalOpen(true);
+                            }}
+                            className="h-10 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs gap-2 shadow-xs transition-all"
+                        >
+                            <Plus className="w-4 h-4" /> Create New Course
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Search & Filters */}
@@ -191,9 +211,17 @@ const CourseManagement = () => {
                                 </div>
 
                                 <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                    <a href={getZoneUrl(Zone.ACADEMY, `/courses/${course.slug}`)} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-600 font-bold text-[9px] flex items-center gap-1.5 transition-colors uppercase tracking-widest">
-                                        <ExternalLink className="w-3.5 h-3.5" /> Preview Program
-                                    </a>
+                                    <div className="flex items-center gap-2">
+                                        <a href={getZoneUrl(Zone.ACADEMY, `/courses/${course.slug}`)} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-600 font-bold text-[9px] flex items-center gap-1.5 transition-colors uppercase tracking-widest">
+                                            <ExternalLink className="w-3.5 h-3.5" /> Preview
+                                        </a>
+                                        <button
+                                            onClick={() => openCouponModal(course.slug, course.title)}
+                                            className="text-violet-500 hover:text-violet-700 font-bold text-[9px] flex items-center gap-1.5 transition-colors uppercase tracking-widest"
+                                        >
+                                            <Ticket className="w-3.5 h-3.5" /> Coupons
+                                        </button>
+                                    </div>
                                     <Link 
                                         to={getInternalPath(`/admin/academy/courses/${course.slug}/cohorts`)} 
                                         className="h-9 px-4 bg-slate-900 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 hover:bg-blue-600 transition-all shadow-xs"
@@ -227,6 +255,13 @@ const CourseManagement = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={fetchCourses}
                 editCourse={selectedCourse}
+            />
+
+            <CourseCouponsModal
+                isOpen={couponModalOpen}
+                onClose={() => setCouponModalOpen(false)}
+                courseSlug={couponCourseSlug}
+                courseTitle={couponCourseTitle}
             />
         </div>
     );
