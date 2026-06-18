@@ -74,7 +74,7 @@ BEGIN
       AND cohort_id = p_cohort_id
     LIMIT 1;
 
-    -- 3. Create enrollment if not exists
+    -- 3. Create or update enrollment
     IF v_enrollment_id IS NULL THEN
         INSERT INTO public.academy_enrollments (
             student_id,
@@ -124,6 +124,28 @@ BEGIN
         UPDATE public.cohorts
         SET current_slots = COALESCE(current_slots, 0) + 1
         WHERE id = p_cohort_id;
+    ELSE
+        -- Update existing (e.g. pending_payment) enrollment to active with new details
+        UPDATE public.academy_enrollments
+        SET 
+            enrollment_status = 'active',
+            final_price_naira = v_final_naira,
+            final_price_usd = v_final_usd,
+            coupon_code = UPPER(TRIM(p_coupon_code)),
+            discount_pct = p_discount_pct,
+            payment_plan = p_payment_plan,
+            installment_1_amount = p_installment_1_amount,
+            installment_2_amount = p_installment_2_amount,
+            installment_2_due_date = p_installment_2_due_date,
+            access_granted_at = NOW()
+        WHERE id = v_enrollment_id AND enrollment_status != 'active';
+
+        -- Only increment slots if we actually changed the status from pending to active
+        IF FOUND THEN
+            UPDATE public.cohorts
+            SET current_slots = COALESCE(current_slots, 0) + 1
+            WHERE id = p_cohort_id;
+        END IF;
     END IF;
 
     -- 4. Increment coupon uses
