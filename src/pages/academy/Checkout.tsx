@@ -88,6 +88,9 @@ const Checkout = () => {
         message: string;
     } | null>(null);
     const [couponError, setCouponError] = useState("");
+
+    // Payment plan state
+    const [paymentPlan, setPaymentPlan] = useState<'full' | 'installment'>('full');
     
     // Proactively preload Kora Script on mount
     useEffect(() => {
@@ -288,6 +291,18 @@ const Checkout = () => {
         };
     };
 
+    // ── Installment plan calculator ──────────────────────────────
+    // Returns installment breakdown applied AFTER coupon discount.
+    // Installment total = discounted price × 1.05 (5% surcharge)
+    // Installment 1 (due now)  = 60% of installment total
+    // Installment 2 (due wk 2) = 40% of installment total
+    const getInstallmentPlan = (discountedNaira: number) => {
+        const total = Math.round(discountedNaira * 1.05);
+        const inst1 = Math.round(total * 0.60);
+        const inst2 = total - inst1;
+        return { total, inst1, inst2 };
+    };
+
     const handleApplyCoupon = async () => {
         if (!couponInput.trim()) return;
         if (!course) return;
@@ -459,10 +474,29 @@ const Checkout = () => {
         setProcessing(true);
 
         // Compute discounted prices
-        const { naira: finalNaira, usd: finalUsd } = getDiscountedPrice(
+        const { naira: discountedNaira, usd: discountedUsd } = getDiscountedPrice(
             course.price_naira,
             course.price_usd
         );
+
+        // Compute installment amounts if applicable
+        const installmentData = paymentPlan === 'installment'
+            ? getInstallmentPlan(discountedNaira)
+            : null;
+
+        // The amount charged NOW
+        const finalNaira = paymentPlan === 'installment' ? installmentData!.inst1 : discountedNaira;
+        const finalUsd   = discountedUsd; // USD stored at discounted rate
+
+        // Installment 2 due date = cohort start date + 14 days (2 weeks into program)
+        let inst2DueDate: string | null = null;
+        if (paymentPlan === 'installment') {
+            const cohortStart = cohortInfo?.start_date
+                ? new Date(cohortInfo.start_date)
+                : new Date();
+            cohortStart.setDate(cohortStart.getDate() + 14);
+            inst2DueDate = cohortStart.toISOString();
+        }
         
         try {
             // Create Checkout Session reference
@@ -483,7 +517,7 @@ const Checkout = () => {
             const sessionId = sessionData.id;
             
             // Determine which payment provider to use
-            const amountKobo = Math.round(finalNaira * 100); // use discounted price
+            const amountKobo = Math.round(finalNaira * 100); // use discounted/installment price
             
             // Generate a shorter, completely unique transaction reference (16 chars max, no underscores)
             const reference = `ENR-${Math.random().toString(36).substring(2, 9).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
@@ -531,7 +565,7 @@ const Checkout = () => {
                         console.log("Payment confirmed by Kora:", response.reference);
                         setIsOfflinePayment(false);
                         setSuccess(true);
-                        processPostPaymentSuccess(response.reference, sessionId, undefined, undefined, undefined, finalNaira, finalUsd);
+                        processPostPaymentSuccess(response.reference, sessionId, undefined, undefined, undefined, finalNaira, finalUsd, paymentPlan, installmentData?.inst1, installmentData?.inst2, inst2DueDate);
                     },
                     onClose: () => {
                         toast({ title: "Cancelled", description: "Payment was cancelled." });
@@ -548,7 +582,7 @@ const Checkout = () => {
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     setIsOfflinePayment(false);
                     setSuccess(true);
-                    return processPostPaymentSuccess("simulated_ref_" + Date.now(), sessionId, undefined, undefined, undefined, finalNaira, finalUsd);
+                    return processPostPaymentSuccess("simulated_ref_" + Date.now(), sessionId, undefined, undefined, undefined, finalNaira, finalUsd, paymentPlan, installmentData?.inst1, installmentData?.inst2, inst2DueDate);
                 }
 
                 const paystack = new PaystackService({ publicKey: paystackPublicKey });
@@ -562,7 +596,7 @@ const Checkout = () => {
                         console.log("Payment confirmed by Paystack:", response.reference);
                         setIsOfflinePayment(false);
                         setSuccess(true);
-                        processPostPaymentSuccess(response.reference, sessionId, undefined, undefined, undefined, finalNaira, finalUsd);
+                        processPostPaymentSuccess(response.reference, sessionId, undefined, undefined, undefined, finalNaira, finalUsd, paymentPlan, installmentData?.inst1, installmentData?.inst2, inst2DueDate);
                     },
                     onClose: () => {
                         toast({ title: "Cancelled", description: "Payment was cancelled." });
@@ -587,7 +621,11 @@ const Checkout = () => {
         customFullName?: string,
         customCohortId?: string,
         finalPriceNaira?: number,
-        finalPriceUsd?: number
+        finalPriceUsd?: number,
+        instPlan?: 'full' | 'installment',
+        inst1Amount?: number,
+        inst2Amount?: number,
+        inst2DueDate?: string | null
     ) => {
         try {
             console.log("Processing post-payment for session:", sessionId);
@@ -618,7 +656,7 @@ const Checkout = () => {
                     p_price_naira: course?.price_naira || 0,
                     p_price_usd: course?.price_usd || 0,
                     p_paystack_reference: paymentProvider === 'paystack' ? reference : null,
-                    p_user_id: activeUserId, // can be null, the RPC handles it
+                    p_user_id: activeUserId,
                     p_payment_method: paymentProvider,
                     p_kora_reference: paymentProvider === 'kora' ? reference : null,
                     // Coupon data
@@ -626,6 +664,11 @@ const Checkout = () => {
                     p_discount_pct: appliedCoupon?.discountPct || 0,
                     p_final_price_naira: usedNaira,
                     p_final_price_usd: usedUsd,
+                    // Installment data
+                    p_payment_plan: instPlan || 'full',
+                    p_installment_1_amount: inst1Amount || null,
+                    p_installment_2_amount: inst2Amount || null,
+                    p_installment_2_due_date: inst2DueDate || null,
                 });
 
                 if (rpcError) {
@@ -1027,6 +1070,69 @@ const Checkout = () => {
                                                         <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full border border-emerald-100 uppercase tracking-wide">
                                                             Instant
                                                         </span>
+                                                    </div>
+
+                                                    {/* ── Payment Plan Selector ── */}
+                                                    <div className="border-t border-slate-100 pt-4 pb-1">
+                                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 block">Payment Plan</label>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <button 
+                                                                onClick={() => setPaymentPlan('full')}
+                                                                className={`p-3 rounded-xl border text-left transition-all ${
+                                                                    paymentPlan === 'full' 
+                                                                    ? 'bg-blue-50/50 border-blue-500 ring-1 ring-blue-500' 
+                                                                    : 'bg-white border-slate-200 hover:border-slate-300'
+                                                                }`}
+                                                            >
+                                                                <div className="flex items-center justify-between mb-1">
+                                                                    <span className={`text-xs font-bold ${paymentPlan === 'full' ? 'text-blue-700' : 'text-slate-700'}`}>Pay in Full</span>
+                                                                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${paymentPlan === 'full' ? 'border-blue-500 bg-blue-500' : 'border-slate-300'}`}>
+                                                                        {paymentPlan === 'full' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                                                    </div>
+                                                                </div>
+                                                                <span className="text-[10px] text-slate-500">Standard pricing</span>
+                                                            </button>
+
+                                                            <button 
+                                                                onClick={() => setPaymentPlan('installment')}
+                                                                className={`p-3 rounded-xl border text-left transition-all ${
+                                                                    paymentPlan === 'installment' 
+                                                                    ? 'bg-blue-50/50 border-blue-500 ring-1 ring-blue-500' 
+                                                                    : 'bg-white border-slate-200 hover:border-slate-300'
+                                                                }`}
+                                                            >
+                                                                <div className="flex items-center justify-between mb-1">
+                                                                    <span className={`text-xs font-bold ${paymentPlan === 'installment' ? 'text-blue-700' : 'text-slate-700'}`}>2 Installments</span>
+                                                                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${paymentPlan === 'installment' ? 'border-blue-500 bg-blue-500' : 'border-slate-300'}`}>
+                                                                        {paymentPlan === 'installment' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                                                    </div>
+                                                                </div>
+                                                                <span className="text-[10px] text-amber-600 font-medium">5% surcharge applies</span>
+                                                            </button>
+                                                        </div>
+                                                        {paymentPlan === 'installment' && (
+                                                            <div className="mt-3 p-3 bg-amber-50/50 rounded-lg border border-amber-100/50">
+                                                                <p className="text-[11px] text-slate-600 mb-2 font-medium">
+                                                                    Your total cost is split into two payments. The second payment must be completed on or before the second week of the program.
+                                                                </p>
+                                                                {(() => {
+                                                                    const { naira: discountedNaira } = getDiscountedPrice(course.price_naira, course.price_usd);
+                                                                    const instPlan = getInstallmentPlan(discountedNaira);
+                                                                    return (
+                                                                        <div className="space-y-1.5">
+                                                                            <div className="flex items-center justify-between text-xs">
+                                                                                <span className="text-slate-500">Due Today (60%)</span>
+                                                                                <span className="font-bold text-slate-800">₦{instPlan.inst1.toLocaleString()}</span>
+                                                                            </div>
+                                                                            <div className="flex items-center justify-between text-xs">
+                                                                                <span className="text-slate-500">Due Week 2 (40%)</span>
+                                                                                <span className="font-semibold text-slate-700">₦{instPlan.inst2.toLocaleString()}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })()}
+                                                            </div>
+                                                        )}
                                                     </div>
 
                                                     {/* ── Coupon Code Input ── */}

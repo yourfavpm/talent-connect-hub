@@ -56,6 +56,11 @@ interface Student {
     progress_percent: number;
     streak_count?: number;
     total_study_hours?: number;
+    coupon_code?: string | null;
+    payment_plan?: string | null;
+    installment_2_amount?: number | null;
+    installment_2_paid?: boolean;
+    installment_2_due_date?: string | null;
     created_at: string;
 }
 
@@ -226,7 +231,7 @@ const CohortDetail = () => {
 
             // 2. Fetch All Data
             const [enrollmentsRes, sessionsRes, announcementsRes, assignmentsRes, submissionsRes, receiptsRes] = await Promise.all([
-                supabase.from("academy_enrollments").select("*").eq("cohort_id", id),
+                supabase.from("academy_enrollments").select("id, student_id, student_name, student_email, enrollment_status, is_top_grad, progress_percent, streak_count, total_study_hours, coupon_code, payment_plan, installment_2_amount, installment_2_paid, installment_2_due_date, created_at").eq("cohort_id", id),
                 supabase.from("sessions").select("*").eq("cohort_id", id).order("session_date", { ascending: true }),
                 supabase.from("announcements").select("*").eq("cohort_id", id).order("created_at", { ascending: false }),
                 supabase.from("assignments").select("*").eq("cohort_id", id).order("created_at", { ascending: false }),
@@ -881,6 +886,8 @@ const CohortDetail = () => {
                                         <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Progress</th>
                                         <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Streak/Hours</th>
                                         <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Status</th>
+                                        <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Coupon</th>
+                                        <th className="px-5 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payment</th>
                                         <th className="px-5 py-3 text-center text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Receipt</th>
                                         <th className="px-5 py-3 text-center text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Top Grad</th>
                                         <th className="px-5 py-3 text-right text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Admit</th>
@@ -947,6 +954,37 @@ const CohortDetail = () => {
                                                         ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50'
                                                         : 'bg-amber-50 text-amber-600 border border-amber-100/50'
                                                 }`}>{student.enrollment_status}</span>
+                                            </td>
+                                            {/* Coupon column */}
+                                            <td className="px-5 py-3">
+                                                {student.coupon_code ? (
+                                                    <span className="inline-flex items-center px-2 py-0.5 bg-violet-50 text-violet-700 border border-violet-100/60 rounded-md font-mono text-[10px] font-bold tracking-wider">
+                                                        {student.coupon_code}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-slate-300 text-sm">—</span>
+                                                )}
+                                            </td>
+                                            {/* Payment Plan column */}
+                                            <td className="px-5 py-3">
+                                                {student.payment_plan === 'installment' ? (
+                                                    <div className="space-y-0.5">
+                                                        <span className="inline-flex items-center px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100/60 rounded-md text-[9px] font-bold uppercase tracking-wider">
+                                                            Installment
+                                                        </span>
+                                                        {student.installment_2_paid ? (
+                                                            <p className="text-[9px] text-emerald-600 font-semibold mt-0.5">✓ 2nd paid</p>
+                                                        ) : student.installment_2_amount ? (
+                                                            <p className="text-[9px] text-amber-600 font-medium mt-0.5">
+                                                                ₦{Number(student.installment_2_amount).toLocaleString()} due wk 2
+                                                            </p>
+                                                        ) : null}
+                                                    </div>
+                                                ) : (
+                                                    <span className="inline-flex items-center px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100/60 rounded-md text-[9px] font-bold uppercase tracking-wider">
+                                                        Full
+                                                    </span>
+                                                )}
                                             </td>
                                             {/* Receipt column */}
                                             <td className="px-5 py-3 text-center">
