@@ -1216,14 +1216,6 @@ export default function AdminHireRequestDetail() {
         </DialogContent>
       </Dialog>
 
-            <Button onClick={handleScheduleInterview} disabled={!calendlyLink || !scheduledTime || !!actionLoading} className="bg-blue-600 text-white hover:bg-blue-700">
-              {actionLoading === "schedule" ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Calendar className="w-4 h-4 mr-1.5" />} 
-              {actionLoading === "schedule" ? "Scheduling..." : "Schedule"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* ── Invite My Talents Dialog ─────────────────────────── */}
       <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
         <DialogContent className="sm:max-w-xl max-h-[80vh] flex flex-col p-0 overflow-hidden">
