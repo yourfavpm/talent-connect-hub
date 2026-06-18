@@ -491,8 +491,9 @@ const Checkout = () => {
         // Installment 2 due date = cohort start date + 14 days (2 weeks into program)
         let inst2DueDate: string | null = null;
         if (paymentPlan === 'installment') {
-            const cohortStart = cohortInfo?.start_date
-                ? new Date(cohortInfo.start_date)
+            const selectedCohort = availableCohorts.find(c => c.id === selectedCohortId);
+            const cohortStart = selectedCohort?.start_date
+                ? new Date(selectedCohort.start_date)
                 : new Date();
             cohortStart.setDate(cohortStart.getDate() + 14);
             inst2DueDate = cohortStart.toISOString();
@@ -818,16 +819,21 @@ const Checkout = () => {
                                     <p className="text-sm font-medium text-slate-800 truncate">{course.title}</p>
                                 </div>
                                 <div className="text-right shrink-0">
-                                    {appliedCoupon ? (
-                                        <>
-                                            <p className="text-[11px] text-slate-400 line-through">₦{course.price_naira.toLocaleString()}</p>
-                                            <p className="text-sm font-semibold text-emerald-600">
-                                                ₦{getDiscountedPrice(course.price_naira, course.price_usd).naira.toLocaleString()}
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <p className="text-sm font-semibold text-blue-600">₦{course.price_naira.toLocaleString()}</p>
-                                    )}
+                                    {(() => {
+                                        const { naira: discountedNaira } = getDiscountedPrice(course.price_naira, course.price_usd);
+                                        const displayTotalNaira = paymentPlan === 'installment' ? getInstallmentPlan(discountedNaira).total : discountedNaira;
+                                        
+                                        return appliedCoupon ? (
+                                            <>
+                                                <p className="text-[11px] text-slate-400 line-through">₦{course.price_naira.toLocaleString()}</p>
+                                                <p className="text-sm font-semibold text-emerald-600">
+                                                    ₦{displayTotalNaira.toLocaleString()}
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <p className="text-sm font-semibold text-blue-600">₦{displayTotalNaira.toLocaleString()}</p>
+                                        );
+                                    })()}
                                 </div>
                             </div>
 
@@ -1194,7 +1200,11 @@ const Checkout = () => {
                                                         ) : (
                                                             <>
                                                                 <ShieldCheck className="w-4 h-4" />
-                                                                Pay ₦{getDiscountedPrice(course.price_naira, course.price_usd).naira.toLocaleString()}
+                                                                {(() => {
+                                                                    const { naira: discountedNaira } = getDiscountedPrice(course.price_naira, course.price_usd);
+                                                                    const amountDueNow = paymentPlan === 'installment' ? getInstallmentPlan(discountedNaira).inst1 : discountedNaira;
+                                                                    return `Pay ₦${amountDueNow.toLocaleString()} ${paymentPlan === 'installment' ? 'Now (Installment 1)' : ''}`;
+                                                                })()}
                                                             </>
                                                         )}
                                                     </Button>
